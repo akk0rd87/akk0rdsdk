@@ -440,7 +440,7 @@
 				PRODUCT_NAME = "___PROJECTNAME___";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "\"${AKKORD_SDK_HOME}/libraries/SDL_image/SDL_image\" \"${AKKORD_SDK_HOME}/libraries/SDL/SDL/include\" \"${AKKORD_SDK_HOME}/framework/\"";
-				"USER_HEADER_SEARCH_PATHS[arch=*]" = "\"${AKKORD_SDK_HOME}/libraries/SDL_image/SDL_image\" \"${AKKORD_SDK_HOME}/libraries/SDL/SDL/include\"";
+				"USER_HEADER_SEARCH_PATHS[arch=*]" = "\"${AKKORD_SDK_HOME}/libraries/SDL_image/SDL_image\" \"${AKKORD_SDK_HOME}/libraries/SDL/SDL/include\" \"${AKKORD_SDK_HOME}/framework/\"";
 			};
 			name = Debug;
 		};
