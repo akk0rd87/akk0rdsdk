@@ -228,8 +228,8 @@ int main(int, char**)
                 ProdsList.push_back("prod_1");
                 ProdsList.push_back("prod_2");
                 ProdsList.push_back("prod_3");               
-
-                BillingManager::GetProductDetails(ProdsList);
+                
+				BillingManager::QueryProductDetails(ProdsList);
 
             }
     }
