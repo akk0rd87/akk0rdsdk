@@ -1,0 +1,89 @@
+apply plugin: 'com.android.application'
+
+def akkord_sdk_path = System.getenv('AKKORD_SDK_HOME')
+
+android {
+    //ndkDirectory = "gerg"
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    defaultConfig {                     
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+
+
+        
+        //ndk { // http://google.github.io/android-gradle-dsl/current/com.android.build.gradle.internal.dsl.ExternalNativeNdkBuildOptions.html
+        //    // Tells Gradle to build outputs for the following ABIs and package
+        //    // them into your APK.
+        //    
+        //    // When this flag is not configured, Gradle builds and packages all available ABIs.
+        //    // http://google.github.io/android-gradle-dsl/current/com.android.build.gradle.internal.dsl.NdkOptions.html
+        //    abiFilters 'armeabi', 'armeabi-v7a', 'arm64-v8a', 'mips', 'mips64', 'x86', 'x86_64'
+        //}
+        
+        //externalNativeBuild {
+        //    ndkBuild{
+        //        abiFilters 'armeabi', 'armeabi-v7a', 'arm64-v8a', 'mips', 'mips64', 'x86', 'x86_64'
+        //
+        //        //CFlags.addAll(["-I" + file("${akkord_sdk_path}/libraries/SDL/SDL/include/").absolutePath])
+        //        //CFlags.addAll(["-I" + file("${akkord_sdk_path}/libraries/SDL_image/SDL_image").absolutePath])
+        //        
+        //        cppFlags.addAll(["-I" + file("${akkord_sdk_path}/libraries/SDL/SDL/include/").absolutePath])                                
+        //        cppFlags.addAll(["-I" + file("${akkord_sdk_path}/libraries/SDL_image/SDL_image").absolutePath])             
+        //        cppFlags.addAll(["-I" + file("${akkord_sdk_path}/framework/common/").absolutePath])
+        //        cppFlags.addAll(["-I" + file("${akkord_sdk_path}/framework/platforms/android").absolutePath])                    
+        //        // add ../../src/main.cpp
+        //        
+        //        arguments "NDK_MODULE_PATH+=../main/ V=1"
+        //    }            
+        //}
+    }
+    
+    externalNativeBuild {
+        ndkBuild {
+            // Tells Gradle to find the root ndk-build script in the same
+            // directory as the module's build.gradle file. Gradle requires this
+            // build script to add your ndk-build project as a build dependency and
+            // pull your native sources into your Android project.
+            buildStagingDirectory "../main/lib"
+            path "../main/Android.mk"
+            
+            //cppFlags.addAll(["-std=c++11"])
+        }
+    }    
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+            manifest.srcFile '../AndroidManifest.xml'                        
+            java.srcDir "${akkord_sdk_path}/framework/core/android/wrapper/"
+            java.srcDir "${akkord_sdk_path}/framework/core/android/admob/"
+            java.srcDir "${akkord_sdk_path}/framework/core/android/billing/"
+            java.srcDir '../java'            
+            res.srcDirs    = ['../res']
+            assets.srcDir '../../assets'
+            assets.srcDir "${akkord_sdk_path}/resources/adimages/"
+        }
+    }    
+    
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    //implementation fileTree(dir: 'libs', include: ['*.jar'])
+    //implementation 'com.android.support:appcompat-v7:26.1.0'
+    //implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+    //implementation 'com.android.support:design:26.1.0'
+    //testImplementation 'junit:junit:4.12'
+    //androidTestImplementation 'com.android.support.test:runner:1.0.1'
+    //androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+    implementation 'com.google.android.gms:play-services-ads:11.8.0'
+    implementation 'com.android.billingclient:billing:1.0'
+    //implementation 'com.google.firebase:firebase-ads:11.8.0'
+}
+
+//apply plugin: 'com.google.gms.google-services'

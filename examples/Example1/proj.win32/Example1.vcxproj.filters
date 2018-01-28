@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Framework">
+      <UniqueIdentifier>{6e83b0ab-9fac-4907-8f3e-d300eea6f69a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Framework\Source">
+      <UniqueIdentifier>{10299c37-da72-4a4c-b767-b2c1f97c6fb6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Framework\Headers">
+      <UniqueIdentifier>{2a65f7de-669f-4936-8a71-b819de2b099d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\main.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="$(AKKORD_SDK_HOME)\framework\basewrapper.cpp">
+      <Filter>Framework\Source</Filter>
+    </ClCompile>    
+    <ClCompile Include="$(AKKORD_SDK_HOME)\framework\admob.cpp">
+      <Filter>Framework\Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(AKKORD_SDK_HOME)\framework\platforms\windows\windows_wrapper.h">
+      <Filter>Framework\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(AKKORD_SDK_HOME)\framework\adrandomizer.h">
+      <Filter>Framework\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(AKKORD_SDK_HOME)\framework\basewrapper.h">
+      <Filter>Framework\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(AKKORD_SDK_HOME)\framework\atlasmanager.h">
+      <Filter>Framework\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(AKKORD_SDK_HOME)\framework\configmanager.h">
+      <Filter>Framework\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(AKKORD_SDK_HOME)\framework\admob.h">
+      <Filter>Framework\Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

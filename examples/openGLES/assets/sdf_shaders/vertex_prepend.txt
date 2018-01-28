@@ -1,0 +1,6 @@
+CRITICAL: prepend = 
+#define SEPARATE_ALPHA
+#define SDF
+#define SDF_OUTLINE
+#define program_main_vs main
+#define VS

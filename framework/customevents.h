@@ -1,0 +1,78 @@
+#pragma once
+#ifndef __AKK0RD_CustomEvents_H__
+#define __AKK0RD_CustomEvents_H__
+
+#include "core/core_defines.h"
+
+class BaseCustomEvent // абстрактный базовый класс пользовательского события
+{
+
+};
+
+class TestEvent : BaseCustomEvent
+{
+public:
+    std::string Name;
+    ~TestEvent()
+    { 
+        Name.clear(); 
+        logDebug("Destructor");
+    };
+};
+
+/*
+class AdEvent : BaseCustomEvent
+{
+public:        
+    unsigned AdType, EventType, Code;
+};
+*/
+
+class CustomEvents
+{
+public:
+    enum struct SDKEventType : Sint32 { Test, AdCallback };
+    enum struct EventLevel : unsigned { User, SDK, Unknown };
+
+    static void GenerateSDKEvent(CustomEvents::SDKEventType Type, BaseCustomEvent* Data)
+    {
+        SDL_Event Event;
+        Event.user.type  = SDL_USEREVENT;
+        Event.user.code  = (Sint32)Type;
+        Event.user.data1 = Data;
+        Event.user.data2 = (void*)1; // ставим константу 1
+        
+        SDL_PushEvent(&Event);
+    };
+
+    static void GenerateUserEvent(CustomEvents::SDKEventType Type, BaseCustomEvent* Data)
+    {
+        SDL_Event Event;
+        Event.user.type = SDL_USEREVENT;
+        Event.user.code = (Sint32)Type;
+        Event.user.data1 = Data;
+        Event.user.data2 = (void*)2; // ставим константу 2
+
+        SDL_PushEvent(&Event);
+    };
+
+    static CustomEvents::EventLevel GetEventLevel(SDL_Event& Event)
+    {        
+        if (Event.user.type != SDL_USEREVENT)
+        {
+            logError("Event type is not SDL_USEREVENT [%d]", Event.user.type);
+            return EventLevel::Unknown;
+        }
+        
+        if ((void*)1 == Event.user.data2)
+            return EventLevel::SDK;
+
+        if ((void*)2 == Event.user.data2)
+            return EventLevel::User;
+
+        logError("Unknown event type!");
+        return EventLevel::Unknown;
+    };
+};
+
+#endif // __AKK0RD_CustomEvents_H__
