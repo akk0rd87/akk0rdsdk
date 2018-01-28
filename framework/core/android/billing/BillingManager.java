@@ -113,6 +113,7 @@ class BillingManager {
                         @Override
                         public void onPurchasesUpdated(int responseCode, List<Purchase> purchases) 
                         {
+                            // тут приходит одна покупка или несколько?
                             Log.v(TAG, "onPurchasesUpdated");
                         }                
                     }
