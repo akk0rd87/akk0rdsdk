@@ -102,6 +102,8 @@ sdkmanager.bat extras;google;google_play_services
 
 ### **iOS**
     
+    - Set AKKORD_SDK_HOME path in Xcode: Xcode->Preferences->Locations->Custom Paths
+    
     - Открыть проект SDL CodeProj и собрать библиотеку (только первый раз, сборка делается только один раз, для других проектов повторять не надо).
     
     - Скопировать стандартный ios-template в рабочую попку из исходников SDL libraries\SDL\SDL\Xcode-iOS\Template
