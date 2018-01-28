@@ -207,7 +207,7 @@
 				84B5E3251FCA01F300EB116C /* platforms */,
 			);
 			name = framework;
-			path = ../../../framework;
+			path = "${AKKORD_SDK_HOME}"/framework;
 			sourceTree = "<group>";
 		};
 		84B5E30E1FCA01F300EB116C /* core */ = {
