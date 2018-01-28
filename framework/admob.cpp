@@ -180,7 +180,7 @@ bool AdMob::Init(const char* PublisherID, int Formats)
 #endif
 
 #ifdef __APPLE__
-    if (AdMobiOS::Init(PublisherID, Formats)
+    if (AdMobiOS::Init(PublisherID, Formats))
     {
 
         return true;
