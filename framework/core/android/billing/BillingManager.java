@@ -38,12 +38,33 @@ class BillingManager {
     private static native void BillingDisconnected();
     private static native void PurchaseQueried(String PurchaseToken, String ProductSKU);
     
+    private static String DecodeBillingResponse(int billingResponseCode)
+    {
+        String StringCode = "UNKNOWN";
+        switch(billingResponseCode)
+        {
+            case BillingResponse.BILLING_UNAVAILABLE: StringCode = "BILLING_UNAVAILABLE"; break;
+            case BillingResponse.DEVELOPER_ERROR: StringCode = "DEVELOPER_ERROR"; break;
+            case BillingResponse.ERROR: StringCode = "ERROR"; break;
+            case BillingResponse.FEATURE_NOT_SUPPORTED: StringCode = "FEATURE_NOT_SUPPORTED"; break;
+            case BillingResponse.ITEM_ALREADY_OWNED: StringCode = "ITEM_ALREADY_OWNED"; break;
+            case BillingResponse.ITEM_NOT_OWNED: StringCode = "ITEM_NOT_OWNED"; break;
+            case BillingResponse.ITEM_UNAVAILABLE: StringCode = "ITEM_UNAVAILABLE"; break;
+            case BillingResponse.OK: StringCode = "OK"; break;
+            case BillingResponse.SERVICE_DISCONNECTED: StringCode = "SERVICE_DISCONNECTED"; break;
+            case BillingResponse.SERVICE_UNAVAILABLE: StringCode = "SERVICE_UNAVAILABLE"; break;
+            case BillingResponse.USER_CANCELED: StringCode = "USER_CANCELED"; break;                    
+        }
+        
+        return StringCode;
+    }
+    
     private static void startServiceConnection(final Runnable executeOnSuccess) {
         Log.v(TAG, "startServiceConnection");
         mBillingClient.startConnection(new BillingClientStateListener() {
             @Override
             public void onBillingSetupFinished(@BillingResponse int billingResponseCode) {
-                Log.d(TAG, "Setup finished. Response code: " + billingResponseCode);
+                Log.d(TAG, "Setup finished. Response: " + DecodeBillingResponse(billingResponseCode));
 
                 if (billingResponseCode == BillingResponse.OK) {
                     mIsServiceConnected = true;
@@ -103,7 +124,7 @@ class BillingManager {
                     @Override
                     public void run() {
                         // Notifying the listener that billing client is ready                             
-                        Log.d(TAG, "Setup successful. Querying inventory.");
+                        Log.d(TAG, "Setup successful");
                         //queryPurchases();
                     }
                 });    
@@ -182,17 +203,22 @@ class BillingManager {
     
     public static void ConsumeProductItem(final String PurchaseToken)
     {
+        /*
+        Log.v(TAG, "ConsumeProductItem started");
         // Generating Consume Response listener
         final ConsumeResponseListener onConsumeListener = new ConsumeResponseListener() {
             @Override
             public void onConsumeResponse(@BillingResponse int responseCode, String purchaseToken) {
+                Log.v(TAG, "onConsumeResponse");
                 Log.v(TAG, "onConsumeResponse code = " + responseCode + " token = " + purchaseToken);
             }
-        };       
+        };
+        */        
         
         executeServiceRequest(new Runnable() {
             public void run() {        
-                mBillingClient.consumeAsync(PurchaseToken, onConsumeListener);
+                Log.v(TAG, "ConsumeProductItem executeServiceRequest");
+                mBillingClient.consumeAsync(PurchaseToken, null);
             }
         });
     }    
