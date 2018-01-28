@@ -114,7 +114,7 @@ class BillingManager {
                         public void onPurchasesUpdated(int responseCode, List<Purchase> purchases) 
                         {
                             // тут приходит одна покупка или несколько?
-                            Log.v(TAG, "onPurchasesUpdated");
+                            Log.v(TAG, "onPurchasesUpdated Response: " + DecodeBillingResponse(responseCode) + "; purch_count = " + purchases.size());
                         }                
                     }
                 ).build();
