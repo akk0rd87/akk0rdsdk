@@ -63,7 +63,7 @@
 		28FD14FF0DC6FC520079059D /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		28FD15070DC6FC5B0079059D /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		843BE84E1FBED13100CAF09A /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../assets; sourceTree = "<group>"; };
-		843BE8501FBED66600CAF09A /* adrandomizer */ = {isa = PBXFileReference; lastKnownFileType = folder; name = adrandomizer; path = ${AKKORD_SDK_HOME}/resources/adimages/adrandomizer; sourceTree = "<group>"; };
+		843BE8501FBED66600CAF09A /* adrandomizer */ = {isa = PBXFileReference; lastKnownFileType = folder; name = adrandomizer; path = "${AKKORD_SDK_HOME}/resources/adimages/adrandomizer"; sourceTree = "<group>"; };
 		84B5E3071FCA01F300EB116C /* admob.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = admob.cpp; sourceTree = "<group>"; };
 		84B5E3081FCA01F300EB116C /* admob.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = admob.h; sourceTree = "<group>"; };
 		84B5E3091FCA01F300EB116C /* adrandomizer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = adrandomizer.h; sourceTree = "<group>"; };
