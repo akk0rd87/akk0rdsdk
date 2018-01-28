@@ -63,7 +63,7 @@
 		28FD14FF0DC6FC520079059D /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		28FD15070DC6FC5B0079059D /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		843BE84E1FBED13100CAF09A /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../assets; sourceTree = "<group>"; };
-		843BE8501FBED66600CAF09A /* adrandomizer */ = {isa = PBXFileReference; lastKnownFileType = folder; name = adrandomizer; path = ../../../resources/adimages/adrandomizer; sourceTree = "<group>"; };
+		843BE8501FBED66600CAF09A /* adrandomizer */ = {isa = PBXFileReference; lastKnownFileType = folder; name = adrandomizer; path = ${AKKORD_SDK_HOME}/resources/adimages/adrandomizer; sourceTree = "<group>"; };
 		84B5E3071FCA01F300EB116C /* admob.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = admob.cpp; sourceTree = "<group>"; };
 		84B5E3081FCA01F300EB116C /* admob.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = admob.h; sourceTree = "<group>"; };
 		84B5E3091FCA01F300EB116C /* adrandomizer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = adrandomizer.h; sourceTree = "<group>"; };
@@ -88,8 +88,8 @@
 		84B5E3211FCA01F300EB116C /* platforms.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = platforms.h; sourceTree = "<group>"; };
 		84B5E3231FCA01F300EB116C /* windows_wrapper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = windows_wrapper.h; sourceTree = "<group>"; };
 		84B5E3241FCA01F300EB116C /* framework_defines.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = framework_defines.h; sourceTree = "<group>"; };
-		84B97EF51FBCC17D00239F03 /* SDL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL.xcodeproj; path = "../../../libraries/SDL/SDL/Xcode-iOS/SDL/SDL.xcodeproj"; sourceTree = "<group>"; };
-		84B97F011FBCC19300239F03 /* SDL_image.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL_image.xcodeproj; path = "../../../libraries/SDL_image/SDL_image/Xcode-iOS/SDL_image.xcodeproj"; sourceTree = "<group>"; };
+		84B97EF51FBCC17D00239F03 /* SDL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL.xcodeproj; path = "${AKKORD_SDK_HOME}/libraries/SDL/SDL/Xcode-iOS/SDL/SDL.xcodeproj"; sourceTree = "<group>"; };
+		84B97F011FBCC19300239F03 /* SDL_image.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL_image.xcodeproj; path = "${AKKORD_SDK_HOME}/libraries/SDL_image/SDL_image/Xcode-iOS/SDL_image.xcodeproj"; sourceTree = "<group>"; };
 		84B97F091FBCC27800239F03 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
 		84B97F0B1FBCC27F00239F03 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
 		84B97F0D1FBCC28E00239F03 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
@@ -439,8 +439,8 @@
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				PRODUCT_NAME = "___PROJECTNAME___";
 				TARGETED_DEVICE_FAMILY = "1,2";
-				USER_HEADER_SEARCH_PATHS = "../../../libraries/SDL_image/SDL_image ../../../libraries/SDL/SDL/include ../../../framework/";
-				"USER_HEADER_SEARCH_PATHS[arch=*]" = "../../../libraries/SDL_image/SDL_image ../../../libraries/SDL/SDL/include ../../../framework/common/**";
+				USER_HEADER_SEARCH_PATHS = "${AKKORD_SDK_HOME}/libraries/SDL_image/SDL_image ${AKKORD_SDK_HOME}/libraries/SDL/SDL/include ${AKKORD_SDK_HOME}/framework/";
+				"USER_HEADER_SEARCH_PATHS[arch=*]" = "${AKKORD_SDK_HOME}/libraries/SDL_image/SDL_image ${AKKORD_SDK_HOME}/libraries/SDL/SDL/include ${AKKORD_SDK_HOME}/framework/common/**";
 			};
 			name = Debug;
 		};
@@ -458,7 +458,7 @@
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				PRODUCT_NAME = "___PROJECTNAME___";
 				TARGETED_DEVICE_FAMILY = "1,2";
-				USER_HEADER_SEARCH_PATHS = "../../../libraries/SDL_image/SDL_image ../../../libraries/SDL/SDL/include ../../../framework/";
+				USER_HEADER_SEARCH_PATHS = "${AKKORD_SDK_HOME}/libraries/SDL_image/SDL_image ${AKKORD_SDK_HOME}/libraries/SDL/SDL/include ${AKKORD_SDK_HOME}/framework/";
 			};
 			name = Release;
 		};
