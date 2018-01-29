@@ -5,7 +5,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-void iOSWrapper::OpenURL(const char* url)
+bool iOSWrapper::OpenURL(const char* url)
 {
     // https://useyourloaf.com/blog/openurl-deprecated-in-ios10/
     @autoreleasepool
@@ -21,17 +21,22 @@ void iOSWrapper::OpenURL(const char* url)
     
         if([app respondsToSelector:@selector(openURL:options:completionHandler:)])
         {
-            NSLog(@"1");
+            //NSLog(@"1");
             [app openURL:nsurl options:@{} completionHandler:^(BOOL success) {
-                NSLog(@"OpenURL %d", success);
+                //NSLog(@"OpenURL %d", success);
+                return true;
             }];
         }
         else
         {
             NSLog(@"2");
             if ([app canOpenURL:nsurl])
-                 [app openURL:nsurl];
+            {
+                [app openURL:nsurl];
+                return true; 
+            }
         }
+        return false;
     }
 }
 

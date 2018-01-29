@@ -7,7 +7,7 @@
 class iOSWrapper
 {
     public:
-    static void             OpenURL            (const char* url);
+    static bool             OpenURL            (const char* url);
     static void             GetInternalWriteDir(std::string& Dir);
     static bool             DirectoryExists    (const char* Dir);
     static bool             FileExists         (const char* FileName);

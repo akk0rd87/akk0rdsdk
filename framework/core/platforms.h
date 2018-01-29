@@ -156,8 +156,7 @@ bool Platforms::OpenURL(const char* url)
 #endif // __WIN32__
 
 #ifdef __APPLE__
-    iOSWrapper::OpenURL(url);
-    return true;
+    return iOSWrapper::OpenURL(url);    
 #endif // __APPLE__
     
     return false;
