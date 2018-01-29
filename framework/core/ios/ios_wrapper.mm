@@ -10,7 +10,8 @@ bool iOSWrapper::OpenURL(const char* url)
     // https://useyourloaf.com/blog/openurl-deprecated-in-ios10/
     @autoreleasepool
     {
-        NSLog(@"URL=%s", url);
+        //NSLog(@"URL=%s", url);
+        bool Result = false;
         
         UIApplication *app = [UIApplication sharedApplication];
         NSURL *nsurl = [NSURL URLWithString:@(url)];
@@ -24,7 +25,7 @@ bool iOSWrapper::OpenURL(const char* url)
             //NSLog(@"1");
             [app openURL:nsurl options:@{} completionHandler:^(BOOL success) {
                 //NSLog(@"OpenURL %d", success);
-                return true;
+                Result = true;
             }];
         }
         else
@@ -33,10 +34,10 @@ bool iOSWrapper::OpenURL(const char* url)
             if ([app canOpenURL:nsurl])
             {
                 [app openURL:nsurl];
-                return true; 
+                Result = true; 
             }
         }
-        return false;
+        return Result;
     }
 }
 
