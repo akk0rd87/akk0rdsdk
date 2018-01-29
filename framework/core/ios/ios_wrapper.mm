@@ -11,13 +11,13 @@ bool iOSWrapper::OpenURL(const char* url)
     @autoreleasepool
     {
         //NSLog(@"URL=%s", url);
-        bool Result = false;
+        __block bool Result = false;
         
         UIApplication *app = [UIApplication sharedApplication];
         NSURL *nsurl = [NSURL URLWithString:@(url)];
     
-        if ([app canOpenURL:nsurl]) NSLog(@"Can open");
-        else NSLog(@"Cant't open");
+        //if ([app canOpenURL:nsurl]) NSLog(@"Can open");
+        //else NSLog(@"Cant't open");
         
     
         if([app respondsToSelector:@selector(openURL:options:completionHandler:)])
@@ -30,7 +30,7 @@ bool iOSWrapper::OpenURL(const char* url)
         }
         else
         {
-            NSLog(@"2");
+            //NSLog(@"2");
             if ([app canOpenURL:nsurl])
             {
                 [app openURL:nsurl];
