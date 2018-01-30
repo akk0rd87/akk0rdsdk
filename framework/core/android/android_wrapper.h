@@ -28,7 +28,7 @@ private:
     static void              InitAssetsManager    ();
  
 public:
-    static void              OpenURL              (const char* url);    
+    static bool              OpenURL              (const char* url);    
     static std::string       GetLanguage          ();
     static int               GetApiLevel          ();    
     
@@ -104,7 +104,7 @@ bool AndroidWrapper::DirectoryExists(const char* Dir)
     else       return false;
 }
 
-void AndroidWrapper::OpenURL(const char* url)
+bool AndroidWrapper::OpenURL(const char* url)
 {    
     JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
     jclass activity = FindAkkordClassUtils(env);
@@ -112,12 +112,13 @@ void AndroidWrapper::OpenURL(const char* url)
     if(!openURL)
     {        
         logError("AndroidWrapper: OpenURL Java method not Found");        
-        return;
+        return false;
     }        
     jstring url_jstring = (jstring)env->NewStringUTF(url);
     env->CallStaticVoidMethod(activity, openURL, url_jstring);
     env->DeleteLocalRef(url_jstring);    
-    env->DeleteLocalRef(activity);       
+    env->DeleteLocalRef(activity);
+    return true;
 }
 
 bool AndroidWrapper::GetDirContent(const char* Dir, DirContentElementArray& ArrayList)

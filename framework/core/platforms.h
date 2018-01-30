@@ -146,13 +146,11 @@ bool Platforms::DirCreate(const char* Dir)
 bool Platforms::OpenURL(const char* url)
 {
 #ifdef __ANDROID__
-    AndroidWrapper::OpenURL(url);
-    return true;
+    return AndroidWrapper::OpenURL(url);    
 #endif // __ANDROID__
 
 #ifdef __WIN32__
-    WindowsWrapper::OpenURL(url);
-    return true;
+    return WindowsWrapper::OpenURL(url);    
 #endif // __WIN32__
 
 #ifdef __APPLE__
