@@ -29,7 +29,7 @@ auto Flip = AkkordTexture::Flip::None;
 void UpdateScreen()
 {
     ++ZombieIndex;
-    logDebug("ZombieIndex %u", ZombieIndex);
+    //logDebug("ZombieIndex %u", ZombieIndex);
     if (ZombieIndex == ZombieVector.size()) ZombieIndex = 0;
 
     if (Flip == AkkordTexture::Flip::None && ZombiePosition.x > BWrapper::GetScreenWidth() - ZombiePosition.w)
@@ -103,7 +103,7 @@ bool UpdateOnClick(int X, int Y)
 
 void ReDraw()
 {    
-    logDebug("Redraw() ZombieIndex = %u", ZombieIndex);
+    //logDebug("Redraw() ZombieIndex = %u", ZombieIndex);
     auto ScreenHeight = BWrapper::GetScreenHeight();
     auto ScreenWidth  = BWrapper::GetScreenWidth();
     BWrapper::SetCurrentColor(AkkordColor(255, 255, 255));
