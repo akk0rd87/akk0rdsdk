@@ -65,37 +65,41 @@ public:
 
 bool Platforms::InitInternalDirs()
 {
+	bool result = false;
 #ifdef __ANDROID__
     AndroidWrapper::GetInternalDirs(InteralDirs.InternalDir, InteralDirs.InternalWriteDir);
     InteralDirs.Initialized = true;
-    return true;
+	result = true;
 #endif       
 
 #ifdef __APPLE__
     iOSWrapper::GetInternalWriteDir(InteralDirs.InternalWriteDir);
     InteralDirs.Initialized = true;
-    return true;
+	result = true;
 #endif
 
 #ifdef __WIN32__
     InteralDirs.InternalWriteDir = std::string("data-ram/");
     InteralDirs.Initialized = true;
-    return true;
+	result = true;
 #endif 
 
-	auto len = InteralDirs.InternalDir.length();
-	if (len > 0)
-		if (InteralDirs.InternalDir[len - 1] != '/' && InteralDirs.InternalDir[len - 1] != '\\')
-			InteralDirs.InternalDir = InteralDirs.InternalDir + "/";
+	if (result)
+	{
+		auto len = InteralDirs.InternalDir.length();
+		if (len > 0)
+			if (InteralDirs.InternalDir[len - 1] != '/' && InteralDirs.InternalDir[len - 1] != '\\')
+				InteralDirs.InternalDir = InteralDirs.InternalDir + "/";
 
-	len = InteralDirs.InternalWriteDir.length();
-	if (len > 0)
-		if (InteralDirs.InternalWriteDir[len - 1] != '/' && InteralDirs.InternalWriteDir[len - 1] != '\\')
-			InteralDirs.InternalWriteDir = InteralDirs.InternalWriteDir + "/";
+		len = InteralDirs.InternalWriteDir.length();
+		if (len > 0)
+			if (InteralDirs.InternalWriteDir[len - 1] != '/' && InteralDirs.InternalWriteDir[len - 1] != '\\')
+				InteralDirs.InternalWriteDir = InteralDirs.InternalWriteDir + "/";
 
-	logDebug("Internal Write Dir %s", InteralDirs.InternalWriteDir.c_str());
+		logDebug("Internal Write Dir %s", InteralDirs.InternalWriteDir.c_str());
+	}
 
-    return false;
+	return result;
 };
 
 std::string Platforms::GetInternalDir()      
