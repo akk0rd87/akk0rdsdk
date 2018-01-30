@@ -749,7 +749,11 @@ void BWrapper::Quit()
 
 bool BWrapper::OpenURL(const char* url)
 {    
-    return Platforms::OpenURL(url);
+	if (Platforms::OpenURL(url))
+		return true;
+	
+	logError("URL %s was not opened", url);
+	return false;
 };
 
 Locale::Lang BWrapper::GetDeviceLanguage()
