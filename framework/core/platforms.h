@@ -96,7 +96,7 @@ bool Platforms::InitInternalDirs()
 			if (InteralDirs.InternalWriteDir[len - 1] != '/' && InteralDirs.InternalWriteDir[len - 1] != '\\')
 				InteralDirs.InternalWriteDir = InteralDirs.InternalWriteDir + "/";
 
-		logDebug("Internal Write Dir %s", InteralDirs.InternalWriteDir.c_str());
+		//logDebug("Internal Write Dir %s", InteralDirs.InternalWriteDir.c_str());
 	}
 
 	return result;
