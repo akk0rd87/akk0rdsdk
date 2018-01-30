@@ -82,6 +82,17 @@ bool Platforms::InitInternalDirs()
     InteralDirs.Initialized = true;
     return true;
 #endif 
+
+	auto len = InteralDirs.InternalDir.length();
+	if (len > 0)
+		if (InteralDirs.InternalDir[len - 1] != '/' && InteralDirs.InternalDir[len - 1] != '\\')
+			InteralDirs.InternalDir = InteralDirs.InternalDir + "/";
+
+	len = InteralDirs.InternalWriteDir.length();
+	if (len > 0)
+		if (InteralDirs.InternalWriteDir[len - 1] != '/' && InteralDirs.InternalWriteDir[len - 1] != '\\')
+			InteralDirs.InternalWriteDir = InteralDirs.InternalWriteDir + "/";
+
     return false;
 };
 
