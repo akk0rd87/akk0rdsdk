@@ -18,10 +18,11 @@ static LogParamsStruct LogParams;
 bool BWrapper::Init(Uint32 flags)
 {
 	/*
-	Если раскомментить нижеприведенную строку, то на винде валится при закрытии окна приложения (не консоли)
-	SDL_SetMemoryFunctions(std::malloc, std::calloc, std::realloc, std::free);
+	Если раскомментить нижеприведенную строку, то на винде валится при закрытии окна приложения (не консоли)		
+	if (SDL_SetMemoryFunctions(std::malloc, std::calloc, std::realloc, std::free) != 0)
+		logError("SDL_SetMemoryFunctions error %s", SDL_GetError());
 	*/
-	
+
 	if (SDL_Init(flags) != 0)
     {
         logError("BWrapper::Init: Error %s", SDL_GetError());
