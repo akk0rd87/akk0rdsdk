@@ -138,4 +138,4 @@ bool AndroidBillingManager::ConsumeProductItem(const char* PurchaseToken)
     env->DeleteLocalRef(activity);    
 }
 
-#endif // __AKK0RD_INAPP_BILLING_H__
+#endif // __AKK0RD_ANDROID_INAPP_BILLING_H__
