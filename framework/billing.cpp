@@ -97,7 +97,7 @@ bool BillingManager::ConsumeProductItem(const char* PurchaseToken)
 #endif
 
 #ifdef __APPLE__    
-	return AndroidBillingManager::RestorePurchases();
+	return iOSBillingManager::RestorePurchases();
 #endif 
 	return false;
 }
