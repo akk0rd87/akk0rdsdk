@@ -7,6 +7,7 @@
 
 class iOSBillingManager
 {
+public:
     static bool Init();
     static bool QueryProductDetails(const std::vector<std::string>& ProdList);
     static bool RestorePurchases();
