@@ -38,11 +38,19 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseQueried(JNIEnv
 }
 #endif
 
+#ifdef __APPLE__
+#include "core/ios/ios_billing.h"
+#endif
+
 bool BillingManager::Init()
 {
-#ifdef __ANDROID__    
+#ifdef __ANDROID__
     return AndroidBillingManager::Init();
-#endif    
+#endif
+
+#ifdef __APPLE__
+    return iOSBillingManager::Init();
+#endif
     return false;
 }
 
@@ -50,7 +58,11 @@ bool BillingManager::QueryProductDetails(const std::vector<std::string>& ProdLis
 {
 #ifdef __ANDROID__    
 	return AndroidBillingManager::QueryProductDetails(ProdList);
-#endif 
+#endif
+
+#ifdef __APPLE__    
+	return iOSBillingManager::QueryProductDetails(ProdList);
+#endif
     return false;
 }
 
@@ -58,6 +70,10 @@ bool BillingManager::RestorePurchases()
 {
 #ifdef __ANDROID__    
 	return AndroidBillingManager::RestorePurchases();
+#endif
+
+#ifdef __APPLE__    
+	return iOSBillingManager::RestorePurchases();
 #endif 
 	return false;
 }
@@ -66,7 +82,11 @@ bool BillingManager::PurchaseProdItem(const char* ProductCode)
 {
 #ifdef __ANDROID__    
 	return AndroidBillingManager::PurchaseProdItem(ProductCode);
-#endif 	
+#endif
+
+#ifdef __APPLE__    
+	return iOSBillingManager::RestorePurchases();
+#endif 
 	return false;
 }
 
@@ -75,5 +95,9 @@ bool BillingManager::ConsumeProductItem(const char* PurchaseToken)
 #ifdef __ANDROID__    
 	return AndroidBillingManager::ConsumeProductItem(PurchaseToken);
 #endif
+
+#ifdef __APPLE__    
+	return AndroidBillingManager::RestorePurchases();
+#endif 
 	return false;
 }
