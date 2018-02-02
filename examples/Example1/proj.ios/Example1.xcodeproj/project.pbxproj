@@ -11,14 +11,17 @@
 		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
 		28FD15000DC6FC520079059D /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 28FD14FF0DC6FC520079059D /* OpenGLES.framework */; };
 		28FD15080DC6FC5B0079059D /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 28FD15070DC6FC5B0079059D /* QuartzCore.framework */; };
+		840662F9202432EE002C8D8D /* basewrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 840662F8202432EE002C8D8D /* basewrapper.cpp */; };
+		840662FB202432FF002C8D8D /* billing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 840662FA202432FF002C8D8D /* billing.cpp */; };
+		840662FD2024330D002C8D8D /* admob.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 840662FC2024330D002C8D8D /* admob.cpp */; };
+		840662FF20243323002C8D8D /* ios_billing.mm in Sources */ = {isa = PBXBuildFile; fileRef = 840662FE20243323002C8D8D /* ios_billing.mm */; };
+		8406630120243332002C8D8D /* ios_admob.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8406630020243332002C8D8D /* ios_admob.mm */; };
+		8406630320243346002C8D8D /* ios_wrapper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8406630220243346002C8D8D /* ios_wrapper.mm */; };
+		84066316202433B2002C8D8D /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8406630D2024338D002C8D8D /* libSDL2.a */; };
+		84066317202433B5002C8D8D /* libSDL2_image.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 840663152024339D002C8D8D /* libSDL2_image.a */; };
 		843BE84F1FBED13100CAF09A /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 843BE84E1FBED13100CAF09A /* assets */; };
 		843BE8511FBED66600CAF09A /* adrandomizer in Resources */ = {isa = PBXBuildFile; fileRef = 843BE8501FBED66600CAF09A /* adrandomizer */; };
 		84B5E2261FC9279B00EB116C /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84B97F4C1FBCCB8500239F03 /* main.cpp */; };
-		84B5E3261FCA01F800EB116C /* basewrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84B5E30B1FCA01F300EB116C /* basewrapper.cpp */; };
-		84B5E3271FCA01FD00EB116C /* admob.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84B5E3071FCA01F300EB116C /* admob.cpp */; };
-		84B5E3281FCA02DA00EB116C /* ios_wrapper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 84B5E31F1FCA01F300EB116C /* ios_wrapper.mm */; };
-		84B97F071FBCC26800239F03 /* libSDL2_image.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 84B97F061FBCC19300239F03 /* libSDL2_image.a */; };
-		84B97F081FBCC26E00239F03 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 84B97EFE1FBCC17D00239F03 /* libSDL2.a */; };
 		84B97F0A1FBCC27800239F03 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84B97F091FBCC27800239F03 /* MobileCoreServices.framework */; };
 		84B97F0C1FBCC27F00239F03 /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84B97F0B1FBCC27F00239F03 /* ImageIO.framework */; };
 		84B97F0E1FBCC28E00239F03 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84B97F0D1FBCC28E00239F03 /* AVFoundation.framework */; };
@@ -33,23 +36,23 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		84B97EFD1FBCC17D00239F03 /* PBXContainerItemProxy */ = {
+		8406630C2024338D002C8D8D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 84B97EF51FBCC17D00239F03 /* SDL.xcodeproj */;
+			containerPortal = 840663042024338D002C8D8D /* SDL.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = FD6526630DE8FCCB002AD96B;
 			remoteInfo = "libSDL (iOS)";
 		};
-		84B97EFF1FBCC17D00239F03 /* PBXContainerItemProxy */ = {
+		8406630E2024338D002C8D8D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 84B97EF51FBCC17D00239F03 /* SDL.xcodeproj */;
+			containerPortal = 840663042024338D002C8D8D /* SDL.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = FAB598141BB5C1B100BE72C5;
 			remoteInfo = "libSDL (tvOS)";
 		};
-		84B97F051FBCC19300239F03 /* PBXContainerItemProxy */ = {
+		840663142024339D002C8D8D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 84B97F011FBCC19300239F03 /* SDL_image.xcodeproj */;
+			containerPortal = 840663102024339D002C8D8D /* SDL_image.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = BE1FA74107AF4C45004B6283;
 			remoteInfo = libSDL_image;
@@ -58,38 +61,20 @@
 
 /* Begin PBXFileReference section */
 		1D30AB110D05D00D00671497 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		1D6058910D05DD3D006BFB54 /* Example1.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Example1.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		1D6058910D05DD3D006BFB54 /* Example1.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Example1.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1DF5F4DF0D08C38300B7A737 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		28FD14FF0DC6FC520079059D /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		28FD15070DC6FC5B0079059D /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		840662F8202432EE002C8D8D /* basewrapper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = basewrapper.cpp; path = ../../../framework/basewrapper.cpp; sourceTree = "<group>"; };
+		840662FA202432FF002C8D8D /* billing.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = billing.cpp; path = ../../../framework/billing.cpp; sourceTree = "<group>"; };
+		840662FC2024330D002C8D8D /* admob.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = admob.cpp; path = ../../../framework/admob.cpp; sourceTree = "<group>"; };
+		840662FE20243323002C8D8D /* ios_billing.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = ios_billing.mm; path = ../../../framework/core/ios/ios_billing.mm; sourceTree = "<group>"; };
+		8406630020243332002C8D8D /* ios_admob.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = ios_admob.mm; path = ../../../framework/core/ios/ios_admob.mm; sourceTree = "<group>"; };
+		8406630220243346002C8D8D /* ios_wrapper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = ios_wrapper.mm; path = ../../../framework/core/ios/ios_wrapper.mm; sourceTree = "<group>"; };
+		840663042024338D002C8D8D /* SDL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL.xcodeproj; path = "../../../libraries/SDL/SDL/Xcode-iOS/SDL/SDL.xcodeproj"; sourceTree = "<group>"; };
+		840663102024339D002C8D8D /* SDL_image.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL_image.xcodeproj; path = "../../../libraries/SDL_image/SDL_image/Xcode-iOS/SDL_image.xcodeproj"; sourceTree = "<group>"; };
 		843BE84E1FBED13100CAF09A /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../assets; sourceTree = "<group>"; };
 		843BE8501FBED66600CAF09A /* adrandomizer */ = {isa = PBXFileReference; lastKnownFileType = folder; name = adrandomizer; path = "${AKKORD_SDK_HOME}/resources/adimages/adrandomizer"; sourceTree = "<group>"; };
-		84B5E3071FCA01F300EB116C /* admob.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = admob.cpp; sourceTree = "<group>"; };
-		84B5E3081FCA01F300EB116C /* admob.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = admob.h; sourceTree = "<group>"; };
-		84B5E3091FCA01F300EB116C /* adrandomizer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = adrandomizer.h; sourceTree = "<group>"; };
-		84B5E30A1FCA01F300EB116C /* atlasmanager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = atlasmanager.h; sourceTree = "<group>"; };
-		84B5E30B1FCA01F300EB116C /* basewrapper.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = basewrapper.cpp; sourceTree = "<group>"; };
-		84B5E30C1FCA01F300EB116C /* basewrapper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = basewrapper.h; sourceTree = "<group>"; };
-		84B5E30D1FCA01F300EB116C /* configmanager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = configmanager.h; sourceTree = "<group>"; };
-		84B5E3111FCA01F300EB116C /* AdMobAdatper.java */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.java; path = AdMobAdatper.java; sourceTree = "<group>"; };
-		84B5E3121FCA01F300EB116C /* android_admob.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = android_admob.h; sourceTree = "<group>"; };
-		84B5E3131FCA01F300EB116C /* android_wrapper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = android_wrapper.h; sourceTree = "<group>"; };
-		84B5E3151FCA01F300EB116C /* AkkordActivity.java */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.java; path = AkkordActivity.java; sourceTree = "<group>"; };
-		84B5E3161FCA01F300EB116C /* FileListManager.java */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.java; path = FileListManager.java; sourceTree = "<group>"; };
-		84B5E3171FCA01F300EB116C /* SDL.java */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.java; path = SDL.java; sourceTree = "<group>"; };
-		84B5E3181FCA01F300EB116C /* SDLActivity.java */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.java; path = SDLActivity.java; sourceTree = "<group>"; };
-		84B5E3191FCA01F300EB116C /* SDLAudioManager.java */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.java; path = SDLAudioManager.java; sourceTree = "<group>"; };
-		84B5E31A1FCA01F300EB116C /* SDLControllerManager.java */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.java; path = SDLControllerManager.java; sourceTree = "<group>"; };
-		84B5E31B1FCA01F300EB116C /* Utils.java */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.java; path = Utils.java; sourceTree = "<group>"; };
-		84B5E31C1FCA01F300EB116C /* core_defines.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = core_defines.h; sourceTree = "<group>"; };
-		84B5E31E1FCA01F300EB116C /* ios_wrapper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ios_wrapper.h; sourceTree = "<group>"; };
-		84B5E31F1FCA01F300EB116C /* ios_wrapper.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ios_wrapper.mm; sourceTree = "<group>"; };
-		84B5E3201FCA01F300EB116C /* locale.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = locale.h; sourceTree = "<group>"; };
-		84B5E3211FCA01F300EB116C /* platforms.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = platforms.h; sourceTree = "<group>"; };
-		84B5E3231FCA01F300EB116C /* windows_wrapper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = windows_wrapper.h; sourceTree = "<group>"; };
-		84B5E3241FCA01F300EB116C /* framework_defines.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = framework_defines.h; sourceTree = "<group>"; };
-		84B97EF51FBCC17D00239F03 /* SDL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL.xcodeproj; path = "${AKKORD_SDK_HOME}/libraries/SDL/SDL/Xcode-iOS/SDL/SDL.xcodeproj"; sourceTree = "<group>"; };
-		84B97F011FBCC19300239F03 /* SDL_image.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL_image.xcodeproj; path = "${AKKORD_SDK_HOME}/libraries/SDL_image/SDL_image/Xcode-iOS/SDL_image.xcodeproj"; sourceTree = "<group>"; };
 		84B97F091FBCC27800239F03 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
 		84B97F0B1FBCC27F00239F03 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
 		84B97F0D1FBCC28E00239F03 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
@@ -110,12 +95,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				84066317202433B5002C8D8D /* libSDL2_image.a in Frameworks */,
+				84066316202433B2002C8D8D /* libSDL2.a in Frameworks */,
 				FD779EDE0E26BA1200F39101 /* CoreAudio.framework in Frameworks */,
 				84B97F0E1FBCC28E00239F03 /* AVFoundation.framework in Frameworks */,
 				84B97F0C1FBCC27F00239F03 /* ImageIO.framework in Frameworks */,
 				84B97F0A1FBCC27800239F03 /* MobileCoreServices.framework in Frameworks */,
-				84B97F081FBCC26E00239F03 /* libSDL2.a in Frameworks */,
-				84B97F071FBCC26800239F03 /* libSDL2_image.a in Frameworks */,
 				FAE0E9651BAF967F0098DFA4 /* GameController.framework in Frameworks */,
 				1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */,
 				1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */,
@@ -141,7 +126,7 @@
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
 			isa = PBXGroup;
 			children = (
-				84B5E3061FCA01F300EB116C /* framework */,
+				840662F7202432DB002C8D8D /* framework */,
 				843BE8501FBED66600CAF09A /* adrandomizer */,
 				843BE84E1FBED13100CAF09A /* assets */,
 				84B97F4B1FBCCB8500239F03 /* src */,
@@ -157,8 +142,8 @@
 		29B97315FDCFA39411CA2CEA /* Sources */ = {
 			isa = PBXGroup;
 			children = (
-				84B97F011FBCC19300239F03 /* SDL_image.xcodeproj */,
-				84B97EF51FBCC17D00239F03 /* SDL.xcodeproj */,
+				840663102024339D002C8D8D /* SDL_image.xcodeproj */,
+				840663042024338D002C8D8D /* SDL.xcodeproj */,
 			);
 			name = Sources;
 			sourceTree = "<group>";
@@ -192,107 +177,32 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		84B5E3061FCA01F300EB116C /* framework */ = {
+		840662F7202432DB002C8D8D /* framework */ = {
 			isa = PBXGroup;
 			children = (
-				84B5E3071FCA01F300EB116C /* admob.cpp */,
-				84B5E3081FCA01F300EB116C /* admob.h */,
-				84B5E3091FCA01F300EB116C /* adrandomizer.h */,
-				84B5E30A1FCA01F300EB116C /* atlasmanager.h */,
-				84B5E30B1FCA01F300EB116C /* basewrapper.cpp */,
-				84B5E30C1FCA01F300EB116C /* basewrapper.h */,
-				84B5E30D1FCA01F300EB116C /* configmanager.h */,
-				84B5E30E1FCA01F300EB116C /* core */,
-				84B5E3241FCA01F300EB116C /* framework_defines.h */,
-				84B5E3251FCA01F300EB116C /* platforms */,
+				8406630220243346002C8D8D /* ios_wrapper.mm */,
+				8406630020243332002C8D8D /* ios_admob.mm */,
+				840662FE20243323002C8D8D /* ios_billing.mm */,
+				840662FC2024330D002C8D8D /* admob.cpp */,
+				840662FA202432FF002C8D8D /* billing.cpp */,
+				840662F8202432EE002C8D8D /* basewrapper.cpp */,
 			);
 			name = framework;
-			path = "${AKKORD_SDK_HOME}/framework";
 			sourceTree = "<group>";
 		};
-		84B5E30E1FCA01F300EB116C /* core */ = {
+		840663052024338D002C8D8D /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				84B5E30F1FCA01F300EB116C /* android */,
-				84B5E31C1FCA01F300EB116C /* core_defines.h */,
-				84B5E31D1FCA01F300EB116C /* ios */,
-				84B5E3201FCA01F300EB116C /* locale.h */,
-				84B5E3211FCA01F300EB116C /* platforms.h */,
-				84B5E3221FCA01F300EB116C /* windows */,
-			);
-			path = core;
-			sourceTree = "<group>";
-		};
-		84B5E30F1FCA01F300EB116C /* android */ = {
-			isa = PBXGroup;
-			children = (
-				84B5E3101FCA01F300EB116C /* admob */,
-				84B5E3121FCA01F300EB116C /* android_admob.h */,
-				84B5E3131FCA01F300EB116C /* android_wrapper.h */,
-				84B5E3141FCA01F300EB116C /* wrapper */,
-			);
-			path = android;
-			sourceTree = "<group>";
-		};
-		84B5E3101FCA01F300EB116C /* admob */ = {
-			isa = PBXGroup;
-			children = (
-				84B5E3111FCA01F300EB116C /* AdMobAdatper.java */,
-			);
-			path = admob;
-			sourceTree = "<group>";
-		};
-		84B5E3141FCA01F300EB116C /* wrapper */ = {
-			isa = PBXGroup;
-			children = (
-				84B5E3151FCA01F300EB116C /* AkkordActivity.java */,
-				84B5E3161FCA01F300EB116C /* FileListManager.java */,
-				84B5E3171FCA01F300EB116C /* SDL.java */,
-				84B5E3181FCA01F300EB116C /* SDLActivity.java */,
-				84B5E3191FCA01F300EB116C /* SDLAudioManager.java */,
-				84B5E31A1FCA01F300EB116C /* SDLControllerManager.java */,
-				84B5E31B1FCA01F300EB116C /* Utils.java */,
-			);
-			path = wrapper;
-			sourceTree = "<group>";
-		};
-		84B5E31D1FCA01F300EB116C /* ios */ = {
-			isa = PBXGroup;
-			children = (
-				84B5E31E1FCA01F300EB116C /* ios_wrapper.h */,
-				84B5E31F1FCA01F300EB116C /* ios_wrapper.mm */,
-			);
-			path = ios;
-			sourceTree = "<group>";
-		};
-		84B5E3221FCA01F300EB116C /* windows */ = {
-			isa = PBXGroup;
-			children = (
-				84B5E3231FCA01F300EB116C /* windows_wrapper.h */,
-			);
-			path = windows;
-			sourceTree = "<group>";
-		};
-		84B5E3251FCA01F300EB116C /* platforms */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = platforms;
-			sourceTree = "<group>";
-		};
-		84B97EF61FBCC17D00239F03 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				84B97EFE1FBCC17D00239F03 /* libSDL2.a */,
-				84B97F001FBCC17D00239F03 /* libSDL2.a */,
+				8406630D2024338D002C8D8D /* libSDL2.a */,
+				8406630F2024338D002C8D8D /* libSDL2.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		84B97F021FBCC19300239F03 /* Products */ = {
+		840663112024339D002C8D8D /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				84B97F061FBCC19300239F03 /* libSDL2_image.a */,
+				840663152024339D002C8D8D /* libSDL2_image.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -321,8 +231,8 @@
 			);
 			dependencies = (
 			);
-			name = "Example1";
-			productName = "Example1";
+			name = Example1;
+			productName = Example1;
 			productReference = 1D6058910D05DD3D006BFB54 /* Example1.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -353,12 +263,12 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 84B97EF61FBCC17D00239F03 /* Products */;
-					ProjectRef = 84B97EF51FBCC17D00239F03 /* SDL.xcodeproj */;
+					ProductGroup = 840663052024338D002C8D8D /* Products */;
+					ProjectRef = 840663042024338D002C8D8D /* SDL.xcodeproj */;
 				},
 				{
-					ProductGroup = 84B97F021FBCC19300239F03 /* Products */;
-					ProjectRef = 84B97F011FBCC19300239F03 /* SDL_image.xcodeproj */;
+					ProductGroup = 840663112024339D002C8D8D /* Products */;
+					ProjectRef = 840663102024339D002C8D8D /* SDL_image.xcodeproj */;
 				},
 			);
 			projectRoot = "";
@@ -369,25 +279,25 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		84B97EFE1FBCC17D00239F03 /* libSDL2.a */ = {
+		8406630D2024338D002C8D8D /* libSDL2.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libSDL2.a;
-			remoteRef = 84B97EFD1FBCC17D00239F03 /* PBXContainerItemProxy */;
+			remoteRef = 8406630C2024338D002C8D8D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		84B97F001FBCC17D00239F03 /* libSDL2.a */ = {
+		8406630F2024338D002C8D8D /* libSDL2.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libSDL2.a;
-			remoteRef = 84B97EFF1FBCC17D00239F03 /* PBXContainerItemProxy */;
+			remoteRef = 8406630E2024338D002C8D8D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		84B97F061FBCC19300239F03 /* libSDL2_image.a */ = {
+		840663152024339D002C8D8D /* libSDL2_image.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libSDL2_image.a;
-			remoteRef = 84B97F051FBCC19300239F03 /* PBXContainerItemProxy */;
+			remoteRef = 840663142024339D002C8D8D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -412,9 +322,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				84B5E3281FCA02DA00EB116C /* ios_wrapper.mm in Sources */,
-				84B5E3271FCA01FD00EB116C /* admob.cpp in Sources */,
-				84B5E3261FCA01F800EB116C /* basewrapper.cpp in Sources */,
+				8406630320243346002C8D8D /* ios_wrapper.mm in Sources */,
+				840662FB202432FF002C8D8D /* billing.cpp in Sources */,
+				840662FD2024330D002C8D8D /* admob.cpp in Sources */,
+				840662FF20243323002C8D8D /* ios_billing.mm in Sources */,
+				8406630120243332002C8D8D /* ios_admob.mm in Sources */,
+				840662F9202432EE002C8D8D /* basewrapper.cpp in Sources */,
 				84B5E2261FC9279B00EB116C /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -437,7 +350,7 @@
 				"GCC_PREPROCESSOR_DEFINITIONS[arch=*]" = "DEBUG=1";
 				INFOPLIST_FILE = Info.plist;
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				PRODUCT_NAME = "Example1";
+				PRODUCT_NAME = Example1;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "\"${AKKORD_SDK_HOME}/libraries/SDL_image/SDL_image\" \"${AKKORD_SDK_HOME}/libraries/SDL/SDL/include\" \"${AKKORD_SDK_HOME}/framework/\"";
 				"USER_HEADER_SEARCH_PATHS[arch=*]" = "\"${AKKORD_SDK_HOME}/libraries/SDL_image/SDL_image\" \"${AKKORD_SDK_HOME}/libraries/SDL/SDL/include\" \"${AKKORD_SDK_HOME}/framework/\"";
@@ -456,7 +369,7 @@
 				GCC_PREFIX_HEADER = "";
 				INFOPLIST_FILE = Info.plist;
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				PRODUCT_NAME = "Example1";
+				PRODUCT_NAME = Example1;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "\"${AKKORD_SDK_HOME}/libraries/SDL_image/SDL_image\" \"${AKKORD_SDK_HOME}/libraries/SDL/SDL/include\" \"${AKKORD_SDK_HOME}/framework/\"";
 			};
