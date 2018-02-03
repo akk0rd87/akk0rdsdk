@@ -55,8 +55,7 @@ int main(int argc, char *argv[])
 
     auto window = SDL_CreateWindow("SDL2 OpenGL", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     if (!window)
-    {
-        //BWrapper::Log(BWrapper::LogPriority::Error, "Window create error %s", SDL_GetError());
+    {        
 		logError("Window create error %s", SDL_GetError());
         return 0;
     }
@@ -66,8 +65,7 @@ int main(int argc, char *argv[])
 
     auto Renderer = BWrapper::CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (!Renderer)
-    {
-        //BWrapper::Log(BWrapper::LogPriority::Error, "Renderer create error %s", SDL_GetError());
+    {     
 		logError("Renderer create error %s", SDL_GetError());
         return 0;
     }
@@ -78,8 +76,7 @@ int main(int argc, char *argv[])
 
     SDL_Surface* image = IMG_Load("assets/spritesheet.png");
     if (!image)
-    {
-        //BWrapper::Log(BWrapper::LogPriority::Error, "Image create error %s", SDL_GetError());
+    {        
 		logError("Image create error %s", SDL_GetError());
         return 0;
     }
