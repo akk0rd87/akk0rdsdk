@@ -874,13 +874,23 @@ void BWrapper::Log(BWrapper::LogPriority Priority, const char* File, const char*
         Format = Format + sLine;
     }
 
+	int len = 0;
+	switch (Priority)
+	{
+		case BWrapper::LogPriority::Verbose : len = 7; break;
+		case BWrapper::LogPriority::Debug   : len = 5; break;
+		case BWrapper::LogPriority::Info    : len = 4; break;
+		case BWrapper::LogPriority::Warning : len = 4; break; /* base WARN*/
+		case BWrapper::LogPriority::Error   : len = 5; break;
+		case BWrapper::LogPriority::Critical: len = 8; break;
+	}
+
     Format = Format + Fmt;
+	Format.insert(0, 8 - len, 32);
 
     va_list ap;
     va_start(ap, Fmt);
     SDL_LogMessageV(SDL_LOG_CATEGORY_APPLICATION, sev, Format.c_str(), ap);
-    //SDL_LogMessageV(SDL_LOG_CATEGORY_APPLICATION, sev, Format.c_str(), ap);
-    //SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, sev, "f1 = %u, f2 = %u, pos = %u, f=%s", f1, f2, pos, msg.c_str());
     va_end(ap);
     //#endif
 }
@@ -1123,12 +1133,8 @@ bool FileReader::Read(char* Buffer, unsigned Size, unsigned& Readed)
     {
         logError("FileReader is closed");
         return false;
-    }    
-    
-    
+    }
     in->read(Buffer, Size);
     Readed = (unsigned)in->gcount();
     return (Readed > 0);
-    
-    return false;
 }
