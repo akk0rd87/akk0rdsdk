@@ -133,6 +133,8 @@ sdkmanager.bat extras;google;google_play_services
     - Видимо после каждого добавления файла во фреймворк нужно пересоздавать group-ссылки на framework
     
     - Имя executable должен содержать валидные символы (без $)
+    
+    - Auth with app store error: https://forums.developer.apple.com/thread/76803
 ***
 
 https://stackoverflow.com/questions/8980284/android-mk-include-all-cpp-files
