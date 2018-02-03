@@ -19,6 +19,7 @@
 		8460C0FB2025D66C00A61609 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8460C0FA2025D66C00A61609 /* AVFoundation.framework */; };
 		8460C0FD2025D67900A61609 /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8460C0FC2025D67900A61609 /* ImageIO.framework */; };
 		8460C0FF2025D68100A61609 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8460C0FE2025D68100A61609 /* MobileCoreServices.framework */; };
+		8460C1032025D8A400A61609 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 8460C1022025D8A400A61609 /* assets */; };
 		945C4F53195AF17F00DBBF61 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 945C4F52195AF17F00DBBF61 /* Default-568h@2x.png */; };
 		FA8B4B97196703B400F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4B96196703B400F8EB7C /* CoreMotion.framework */; };
 		FAE0E9651BAF967F0098DFA4 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAE0E9641BAF967F0098DFA4 /* GameController.framework */; };
@@ -67,6 +68,7 @@
 		8460C0FA2025D66C00A61609 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		8460C0FC2025D67900A61609 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
 		8460C0FE2025D68100A61609 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
+		8460C1022025D8A400A61609 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../assets; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		945C4F52195AF17F00DBBF61 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		FA8B4B96196703B400F8EB7C /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
@@ -114,6 +116,7 @@
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
 			isa = PBXGroup;
 			children = (
+				8460C1022025D8A400A61609 /* assets */,
 				8460C0F32025D60700A61609 /* framework */,
 				945C4F52195AF17F00DBBF61 /* Default-568h@2x.png */,
 				29B97315FDCFA39411CA2CEA /* Sources */,
@@ -281,6 +284,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FD77A07D0E26BD8C00F39101 /* Icon.png in Resources */,
+				8460C1032025D8A400A61609 /* assets in Resources */,
 				FD77A07F0E26BDA900F39101 /* Default.png in Resources */,
 				945C4F53195AF17F00DBBF61 /* Default-568h@2x.png in Resources */,
 			);
