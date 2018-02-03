@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
     GLuint texture;
 
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_DEBUG);
-    if (SDL_Init(SDL_INIT_EVERYTHING | SDL_VIDEO_OPENGL) < 0)
+    if (SDL_Init(SDL_INIT_EVERYTHING /*| SDL_VIDEO_OPENGL*/) < 0)
     {
         SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_ERROR, "SDL Init error %s", SDL_GetError());
         return 0;
