@@ -1,6 +1,7 @@
 #include "SDL.h"
 #include "SDL_image.h"
 #include "openglesdriver.h"
+#include "basewrapper.h"
 
 const bool DrawWithRender = true;
 const bool DrawSDF        = true;
@@ -126,64 +127,72 @@ int main(int argc, char *argv[])
     GLint oldProgramId;
     GLuint texture;
 
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_DEBUG);
-    if (SDL_Init(SDL_INIT_EVERYTHING /*| SDL_VIDEO_OPENGL*/) < 0)
+    //SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_DEBUG);
+	BWrapper::SetLogPriority(BWrapper::LogPriority::Debug);
+    //if (SDL_Init(SDL_INIT_EVERYTHING /*| SDL_VIDEO_OPENGL*/) < 0)
+	if (!BWrapper::Init(SDL_INIT_VIDEO))
     {
-        SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_ERROR, "SDL Init error %s", SDL_GetError());
+        logError("SDL Init error %s", SDL_GetError());
         return 0;
     }
 
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");    
+    //SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    //SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");    
 
-    auto window = SDL_CreateWindow("SDL2 SDF", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+    //auto window = SDL_CreateWindow("SDL2 SDF", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+	auto window = BWrapper::CreateRenderWindow("SDL2 SDF", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     if (!window)
     {
-        SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_ERROR, "Window create error %s", SDL_GetError());
+		logError("Window create error %s", SDL_GetError());
         return 0;
     }    
 
     SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengles2");
 
-    auto Renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    //auto Renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+	auto Renderer = BWrapper::CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (!Renderer)
     {
-        SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_ERROR, "Renderer create error %s", SDL_GetError());
+		logError("Renderer create error %s", SDL_GetError());
         return 0;
     }    
 
     auto Context = SDL_GL_GetCurrentContext();
     if (!Context)
     {
-        SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_ERROR, "Context get error %s", SDL_GetError());
+		logError("Context get error %s", SDL_GetError());
         return 0;
     }
 
     auto Driver = GLESDriver::GetInstance();
     Driver->Init();
 
+	std::string assetsDir = "";
+	if (BWrapper::GetDeviceOS() != BWrapper::OS::AndroidOS)
+		assetsDir = "assets/";
+
     // Load SDF Font Atlas image
-    SDL_Surface* image = IMG_Load("assets/sdf/font_0.png");
-    //SDL_Surface* image = IMG_Load("assets/sdf/calibri_new.png");    
+    SDL_Surface* image = IMG_Load((assetsDir + "sdf/font_0.png").c_str());
     if (!image)
     {
-        SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_ERROR, "Image create error %s", SDL_GetError());
+		logError("Image create error %s", SDL_GetError());
         return 0;
     }
-    
-    auto Img1 = IMG_Load("assets/img/1.png");
+
+    //auto Img1 = IMG_Load("assets/img/1.png");
+	auto Img1 = IMG_Load((assetsDir + "img/1.png").c_str());
     if (!Img1)
     {
-        SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_ERROR, "Image 1.png load error %s", SDL_GetError());
+		logError("Image 1.png load error %s", SDL_GetError());
         return 0;
     }
     auto tex1 = SDL_CreateTextureFromSurface(Renderer, Img1);
     SDL_FreeSurface(Img1);
 
-    auto Img2 = IMG_Load("assets/img/2.png");
+	auto Img2 = IMG_Load((assetsDir + "img/2.png").c_str());
     if (!Img2)
     {
-        SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_ERROR, "Image 2.png load error %s", SDL_GetError());
+		logError("Image 2.png load error %s", SDL_GetError());
         return 0;
     }
     auto tex2 = SDL_CreateTextureFromSurface(Renderer, Img2);
