@@ -5,17 +5,17 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>SDFFontTest</string>
+	<string>sdf</string>
 	<key>CFBundleExecutable</key>
-	<string>SDFFontTest</string>
+	<string>sdf</string>
 	<key>CFBundleIconFile</key>
 	<string>Icon</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.akk0rdsdk.sdffonttest</string>
+	<string>org.akk0rdsdk.sdf</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>SDFFontTest</string>
+	<string>sdf</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleSignature</key>
