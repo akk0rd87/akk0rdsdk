@@ -128,7 +128,7 @@ sdkmanager.bat extras;google;google_play_services
     
     - Assets
     
-    - Выставить BitCode = NO (пункт Build Options -> Enable Bitcode)
+    - Выставить BitCode = NO (пункт Build Options -> Enable Bitcode https://i.stack.imgur.com/VkI72.png)
 
     - Видимо после каждого добавления файла во фреймворк нужно пересоздавать group-ссылки на framework
     
