@@ -54,9 +54,8 @@ model {
                         library 'SDL2'       linkage 'shared'                        
                         library 'SDL2_image' linkage 'shared'
                     }
-                    source {
-			            srcDirs "../../../common/src/"
-                        srcDirs "../../srclocal/"
+                    source {			            
+                        srcDirs "../../src/"
                         //srcDirs "${akkord_sdk_path}/framework/platforms/android/"
                         srcDirs "${akkord_sdk_path}/framework/"                        
                     }

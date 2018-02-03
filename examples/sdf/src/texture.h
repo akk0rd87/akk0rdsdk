@@ -45,7 +45,8 @@ int main(int argc, char *argv[])
     BWrapper::SetLogPriority(BWrapper::LogPriority::Verbose);
     if (SDL_Init(SDL_INIT_EVERYTHING | SDL_VIDEO_OPENGL) < 0)
     {
-        BWrapper::Log(BWrapper::LogPriority::Error, "SDL Init error %s", SDL_GetError());
+        //BWrapper::Log(BWrapper::LogPriority::Error, "SDL Init error %s", SDL_GetError());
+		logError("SDL Init error %s", SDL_GetError());
         return 0;
     }
 
@@ -55,7 +56,8 @@ int main(int argc, char *argv[])
     auto window = SDL_CreateWindow("SDL2 OpenGL", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     if (!window)
     {
-        BWrapper::Log(BWrapper::LogPriority::Error, "Window create error %s", SDL_GetError());
+        //BWrapper::Log(BWrapper::LogPriority::Error, "Window create error %s", SDL_GetError());
+		logError("Window create error %s", SDL_GetError());
         return 0;
     }
     BWrapper::SetActiveWindow(window);
@@ -65,7 +67,8 @@ int main(int argc, char *argv[])
     auto Renderer = BWrapper::CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (!Renderer)
     {
-        BWrapper::Log(BWrapper::LogPriority::Error, "Renderer create error %s", SDL_GetError());
+        //BWrapper::Log(BWrapper::LogPriority::Error, "Renderer create error %s", SDL_GetError());
+		logError("Renderer create error %s", SDL_GetError());
         return 0;
     }
     BWrapper::SetActiveRenderer(Renderer);
@@ -76,7 +79,8 @@ int main(int argc, char *argv[])
     SDL_Surface* image = IMG_Load("assets/spritesheet.png");
     if (!image)
     {
-        BWrapper::Log(BWrapper::LogPriority::Error, "Image create error %s", SDL_GetError());
+        //BWrapper::Log(BWrapper::LogPriority::Error, "Image create error %s", SDL_GetError());
+		logError("Image create error %s", SDL_GetError());
         return 0;
     }
 
@@ -108,7 +112,7 @@ int main(int argc, char *argv[])
     auto threshold = Driver->glGetUniformLocation(shaderProgram, "threshold"); Driver->CheckError(__LINE__); Driver->PrintProgamLog(shaderProgram, __LINE__);
 
     Driver->glUniform1i(Frame, 0);
-    BWrapper::Log(BWrapper::LogPriority::Debug, "My Shader Program = %u", shaderProgram);  
+    logDebug("My Shader Program = %u", shaderProgram);
 
     Text.LoadFromFile("img/1.png", AkkordTexture::TextureType::PNG, BWrapper::FileSearchPriority::Assets);
     AkTexture2.LoadFromFile("2.png", AkkordTexture::TextureType::PNG, BWrapper::FileSearchPriority::Assets);
@@ -116,7 +120,7 @@ int main(int argc, char *argv[])
     BWrapper::SetCurrentColor(AkkordColor(255, 255, 255));
     //Driver->glActiveTexture(GL_TEXTURE0); Driver->CheckError(__LINE__);
     Driver->glGenTextures(1, &texture);
-    BWrapper::Log(BWrapper::LogPriority::Debug, "Texture ID = %u", texture);
+    logDebug("Texture ID = %u", texture);
     Driver->glBindTexture(GL_TEXTURE_2D, texture); Driver->CheckError(__LINE__);
     Driver->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); Driver->CheckError(__LINE__);
     Driver->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); Driver->CheckError(__LINE__);
