@@ -51,7 +51,7 @@ bool Init()
     int n = 0;
     if (!BWrapper::Init(SDL_INIT_VIDEO)) n = 0;//return false;
 
-    auto Window = BWrapper::CreateRenderWindow("Hello World!", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_RESIZABLE);
+	auto Window = BWrapper::CreateRenderWindow("Hello World!", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
     
     if (!Window) n = 0;//return false;
     
