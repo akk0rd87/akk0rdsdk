@@ -295,7 +295,8 @@ int main(int, char**){
         auto ticks2 = SDL_GetTicks();
         if (ticks2 - ticks1 > 60)
         {
-            logDebug("Ticks %u", ticks2);
+			auto Size = BWrapper::GetScreenSize();
+			logDebug("Ticks %u, w = %d, h = %d", ticks2, Size.x, Size.y);
             ticks1 = ticks2;
             UpdateScreen();
             ReDraw();
