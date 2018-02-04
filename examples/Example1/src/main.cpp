@@ -243,6 +243,7 @@ int main(int, char**){
 
     //auto handle = std::async(std::launch::async, Loop);
 
+	/*
 	SDL_DisplayMode dm;
 	SDL_GetDesktopDisplayMode(0, &dm);
 	logDebug("Display mode Format=%d, r_rate=%d, w=%d, h=%d", dm.format, dm.refresh_rate, dm.w, dm.h);
@@ -253,6 +254,7 @@ int main(int, char**){
 	SDL_Rect r;
 	SDL_GetDisplayBounds(0, &r);
 	logDebug("DisplayBounds x=%d, y=%d, w=%d, h=%d", r.x, r.y, r.w, r.h);
+	*/
 
     auto ticks1 = BWrapper::GetTicks();
 
