@@ -250,6 +250,10 @@ int main(int, char**){
 	SDL_GetWindowDisplayMode(BWrapper::GetActiveWindow(), &dm);
 	logDebug("Window mode Format=%d, r_rate=%d, w=%d, h=%d", dm.format, dm.refresh_rate, dm.w, dm.h);
 
+	SDL_Rect r;
+	SDL_GetDisplayBounds(0, &r);
+	logDebug("DisplayBounds x=%d, y=%d, w=%d, h=%d", r.x, r.y, r.w, r.h);
+
     auto ticks1 = BWrapper::GetTicks();
 
     while (1)

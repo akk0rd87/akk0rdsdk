@@ -492,7 +492,8 @@ AkkordPoint::AkkordPoint(int X, int Y)
 AkkordPoint BWrapper::GetScreenSize()
 {
     AkkordPoint WSize;
-    SDL_GetWindowSize(CurrentContext.CurrentWindow, &WSize.x, &WSize.y);
+    //SDL_GetWindowSize(CurrentContext.CurrentWindow, &WSize.x, &WSize.y);
+	SDL_GL_GetDrawableSize(CurrentContext.CurrentWindow, &WSize.x, &WSize.y);
     return WSize;
 };
 
