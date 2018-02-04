@@ -243,6 +243,13 @@ int main(int, char**){
 
     //auto handle = std::async(std::launch::async, Loop);
 
+	SDL_DisplayMode dm;
+	SDL_GetDesktopDisplayMode(0, &dm);
+	logDebug("Display mode Format=%d, r_rate=%d, w=%d, h=%d", dm.format, dm.refresh_rate, dm.w, dm.h);
+
+	SDL_GetWindowDisplayMode(BWrapper::GetActiveWindow(), &dm);
+	logDebug("Window mode Format=%d, r_rate=%d, w=%d, h=%d", dm.format, dm.refresh_rate, dm.w, dm.h);
+
     auto ticks1 = BWrapper::GetTicks();
 
     while (1)
@@ -295,8 +302,8 @@ int main(int, char**){
         auto ticks2 = SDL_GetTicks();
         if (ticks2 - ticks1 > 60)
         {
-			auto Size = BWrapper::GetScreenSize();
-			logDebug("Ticks %u, w = %d, h = %d", ticks2, Size.x, Size.y);
+			//auto Size = BWrapper::GetScreenSize();
+			//logDebug("Ticks %u, w = %d, h = %d", ticks2, Size.x, Size.y);
             ticks1 = ticks2;
             UpdateScreen();
             ReDraw();
