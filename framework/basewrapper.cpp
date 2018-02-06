@@ -27,8 +27,7 @@ bool BWrapper::Init(Uint32 flags)
     {
         logError("BWrapper::Init: Error %s", SDL_GetError());
         return false;
-    }
-    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");    
+    }    
     return true;
 };
 
