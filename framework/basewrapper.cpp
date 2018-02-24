@@ -607,6 +607,7 @@ unsigned int AkkordColor::RGBA2Int32(int r, int g, int b, int a)
 bool BWrapper::SetCurrentColor(AkkordColor Color)
 {   
     if(SDL_SetRenderDrawColor(CurrentContext.CurrentRenderer, Color.GetR(), Color.GetG(), Color.GetB(), Color.GetA()) == 0) return true;
+	logError("Draw error %s", SDL_GetError());
     return false;
 }
 
@@ -614,6 +615,7 @@ bool BWrapper::DrawRect(AkkordRect Rect)
 {
     auto NativeRect = ConvertRect2Native(Rect);
     if (SDL_RenderDrawRect(CurrentContext.CurrentRenderer, &NativeRect) == 0) return true;
+	logError("Draw error %s", SDL_GetError());
     return false;
 };
 
@@ -621,12 +623,14 @@ bool BWrapper::FillRect(AkkordRect Rect)
 {
     auto NativeRect = ConvertRect2Native(Rect);
     if (SDL_RenderFillRect(CurrentContext.CurrentRenderer, &NativeRect) == 0) return true;
+	logError("Draw error %s", SDL_GetError());
     return false;
 };
 
 bool BWrapper::DrawLine(AkkordPoint Point1, AkkordPoint Point2)
 {
     if (SDL_RenderDrawLine(CurrentContext.CurrentRenderer, Point1.x, Point1.y, Point2.x, Point2.y) == 0) return true;
+	logError("Draw error %s", SDL_GetError());
     return false;
 };
 
