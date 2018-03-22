@@ -59,7 +59,7 @@ https://developer.android.com/ndk/downloads/older_releases.html
 
 Now I use android-ndk-r15c: https://dl.google.com/android/repository/android-ndk-r15c-windows-x86_64.zip
 
-SET ANDROID_NDK_HOME=C:\PortablePrograms\android-ndk-r10c
+SET ANDROID_NDK_HOME=C:\PortablePrograms\android-ndk-r15c
 
     
 
