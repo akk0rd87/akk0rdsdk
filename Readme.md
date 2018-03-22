@@ -57,7 +57,7 @@ https://developer.android.com/ndk/downloads/index.html
 
 https://developer.android.com/ndk/downloads/older_releases.html
 
-Now I use android-ndk-r10c. Download it from older_releases page and set env variable
+Now I use android-ndk-r15c: https://dl.google.com/android/repository/android-ndk-r15c-windows-x86_64.zip
 
 SET ANDROID_NDK_HOME=C:\PortablePrograms\android-ndk-r10c
 
