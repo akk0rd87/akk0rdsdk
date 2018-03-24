@@ -3,6 +3,8 @@
 #include "openglesdriver.h"
 #include "basewrapper.h"
 
+#include "sdffont.h"
+
 const bool DrawWithRender = true;
 const bool DrawSDF        = true;
 
@@ -101,9 +103,9 @@ static const GLfloat UV[] =
 unsigned int AtlasW = 8192;
 unsigned int AtlasH = 4096;
 
-unsigned LetterX = 4566;
-unsigned LetterY = 1250;
-unsigned LetterW = 369;
+unsigned LetterX = 3003;
+unsigned LetterY = 1256;
+unsigned LetterW = 398;
 unsigned LetterH = 387;
 
 static const GLfloat UV[] =
