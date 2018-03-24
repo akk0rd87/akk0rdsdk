@@ -80,11 +80,37 @@ r, g, b, 1.0f,
 GLfloat uv_const = 0.5f;
 
 // размеры в координатах source-картинки
+/*
 static const GLfloat UV[] =
 { 0.0f, 1.0f,
 1.0f, 1.0f,
 0.0f, 0.0f,
 1.0f, 0.0f
+};
+*/
+
+/*
+static const GLfloat UV[] =
+{ 0.0f, 0.5f,
+0.5f, 0.5f,
+0.0f, 0.0f,
+0.5f, 0.0f
+};
+*/
+
+unsigned int AtlasW = 8192;
+unsigned int AtlasH = 4096;
+
+unsigned LetterX = 4566;
+unsigned LetterY = 1250;
+unsigned LetterW = 369;
+unsigned LetterH = 387;
+
+static const GLfloat UV[] =
+{ float(LetterX) / AtlasW, float(LetterY + LetterH) / AtlasH,
+float(LetterX + LetterW) / AtlasW, float(LetterY + LetterH) / AtlasH,
+  float(LetterX) / AtlasW, float(LetterY) / AtlasH,
+  float(LetterX + LetterW) / AtlasW, float(LetterY) / AtlasH,
 };
 
 enum {
@@ -144,6 +170,8 @@ int main(int argc, char *argv[])
         return 0;
     }
 	*/
+
+	logDebug("x=%d, y=%d, w=%d, h=%d", LetterX / 8, LetterY / 8, LetterW / 8, LetterH / 8);
 
     auto Driver = GLESDriver::GetInstance();
     Driver->Init();
