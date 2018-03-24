@@ -21,6 +21,7 @@ class SDFFontBuffer
 public:
 	SDFFontBuffer(SDFFont* Font)
 	{
+		this->Clear();
 		sdfFont = Font;
 	}
 
@@ -39,10 +40,9 @@ public:
 	SDFFont::AlignH GetAlignH() { return alignH; }
 	SDFFont::AlignV GetAlignV() { return alignV; }
 
-
 	void Clear()
 	{
-
+		//logDebug("Clear");
 	};
 
 	void Flush()
