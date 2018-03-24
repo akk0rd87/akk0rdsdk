@@ -49,7 +49,7 @@ void main() \n\
 }\n";
 
 
-
+// площадь рисования на экране
 static const GLfloat squareVertices1[] = {
     -0.8f, -1.0f,
     0.8f, -1.0f, 
@@ -57,7 +57,7 @@ static const GLfloat squareVertices1[] = {
     0.8f, 1.0f
 };
 
-
+// площадь рисования на экране
 static const GLfloat squareVertices2[] = {
     -0.8f, -1.0f,
     0.8f, -1.0f,
@@ -79,23 +79,13 @@ r, g, b, 1.0f,
 
 GLfloat uv_const = 0.5f;
 
-
+// размеры в координатах source-картинки
 static const GLfloat UV[] =
 { 0.0f, 1.0f,
 1.0f, 1.0f,
 0.0f, 0.0f,
 1.0f, 0.0f
 };
-
-
-/*
-static const GLfloat UV[] =
-{ 0.0f, 0.1f,
-0.1f, 0.1f,
-0.0f, 0.0f,
-0.1f, 0.0f
-};
-*/
 
 enum {
     ATTRIB_POSITION = 10, // Начинаем не с нуля, чтобы индексы не пересеклись с другими программами
@@ -111,16 +101,6 @@ static const GLfloat Mat[] =
     0.0f, 0.0f, 1.0f, 0.0f,
     0.0f, 0.0f, 0.0f, 1.0f,
 };
-
-/*
-static const GLfloat Mat[] =
-{
-    0.00208333344f, 0.0f, 0.0f, 0.0f,
-    0.0f, -0.00312500005, 0.0f, 0.0f,
-    0.0f, 0.0f, 0.000100001998f, 0.0f,
-    -1.00000000f, 1.0f, -0.0000200004015f, 1.0f,
-};
-*/
 
 int main(int argc, char *argv[])
 {
@@ -149,7 +129,6 @@ int main(int argc, char *argv[])
 
     SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengles2");
 
-    //auto Renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	auto Renderer = BWrapper::CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (!Renderer)
     {
