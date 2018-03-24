@@ -140,7 +140,7 @@ int main(int argc, char *argv[])
     //SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");    
 
     //auto window = SDL_CreateWindow("SDL2 SDF", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
-	auto window = BWrapper::CreateRenderWindow("SDL2 SDF", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+	auto window = BWrapper::CreateRenderWindow("SDL2 SDF", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | (BWrapper::GetDeviceOS() == BWrapper::OS::Windows ? 0 : SDL_WINDOW_BORDERLESS));
     if (!window)
     {
 		logError("Window create error %s", SDL_GetError());
@@ -157,12 +157,14 @@ int main(int argc, char *argv[])
         return 0;
     }    
 
+	/*
     auto Context = SDL_GL_GetCurrentContext();
     if (!Context)
     {
 		logError("Context get error %s", SDL_GetError());
         return 0;
     }
+	*/
 
     auto Driver = GLESDriver::GetInstance();
     Driver->Init();
@@ -239,7 +241,7 @@ int main(int argc, char *argv[])
 
     Driver->glUseProgram(oldProgramId);
 
-    SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_DEBUG, "sdf_outline_color = %d; sdf_params = %d; mat = %d, base_texture = %d, font_color = %d", sdf_outline_color, sdf_params, mat, base_texture, font_color);
+    logDebug("sdf_outline_color = %d; sdf_params = %d; mat = %d, base_texture = %d, font_color = %d", sdf_outline_color, sdf_params, mat, base_texture, font_color);
 
     SDL_SetRenderDrawColor(Renderer, 100, 100, 100, 100);
     
@@ -330,7 +332,9 @@ int main(int argc, char *argv[])
     };
 
 end:    
-    SDL_DestroyWindow(window);
+	SDL_DestroyTexture(tex1);
+	SDL_DestroyTexture(tex2);
+	SDL_DestroyWindow(window);
     SDL_DestroyRenderer(Renderer);
     SDL_Quit();
 
