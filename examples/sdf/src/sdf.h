@@ -100,6 +100,8 @@ static const GLfloat UV[] =
 };
 */
 
+const unsigned short Indices[] = {0, 1, 2, 1, 2, 3};
+
 unsigned int AtlasW = 8192;
 unsigned int AtlasH = 4096;
 
@@ -304,11 +306,10 @@ int main(int argc, char *argv[])
                 //Driver->glEnableVertexAttribArray(ATTRIB_COLOR); Driver->CheckError(__LINE__);
                 //Driver->glVertexAttribPointer(ATTRIB_COLOR, 4, GL_FLOAT, 0, 0, Color); Driver->CheckError(__LINE__);                
                 Driver->glUniform4f(font_color, r, g, b, 1.0f); Driver->CheckError(__LINE__);
-                Driver->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); Driver->CheckError(__LINE__);
+                //Driver->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); Driver->CheckError(__LINE__);
 
-
-
-
+				//Driver->DrawElemen
+				Driver->glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, Indices);
 
 
                 Driver->glEnableVertexAttribArray(ATTRIB_POSITION); Driver->CheckError(__LINE__);

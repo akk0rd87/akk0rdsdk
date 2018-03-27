@@ -12,13 +12,15 @@ public:
 #include "../src/render/opengles2/SDL_gles2funcs.h"
     SDL_PROC(void, glBlendFunc, (GLenum, GLenum))
     SDL_PROC(void, glGetShaderSource, (GLuint, GLsizei, GLsizei*, GLchar *))
+	SDL_PROC(void, glDrawElements, (GLenum, GLsizei, GLenum, const GLvoid *))
 #undef SDL_PROC
     void Init()
     {
 #define SDL_PROC(ret,func,params) func = (func##_fnc)SDL_GL_GetProcAddress(#func); if(func) logVerbose("GLESDriver:: " #func " pointer was loaded successfully"); else logError("GLESDriver:: " #func " pointer was not loaded");
-#include "../src/render/opengles2/SDL_gles2funcs.h"
+#include "../src/render/opengles2/SDL_gles2funcs.h"		
         SDL_PROC(void, glBlendFunc, (GLenum, GLenum))
         SDL_PROC(void, glGetShaderSource, (GLuint, GLsizei, GLsizei*, GLchar *))
+		SDL_PROC(void, glDrawElements, (GLenum, GLsizei, GLenum, const GLvoid *))
 #undef SDL_PROC
     }
 
