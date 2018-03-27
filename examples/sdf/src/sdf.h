@@ -54,9 +54,14 @@ void main() \n\
 // площадь рисования на экране
 static const GLfloat squareVertices1[] = {
     -0.8f, -1.0f,
-    0.8f, -1.0f, 
+    0.0f, -1.0f, 
     -0.8f, 1.0f, 
-    0.8f, 1.0f
+    0.0f, 1.0f,
+
+	-0.0f, -1.0f,
+	0.8f, -1.0f,
+	-0.0f, 1.0f,
+	0.8f, 1.0f
 };
 
 // площадь рисования на экране
@@ -100,21 +105,31 @@ static const GLfloat UV[] =
 };
 */
 
-const unsigned short Indices[] = {0, 1, 2, 1, 2, 3};
+const unsigned short Indices[] = {0, 1, 2, 1, 2, 3, 4, 5, 6, 5, 6, 7};
 
 unsigned int AtlasW = 8192;
 unsigned int AtlasH = 4096;
 
-unsigned LetterX = 3003;
-unsigned LetterY = 1256;
-unsigned LetterW = 398;
-unsigned LetterH = 387;
+unsigned LetterX1 = 3003;
+unsigned LetterY1 = 1256;
+unsigned LetterW1 = 398;
+unsigned LetterH1 = 387;
+
+unsigned LetterX2 = 4566;
+unsigned LetterY2 = 1250;
+unsigned LetterW2 = 369;
+unsigned LetterH2 = 387;
 
 static const GLfloat UV[] =
-{ float(LetterX) / AtlasW, float(LetterY + LetterH) / AtlasH,
-float(LetterX + LetterW) / AtlasW, float(LetterY + LetterH) / AtlasH,
-  float(LetterX) / AtlasW, float(LetterY) / AtlasH,
-  float(LetterX + LetterW) / AtlasW, float(LetterY) / AtlasH,
+{ float(LetterX1) / AtlasW, float(LetterY1 + LetterH1) / AtlasH,
+  float(LetterX1 + LetterW1) / AtlasW, float(LetterY1 + LetterH1) / AtlasH,
+  float(LetterX1) / AtlasW, float(LetterY1) / AtlasH,
+  float(LetterX1 + LetterW1) / AtlasW, float(LetterY1) / AtlasH,
+
+  float(LetterX2) / AtlasW, float(LetterY2 + LetterH2) / AtlasH,
+  float(LetterX2 + LetterW2) / AtlasW, float(LetterY2 + LetterH2) / AtlasH,
+  float(LetterX2) / AtlasW, float(LetterY2) / AtlasH,
+  float(LetterX2 + LetterW2) / AtlasW, float(LetterY2) / AtlasH
 };
 
 enum {
@@ -173,9 +188,7 @@ int main(int argc, char *argv[])
 		logError("Context get error %s", SDL_GetError());
         return 0;
     }
-	*/
-
-	logDebug("x=%d, y=%d, w=%d, h=%d", LetterX / 8, LetterY / 8, LetterW / 8, LetterH / 8);
+	*/	
 
     auto Driver = GLESDriver::GetInstance();
     Driver->Init();
@@ -309,7 +322,7 @@ int main(int argc, char *argv[])
                 //Driver->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); Driver->CheckError(__LINE__);
 
 				//Driver->DrawElemen
-				Driver->glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, Indices);
+				Driver->glDrawElements(GL_TRIANGLES, 6 * 2, GL_UNSIGNED_SHORT, Indices);
 
 
                 Driver->glEnableVertexAttribArray(ATTRIB_POSITION); Driver->CheckError(__LINE__);
