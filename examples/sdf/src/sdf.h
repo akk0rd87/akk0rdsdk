@@ -275,6 +275,9 @@ int main(int argc, char *argv[])
     Driver->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); Driver->CheckError(__LINE__);
     Driver->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image->w, image->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image->pixels); Driver->CheckError(__LINE__);
 
+	SDFFont fnt;
+	SDFFontBuffer fBuffer(&fnt, 10, AkkordColor(100, 100, 100));
+
     int i = 0; 
     while (1)
     {
