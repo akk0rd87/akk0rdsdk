@@ -20,11 +20,22 @@ class SDFFontBuffer
 
 	SDFFont::AlignH alignH = SDFFont::AlignH::Center;
 	SDFFont::AlignV alignV = SDFFont::AlignV::Center;
+
+	unsigned int digitsCount = 0;
+
+	std::vector<float>UV;
+	std::vector<float>squareVertices;
+	std::vector<unsigned short>Indices;
 public:
-	SDFFontBuffer(SDFFont* Font)
+	SDFFontBuffer(SDFFont* Font, unsigned int DigitsCount)
 	{
 		this->Clear();
 		sdfFont = Font;
+		digitsCount = DigitsCount;
+		
+		UV.reserve(digitsCount * 4);
+		squareVertices.reserve(digitsCount * 4);
+		Indices.reserve(digitsCount * 6);
 	}
 
 	void SetScale(float Scale){ scaleX = scaleY = Scale; }
@@ -44,7 +55,11 @@ public:
 
 	void Clear()
 	{
-		//logDebug("Clear");
+		UV.clear();
+		squareVertices.clear();
+		Indices.clear();
+		digitsCount = 0;
+		SDFFont* sdfFont = nullptr;
 	};
 
 	void Flush()
