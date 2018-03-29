@@ -105,19 +105,31 @@ public :
 		Driver->glUseProgram(oldProgramId);
 
 		logDebug("sdf_outline_color = %d; sdf_params = %d; mat = %d, base_texture = %d, font_color = %d", sdf_outline_color, sdf_params, mat, base_texture, font_color);
-	}
+	};
 };
 
 class SDFFont
 {
-    
+	GLuint texture;
 public:
 	enum struct AlignV : unsigned char { Top, Center, Bottom };
 	enum struct AlignH : unsigned char { Left, Center, Right };
 
 	bool Load(const char* FileName, BWrapper::FileSearchPriority SearchPriority)
 	{
+		auto Driver = GLESDriver::GetInstance();
 
+		std::string assetsDir = "";
+		if (BWrapper::GetDeviceOS() != BWrapper::OS::AndroidOS)
+			assetsDir = "assets/";
+		SDL_Surface* image = IMG_Load((assetsDir + "sdf/font_0.png").c_str());
+
+		Driver->glGenTextures(1, &texture); Driver->CheckError(__LINE__);
+		Driver->glBindTexture(GL_TEXTURE_2D, texture); Driver->CheckError(__LINE__);
+		Driver->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); Driver->CheckError(__LINE__);
+		Driver->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); Driver->CheckError(__LINE__);
+
+		Driver->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image->w, image->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image->pixels); Driver->CheckError(__LINE__);
 	};
 };
 
