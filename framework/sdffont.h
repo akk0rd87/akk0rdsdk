@@ -1,3 +1,7 @@
+#pragma once
+#ifndef __AKK0RD_SDFFONT_H__
+#define __AKK0RD_SDFFONT_H__
+
 #include "openglesdriver.h"
 #include "basewrapper.h"
 
@@ -279,3 +283,5 @@ public:
 
 	
 };
+
+#endif // __AKK0RD_SDFFONT_H__
