@@ -147,6 +147,7 @@ SDFProgram sdfProgram;
 class SDFFont
 {
 	GLuint texture;
+	SDL_Surface* fontAtlas;
 public:
 	enum struct AlignV : unsigned char { Top, Center, Bottom };
 	enum struct AlignH : unsigned char { Left, Center, Right };
@@ -159,14 +160,20 @@ public:
 		std::string assetsDir = "";
 		if (BWrapper::GetDeviceOS() != BWrapper::OS::AndroidOS)
 			assetsDir = "assets/";
-		SDL_Surface* image = IMG_Load((assetsDir + "sdf/font_0.png").c_str());
+		fontAtlas = IMG_Load((assetsDir + "sdf/font_0.png").c_str());
+
+		if (!fontAtlas)
+		{
+			logError("fontAtlas create error %s", SDL_GetError());
+			return 0;
+		}
 
 		Driver->glGenTextures(1, &texture); Driver->CheckError(__LINE__);
 		Driver->glBindTexture(GL_TEXTURE_2D, texture); Driver->CheckError(__LINE__);
 		Driver->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); Driver->CheckError(__LINE__);
 		Driver->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); Driver->CheckError(__LINE__);
 
-		Driver->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image->w, image->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image->pixels); Driver->CheckError(__LINE__);
+		Driver->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fontAtlas->w, fontAtlas->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, fontAtlas->pixels); Driver->CheckError(__LINE__);
 	};
 
 	bool Draw(bool Outline, unsigned Count, AkkordColor& FontColor, AkkordColor& OutlineColor, std::vector<float>& UV, std::vector<float>& squareVertices, std::vector<unsigned short>& Indices)
@@ -202,6 +209,8 @@ public:
 		Driver->glDrawElements(GL_TRIANGLES, 6 * Count, GL_UNSIGNED_SHORT, &Indices);
 
 		Driver->glUseProgram(oldProgramId); Driver->CheckError(__LINE__);
+
+		return true;
 	};
 };
 
@@ -236,6 +245,44 @@ public:
 		UV.reserve(digitsCount * 4);
 		squareVertices.reserve(digitsCount * 4);
 		Indices.reserve(digitsCount * 6);
+
+		unsigned int AtlasW = 8192;
+		unsigned int AtlasH = 4096;
+
+		unsigned LetterX1 = 3003;
+		unsigned LetterY1 = 1256;
+		unsigned LetterW1 = 398;
+		unsigned LetterH1 = 387;
+
+		unsigned LetterX2 = 4566;
+		unsigned LetterY2 = 1250;
+		unsigned LetterW2 = 369;
+		unsigned LetterH2 = 387;
+
+		UV = { float(LetterX1) / AtlasW, float(LetterY1 + LetterH1) / AtlasH,
+			float(LetterX1 + LetterW1) / AtlasW, float(LetterY1 + LetterH1) / AtlasH,
+			float(LetterX1) / AtlasW, float(LetterY1) / AtlasH,
+			float(LetterX1 + LetterW1) / AtlasW, float(LetterY1) / AtlasH,
+
+			float(LetterX2) / AtlasW, float(LetterY2 + LetterH2) / AtlasH,
+			float(LetterX2 + LetterW2) / AtlasW, float(LetterY2 + LetterH2) / AtlasH,
+			float(LetterX2) / AtlasW, float(LetterY2) / AtlasH,
+			float(LetterX2 + LetterW2) / AtlasW, float(LetterY2) / AtlasH
+		};
+
+		squareVertices = {
+			-0.8f, -1.0f,
+			0.0f, -1.0f,
+			-0.8f, 1.0f,
+			0.0f, 1.0f,
+
+			-0.0f, -1.0f,
+			0.8f, -1.0f,
+			-0.0f, 1.0f,
+			0.8f, 1.0f
+		};
+
+		Indices = { 0, 1, 2, 1, 2, 3, 4, 5, 6, 5, 6, 7 };
 	}
 
 	void SetScale(float Scale){ scaleX = scaleY = Scale; }
@@ -264,6 +311,7 @@ public:
 
 	void Flush()
 	{
+		sdfFont->Draw(false, 2, color, color, UV, squareVertices, Indices);
 		Clear();
 	};	
 	

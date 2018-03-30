@@ -59,11 +59,50 @@ int main(int argc, char *argv[])
 	SDL_FreeSurface(Img2);
 
 	SDFFont fnt;
+	fnt.Load("Hello world", BWrapper::FileSearchPriority::Assets);
 
+	bool DrawWithRender = true;
+	bool DrawSDF = true;
+
+	SDL_SetRenderDrawColor(Renderer, 100, 100, 100, 100);
 	while (1)
 	{
+		SDL_Event e;
+		while (SDL_WaitEvent(&e))
+		{
+			if (e.type == SDL_QUIT) goto end;
+			SDL_RenderClear(Renderer);
 
+			if (DrawWithRender)
+			{
+				SDL_Rect r;
+				r.x = r.y = 10; r.w = r.h = 100;
+				SDL_RenderCopy(Renderer, tex1, nullptr, &r);
+
+				SDL_GetWindowSize(window, &r.x, nullptr);
+				r.y = 10; r.w = r.h = 100;
+				r.x = r.x - r.w - 10;
+				SDL_RenderCopy(Renderer, tex2, nullptr, &r);
+				//SDL_RenderPresent(Renderer);
+				//SDL_GL_SwapWindow(window);
+			}
+
+			if (DrawSDF)
+			{
+				SDFFontBuffer FontBuffer(&fnt, 2, AkkordColor(0, 0, 255));
+				FontBuffer.Flush();
+			}
+
+			SDL_RenderPresent(Renderer);
+		}
 	}
+
+end:
+	SDL_DestroyTexture(tex1);
+	SDL_DestroyTexture(tex2);
+	SDL_DestroyWindow(window);
+	SDL_DestroyRenderer(Renderer);
+	SDL_Quit();
 
 	return 0;
 }
