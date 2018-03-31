@@ -176,7 +176,7 @@ public:
 		Driver->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fontAtlas->w, fontAtlas->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, fontAtlas->pixels); Driver->CheckError(__LINE__);
 	};
 
-	bool Draw(bool Outline, unsigned Count, AkkordColor& FontColor, AkkordColor& OutlineColor, std::vector<float>& UV, std::vector<float>& squareVertices, std::vector<unsigned short>& Indices)
+	bool Draw(bool Outline, unsigned Count, AkkordColor& FontColor, AkkordColor& OutlineColor, const float* UV, const float* squareVertices, unsigned short* Indices)
 	{
 		GLint oldProgramId;
 		auto shaderProgram = sdfProgram.GetShaderProgram(Outline);
@@ -189,10 +189,10 @@ public:
 		Driver->glBindTexture(GL_TEXTURE_2D, texture); Driver->CheckError(__LINE__);
 
 		Driver->glEnableVertexAttribArray(SDF_ATTRIB_POSITION); Driver->CheckError(__LINE__);
-		Driver->glVertexAttribPointer(SDF_ATTRIB_POSITION, 2, GL_FLOAT, 0, 0, &squareVertices); Driver->CheckError(__LINE__);
+		Driver->glVertexAttribPointer(SDF_ATTRIB_POSITION, 2, GL_FLOAT, 0, 0, squareVertices); Driver->CheckError(__LINE__);
 
 		Driver->glEnableVertexAttribArray(SDF_ATTRIB_UV); Driver->CheckError(__LINE__);
-		Driver->glVertexAttribPointer(SDF_ATTRIB_UV, 2, GL_FLOAT, 0, 0, &UV); Driver->CheckError(__LINE__);
+		Driver->glVertexAttribPointer(SDF_ATTRIB_UV, 2, GL_FLOAT, 0, 0, UV); Driver->CheckError(__LINE__);
 
 		Driver->glUniform4f(shaderProgram->font_color, float(FontColor.GetR()) / 255, float(FontColor.GetG()) / 255, float(FontColor.GetB()) / 255, 1.0f); Driver->CheckError(__LINE__);
 
@@ -206,7 +206,7 @@ public:
 				logError("shaderProgram->sdf_outline_color error %d", shaderProgram->sdf_outline_color);
 			}
 
-		Driver->glDrawElements(GL_TRIANGLES, 6 * Count, GL_UNSIGNED_SHORT, &Indices);
+		Driver->glDrawElements(GL_TRIANGLES, 6 * Count, GL_UNSIGNED_SHORT, Indices);
 
 		Driver->glUseProgram(oldProgramId); Driver->CheckError(__LINE__);
 
@@ -311,8 +311,8 @@ public:
 
 	void Flush()
 	{
-		sdfFont->Draw(false, 2, color, color, UV, squareVertices, Indices);
-		Clear();
+		sdfFont->Draw(false, 2, color, color, &UV.front(), &squareVertices.front(), &Indices.front());
+		//Clear();
 	};	
 	
 	~SDFFontBuffer()
