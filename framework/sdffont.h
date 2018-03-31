@@ -92,8 +92,7 @@ class SDFProgram
 		Driver->glAttachShader(Program->shaderProgram, vertexShader); Driver->CheckError(__LINE__); Driver->PrintProgamLog(Program->shaderProgram, __LINE__);
 		Driver->glAttachShader(Program->shaderProgram, fragmentShader); Driver->CheckError(__LINE__); Driver->PrintProgamLog(Program->shaderProgram, __LINE__);
 
-		Driver->glBindAttribLocation(Program->shaderProgram, SDF_ATTRIB_POSITION, "position"); Driver->CheckError(__LINE__); Driver->PrintProgamLog(Program->shaderProgram, __LINE__);
-		//Driver->glBindAttribLocation(shaderProgram, ATTRIB_COLOR, "color"); Driver->CheckError(__LINE__); Driver->PrintProgamLog(shaderProgram, __LINE__);
+		Driver->glBindAttribLocation(Program->shaderProgram, SDF_ATTRIB_POSITION, "position"); Driver->CheckError(__LINE__); Driver->PrintProgamLog(Program->shaderProgram, __LINE__);		
 		Driver->glBindAttribLocation(Program->shaderProgram, SDF_ATTRIB_UV, "uv"); Driver->CheckError(__LINE__); Driver->PrintProgamLog(Program->shaderProgram, __LINE__);
 
 		Driver->glLinkProgram(Program->shaderProgram); Driver->CheckError(__LINE__); Driver->PrintProgamLog(Program->shaderProgram, __LINE__);
@@ -306,8 +305,7 @@ public:
 		UV.clear();
 		squareVertices.clear();
 		Indices.clear();
-		digitsCount = 0;
-		SDFFont* sdfFont = nullptr;
+		digitsCount = 0;		
 	};
 
 	void Flush()
@@ -319,6 +317,7 @@ public:
 	~SDFFontBuffer()
 	{
 		Clear();
+		sdfFont = nullptr;
 	};
 
 	
