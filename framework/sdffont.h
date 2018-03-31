@@ -125,10 +125,8 @@ public :
 				Inited = true;
 				return true;
 			}
-
 			return false;
 		};
-
 		return true;
 	};
 
@@ -166,7 +164,7 @@ public:
 		if (!fontAtlas)
 		{
 			logError("fontAtlas create error %s", SDL_GetError());
-			return 0;
+			return false;
 		}
 
 		Driver->glGenTextures(1, &texture); Driver->CheckError(__LINE__);
@@ -175,6 +173,8 @@ public:
 		Driver->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); Driver->CheckError(__LINE__);
 
 		Driver->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fontAtlas->w, fontAtlas->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, fontAtlas->pixels); Driver->CheckError(__LINE__);
+
+		return true;
 	};
 
 	bool Draw(bool Outline, unsigned Count, AkkordColor& FontColor, AkkordColor& OutlineColor, const float* UV, const float* squareVertices, unsigned short* Indices)
@@ -313,25 +313,21 @@ public:
 	void Flush()
 	{
 		sdfFont->Draw(false, 2, color, color, &UV.front(), &squareVertices.front(), &Indices.front());
-		//Clear();
+		Clear();
 	};	
 	
 	~SDFFontBuffer()
 	{
 		Clear();
 		sdfFont = nullptr;
-	};
-
-	
+	};	
 
 	// сейчас это int, возможно для этой функции сделать отдельный тип со float
 	AkkordPoint GetTextSize(const char* Text)
 	{
 		AkkordPoint pt;	
 		return pt;
-	}
-
-	
+	}	
 };
 
 #endif // __AKK0RD_SDFFONT_H__
