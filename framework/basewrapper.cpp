@@ -384,6 +384,7 @@ bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const B
         logError(std::string(Format + "Error load Image IMG_Load_RW = %s, error=%s").c_str(), FileName, SDL_GetError());
     }
 
+    BWrapper::CloseBuffer(buffer);
     SDL_RWclose(io);
 
 #ifdef __DEBUG_IMAGES__

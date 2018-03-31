@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 	SDL_FreeSurface(Img2);
 
 	SDFFont fnt;
-	fnt.Load("Hello world", BWrapper::FileSearchPriority::Assets);
+	fnt.Load("sdf/font_0.png", BWrapper::FileSearchPriority::Assets);
 
 	bool DrawWithRender = true;
 	bool DrawSDF = true;

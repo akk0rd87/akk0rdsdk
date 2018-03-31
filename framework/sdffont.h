@@ -155,11 +155,13 @@ public:
 	{
 		sdfProgram.Init();
 		auto Driver = GLESDriver::GetInstance();
-
-		std::string assetsDir = "";
-		if (BWrapper::GetDeviceOS() != BWrapper::OS::AndroidOS)
-			assetsDir = "assets/";
-		fontAtlas = IMG_Load((assetsDir + "sdf/font_0.png").c_str());
+		
+		unsigned Size;
+		auto buffer = BWrapper::File2Buffer(FileName, SearchPriority, Size);
+		auto io = SDL_RWFromMem(buffer, Size);		
+		fontAtlas = IMG_LoadPNG_RW(io);
+		BWrapper::CloseBuffer(buffer);
+		SDL_RWclose(io);		
 
 		if (!fontAtlas)
 		{
