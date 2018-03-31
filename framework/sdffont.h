@@ -195,6 +195,7 @@ public:
 		Driver->glVertexAttribPointer(SDF_ATTRIB_UV, 2, GL_FLOAT, 0, 0, UV); Driver->CheckError(__LINE__);
 
 		Driver->glUniform4f(shaderProgram->font_color, float(FontColor.GetR()) / 255, float(FontColor.GetG()) / 255, float(FontColor.GetB()) / 255, 1.0f); Driver->CheckError(__LINE__);
+		Driver->glUniform4f(shaderProgram->sdf_params, 0.5f, 11.0f, 0.4f, 11.0f); Driver->CheckError(__LINE__);
 
 		if (Outline) 
 			if (shaderProgram->sdf_outline_color >= 0)
@@ -206,9 +207,9 @@ public:
 				logError("shaderProgram->sdf_outline_color error %d", shaderProgram->sdf_outline_color);
 			}
 
-		Driver->glDrawElements(GL_TRIANGLES, 6 * Count, GL_UNSIGNED_SHORT, Indices);
+		Driver->glDrawElements(GL_TRIANGLES, 6 * Count, GL_UNSIGNED_SHORT, Indices); Driver->CheckError(__LINE__);
 
-		Driver->glUseProgram(oldProgramId); Driver->CheckError(__LINE__);
+		Driver->glUseProgram(oldProgramId); Driver->CheckError(__LINE__); Driver->CheckError(__LINE__);
 
 		return true;
 	};
