@@ -443,8 +443,6 @@ public:
 
 	void Flush()
 	{
-		//auto charInfo = sdfFont->GetCharInfo(60);
-		//logDebug("CharInfo x=%u, y=%u", charInfo->x, charInfo->y);
 		sdfFont->Draw(false, 2, color, color, &UV.front(), &squareVertices.front(), &Indices.front());
 		Clear();
 	};	
@@ -464,15 +462,12 @@ public:
 		unsigned int a = 0;
 		unsigned len = strlen(Text);
 
-		//logDebug("==============GetTextSize started");
-
 		pt.x = 0;
 		pt.y = 0;
 
 		while (i < len)
 		{
 			a = UTF2Unicode(Text, i);
-			//logDebug("Code symbool %u", a);
 			auto charParams = sdfFont->GetCharInfo(a);
 			pt.x += charParams->w;
 
@@ -482,12 +477,40 @@ public:
 
 		pt.x *= scaleX;
 		pt.y *= scaleY;
-		//logDebug("==============GetTextSize finished");
-
-		logDebug("text=%s, width=%d, height=%d", Text, pt.x, pt.y);
+		//logDebug("text=%s, width=%d, height=%d", Text, pt.x, pt.y);
 
 		return pt;
-	}	
+	};
+
+	void DrawText(int X, int Y, const char* Text)
+	{
+		auto size = GetTextSize(Text);
+
+		// Выбираем начальную точку в зависимости от выравнивания
+		switch (alignH)
+		{		
+			case SDFFont::AlignH::Center:				
+				X = X + (rectW - size.x) / 2;
+				break;
+			case SDFFont::AlignH::Right:
+				X = X + (rectW - size.x);
+				break;				
+			default: // в остальных случаях ничего не делаем, координату X не меняем
+				break;
+		};
+		
+		switch (alignV)
+		{
+			case SDFFont::AlignV::Center:
+				Y = Y + (rectH - size.y) / 2;
+				break;
+			case SDFFont::AlignV::Bottom:
+				Y = Y + (rectH - size.y);
+				break;
+			default: // в остальных случаях ничего не делаем, координату Y не меняем
+				break;
+		};
+	};
 };
 
 #endif // __AKK0RD_SDFFONT_H__

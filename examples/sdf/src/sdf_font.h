@@ -90,6 +90,8 @@ int main(int argc, char *argv[])
 			if (DrawSDF)
 			{
 				SDFFontBuffer FontBuffer(&fnt, 2, AkkordColor(0, 0, 255));
+				FontBuffer.SetRect(500, 200);
+				FontBuffer.SetAlignment(SDFFont::AlignH::Center, SDFFont::AlignV::Center);
 				FontBuffer.Flush();
 				auto size = FontBuffer.GetTextSize("Hello");
 			}
