@@ -563,12 +563,12 @@ public:
 			Indices.push_back(UVsize + 1); Indices.push_back(UVsize + 2); Indices.push_back(UVsize + 3);
 
 			squareVertices.push_back(2 * (float)(X / ScreenSize.x) - 1.0f); squareVertices.push_back(-1.0f);
-			squareVertices.push_back(2 * (float)(X + scaleX * charParams.w) / ScreenSize.x - 1); squareVertices.push_back(-1.0f);
+			squareVertices.push_back(2 * (float)(X + (float)scaleX * charParams.w) / ScreenSize.x - 1.0f); squareVertices.push_back(-1.0f);
 			squareVertices.push_back(2 * (float)(X / ScreenSize.x) - 1.0f); squareVertices.push_back(1.0f);
-			squareVertices.push_back(2 * (float)(X + scaleX * charParams.w) / ScreenSize.x - 1); squareVertices.push_back(1.0f);
+			squareVertices.push_back(2 * (float)(X + (float)scaleX * charParams.w) / ScreenSize.x - 1.0f); squareVertices.push_back(1.0f);
 
 			logDebug("UV=%u, SQ=%u, Indices=%u", UV.size(), squareVertices.size(), Indices.size());
-			X = X + scaleX * charParams.x;
+			X = X + (float)scaleX * charParams.w;
 			UVsize += 4;
 		};
 
