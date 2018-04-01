@@ -329,7 +329,7 @@ public:
 				logError("shaderProgram->sdf_outline_color error %d", shaderProgram->sdf_outline_color);
 			}
 
-		Driver->glDrawElements(GL_TRIANGLES, 6 * Count, GL_UNSIGNED_SHORT, Indices); Driver->CheckError(__LINE__);
+		Driver->glDrawElements(GL_TRIANGLES, Count, GL_UNSIGNED_SHORT, Indices); Driver->CheckError(__LINE__);
 
 		Driver->glUseProgram(oldProgramId); Driver->CheckError(__LINE__); Driver->CheckError(__LINE__);
 
@@ -358,9 +358,7 @@ class SDFFontBuffer
 	int rectW = -1, rectH = -1;
 
 	SDFFont::AlignH alignH = SDFFont::AlignH::Center;
-	SDFFont::AlignV alignV = SDFFont::AlignV::Center;
-
-	unsigned int digitsCount = 0;
+	SDFFont::AlignV alignV = SDFFont::AlignV::Center;	
 
 	AkkordColor color;
 
@@ -372,12 +370,12 @@ public:
 	{
 		this->Clear();
 		sdfFont = Font;
-		digitsCount = DigitsCount;		
+		DigitsCount;		
 		color = Color;
 
-		UV.reserve(digitsCount * 4);
-		squareVertices.reserve(digitsCount * 4);
-		Indices.reserve(digitsCount * 6);
+		UV.reserve(DigitsCount * 4);
+		squareVertices.reserve(DigitsCount * 4);
+		Indices.reserve(DigitsCount * 6);
 
 		unsigned int AtlasW = 8192;
 		unsigned int AtlasH = 4096;
@@ -437,13 +435,12 @@ public:
 	{
 		UV.clear();
 		squareVertices.clear();
-		Indices.clear();
-		digitsCount = 0;		
+		Indices.clear();				
 	};
 
 	void Flush()
 	{
-		sdfFont->Draw(false, 2, color, color, &UV.front(), &squareVertices.front(), &Indices.front());
+		sdfFont->Draw(false, Indices.size(), color, color, &UV.front(), &squareVertices.front(), &Indices.front());
 		Clear();
 	};	
 	
