@@ -66,6 +66,28 @@ struct ShaderProgramStruct
 	GLint sdf_outline_color, sdf_params, font_color;
 };
 
+// https://habrahabr.ru/post/282191/
+static inline unsigned int UTF2Unicode(const /*unsigned*/ char *txt, unsigned int &i){
+	unsigned int a = txt[i++];
+	if ((a & 0x80) == 0)return a;
+	if ((a & 0xE0) == 0xC0){
+		a = (a & 0x1F) << 6;
+		a |= txt[i++] & 0x3F;
+	}
+	else if ((a & 0xF0) == 0xE0){
+		a = (a & 0xF) << 12;
+		a |= (txt[i++] & 0x3F) << 6;
+		a |= txt[i++] & 0x3F;
+	}
+	else if ((a & 0xF8) == 0xF0){
+		a = (a & 0x7) << 18;
+		a |= (a & 0x3F) << 12;
+		a |= (txt[i++] & 0x3F) << 6;
+		a |= txt[i++] & 0x3F;
+	}
+	return a;
+};
+
 class SDFProgram
 {
 	bool Inited = false;
@@ -421,8 +443,8 @@ public:
 
 	void Flush()
 	{
-		auto charInfo = sdfFont->GetCharInfo(60);
-		logDebug("CharInfo x=%u, y=%u", charInfo->x, charInfo->y);
+		//auto charInfo = sdfFont->GetCharInfo(60);
+		//logDebug("CharInfo x=%u, y=%u", charInfo->x, charInfo->y);
 		sdfFont->Draw(false, 2, color, color, &UV.front(), &squareVertices.front(), &Indices.front());
 		Clear();
 	};	
@@ -436,7 +458,34 @@ public:
 	// сейчас это int, возможно для этой функции сделать отдельный тип со float
 	AkkordPoint GetTextSize(const char* Text)
 	{
-		AkkordPoint pt;	
+		AkkordPoint pt;
+
+		unsigned int i = 0;
+		unsigned int a = 0;
+		unsigned len = strlen(Text);
+
+		//logDebug("==============GetTextSize started");
+
+		pt.x = 0;
+		pt.y = 0;
+
+		while (i < len)
+		{
+			a = UTF2Unicode(Text, i);
+			//logDebug("Code symbool %u", a);
+			auto charParams = sdfFont->GetCharInfo(a);
+			pt.x += charParams->w;
+
+			if (pt.y < charParams->h)
+				pt.y = charParams->h;
+		};
+
+		pt.x *= scaleX;
+		pt.y *= scaleY;
+		//logDebug("==============GetTextSize finished");
+
+		logDebug("text=%s, width=%d, height=%d", Text, pt.x, pt.y);
+
 		return pt;
 	}	
 };

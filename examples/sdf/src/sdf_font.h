@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 
 	bool DrawWithRender = true;
 	bool DrawSDF = true;
-
+	
 	SDL_SetRenderDrawColor(Renderer, 100, 100, 100, 100);
 	while (1)
 	{
@@ -91,6 +91,7 @@ int main(int argc, char *argv[])
 			{
 				SDFFontBuffer FontBuffer(&fnt, 2, AkkordColor(0, 0, 255));
 				FontBuffer.Flush();
+				auto size = FontBuffer.GetTextSize("Hello");
 			}
 
 			SDL_RenderPresent(Renderer);
