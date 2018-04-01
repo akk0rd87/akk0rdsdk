@@ -235,6 +235,8 @@ class SDFFont
 			fontAtlas = nullptr;
 		};
 	};
+
+
 public:
 	enum struct AlignV : unsigned char { Top, Center, Bottom };
 	enum struct AlignH : unsigned char { Left, Center, Right };
@@ -310,6 +312,16 @@ public:
 		Driver->glUseProgram(oldProgramId); Driver->CheckError(__LINE__); Driver->CheckError(__LINE__);
 
 		return true;
+	};
+
+	SDFCharInfo* GetCharInfo(unsigned Code)
+	{
+		for (auto v : CharsVector)
+			if (Code == v.id)
+				return &v;
+
+		logError("Char with id=%u not found", Code);
+		return nullptr;
 	};
 };
 
@@ -409,6 +421,8 @@ public:
 
 	void Flush()
 	{
+		auto charInfo = sdfFont->GetCharInfo(60);
+		logDebug("CharInfo x=%u, y=%u", charInfo->x, charInfo->y);
 		sdfFont->Draw(false, 2, color, color, &UV.front(), &squareVertices.front(), &Indices.front());
 		Clear();
 	};	
