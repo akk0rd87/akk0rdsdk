@@ -177,7 +177,7 @@ class SDFFont
 	std::vector<SDFCharInfo> CharsVector;
 
 	bool ParseFNTFile(const char* FNTFile, BWrapper::FileSearchPriority SearchPriority)
-	{		
+	{
 		FileReader fr;
 		std::string line;
 
@@ -190,13 +190,13 @@ class SDFFont
 				if (line.size() > 0)
 				{
 					if (line.find("<char id", 0) != std::string::npos)
-					{										
+					{
 						lpos = 0;
 						rpos = 0;
 
 						rpos = line.find("id=", lpos) + 4;
-						auto id = BWrapper::Str2Num(std::string(line, rpos).c_str());						
-						
+						auto id = BWrapper::Str2Num(std::string(line, rpos).c_str());
+
 						lpos = rpos;
 						rpos = line.find("x=", lpos) + 3;
 						auto x = BWrapper::Str2Num(std::string(line, rpos).c_str());
@@ -216,16 +216,16 @@ class SDFFont
 
 						goto next_iteration;
 					};
-					
+
 					if (line.find("<chars", 0) != std::string::npos)
 					{
-						auto cnt = BWrapper::Str2Num(std::string(line, line.find("\"", 0) + 1).c_str());						
+						auto cnt = BWrapper::Str2Num(std::string(line, line.find("\"", 0) + 1).c_str());
 						CharsVector.reserve(cnt);
 						goto next_iteration;
 					};
 
 					if (line.find("<common", 0) != std::string::npos)
-					{						
+					{
 						rpos = line.find("scaleW=", 0) + 8;
 						ScaleW = BWrapper::Str2Num(std::string(line, rpos).c_str());
 
@@ -233,11 +233,11 @@ class SDFFont
 						ScaleH = BWrapper::Str2Num(std::string(line, rpos).c_str());
 
 						logDebug("ScaleW = %d, ScaleH = %d", ScaleW, ScaleH);
-						
+
 						goto next_iteration;
 					};
 
-					next_iteration:;
+				next_iteration:;
 				};
 		};
 
@@ -265,8 +265,11 @@ public:
 
 	~SDFFont()
 	{
-		Clear();		
+		Clear();
 	}
+
+	unsigned int GetAtlasW(){ return ScaleW; }
+	unsigned int GetAtlasH(){ return ScaleH; }
 
 	bool Load(const char* FileName, BWrapper::FileSearchPriority SearchPriority)
 	{
@@ -506,6 +509,38 @@ public:
 				break;
 			default: // в остальных случаях ничего не делаем, координату Y не меняем
 				break;
+		};
+
+		unsigned int i = 0;
+		unsigned int a = 0;
+		unsigned len = strlen(Text);
+
+		auto atlasW = sdfFont->GetAtlasW();
+		auto atlasH = sdfFont->GetAtlasH();
+
+		auto ScreenSize = BWrapper::GetScreenSize();
+		
+		auto UVsize = UV.size();
+		while (i < len)
+		{			
+			a = UTF2Unicode(Text, i);
+			auto charParams = sdfFont->GetCharInfo(a);
+			
+			UV.push_back(float(charParams->x                ) / atlasW); UV.push_back(float(charParams->y + charParams->h) / atlasH);
+			UV.push_back(float(charParams->x + charParams->w) / atlasW); UV.push_back(float(charParams->y + charParams->h) / atlasH);
+			UV.push_back(float(charParams->x                ) / atlasW); UV.push_back(float(charParams->y                ) / atlasH);
+			UV.push_back(float(charParams->x + charParams->w) / atlasW); UV.push_back(float(charParams->y                ) / atlasH);
+
+			Indices.push_back(UVsize + 0); Indices.push_back(UVsize + 1); Indices.push_back(UVsize + 2);
+			Indices.push_back(UVsize + 1); Indices.push_back(UVsize + 2); Indices.push_back(UVsize + 3);
+
+			squareVertices.push_back(2 * float(X) / ScreenSize.x - 1); squareVertices.push_back(-1.0f);
+			squareVertices.push_back(2 * (float(X) + scaleX * charParams->w) / ScreenSize.x - 1); squareVertices.push_back(-1.0f);
+			squareVertices.push_back(2 * float(X) / ScreenSize.x - 1); squareVertices.push_back(1.0f);
+			squareVertices.push_back(2 * (float(X) + scaleX * charParams->w) / ScreenSize.x - 1); squareVertices.push_back(1.0f);
+
+			X = X + scaleX * charParams->x;
+			UVsize += 4;
 		};
 	};
 };
