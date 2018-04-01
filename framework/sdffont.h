@@ -66,6 +66,12 @@ struct ShaderProgramStruct
 	GLint sdf_outline_color, sdf_params, font_color;
 };
 
+struct SDFCharInfo
+{
+	unsigned int code, x, y, w, h;
+
+};
+
 class SDFProgram
 {
 	bool Inited = false;
@@ -144,7 +150,51 @@ SDFProgram sdfProgram;
 class SDFFont
 {
 	GLuint texture;
-	SDL_Surface* fontAtlas;
+	SDL_Surface* fontAtlas;	
+
+	std::vector<SDFCharInfo> CharsVector;
+
+	bool ParseFNTFile(const char* FNTFile, BWrapper::FileSearchPriority SearchPriority)
+	{
+		logDebug("ParseFNTFile");
+		FileReader fr;
+		std::string line;
+		if (fr.Open(FNTFile, SearchPriority))
+		{
+			while (fr.ReadLine(line))
+				if (line.size() > 0)
+				{
+
+					if (line.find("<char id", 0) != std::string::npos)
+					{
+						//logDebug("find char %s", line.c_str());						
+
+						goto next_iteration;
+					};
+					
+					if (line.find("<chars", 0) != std::string::npos)
+					{
+						auto cnt = BWrapper::Str2Num(std::string(line, line.find("\"", 0) + 1).c_str());
+						logDebug("chars Count = %d", cnt);
+						CharsVector.reserve(cnt);
+
+						goto next_iteration;
+					};
+
+					if (line.find("<common", 0) != std::string::npos)
+					{
+						logDebug("find common %s", line.c_str());
+						
+						goto next_iteration;
+					};
+
+					next_iteration:;
+				};
+		};
+
+		return true;
+	}
+
 public:
 	enum struct AlignV : unsigned char { Top, Center, Bottom };
 	enum struct AlignH : unsigned char { Left, Center, Right };
@@ -173,6 +223,8 @@ public:
 		Driver->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); Driver->CheckError(__LINE__);
 
 		Driver->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fontAtlas->w, fontAtlas->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, fontAtlas->pixels); Driver->CheckError(__LINE__);
+
+		ParseFNTFile("sdf/font.fnt", BWrapper::FileSearchPriority::Assets);
 
 		return true;
 	};
