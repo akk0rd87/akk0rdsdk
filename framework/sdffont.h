@@ -158,16 +158,19 @@ class SDFFont
 	{		
 		FileReader fr;
 		std::string line;
+
+		decltype(line.find(',')) lpos;
+		decltype(lpos)           rpos;
+
 		if (fr.Open(FNTFile, SearchPriority))
 		{
 			while (fr.ReadLine(line))
 				if (line.size() > 0)
 				{
 					if (line.find("<char id", 0) != std::string::npos)
-					{
-						//logDebug("find char %s", line.c_str());						
-						decltype(line.find(',')) lpos = 0;
-						decltype(lpos)           rpos = 0;
+					{										
+						lpos = 0;
+						rpos = 0;
 
 						rpos = line.find("id=", lpos) + 4;
 						auto id = BWrapper::Str2Num(std::string(line, rpos).c_str());						
@@ -200,8 +203,14 @@ class SDFFont
 					};
 
 					if (line.find("<common", 0) != std::string::npos)
-					{
-						//logDebug("find common %s", line.c_str());
+					{						
+						rpos = line.find("scaleW=", 0) + 8;
+						ScaleW = BWrapper::Str2Num(std::string(line, rpos).c_str());
+
+						rpos = line.find("scaleH=", 0) + 8;
+						ScaleH = BWrapper::Str2Num(std::string(line, rpos).c_str());
+
+						logDebug("ScaleW = %d, ScaleH = %d", ScaleW, ScaleH);
 						
 						goto next_iteration;
 					};
