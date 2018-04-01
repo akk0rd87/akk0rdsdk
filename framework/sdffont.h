@@ -339,14 +339,18 @@ public:
 		return true;
 	};
 
-	SDFCharInfo* GetCharInfo(unsigned Code)
+	bool GetCharInfo(unsigned Code, SDFCharInfo& ci)
 	{
 		for (auto v : CharsVector)
 			if (Code == v.id)
-				return &v;
+			{
+				ci = v;
+				return true;
+			}
+				
 
 		logError("Char with id=%u not found", Code);
-		return nullptr;
+		return false;
 	};
 };
 
@@ -380,6 +384,7 @@ public:
 		squareVertices.reserve(DigitsCount * 4);
 		Indices.reserve(DigitsCount * 6);
 
+		/*
 		unsigned int AtlasW = 8192;
 		unsigned int AtlasH = 4096;
 
@@ -417,6 +422,7 @@ public:
 		};
 
 		Indices = { 0, 1, 2, 1, 2, 3, 4, 5, 6, 5, 6, 7 };
+		*/
 	}
 
 	void SetScale(float Scale){ scaleX = scaleY = Scale; }
@@ -425,7 +431,11 @@ public:
 	float GetScaleX(){ return scaleX; }
 	float GetScaleY(){ return scaleY; }
 
-	void SetRect(int W, int H){ rectW = W; rectH = H; }
+	void SetRect(int W, int H)
+	{ 
+		rectW = W;
+		rectH = H; 
+	}
 
 	void SetAlignment(SDFFont::AlignH AlignH, SDFFont::AlignV AlignV){ alignH = AlignH; alignV = AlignV; }	
 	void SetAlignmentH(SDFFont::AlignH AlignH){ alignH = AlignH; }
@@ -464,15 +474,18 @@ public:
 
 		pt.x = 0;
 		pt.y = 0;
+		
+		SDFCharInfo charParams;
 
 		while (i < len)
 		{
 			a = UTF2Unicode(Text, i);
-			auto charParams = sdfFont->GetCharInfo(a);
-			pt.x += charParams->w;
+			
+			sdfFont->GetCharInfo(a, charParams);
+			pt.x += charParams.w;
 
-			if (pt.y < charParams->h)
-				pt.y = charParams->h;
+			if (pt.y < charParams.h)
+				pt.y = charParams.h;
 		};
 
 		pt.x *= scaleX;
@@ -518,30 +531,48 @@ public:
 		auto atlasW = sdfFont->GetAtlasW();
 		auto atlasH = sdfFont->GetAtlasH();
 
-		auto ScreenSize = BWrapper::GetScreenSize();
+		auto ScreenSize = BWrapper::GetScreenSize();	
+		
+		float f;
+
+		SDFCharInfo charParams;
 		
 		auto UVsize = UV.size();
 		while (i < len)
 		{			
 			a = UTF2Unicode(Text, i);
-			auto charParams = sdfFont->GetCharInfo(a);
+			sdfFont->GetCharInfo(a, charParams);
+
+			//logDebug("Float [1] %f", (float)(charParams->y + charParams->h) / atlasH);
 			
-			UV.push_back(float(charParams->x                ) / atlasW); UV.push_back(float(charParams->y + charParams->h) / atlasH);
+			
+			UV.push_back(float(charParams.x               ) / atlasW); UV.push_back(float(charParams.y + charParams.h) / atlasH);
+			UV.push_back(float(charParams.x + charParams.w) / atlasW); UV.push_back(float(charParams.y + charParams.h) / atlasH);
+			UV.push_back(float(charParams.x               ) / atlasW); UV.push_back(float(charParams.y               ) / atlasH);
+			UV.push_back(float(charParams.x + charParams.w) / atlasW); UV.push_back(float(charParams.y               ) / atlasH);
+			
+
+			/*
+			f = (float)(charParams.x) / atlasW; logDebug("Float [2] %f", f); UV.push_back(f); f = (float)(charParams->y + charParams->h) / atlasH; logDebug("Float [3] %f", f); UV.push_back(f);
 			UV.push_back(float(charParams->x + charParams->w) / atlasW); UV.push_back(float(charParams->y + charParams->h) / atlasH);
-			UV.push_back(float(charParams->x                ) / atlasW); UV.push_back(float(charParams->y                ) / atlasH);
-			UV.push_back(float(charParams->x + charParams->w) / atlasW); UV.push_back(float(charParams->y                ) / atlasH);
+			UV.push_back(float(charParams->x) / atlasW); UV.push_back(float(charParams->y) / atlasH);
+			UV.push_back(float(charParams->x + charParams->w) / atlasW); UV.push_back(float(charParams->y) / atlasH);
+			*/
 
 			Indices.push_back(UVsize + 0); Indices.push_back(UVsize + 1); Indices.push_back(UVsize + 2);
 			Indices.push_back(UVsize + 1); Indices.push_back(UVsize + 2); Indices.push_back(UVsize + 3);
 
-			squareVertices.push_back(2 * float(X) / ScreenSize.x - 1); squareVertices.push_back(-1.0f);
-			squareVertices.push_back(2 * (float(X) + scaleX * charParams->w) / ScreenSize.x - 1); squareVertices.push_back(-1.0f);
-			squareVertices.push_back(2 * float(X) / ScreenSize.x - 1); squareVertices.push_back(1.0f);
-			squareVertices.push_back(2 * (float(X) + scaleX * charParams->w) / ScreenSize.x - 1); squareVertices.push_back(1.0f);
+			squareVertices.push_back(2 * (float)(X / ScreenSize.x) - 1.0f); squareVertices.push_back(-1.0f);
+			squareVertices.push_back(2 * (float)(X + scaleX * charParams.w) / ScreenSize.x - 1); squareVertices.push_back(-1.0f);
+			squareVertices.push_back(2 * (float)(X / ScreenSize.x) - 1.0f); squareVertices.push_back(1.0f);
+			squareVertices.push_back(2 * (float)(X + scaleX * charParams.w) / ScreenSize.x - 1); squareVertices.push_back(1.0f);
 
-			X = X + scaleX * charParams->x;
+			logDebug("UV=%u, SQ=%u, Indices=%u", UV.size(), squareVertices.size(), Indices.size());
+			X = X + scaleX * charParams.x;
 			UVsize += 4;
 		};
+
+		logDebug("UV=%u, SQ=%u, Indices=%u", UV.size(), squareVertices.size(), Indices.size());
 	};
 };
 

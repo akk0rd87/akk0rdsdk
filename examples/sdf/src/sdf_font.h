@@ -17,9 +17,10 @@ int main(int argc, char *argv[])
 	auto window = BWrapper::CreateRenderWindow("SDL2 SDF", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | (BWrapper::GetDeviceOS() == BWrapper::OS::Windows ? 0 : SDL_WINDOW_BORDERLESS));
 	if (!window)
 	{
-		logError("Window create error %s", SDL_GetError());
+		logError("Window create error %s", SDL_GetError());		
 		return 0;
 	}
+	BWrapper::SetActiveWindow(window);
 
 	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengles2");
 
@@ -29,6 +30,7 @@ int main(int argc, char *argv[])
 		logError("Renderer create error %s", SDL_GetError());
 		return 0;
 	}
+	BWrapper::SetActiveRenderer(Renderer);
 
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
@@ -90,10 +92,13 @@ int main(int argc, char *argv[])
 			if (DrawSDF)
 			{
 				SDFFontBuffer FontBuffer(&fnt, 2, AkkordColor(0, 0, 255));
-				FontBuffer.SetRect(500, 200);
+				auto size = BWrapper::GetScreenSize();
+				//FontBuffer.SetRect(640, 480);
+				FontBuffer.SetRect(size.x, size.y);
 				FontBuffer.SetAlignment(SDFFont::AlignH::Center, SDFFont::AlignV::Center);
+				FontBuffer.DrawText(10, 10, "HE");
 				FontBuffer.Flush();
-				auto size = FontBuffer.GetTextSize("Hello");
+				//auto size = FontBuffer.GetTextSize("Hello");
 			}
 
 			SDL_RenderPresent(Renderer);
