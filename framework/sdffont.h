@@ -66,12 +66,6 @@ struct ShaderProgramStruct
 	GLint sdf_outline_color, sdf_params, font_color;
 };
 
-struct SDFCharInfo
-{
-	unsigned int code, x, y, w, h;
-
-};
-
 class SDFProgram
 {
 	bool Inited = false;
@@ -147,16 +141,21 @@ public :
 
 SDFProgram sdfProgram;
 
+struct SDFCharInfo
+{
+	unsigned int id, x, y, w, h;
+};
+
 class SDFFont
 {
 	GLuint texture;
-	SDL_Surface* fontAtlas;	
+	SDL_Surface* fontAtlas;
+	unsigned int ScaleW, ScaleH;
 
 	std::vector<SDFCharInfo> CharsVector;
 
 	bool ParseFNTFile(const char* FNTFile, BWrapper::FileSearchPriority SearchPriority)
-	{
-		logDebug("ParseFNTFile");
+	{		
 		FileReader fr;
 		std::string line;
 		if (fr.Open(FNTFile, SearchPriority))
@@ -164,26 +163,45 @@ class SDFFont
 			while (fr.ReadLine(line))
 				if (line.size() > 0)
 				{
-
 					if (line.find("<char id", 0) != std::string::npos)
 					{
 						//logDebug("find char %s", line.c_str());						
+						decltype(line.find(',')) lpos = 0;
+						decltype(lpos)           rpos = 0;
+
+						rpos = line.find("id=", lpos) + 4;
+						auto id = BWrapper::Str2Num(std::string(line, rpos).c_str());						
+						
+						lpos = rpos;
+						rpos = line.find("x=", lpos) + 3;
+						auto x = BWrapper::Str2Num(std::string(line, rpos).c_str());
+
+						lpos = rpos;
+						rpos = line.find("y=", lpos) + 3;
+						auto y = BWrapper::Str2Num(std::string(line, rpos).c_str());
+
+						lpos = rpos;
+						rpos = line.find("width=", lpos) + 7;
+						auto w = BWrapper::Str2Num(std::string(line, rpos).c_str());
+
+						lpos = rpos;
+						rpos = line.find("height=", lpos) + 8;
+						auto h = BWrapper::Str2Num(std::string(line, rpos).c_str());
+						CharsVector.push_back({ id, x, y, w, h });
 
 						goto next_iteration;
 					};
 					
 					if (line.find("<chars", 0) != std::string::npos)
 					{
-						auto cnt = BWrapper::Str2Num(std::string(line, line.find("\"", 0) + 1).c_str());
-						logDebug("chars Count = %d", cnt);
+						auto cnt = BWrapper::Str2Num(std::string(line, line.find("\"", 0) + 1).c_str());						
 						CharsVector.reserve(cnt);
-
 						goto next_iteration;
 					};
 
 					if (line.find("<common", 0) != std::string::npos)
 					{
-						logDebug("find common %s", line.c_str());
+						//logDebug("find common %s", line.c_str());
 						
 						goto next_iteration;
 					};
@@ -192,12 +210,30 @@ class SDFFont
 				};
 		};
 
+		//for (auto v : CharsVector) logDebug("id=%d, x=%d, y=%d, w=%d, h=%d", v.id, v.x, v.y, v.w, v.h);
+
+		fr.Close();
+
 		return true;
 	}
 
+	void Clear()
+	{
+		CharsVector.clear();
+		if (fontAtlas)
+		{
+			SDL_FreeSurface(fontAtlas);
+			fontAtlas = nullptr;
+		};
+	};
 public:
 	enum struct AlignV : unsigned char { Top, Center, Bottom };
 	enum struct AlignH : unsigned char { Left, Center, Right };
+
+	~SDFFont()
+	{
+		Clear();		
+	}
 
 	bool Load(const char* FileName, BWrapper::FileSearchPriority SearchPriority)
 	{
