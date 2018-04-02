@@ -551,14 +551,14 @@ public:
 			UV.push_back(float(charParams.x               ) / atlasW); UV.push_back(float(charParams.y               ) / atlasH);
 			UV.push_back(float(charParams.x + charParams.w) / atlasW); UV.push_back(float(charParams.y               ) / atlasH);
 
-			Indices.push_back(UVsize + 0); Indices.push_back(UVsize + 1); Indices.push_back(UVsize + 2);
-			Indices.push_back(UVsize + 1); Indices.push_back(UVsize + 2); Indices.push_back(UVsize + 3);
-
 			squareVertices.push_back(2 * (float)(X / ScrenW) - 1.0f); squareVertices.push_back(-1.0f);
 			squareVertices.push_back(2 * (float)(X + (float)scaleX * charParams.w) / ScrenW - 1.0f); squareVertices.push_back(-1.0f);
 			squareVertices.push_back(2 * (float)(X / ScrenW) - 1.0f); squareVertices.push_back(1.0f);
 			squareVertices.push_back(2 * (float)(X + (float)scaleX * charParams.w) / ScrenW - 1.0f); squareVertices.push_back(1.0f);
 			
+			Indices.push_back(UVsize + 0); Indices.push_back(UVsize + 1); Indices.push_back(UVsize + 2);
+			Indices.push_back(UVsize + 1); Indices.push_back(UVsize + 2); Indices.push_back(UVsize + 3);
+
 			X = X + (float)scaleX * charParams.w;
 			UVsize += 4;
 		};		
