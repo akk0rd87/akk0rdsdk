@@ -453,13 +453,17 @@ public:
 
 	void Flush()
 	{
-		sdfFont->Draw(false, Indices.size(), color, color, &UV.front(), &squareVertices.front(), &Indices.front());
+		auto size = Indices.size();
+		if (size > 0)
+		{
+			sdfFont->Draw(false, size, color, color, &UV.front(), &squareVertices.front(), &Indices.front());
+		}
 		Clear();
 	};	
 	
 	~SDFFontBuffer()
 	{
-		Clear();
+		Flush();
 		sdfFont = nullptr;
 	};	
 
@@ -540,9 +544,9 @@ public:
 
 		SDFCharInfo charParams;
 		
-		auto UVsize = UV.size();
+		auto PointsCnt = UV.size() / 2; // Разделив на 2, получаем количество вершин
 		while (i < len)
-		{			
+		{					
 			a = UTF2Unicode(Text, i);
 			sdfFont->GetCharInfo(a, charParams);
 			
@@ -556,11 +560,11 @@ public:
 			squareVertices.push_back(2 * (float)(X / ScrenW) - 1.0f);                                squareVertices.push_back(2 * (ScrenH - Y                        ) / ScrenH - 1.0f);
 			squareVertices.push_back(2 * (float)(X + (float)scaleX * charParams.w) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - Y                        ) / ScrenH - 1.0f);
 			
-			Indices.push_back(UVsize + 0); Indices.push_back(UVsize + 1); Indices.push_back(UVsize + 2);
-			Indices.push_back(UVsize + 1); Indices.push_back(UVsize + 2); Indices.push_back(UVsize + 3);
+			Indices.push_back(PointsCnt + 0); Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2);
+			Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2); Indices.push_back(PointsCnt + 3);
 
 			X = X + (float)scaleX * charParams.w;
-			UVsize += 4;
+			PointsCnt += 4;
 		};		
 	};
 };
