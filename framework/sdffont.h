@@ -179,6 +179,12 @@ class SDFFont
 
 	bool ParseFNTFile(const char* FNTFile, BWrapper::FileSearchPriority SearchPriority)
 	{
+		/*		
+		http://www.angelcode.com/products/bmfont/doc/file_format.html
+		http://www.angelcode.com/products/bmfont/doc/export_options.html
+	    https://www.gamedev.net/forums/topic/284560-bmfont-and-how-to-interpret-the-fnt-file/
+		*/
+
 		FileReader fr;
 		std::string line;
 
