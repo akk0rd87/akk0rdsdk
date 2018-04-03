@@ -91,14 +91,14 @@ int main(int argc, char *argv[])
 
 			if (DrawSDF)
 			{
-				SDFFontBuffer FontBuffer(&fnt, 2, AkkordColor(0, 0, 255));
+				SDFFontBuffer FontBuffer(&fnt, 2, AkkordColor(255, 255, 255));
 				auto size = BWrapper::GetScreenSize();
 				//FontBuffer.SetRect(640, 480);
 				FontBuffer.SetRect(size.x, size.y);
 				FontBuffer.SetScale(0.2f);
 				FontBuffer.SetAlignment(SDFFont::AlignH::Left, SDFFont::AlignV::Top);
 				FontBuffer.DrawText(10, 10, "Who are you?");
-				FontBuffer.DrawText(200, 200, "FISHER");
+				FontBuffer.DrawText(200, 200, "Fisher");
 				FontBuffer.Flush();
 				//auto size = FontBuffer.GetTextSize("Hello");
 			}
