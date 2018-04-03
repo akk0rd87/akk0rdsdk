@@ -9,6 +9,7 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <memory>
 #include "framework_defines.h"
 //#include "userevents.h"
 #include "core/locale.h"

@@ -31,8 +31,8 @@ public:
 
 private:
 
-    // список текстур
-    std::vector<AkkordTexture*> AtlasTextureList;
+    // список текстур    
+	std::vector<std::unique_ptr<AkkordTexture>> AtlasTextureList;
 
     // структура спрайта
     struct SpriteStruct{
@@ -185,11 +185,6 @@ AkkordRect AtlasManager::GetSpriteRect(unsigned SpriteIndex)
 void AtlasManager::Clear()
 {   
     Sprites.clear();
-
-    auto Size = AtlasTextureList.size();
-    for (decltype(Size) i = 0; i < Size; i++)
-        delete AtlasTextureList[i];
-
     AtlasTextureList.clear();
 }
 
@@ -204,8 +199,8 @@ AtlasManager::~AtlasManager()
 }
 
 void AtlasManager::AddTexture()
-{    
-    AtlasTextureList.push_back(new AkkordTexture());
+{   
+	AtlasTextureList.push_back(std::move(std::unique_ptr<AkkordTexture>(new AkkordTexture())));
 }
 
 #endif // __AKK0RD_ATLAS_MANAGER_H__
