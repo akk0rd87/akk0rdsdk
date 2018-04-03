@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
 				FontBuffer.SetScale(0.2f);
 				FontBuffer.SetAlignment(SDFFont::AlignH::Left, SDFFont::AlignV::Top);
 				FontBuffer.DrawText(10, 10, "Who are you?");
-				FontBuffer.DrawText(200, 200, "Fisher");
+				FontBuffer.DrawText(10, 200, "PpFfWw true");
 				FontBuffer.Flush();
 				//auto size = FontBuffer.GetTextSize("Hello");
 			}

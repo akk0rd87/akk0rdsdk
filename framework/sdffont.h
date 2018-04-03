@@ -566,17 +566,12 @@ public:
 			a = UTF2Unicode(Text, i);
 			sdfFont->GetCharInfo(a, charParams);
 			
+			X = X + scaleX * charParams.xoffset;
+
 			UV.push_back(float(charParams.x               ) / atlasW); UV.push_back(float(charParams.y + charParams.h) / atlasH);
 			UV.push_back(float(charParams.x + charParams.w) / atlasW); UV.push_back(float(charParams.y + charParams.h) / atlasH);
 			UV.push_back(float(charParams.x               ) / atlasW); UV.push_back(float(charParams.y               ) / atlasH);
 			UV.push_back(float(charParams.x + charParams.w) / atlasW); UV.push_back(float(charParams.y               ) / atlasH);
-
-			/*
-			squareVertices.push_back(2 * (float)(X / ScrenW) - 1.0f);                             	 squareVertices.push_back(2 * (ScrenH - Y - scaleY * charParams.h) / ScrenH - 1.0f);
-			squareVertices.push_back(2 * (float)(X + (float)scaleX * charParams.w) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - Y - scaleY * charParams.h) / ScrenH - 1.0f);
-			squareVertices.push_back(2 * (float)(X / ScrenW) - 1.0f);                                squareVertices.push_back(2 * (ScrenH - Y                        ) / ScrenH - 1.0f);
-			squareVertices.push_back(2 * (float)(X + (float)scaleX * charParams.w) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - Y                        ) / ScrenH - 1.0f);
-			*/
 
 			squareVertices.push_back(2 * (float)(X / ScrenW) - 1.0f);                             	 squareVertices.push_back(2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f);
 			squareVertices.push_back(2 * (float)(X + (float)scaleX * charParams.w) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f);
