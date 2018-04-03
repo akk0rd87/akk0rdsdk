@@ -229,18 +229,13 @@ class SDFFont
 						CharsVector.push_back({ id, x, y, w, h, dx, dy, xa });
 
 						//logDebug("dx=%d, dy=%d, xa=%d", dx, dy, xa);
-
-						goto next_iteration;
-					};
-
-					if (line.find("<chars", 0) != std::string::npos)
+					} 
+					else if (line.find("<chars", 0) != std::string::npos)
 					{
 						auto cnt = BWrapper::Str2Num(std::string(line, line.find("\"", 0) + 1).c_str());
-						CharsVector.reserve(cnt);
-						goto next_iteration;
-					};
-
-					if (line.find("<common", 0) != std::string::npos)
+						CharsVector.reserve(cnt);						
+					}
+					else if (line.find("<common", 0) != std::string::npos)
 					{
 						rpos = line.find("scaleW=", 0) + 8;
 						ScaleW = BWrapper::Str2Num(std::string(line, rpos).c_str());
@@ -248,12 +243,8 @@ class SDFFont
 						rpos = line.find("scaleH=", 0) + 8;
 						ScaleH = BWrapper::Str2Num(std::string(line, rpos).c_str());
 
-						logDebug("ScaleW = %d, ScaleH = %d", ScaleW, ScaleH);
-
-						goto next_iteration;
+						logDebug("ScaleW = %d, ScaleH = %d", ScaleW, ScaleH);						
 					};
-
-				next_iteration:;
 				};
 		};
 
@@ -581,7 +572,7 @@ public:
 			Indices.push_back(PointsCnt + 0); Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2);
 			Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2); Indices.push_back(PointsCnt + 3);
 
-			X = X + (float)scaleX * charParams.w;
+			X = X + (float)scaleX * (charParams.w /*+ charParams.xadvance*/);
 			PointsCnt += 4;
 		};		
 	};
