@@ -62,6 +62,7 @@ int main(int argc, char *argv[])
 
 	SDFFont fnt;
 	fnt.Load("sdf/font_0.png", BWrapper::FileSearchPriority::Assets);
+	//fnt.Load("sdf/HieroCalibri.png", BWrapper::FileSearchPriority::Assets);
 
 	bool DrawWithRender = true;
 	bool DrawSDF = true;
@@ -96,6 +97,7 @@ int main(int argc, char *argv[])
 				//FontBuffer.SetRect(640, 480);
 				FontBuffer.SetRect(size.x, size.y);
 				FontBuffer.SetScale(0.2f);
+				//FontBuffer.SetScale(3.0f);
 				FontBuffer.SetAlignment(SDFFont::AlignH::Left, SDFFont::AlignV::Top);
 				FontBuffer.DrawText(10, 10, "Who are you?");
 				FontBuffer.DrawText(10, 200, "PpFfWw true");

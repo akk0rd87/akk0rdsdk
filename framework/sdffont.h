@@ -196,57 +196,67 @@ class SDFFont
 			while (fr.ReadLine(line))
 				if (line.size() > 0)
 				{
-					if (line.find("<char id", 0) != std::string::npos)
+					if (line.find("char id", 0) != std::string::npos)
 					{
 						lpos = 0;
 						rpos = 0;
 
-						rpos = line.find("id=", lpos) + 4;
+						rpos = line.find("id=", lpos) + 3;
+						if (line[rpos] == '\"') ++rpos;
 						auto id = BWrapper::Str2Num(std::string(line, rpos).c_str());
 
 						lpos = rpos;
-						rpos = line.find("x=", lpos) + 3;
+						rpos = line.find("x=", lpos) + 2;
+						if (line[rpos] == '\"') ++rpos;
 						auto x = BWrapper::Str2Num(std::string(line, rpos).c_str());
 
 						lpos = rpos;
-						rpos = line.find("y=", lpos) + 3;
+						rpos = line.find("y=", lpos) + 2;
+						if (line[rpos] == '\"') ++rpos;
 						auto y = BWrapper::Str2Num(std::string(line, rpos).c_str());
 
 						lpos = rpos;
-						rpos = line.find("width=", lpos) + 7;
+						rpos = line.find("width=", lpos) + 6;
+						if (line[rpos] == '\"') ++rpos;
 						auto w = BWrapper::Str2Num(std::string(line, rpos).c_str());
 
 						lpos = rpos;
-						rpos = line.find("height=", lpos) + 8;
+						rpos = line.find("height=", lpos) + 7;
+						if (line[rpos] == '\"') ++rpos;
 						auto h = BWrapper::Str2Num(std::string(line, rpos).c_str());
 
 						lpos = rpos;
-						rpos = line.find("xoffset=", lpos) + 9;
+						rpos = line.find("xoffset=", lpos) + 8;
+						if (line[rpos] == '\"') ++rpos;
 						auto dx = std::stoi(std::string(line, rpos));						
 						
 						lpos = rpos;
-						rpos = line.find("yoffset=", lpos) + 9;
+						rpos = line.find("yoffset=", lpos) + 8;
+						if (line[rpos] == '\"') ++rpos;
 						auto dy = std::stoi(std::string(line, rpos));
 
 						lpos = rpos;
-						rpos = line.find("xadvance=", lpos) + 10;
+						rpos = line.find("xadvance=", lpos) + 9;
+						if (line[rpos] == '\"') ++rpos;
 						auto xa =std::stoi(std::string(line, rpos));
 
 						CharsVector.push_back({ id, x, y, w, h, dx, dy, xa });
 
-						//logDebug("dx=%d, dy=%d, xa=%d", dx, dy, xa);
+						logDebug("dx=%d, dy=%d, xa=%d", dx, dy, xa);
 					} 
-					else if (line.find("<chars", 0) != std::string::npos)
+					else if (line.find("chars", 0) != std::string::npos)
 					{
 						auto cnt = BWrapper::Str2Num(std::string(line, line.find("\"", 0) + 1).c_str());
 						CharsVector.reserve(cnt);						
 					}
-					else if (line.find("<common", 0) != std::string::npos)
+					else if (line.find("common", 0) != std::string::npos)
 					{
-						rpos = line.find("scaleW=", 0) + 8;
+						rpos = line.find("scaleW=", 0) + 7;
+						if (line[rpos] == '\"') ++rpos;
 						ScaleW = BWrapper::Str2Num(std::string(line, rpos).c_str());
 
-						rpos = line.find("scaleH=", 0) + 8;
+						rpos = line.find("scaleH=", 0) + 7;
+						if (line[rpos] == '\"') ++rpos;
 						ScaleH = BWrapper::Str2Num(std::string(line, rpos).c_str());
 
 						logDebug("ScaleW = %d, ScaleH = %d", ScaleW, ScaleH);						
@@ -310,6 +320,7 @@ public:
 		Driver->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fontAtlas->w, fontAtlas->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, fontAtlas->pixels); Driver->CheckError(__LINE__);
 
 		ParseFNTFile("sdf/font.fnt", BWrapper::FileSearchPriority::Assets);
+		//ParseFNTFile("sdf/HieroCalibri.fnt", BWrapper::FileSearchPriority::Assets);
 
 		return true;
 	};
