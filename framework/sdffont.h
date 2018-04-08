@@ -92,17 +92,25 @@ class SDFProgram
 {
 	bool Inited = false;
 	ShaderProgramStruct ShaderProgram, ShaderProgramOutline;
+	GLuint vertexShader;
+
+	bool InitVertexShader() // Вершинный шейдер одинаковый Outline и withoutOutline программ
+	{
+		auto Driver = GLESDriver::GetInstance();
+
+		// Create and compile the vertex shader
+		vertexShader = Driver->glCreateShader(GL_VERTEX_SHADER); Driver->CheckError(__LINE__); Driver->PrintShaderLog(vertexShader, __LINE__);
+		Driver->glShaderSource(vertexShader, 1, &SDF_vertexSource, NULL); Driver->CheckError(__LINE__); Driver->PrintShaderLog(vertexShader, __LINE__);
+		Driver->glCompileShader(vertexShader); Driver->CheckError(__LINE__); Driver->PrintShaderLog(vertexShader, __LINE__);
+
+		return true;
+	}
 
 	bool CompileProgram(ShaderProgramStruct* Program, const char* FragmentShader)
 	{
 		GLint oldProgramId;
 
-		auto Driver = GLESDriver::GetInstance();
-
-		// Create and compile the vertex shader
-		GLuint vertexShader = Driver->glCreateShader(GL_VERTEX_SHADER); Driver->CheckError(__LINE__); Driver->PrintShaderLog(vertexShader, __LINE__);
-		Driver->glShaderSource(vertexShader, 1, &SDF_vertexSource, NULL); Driver->CheckError(__LINE__); Driver->PrintShaderLog(vertexShader, __LINE__);
-		Driver->glCompileShader(vertexShader); Driver->CheckError(__LINE__); Driver->PrintShaderLog(vertexShader, __LINE__);
+		auto Driver = GLESDriver::GetInstance();		
 
 		// Create and compile the fragment shader
 		GLuint fragmentShader = Driver->glCreateShader(GL_FRAGMENT_SHADER); Driver->CheckError(__LINE__); Driver->PrintShaderLog(fragmentShader, __LINE__);
@@ -142,6 +150,8 @@ public :
 	{		
 		if (!Inited)
 		{
+			InitVertexShader();  // Инициализируем общий вертексный шейдер
+
 			if (this->CompileProgram(&ShaderProgram, SDF_fragmentSource) && this->CompileProgram(&ShaderProgramOutline, (std::string("#define SDF_OUTLINE \n") + SDF_fragmentSource).c_str()))
 			{
 				Inited = true;
