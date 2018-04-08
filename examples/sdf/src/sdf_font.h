@@ -6,8 +6,7 @@
 
 int main(int argc, char *argv[])
 {
-	BWrapper::SetLogPriority(BWrapper::LogPriority::Debug);
-	//if (SDL_Init(SDL_INIT_EVERYTHING /*| SDL_VIDEO_OPENGL*/) < 0)
+	BWrapper::SetLogPriority(BWrapper::LogPriority::Debug);	
 	if (!BWrapper::Init(SDL_INIT_VIDEO))
 	{
 		logError("SDL Init error %s", SDL_GetError());
@@ -38,27 +37,9 @@ int main(int argc, char *argv[])
 	auto Driver = GLESDriver::GetInstance();
 	Driver->Init();
 
-	std::string assetsDir = "";
-	if (BWrapper::GetDeviceOS() != BWrapper::OS::AndroidOS)
-		assetsDir = "assets/";
-
-	auto Img1 = IMG_Load((assetsDir + "img/1.png").c_str());
-	if (!Img1)
-	{
-		logError("Image 1.png load error %s", SDL_GetError());
-		return 0;
-	}
-	auto tex1 = SDL_CreateTextureFromSurface(Renderer, Img1);
-	SDL_FreeSurface(Img1);
-
-	auto Img2 = IMG_Load((assetsDir + "img/2.png").c_str());
-	if (!Img2)
-	{
-		logError("Image 2.png load error %s", SDL_GetError());
-		return 0;
-	}
-	auto tex2 = SDL_CreateTextureFromSurface(Renderer, Img2);
-	SDL_FreeSurface(Img2);
+	AkkordTexture Img1, Img2;	
+	Img1.LoadFromFile("img/1.png", AkkordTexture::TextureType::PNG, BWrapper::FileSearchPriority::Assets);
+	Img2.LoadFromFile("img/2.png", AkkordTexture::TextureType::PNG, BWrapper::FileSearchPriority::Assets);	
 
 	SDFFont fnt;
 	fnt.Load("sdf/font_0.png", BWrapper::FileSearchPriority::Assets);
@@ -73,19 +54,19 @@ int main(int argc, char *argv[])
 		SDL_Event e;
 		while (SDL_WaitEvent(&e))
 		{
-			if (e.type == SDL_QUIT) goto end;
-			SDL_RenderClear(Renderer);
+			if (e.type == SDL_QUIT) goto end;			
+			BWrapper::ClearRenderer();
 
 			if (DrawWithRender)
 			{
 				SDL_Rect r;
-				r.x = r.y = 10; r.w = r.h = 100;
-				SDL_RenderCopy(Renderer, tex1, nullptr, &r);
+				r.x = r.y = 10; r.w = r.h = 100;				
+				Img1.Draw(AkkordRect(r.x, r.y, r.w, r.h), nullptr);
 
 				SDL_GetWindowSize(window, &r.x, nullptr);
 				r.y = 10; r.w = r.h = 100;
 				r.x = r.x - r.w - 10;
-				SDL_RenderCopy(Renderer, tex2, nullptr, &r);				
+				Img2.Draw(AkkordRect(r.x, r.y, r.w, r.h), nullptr);
 			}
 
 			if (DrawSDF)
@@ -103,14 +84,12 @@ int main(int argc, char *argv[])
 				FontBuffer.Flush();
 				//auto size = FontBuffer.GetTextSize("Hello");
 			}
-
-			SDL_RenderPresent(Renderer);
+			
+			BWrapper::RefreshRenderer();
 		}
 	}
 
-end:
-	SDL_DestroyTexture(tex1);
-	SDL_DestroyTexture(tex2);
+end:	
 	SDL_DestroyWindow(window);
 	SDL_DestroyRenderer(Renderer);
 	SDL_Quit();
