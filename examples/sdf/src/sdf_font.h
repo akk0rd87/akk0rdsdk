@@ -82,14 +82,18 @@ int main(int argc, char *argv[])
 				FontBuffer.SetAlignment(SDFFont::AlignH::Left, SDFFont::AlignV::Top);
 				auto FontSize = FontBuffer.DrawText(10, 10, "Who are you?");
 				
-				BWrapper::SetCurrentColor(AkkordColor(255, 0, 0));
+				//BWrapper::SetCurrentColor(AkkordColor(255, 0, 0));
 				//BWrapper::DrawRect(AkkordRect(10, 10, FontSize.x, FontSize.y));
 
-				FontSize = FontBuffer.DrawText(10, 200, "PpFfWw true");
+				auto TextSize = FontBuffer.GetTextSize("PpFfWw true3b34tb34bbtsa3");
+				FontSize = FontBuffer.DrawText(10, 200, "PpFfWw true3b34tb34bbtsa3");
 				
-				//BWrapper::SetCurrentColor(AkkordColor(100, 100, 100, 100));
-
+				
 				FontBuffer.Flush();				
+
+				BWrapper::SetCurrentColor(AkkordColor(255, 0, 0));
+				BWrapper::DrawRect(AkkordRect(10, 200, FontSize.x, FontSize.y));
+				BWrapper::DrawRect(AkkordRect(10 - 1, 200 - 1, FontSize.x + 2, FontSize.y + 2));
 			}
 			
 			BWrapper::RefreshRenderer();

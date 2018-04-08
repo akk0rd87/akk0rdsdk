@@ -484,15 +484,14 @@ public:
 		{
 			a = UTF2Unicode(Text, i);
 			
-			sdfFont->GetCharInfo(a, charParams);
-			pt.x += charParams.w;
+			sdfFont->GetCharInfo(a, charParams);			
+			
+			pt.x += scaleX * charParams.xoffset;
+			pt.x += (float)scaleX * (charParams.w /*+ charParams.xadvance*/);
 
-			if (pt.y < charParams.h + charParams.yoffset)
-				pt.y = charParams.h + charParams.yoffset;
+			if (pt.y < scaleY* (charParams.h + charParams.yoffset))
+				pt.y = scaleY* (charParams.h + charParams.yoffset);
 		};
-
-		pt.x *= scaleX;
-		pt.y *= scaleY;
 
 		return pt;
 	};
@@ -573,7 +572,7 @@ public:
 			PointsCnt += 4;
 		};		
 
-		pt.x = X - pt.x;
+		pt.x = X - pt.x + 1;
 
 		return pt;
 	};
