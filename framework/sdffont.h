@@ -388,6 +388,8 @@ class SDFFontBuffer
 	SDFFont* sdfFont = nullptr;
 	int rectW = -1, rectH = -1;
 
+	bool outline = false;
+
 	SDFFont::AlignH alignH = SDFFont::AlignH::Center;
 	SDFFont::AlignV alignV = SDFFont::AlignV::Center;	
 
@@ -452,6 +454,8 @@ public:
 	void SetScale(float Scale){ scaleX = scaleY = Scale; }
 	void SetScale(float ScaleX, float ScaleY){ scaleX = ScaleX; scaleY = ScaleY; }
 
+	void SetOutline(bool Outline){ outline = Outline; }
+
 	float GetScaleX(){ return scaleX; }
 	float GetScaleY(){ return scaleY; }
 
@@ -480,7 +484,7 @@ public:
 		auto size = Indices.size();
 		if (size > 0)
 		{
-			sdfFont->Draw(false, size, color, color, &UV.front(), &squareVertices.front(), &Indices.front());
+			sdfFont->Draw(this->outline, size, this->color, this->color, &UV.front(), &squareVertices.front(), &Indices.front());
 		}
 		Clear();
 	};	
