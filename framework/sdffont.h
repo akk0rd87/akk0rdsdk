@@ -133,6 +133,8 @@ class SDFProgram
 		auto mat = Driver->glGetUniformLocation(Program->shaderProgram, "mat"); Driver->CheckError(__LINE__); Driver->PrintProgamLog(Program->shaderProgram, __LINE__);
 		auto base_texture = Driver->glGetUniformLocation(Program->shaderProgram, "base_texture"); Driver->CheckError(__LINE__); Driver->PrintProgamLog(Program->shaderProgram, __LINE__);
 		Program->sdf_outline_color = Driver->glGetUniformLocation(Program->shaderProgram, "sdf_outline_color"); Driver->CheckError(__LINE__); Driver->PrintProgamLog(Program->shaderProgram, __LINE__);
+		
+		//c = Vector4(offset, contrast, outlineOffset, contrast); // sdf_params
 		Program->sdf_params = Driver->glGetUniformLocation(Program->shaderProgram, "sdf_params"); Driver->CheckError(__LINE__); Driver->PrintProgamLog(Program->shaderProgram, __LINE__);
 		Program->font_color = Driver->glGetUniformLocation(Program->shaderProgram, "font_color"); Driver->CheckError(__LINE__); Driver->PrintProgamLog(Program->shaderProgram, __LINE__);
 
