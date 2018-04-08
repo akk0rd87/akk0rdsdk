@@ -259,7 +259,7 @@ class SDFFont
 						if (line[rpos] == '\"') ++rpos;
 						ScaleH = BWrapper::Str2Num(std::string(line, rpos).c_str());
 
-						logDebug("ScaleW = %d, ScaleH = %d", ScaleW, ScaleH);						
+						//logDebug("ScaleW = %d, ScaleH = %d", ScaleW, ScaleH);						
 					};
 				};
 		};
@@ -371,7 +371,6 @@ public:
 				ci = v;
 				return true;
 			}
-				
 
 		logError("Char with id=%u not found", Code);
 		return false;
@@ -409,46 +408,6 @@ public:
 		UV.reserve(DigitsCount * 4);
 		squareVertices.reserve(DigitsCount * 4);
 		Indices.reserve(DigitsCount * 6);
-
-		/*
-		unsigned int AtlasW = 8192;
-		unsigned int AtlasH = 4096;
-
-		unsigned LetterX1 = 3003;
-		unsigned LetterY1 = 1256;
-		unsigned LetterW1 = 398;
-		unsigned LetterH1 = 387;
-
-		unsigned LetterX2 = 4566;
-		unsigned LetterY2 = 1250;
-		unsigned LetterW2 = 369;
-		unsigned LetterH2 = 387;
-
-		UV = { float(LetterX1) / AtlasW, float(LetterY1 + LetterH1) / AtlasH,
-			float(LetterX1 + LetterW1) / AtlasW, float(LetterY1 + LetterH1) / AtlasH,
-			float(LetterX1) / AtlasW, float(LetterY1) / AtlasH,
-			float(LetterX1 + LetterW1) / AtlasW, float(LetterY1) / AtlasH,
-
-			float(LetterX2) / AtlasW, float(LetterY2 + LetterH2) / AtlasH,
-			float(LetterX2 + LetterW2) / AtlasW, float(LetterY2 + LetterH2) / AtlasH,
-			float(LetterX2) / AtlasW, float(LetterY2) / AtlasH,
-			float(LetterX2 + LetterW2) / AtlasW, float(LetterY2) / AtlasH
-		};
-
-		squareVertices = {
-			-0.8f, -1.0f,
-			0.0f, -1.0f,
-			-0.8f, 1.0f,
-			0.0f, 1.0f,
-
-			-0.0f, -1.0f,
-			0.8f, -1.0f,
-			-0.0f, 1.0f,
-			0.8f, 1.0f
-		};
-
-		Indices = { 0, 1, 2, 1, 2, 3, 4, 5, 6, 5, 6, 7 };
-		*/
 	}
 
 	void SetScale(float Scale){ scaleX = scaleY = Scale; }
