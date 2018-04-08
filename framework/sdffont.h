@@ -150,16 +150,13 @@ public :
 	{		
 		if (!Inited)
 		{
-			InitVertexShader();  // Инициализируем общий вертексный шейдер
-
-			if (this->CompileProgram(&ShaderProgram, SDF_fragmentSource) && this->CompileProgram(&ShaderProgramOutline, (std::string("#define SDF_OUTLINE \n") + SDF_fragmentSource).c_str()))
-			{
-				Inited = true;
-				return true;
-			}
-			return false;
+			if(InitVertexShader())  // Инициализируем общий вертексный шейдер
+				if (this->CompileProgram(&ShaderProgram, SDF_fragmentSource) && this->CompileProgram(&ShaderProgramOutline, (std::string("#define SDF_OUTLINE \n") + SDF_fragmentSource).c_str()))
+				{
+					Inited = true;			
+				}						
 		};
-		return true;
+		return Inited;
 	};
 
 	ShaderProgramStruct* GetShaderProgram(bool Outline)
@@ -402,7 +399,7 @@ class SDFFontBuffer
 	SDFFont::AlignH alignH = SDFFont::AlignH::Center;
 	SDFFont::AlignV alignV = SDFFont::AlignV::Center;	
 
-	AkkordColor color;
+	AkkordColor color, outlineColor;
 
 	std::vector<float>UV;
 	std::vector<float>squareVertices;
@@ -424,6 +421,7 @@ public:
 	void SetScale(float ScaleX, float ScaleY){ scaleX = ScaleX; scaleY = ScaleY; }
 
 	void SetOutline(bool Outline){ outline = Outline; }
+	void SetOutlineColor(const AkkordColor OutlineColor) { outlineColor = OutlineColor; };
 
 	float GetScaleX(){ return scaleX; }
 	float GetScaleY(){ return scaleY; }
@@ -453,7 +451,7 @@ public:
 		auto size = Indices.size();
 		if (size > 0)
 		{
-			sdfFont->Draw(this->outline, size, this->color, this->color, &UV.front(), &squareVertices.front(), &Indices.front());
+			sdfFont->Draw(this->outline, size, this->color, this->outlineColor, &UV.front(), &squareVertices.front(), &Indices.front());
 		}
 		Clear();
 	};	

@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 	
-	auto window = BWrapper::CreateRenderWindow("SDL2 SDF", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | (BWrapper::GetDeviceOS() == BWrapper::OS::Windows ? 0 : SDL_WINDOW_BORDERLESS));
+	auto window = BWrapper::CreateRenderWindow("SDL2 SDF", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 900, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | (BWrapper::GetDeviceOS() == BWrapper::OS::Windows ? 0 : SDL_WINDOW_BORDERLESS));
 	if (!window)
 	{
 		logError("Window create error %s", SDL_GetError());		
@@ -72,11 +72,12 @@ int main(int argc, char *argv[])
 			if (DrawSDF)
 			{
 				SDFFontBuffer FontBuffer(&fnt, 2, AkkordColor(255, 255, 255));
+				FontBuffer.SetOutlineColor(AkkordColor(0, 0, 0));
 				FontBuffer.SetOutline(true);
 				auto size = BWrapper::GetScreenSize();
 				//FontBuffer.SetRect(640, 480);
 				FontBuffer.SetRect(size.x, size.y);
-				FontBuffer.SetScale(0.2f);
+				FontBuffer.SetScale(0.5f);
 				//FontBuffer.SetScale(3.0f);
 				FontBuffer.SetAlignment(SDFFont::AlignH::Left, SDFFont::AlignV::Top);
 				FontBuffer.DrawText(10, 10, "Who are you?");
