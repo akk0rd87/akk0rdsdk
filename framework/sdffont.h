@@ -242,7 +242,7 @@ class SDFFont
 
 						CharsVector.push_back({ id, x, y, w, h, dx, dy, xa });
 
-						logDebug("dx=%d, dy=%d, xa=%d", dx, dy, xa);
+						//logDebug("dx=%d, dy=%d, xa=%d", dx, dy, xa);
 					} 
 					else if (line.find("chars", 0) != std::string::npos)
 					{
