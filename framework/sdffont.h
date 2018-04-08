@@ -355,7 +355,8 @@ public:
 		Driver->glUniform4f(shaderProgram->font_color, float(FontColor.GetR()) / 255, float(FontColor.GetG()) / 255, float(FontColor.GetB()) / 255, 1.0f); Driver->CheckError(__LINE__);
 
 		//c = Vector4(offset, contrast, outlineOffset, contrast); // sdf_params
-		Driver->glUniform4f(shaderProgram->sdf_params, 0.5f, 11.0f, 0.4f, 11.0f); Driver->CheckError(__LINE__);
+		Driver->glUniform4f(shaderProgram->sdf_params, 0.5f, 40.0f, 0.4f, 40.0f); Driver->CheckError(__LINE__);
+		//Driver->glUniform4f(shaderProgram->sdf_params, 0.5f, 10.0f, 0.4f, 10.0f); Driver->CheckError(__LINE__);
 
 		if (Outline) 
 			if (shaderProgram->sdf_outline_color >= 0)
