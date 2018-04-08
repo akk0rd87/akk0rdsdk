@@ -47,19 +47,19 @@ int main(int argc, char *argv[])
 
 	bool DrawWithRender = true;
 	bool DrawSDF = true;
-	
-	SDL_SetRenderDrawColor(Renderer, 100, 100, 100, 100);
+		
 	while (1)
 	{
 		SDL_Event e;
 		while (SDL_WaitEvent(&e))
 		{
 			if (e.type == SDL_QUIT) goto end;			
+			BWrapper::SetCurrentColor(AkkordColor(100, 100, 100, 100));
 			BWrapper::ClearRenderer();
 
 			if (DrawWithRender)
 			{
-				SDL_Rect r;
+				SDL_Rect r;				
 				r.x = r.y = 10; r.w = r.h = 100;				
 				Img1.Draw(AkkordRect(r.x, r.y, r.w, r.h), nullptr);
 
@@ -77,13 +77,19 @@ int main(int argc, char *argv[])
 				auto size = BWrapper::GetScreenSize();
 				//FontBuffer.SetRect(640, 480);
 				FontBuffer.SetRect(size.x, size.y);
-				FontBuffer.SetScale(0.5f);
+				FontBuffer.SetScale(0.15f);
 				//FontBuffer.SetScale(3.0f);
 				FontBuffer.SetAlignment(SDFFont::AlignH::Left, SDFFont::AlignV::Top);
-				FontBuffer.DrawText(10, 10, "Who are you?");
-				FontBuffer.DrawText(10, 200, "PpFfWw true");
-				FontBuffer.Flush();
-				//auto size = FontBuffer.GetTextSize("Hello");
+				auto FontSize = FontBuffer.DrawText(10, 10, "Who are you?");
+				
+				BWrapper::SetCurrentColor(AkkordColor(255, 0, 0));
+				//BWrapper::DrawRect(AkkordRect(10, 10, FontSize.x, FontSize.y));
+
+				FontSize = FontBuffer.DrawText(10, 200, "PpFfWw true");
+				
+				//BWrapper::SetCurrentColor(AkkordColor(100, 100, 100, 100));
+
+				FontBuffer.Flush();				
 			}
 			
 			BWrapper::RefreshRenderer();

@@ -452,18 +452,17 @@ public:
 	};
 
 	void Flush()
-	{
-		auto size = Indices.size();
-		if (size > 0)
+	{		
+		if (Indices.size() > 0)
 		{
-			sdfFont->Draw(this->outline, size, this->color, this->outlineColor, &UV.front(), &squareVertices.front(), &Indices.front());
+			sdfFont->Draw(this->outline, Indices.size(), this->color, this->outlineColor, &UV.front(), &squareVertices.front(), &Indices.front());
 		}
 		Clear();
 	};	
 	
 	~SDFFontBuffer()
 	{
-		Flush();
+		Clear();
 		sdfFont = nullptr;
 	};	
 
@@ -488,19 +487,20 @@ public:
 			sdfFont->GetCharInfo(a, charParams);
 			pt.x += charParams.w;
 
-			if (pt.y < charParams.h)
-				pt.y = charParams.h;
+			if (pt.y < charParams.h + charParams.yoffset)
+				pt.y = charParams.h + charParams.yoffset;
 		};
 
 		pt.x *= scaleX;
 		pt.y *= scaleY;
-		//logDebug("text=%s, width=%d, height=%d", Text, pt.x, pt.y);
 
 		return pt;
 	};
 
-	void DrawText(int X, int Y, const char* Text)
+	AkkordPoint DrawText(int X, int Y, const char* Text)
 	{
+		AkkordPoint pt;	
+
 		auto size = GetTextSize(Text);
 
 		// Выбираем начальную точку в зависимости от выравнивания
@@ -528,6 +528,9 @@ public:
 				break;
 		};
 
+
+		pt = AkkordPoint(X, 0);
+
 		unsigned int i = 0;
 		unsigned int a = 0;
 		unsigned len = strlen(Text);
@@ -539,8 +542,6 @@ public:
 		
 		float ScrenW = ScreenSize.x;
 		float ScrenH = ScreenSize.y;
-
-		float f;
 
 		SDFCharInfo charParams;
 		
@@ -565,9 +566,16 @@ public:
 			Indices.push_back(PointsCnt + 0); Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2);
 			Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2); Indices.push_back(PointsCnt + 3);
 
+			if (pt.y < scaleY * (charParams.h + charParams.yoffset))
+				pt.y = scaleY * (charParams.h + charParams.yoffset);
+
 			X = X + (float)scaleX * (charParams.w /*+ charParams.xadvance*/);
 			PointsCnt += 4;
 		};		
+
+		pt.x = X - pt.x;
+
+		return pt;
 	};
 };
 
