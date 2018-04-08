@@ -85,8 +85,8 @@ int main(int argc, char *argv[])
 				//BWrapper::SetCurrentColor(AkkordColor(255, 0, 0));
 				//BWrapper::DrawRect(AkkordRect(10, 10, FontSize.x, FontSize.y));
 
-				auto TextSize = FontBuffer.GetTextSize("PpFfWw true3b34tb34bbtsa3");
-				FontSize = FontBuffer.DrawText(10, 200, "PpFfWw true3b34tb34bbtsa3");
+				auto TextSize = FontBuffer.GetTextSize("PpFfWw true");
+				FontSize = FontBuffer.DrawText(10, 200, "PpFfWw true");
 				
 				
 				FontBuffer.Flush();				
