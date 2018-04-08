@@ -5,6 +5,8 @@
 #include "openglesdriver.h"
 #include "basewrapper.h"
 
+
+
 static const GLchar* SDF_vertexSource =
 "varying lowp vec4 result_color; \n\
 varying mediump vec2 result_uv; \n\
@@ -369,6 +371,9 @@ public:
 			}
 
 		Driver->glDrawElements(GL_TRIANGLES, Count, GL_UNSIGNED_SHORT, Indices); Driver->CheckError(__LINE__);
+
+		Driver->glDisableVertexAttribArray(SDF_ATTRIB_POSITION); Driver->CheckError(__LINE__);
+		Driver->glDisableVertexAttribArray(SDF_ATTRIB_UV); Driver->CheckError(__LINE__);
 
 		Driver->glUseProgram(oldProgramId); Driver->CheckError(__LINE__); Driver->CheckError(__LINE__);
 

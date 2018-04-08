@@ -4,8 +4,12 @@
 #include "basewrapper.h"
 #include "sdffont.h"
 
+//extern int GLES2_ActivateRenderer(SDL_Renderer * renderer);
+
 int main(int argc, char *argv[])
 {
+	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengles2");
+
 	BWrapper::SetLogPriority(BWrapper::LogPriority::Debug);	
 	if (!BWrapper::Init(SDL_INIT_VIDEO))
 	{
@@ -20,9 +24,7 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 	BWrapper::SetActiveWindow(window);
-
-	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengles2");
-
+	
 	auto Renderer = BWrapper::CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	if (!Renderer)
 	{
@@ -67,6 +69,13 @@ int main(int argc, char *argv[])
 				r.y = 10; r.w = r.h = 100;
 				r.x = r.x - r.w - 10;
 				Img2.Draw(AkkordRect(r.x, r.y, r.w, r.h), nullptr);
+
+				BWrapper::SetCurrentColor(AkkordColor(255, 255, 0));
+				//BWrapper::DrawRect(AkkordRect(10 - 1, 10 - 1, 150, 150));
+				BWrapper::DrawRect(AkkordRect(50, 50, 150, 150));
+
+				//Img2.Draw(AkkordRect(r.x, r.y, r.w, r.h), nullptr);
+				//SDL_currec				
 			}
 
 			if (DrawSDF)
@@ -87,8 +96,20 @@ int main(int argc, char *argv[])
 
 				auto TextSize = FontBuffer.GetTextSize("PpFfWw true");
 				FontSize = FontBuffer.DrawText(10, 200, "PpFfWw true");
-				
-				
+		
+				//BWrapper::SetCurrentColor(AkkordColor(255, 0, 0));
+				//BWrapper::DrawRect(AkkordRect(10, 200, FontSize.x, FontSize.y));
+				//BWrapper::DrawRect(AkkordRect(10 - 1, 200 - 1, FontSize.x + 2, FontSize.y + 2));
+								
+				//SDL_ActivateRenderer(BWrapper::GetActiveRenderer());
+				//activateree
+				//SDL_GL_MakeCurrent(window, Renderer);
+				//SDL_CurrentContext = data->context;
+
+				//GLES2_ActivateRenderer();
+
+				//Renderer->
+				//GLES2_ActivateRenderer(BWrapper::GetActiveRenderer());
 				FontBuffer.Flush();				
 
 				BWrapper::SetCurrentColor(AkkordColor(255, 0, 0));
