@@ -457,6 +457,65 @@ bool AkkordTexture::Draw(AkkordRect Rect, const AkkordRect* RectFromAtlas, unsig
         return false;
     }
 
+	SDL_BlendMode bmd;
+
+	//SDL_GetTextureBlendMode(tex, &bmd);
+
+	/*
+
+	SDL_GetRenderDrawBlendMode(BWrapper::GetActiveRenderer(), &bmd);
+
+	switch (bmd)
+	{
+		case SDL_BLENDMODE_NONE:
+			logDebug("Render SDL_BLENDMODE_NONE");
+			break;
+
+		case SDL_BLENDMODE_BLEND:
+			logDebug("Render SDL_BLENDMODE_BLEND");
+			break;
+
+		case SDL_BLENDMODE_ADD:
+			logDebug("Render SDL_BLENDMODE_BLEND");
+			break;
+
+		case SDL_BLENDMODE_MOD:
+			logDebug("Render SDL_BLENDMODE_BLEND");
+			break;
+		default:
+			logDebug("Unknown blend Mode %d", bmd);
+			break;
+	}
+
+	SDL_GetTextureBlendMode(tex, &bmd);	
+
+	switch (bmd)
+	{
+	case SDL_BLENDMODE_NONE:
+		logDebug("Texture SDL_BLENDMODE_NONE");
+		break;
+
+	case SDL_BLENDMODE_BLEND:
+		logDebug("Texture SDL_BLENDMODE_BLEND");
+		break;
+
+	case SDL_BLENDMODE_ADD:
+		logDebug("Texture SDL_BLENDMODE_BLEND");
+		break;
+
+	case SDL_BLENDMODE_MOD:
+		logDebug("Texture SDL_BLENDMODE_BLEND");
+		break;
+	default:
+		logDebug("Texture blend Mode %d", bmd);
+		break;
+	}
+	*/
+	//bmd->
+
+	//logDebug("texture blend mode %d", SDL_GetTextureBlendMode(tex));
+	//logDebug("");
+
     return true;
 };
 

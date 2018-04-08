@@ -49,7 +49,9 @@ int main(int argc, char *argv[])
 
 	bool DrawWithRender = true;
 	bool DrawSDF = true;
-		
+	
+	SDL_SetRenderDrawBlendMode(BWrapper::GetActiveRenderer(), SDL_BLENDMODE_BLEND);		
+
 	while (1)
 	{
 		SDL_Event e;
@@ -72,10 +74,11 @@ int main(int argc, char *argv[])
 
 				BWrapper::SetCurrentColor(AkkordColor(255, 255, 0));
 				//BWrapper::DrawRect(AkkordRect(10 - 1, 10 - 1, 150, 150));
-				BWrapper::DrawRect(AkkordRect(50, 50, 150, 150));
+				BWrapper::DrawRect(AkkordRect(50, 50, 180, 180));
 
-				//Img2.Draw(AkkordRect(r.x, r.y, r.w, r.h), nullptr);
-				//SDL_currec				
+				BWrapper::SetCurrentColor(AkkordColor(255, 0, 255));
+
+				BWrapper::FillRect(AkkordRect(150, 150, 150, 150));
 			}
 
 			if (DrawSDF)
@@ -95,22 +98,15 @@ int main(int argc, char *argv[])
 				//BWrapper::DrawRect(AkkordRect(10, 10, FontSize.x, FontSize.y));
 
 				auto TextSize = FontBuffer.GetTextSize("PpFfWw true");
-				FontSize = FontBuffer.DrawText(10, 200, "PpFfWw true");
-		
-				//BWrapper::SetCurrentColor(AkkordColor(255, 0, 0));
-				//BWrapper::DrawRect(AkkordRect(10, 200, FontSize.x, FontSize.y));
-				//BWrapper::DrawRect(AkkordRect(10 - 1, 200 - 1, FontSize.x + 2, FontSize.y + 2));
-								
-				//SDL_ActivateRenderer(BWrapper::GetActiveRenderer());
-				//activateree
-				//SDL_GL_MakeCurrent(window, Renderer);
-				//SDL_CurrentContext = data->context;
+				FontSize = FontBuffer.DrawText(10, 200, "PpFfWw true");		
 
-				//GLES2_ActivateRenderer();
 
-				//Renderer->
-				//GLES2_ActivateRenderer(BWrapper::GetActiveRenderer());
+				//SDL_BlendMode bmd;
+				//SDL_GetRenderDrawBlendMode(BWrapper::GetActiveRenderer(), &bmd);				
+				//SDL_SetRenderDrawBlendMode(BWrapper::GetActiveRenderer(), SDL_BLENDMODE_BLEND);
 				FontBuffer.Flush();				
+
+				//SDL_SetRenderDrawBlendMode(BWrapper::GetActiveRenderer(), bmd);
 
 				BWrapper::SetCurrentColor(AkkordColor(255, 0, 0));
 				BWrapper::DrawRect(AkkordRect(10, 200, FontSize.x, FontSize.y));
