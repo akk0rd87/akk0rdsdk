@@ -85,14 +85,13 @@ int main(int argc, char *argv[])
 				SDL_GetWindowSize(window, &r.x, nullptr);
 				r.y = 10; r.w = r.h = 100;
 				r.x = r.x - r.w - 10;
-				SDL_RenderCopy(Renderer, tex2, nullptr, &r);
-				//SDL_RenderPresent(Renderer);
-				//SDL_GL_SwapWindow(window);
+				SDL_RenderCopy(Renderer, tex2, nullptr, &r);				
 			}
 
 			if (DrawSDF)
 			{
 				SDFFontBuffer FontBuffer(&fnt, 2, AkkordColor(255, 255, 255));
+				FontBuffer.SetOutline(true);
 				auto size = BWrapper::GetScreenSize();
 				//FontBuffer.SetRect(640, 480);
 				FontBuffer.SetRect(size.x, size.y);

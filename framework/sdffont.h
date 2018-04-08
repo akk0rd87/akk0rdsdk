@@ -142,7 +142,7 @@ public :
 	{		
 		if (!Inited)
 		{
-			if (this->CompileProgram(&ShaderProgram, SDF_fragmentSource) && this->CompileProgram(&ShaderProgram, (std::string("#define SDF_OUTLINE \n") + SDF_fragmentSource).c_str()))
+			if (this->CompileProgram(&ShaderProgram, SDF_fragmentSource) && this->CompileProgram(&ShaderProgramOutline, (std::string("#define SDF_OUTLINE \n") + SDF_fragmentSource).c_str()))
 			{
 				Inited = true;
 				return true;
