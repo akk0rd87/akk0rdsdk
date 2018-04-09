@@ -4,8 +4,7 @@
 
 #include "openglesdriver.h"
 #include "basewrapper.h"
-
-
+#include "SDL_image.h"
 
 static const GLchar* SDF_vertexSource =
 "varying lowp vec4 result_color; \n\
