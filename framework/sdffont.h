@@ -336,7 +336,7 @@ public:
 		return true;
 	};
 
-	bool Draw(bool Outline, unsigned Count, AkkordColor& FontColor, AkkordColor& OutlineColor, const float* UV, const float* squareVertices, unsigned short* Indices)
+	bool Draw(bool Outline, unsigned Count, AkkordColor& FontColor, AkkordColor& OutlineColor, float Offset, float Contrast, float OutlineOffset, float OutlineContrast, const float* UV, const float* squareVertices, unsigned short* Indices)
 	{
 		GLint oldProgramId;
 		auto shaderProgram = sdfProgram.GetShaderProgram(Outline);
@@ -357,7 +357,7 @@ public:
 		Driver->glUniform4f(shaderProgram->font_color, float(FontColor.GetR()) / 255, float(FontColor.GetG()) / 255, float(FontColor.GetB()) / 255, 1.0f); Driver->CheckError(__LINE__);
 
 		//c = Vector4(offset, contrast, outlineOffset, contrast); // sdf_params
-		Driver->glUniform4f(shaderProgram->sdf_params, 0.5f, 40.0f, 0.4f, 40.0f); Driver->CheckError(__LINE__);
+		Driver->glUniform4f(shaderProgram->sdf_params, Offset, Contrast, OutlineOffset, OutlineContrast); Driver->CheckError(__LINE__);
 		//Driver->glUniform4f(shaderProgram->sdf_params, 0.5f, 10.0f, 0.4f, 10.0f); Driver->CheckError(__LINE__);
 
 		if (Outline) 
@@ -413,7 +413,9 @@ class SDFFontBuffer
 
 	std::vector<float>UV;
 	std::vector<float>squareVertices;
-	std::vector<unsigned short>Indices;	
+	std::vector<unsigned short>Indices;		
+
+	float offset, contrast, outlineOffset, outlineContrast;
 public:
 	SDFFontBuffer(SDFFont* Font, unsigned int DigitsCount, AkkordColor Color)
 	{
@@ -435,6 +437,8 @@ public:
 
 	float GetScaleX(){ return scaleX; }
 	float GetScaleY(){ return scaleY; }
+
+	void SetSDFParams(float Offset, float Contrast, float OutlineOffset, float OutlineContrast) { offset = Offset; contrast = Contrast; outlineOffset = OutlineOffset; outlineContrast = OutlineContrast; };
 
 	void SetRect(int W, int H)
 	{ 
@@ -460,7 +464,7 @@ public:
 	{		
 		if (Indices.size() > 0)
 		{
-			sdfFont->Draw(this->outline, Indices.size(), this->color, this->outlineColor, &UV.front(), &squareVertices.front(), &Indices.front());
+			sdfFont->Draw(this->outline, Indices.size(), this->color, this->outlineColor, offset, contrast, outlineOffset, outlineContrast, &UV.front(), &squareVertices.front(), &Indices.front());
 		}
 		Clear();
 	};	

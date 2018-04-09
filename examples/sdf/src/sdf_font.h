@@ -86,6 +86,7 @@ int main(int argc, char *argv[])
 				SDFFontBuffer FontBuffer(&fnt, 2, AkkordColor(255, 255, 255));
 				FontBuffer.SetOutlineColor(AkkordColor(0, 0, 0));
 				FontBuffer.SetOutline(true);
+				FontBuffer.SetSDFParams(0.5f, 40.0f, 0.4f, 40.0f);
 				auto size = BWrapper::GetScreenSize();
 				//FontBuffer.SetRect(640, 480);
 				FontBuffer.SetRect(size.x, size.y);
