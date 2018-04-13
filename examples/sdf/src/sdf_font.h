@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
 				BWrapper::DrawRect(AkkordRect(10, 200, FontSize.x, FontSize.y));
 				BWrapper::DrawRect(AkkordRect(10 - 1, 200 - 1, FontSize.x + 2, FontSize.y + 2));
 			}
-			
+			logDebug("redraw");
 			BWrapper::RefreshRenderer();
 		}
 	}

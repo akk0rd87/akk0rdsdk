@@ -100,7 +100,12 @@ class SDFProgram
 		auto Driver = GLESDriver::GetInstance();
 
 		// Create and compile the vertex shader
-		vertexShader = Driver->glCreateShader(GL_VERTEX_SHADER); Driver->CheckError(__LINE__); Driver->PrintShaderLog(vertexShader, __LINE__);
+		vertexShader = Driver->glCreateShader(GL_VERTEX_SHADER); 
+		
+		Driver->CheckError(__LINE__); 
+
+		Driver->PrintShaderLog(vertexShader, __LINE__);
+
 		Driver->glShaderSource(vertexShader, 1, &SDF_vertexSource, NULL); Driver->CheckError(__LINE__); Driver->PrintShaderLog(vertexShader, __LINE__);
 		Driver->glCompileShader(vertexShader); Driver->CheckError(__LINE__); Driver->PrintShaderLog(vertexShader, __LINE__);
 
