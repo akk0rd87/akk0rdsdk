@@ -433,9 +433,11 @@ public:
 		Indices.reserve(DigitsCount * 6);
 	}
 
+	void SetFont(SDFFont* Font){ sdfFont = Font; };	
 	void SetScale(float Scale){ scaleX = scaleY = Scale; }
 	void SetScale(float ScaleX, float ScaleY){ scaleX = ScaleX; scaleY = ScaleY; }
 
+	void SetColor(const AkkordColor Color) { color = Color; };
 	void SetOutline(bool Outline){ outline = Outline; }
 	void SetOutlineColor(const AkkordColor OutlineColor) { outlineColor = OutlineColor; };
 
