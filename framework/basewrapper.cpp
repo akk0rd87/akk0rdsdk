@@ -415,7 +415,7 @@ AkkordTexture::~AkkordTexture()
     Destroy();
 }
 
-bool AkkordTexture::Draw(AkkordRect Rect, const AkkordRect* RectFromAtlas, unsigned char Flip, double Angle, AkkordPoint* Point)
+const bool AkkordTexture::Draw(AkkordRect Rect, const AkkordRect* RectFromAtlas, unsigned char Flip, double Angle, AkkordPoint* Point)
 {
     
     std::string Format;
@@ -457,7 +457,7 @@ bool AkkordTexture::Draw(AkkordRect Rect, const AkkordRect* RectFromAtlas, unsig
         return false;
     }
 
-	SDL_BlendMode bmd;
+	//SDL_BlendMode bmd;
 
     return true;
 };
@@ -574,27 +574,27 @@ unsigned char AkkordColor::GetAFromInt32(unsigned int ColorInt32)
     return (ColorInt32 & 0xff000000) >> 24;
 };
 
-unsigned char AkkordColor::GetR()
+const unsigned char AkkordColor::GetR()
 {
     return AkkordColor::GetRFromInt32(color);
 };
 
-unsigned char AkkordColor::GetG()
+const unsigned char AkkordColor::GetG()
 {
     return AkkordColor::GetGFromInt32(color);
 };
 
-unsigned char AkkordColor::GetB()
+const unsigned char AkkordColor::GetB()
 {
     return AkkordColor::GetBFromInt32(color);
 };
 
-unsigned char AkkordColor::GetA()
+const unsigned char AkkordColor::GetA()
 {
     return AkkordColor::GetAFromInt32(color);;
 };
 
-unsigned int AkkordColor::GetInt32()
+const unsigned int AkkordColor::GetInt32()
 {
     return color;
 };
@@ -1108,7 +1108,7 @@ FileReader::~FileReader()
     Close();
 };
 
-bool FileReader::IsOpen()
+const bool FileReader::IsOpen()
 {
     return opened;
 }

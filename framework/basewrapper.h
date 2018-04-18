@@ -49,11 +49,11 @@ public:
     void                 SetRGB  (unsigned char R, unsigned char G, unsigned char B);
     void                 SetRGBA (unsigned char R, unsigned char G, unsigned char B, unsigned char A);
     
-    unsigned int         GetInt32();    
-    unsigned char        GetR    ();
-    unsigned char        GetG    ();
-    unsigned char        GetB    ();
-    unsigned char        GetA    ();
+    const unsigned int   GetInt32();    
+    const unsigned char  GetR    ();
+    const unsigned char  GetG    ();
+    const unsigned char  GetB    ();
+    const unsigned char  GetA    ();
 
     static unsigned char GetRFromInt32(unsigned int ColorInt32);
     static unsigned char GetGFromInt32(unsigned int ColorInt32);
@@ -241,7 +241,7 @@ public:
     bool LoadFromFile(const char* FileName, TextureType Type, const BWrapper::FileSearchPriority SearchPriority = BWrapper::FileSearchPriority::Assets);
     //int Draw(AkkordRect Rect);
     //int Draw(AkkordRect RectFromAtlas, AkkordRect Rect);
-    bool Draw(AkkordRect Rect, const AkkordRect* RectFromAtlas = nullptr, unsigned char Flip = AkkordTexture::Flip::None, double Angle = 0, AkkordPoint* Point = nullptr);
+    const bool Draw(AkkordRect Rect, const AkkordRect* RectFromAtlas = nullptr, unsigned char Flip = AkkordTexture::Flip::None, double Angle = 0, AkkordPoint* Point = nullptr);
     AkkordPoint GetSize();
     AkkordTexture();
     ~AkkordTexture();
@@ -276,7 +276,7 @@ public:
     void Close();
     FileReader();
     ~FileReader();
-    bool IsOpen();
+    const bool IsOpen();
     bool ReadLine(std::string& Line);
     bool Read(char* Buffer, unsigned MaxSize, unsigned& Readed);
 };
