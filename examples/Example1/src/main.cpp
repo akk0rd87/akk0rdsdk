@@ -48,36 +48,35 @@ void UpdateScreen()
 
 bool Init()
 {
-    int n = 0;
-    if (!BWrapper::Init(SDL_INIT_VIDEO)) n = 0;//return false;
+    if (!BWrapper::Init(SDL_INIT_VIDEO)) return false;
 
 	auto Window = BWrapper::CreateRenderWindow("Hello World!", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | (BWrapper::GetDeviceOS() == BWrapper::OS::Windows ? 0 : SDL_WINDOW_BORDERLESS));
-    
-    if (!Window) n = 0;//return false;
-    
+
+    if (!Window) return false;
+
     BWrapper::SetActiveWindow(Window);
     BWrapper::SetWindowResizable(true);
     auto Renderer = BWrapper::CreateRenderer(Window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    
-    if (!Renderer) n = 0;//return false;
-    
-    BWrapper::SetActiveRenderer(Renderer);                
+
+    if (!Renderer)return false;
+
+    BWrapper::SetActiveRenderer(Renderer);
 
     return true;
 }
 
 bool UpdateOnClick(int X, int Y)
-{   
-    
+{
+
     for (unsigned i = 0; i < 4; i++)
-    {         
+    {
         if (BWrapper::IsPointInRect(AkkordPoint(X, Y), AdImagesRects[i]))
         {
             adRand.OpenURLByIndex(i);
             logDebug("Clicked Ad Image = %d", i);
         }
     }
-    
+
 
     if (X < BWrapper::GetScreenWidth() / 2) Flip = AkkordTexture::Flip::Horizontal;
     else                                    Flip = AkkordTexture::Flip::None;
@@ -102,17 +101,17 @@ bool UpdateOnClick(int X, int Y)
 }
 
 void ReDraw()
-{    
+{
     //logDebug("Redraw() ZombieIndex = %u", ZombieIndex);
     auto ScreenHeight = BWrapper::GetScreenHeight();
     auto ScreenWidth  = BWrapper::GetScreenWidth();
     BWrapper::SetCurrentColor(AkkordColor(255, 255, 255));
-    
-    BWrapper::ClearRenderer();    
-    
+
+    BWrapper::ClearRenderer();
+
     Background.Draw(AkkordRect(0, 0, ScreenWidth, ScreenHeight));
 
-    
+
     AdImagesRects[0].x = 10;
     AdImagesRects[0].y = ScreenHeight - AdImagesRects[0].h - 10;
 
@@ -153,7 +152,7 @@ void ReDraw()
     }
 
     AtlasMgr.DrawSprite(ZombieVector[ZombieIndex], ZombiePosition, Flip);
-    
+
     for (unsigned i = 0; i < 4; i++)
         adRand.DrawImageByIndex(i, AdImagesRects[i]);
 
@@ -163,7 +162,7 @@ void ReDraw()
 }
 
 void ClearAll()
-{    
+{
     BWrapper::DestroyRenderer();
     BWrapper::DestroyWindow();
 }
@@ -208,40 +207,40 @@ void Loop()
 }
 */
 
-int main(int, char**){    
-        
+int main(int, char**){
+
     BWrapper::SetLogPriority(BWrapper::LogPriority::Debug);
     auto LogParams = BWrapper::GetLogParams();
     LogParams->lenFile = 20;
     logDebug("Program started");
-    SDL_Event event;    
+    SDL_Event event;
     if (!Init())
     {
-        ClearAll();        
+        ClearAll();
         return 1;
-    }  
+    }
 
 	SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
-    
+
     //logDebug("Android api level %d", BWrapper::AndroidGetApiLevel());
 
     // Add Rects to Control Clicks by Images
     int imagesCnt = adRand.Randomize(4);
     for (int i = 0; i < imagesCnt; i++)
-    {    
+    {
         AdImagesRects[i].w = adRand.ImageWidth;
         AdImagesRects[i].h = adRand.ImageHeight;
-    } 
-                
+    }
+
     LoadZombies();
-    LoadSpriteSheet();    
+    LoadSpriteSheet();
 
     ZombiePosition.x = BWrapper::GetScreenWidth() / 2;
 
     Background.LoadFromFile("background/bg.png", AkkordTexture::TextureType::PNG, BWrapper::FileSearchPriority::Assets);
     Ground.LoadFromFile("background/Tile (2).png", AkkordTexture::TextureType::PNG, BWrapper::FileSearchPriority::Assets);
-    
+
     ReDraw();
 
     //auto handle = std::async(std::launch::async, Loop);
@@ -272,7 +271,7 @@ int main(int, char**){
                     break;
 
                 case SDL_WINDOWEVENT:
-                {                    
+                {
                     break;
                 }
 
@@ -294,20 +293,20 @@ int main(int, char**){
                             goto end;
                             break;
 
-						case BWrapper::KeyCodes::Left:							
+						case BWrapper::KeyCodes::Left:
 							Flip = AkkordTexture::Flip::Horizontal;
 							break;
 
-						case BWrapper::KeyCodes::Right:							
+						case BWrapper::KeyCodes::Right:
 							Flip = AkkordTexture::Flip::None;
 							break;
                     }
                 }
                 default:
                     break;
-            }     
+            }
         }
-        
+
         auto ticks2 = SDL_GetTicks();
         if (ticks2 - ticks1 > 60)
         {
@@ -322,6 +321,6 @@ int main(int, char**){
 
 end:
     ClearAll();
-    BWrapper::Quit();    
+    BWrapper::Quit();
     return 0;
 }

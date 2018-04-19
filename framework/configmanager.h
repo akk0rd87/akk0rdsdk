@@ -11,12 +11,12 @@ public:
     bool         Load();
     bool         Save();
     void         Clear();
-    
+
     bool         SetFile    (const char* FileName, BWrapper::FileSearchPriority SearchPriority);
 
     bool         SetIntValue(const char* Key, int         Value);
     bool         SetStrValue(const char* Key, const char* Value);
-                 
+
     int          GetIntValue(const char* Key, int         DefaultValue);
     std::string  GetStrValue(const char* Key, const char* DefaultValue);
 
@@ -31,7 +31,6 @@ private:
     public:
         std::string Key;
         std::string Value;
-        unsigned    KeyLength;
         ~ConfigStruct()
         {
             Key.clear();
@@ -56,14 +55,16 @@ private:
 
 unsigned ConfigManager::GetConfigIndex(const char* Key)
 {
-    auto len = strlen(Key);
+    unsigned i = 0;
 
-    for (decltype(ConfigVector.size()) i = 0; i < ConfigVector.size(); i++)
-        if (len == ConfigVector[i].KeyLength)
-            if (strcmp(Key, ConfigVector[i].Key.c_str()) == 0)
-                return i;
+    for(const auto& v : ConfigVector)
+    {
+        if (Key == v.Key)
+            return i;
+        ++i;
+    };
 
-    // return max unsigned value    
+    // return max unsigned value
     return GConstants::unsigned_max();
 }
 
@@ -81,7 +82,6 @@ void ConfigManager::SetValue(const char* Key, const char* Value)
         ConfigVector.push_back(str);
         auto idx = ConfigVector.size() - 1;
         ConfigVector[idx].Key = std::string(Key);
-        ConfigVector[idx].KeyLength = strlen(Key);
         ConfigVector[idx].Value = std::string(Value);
     }
 }
@@ -103,7 +103,7 @@ bool ConfigManager::Load()
     FileReader fr;
     if (fr.Open(FileName.c_str(), FSearchPriority))
     {
-        std::string line;        
+        std::string line;
         decltype(line.find('='))      pos = 0;
         decltype(ConfigVector.size()) idx = 0;
 
@@ -119,11 +119,9 @@ bool ConfigManager::Load()
 
                     ConfigVector[idx].Key = std::string(line, 0, pos);
                     ConfigVector[idx].Value = std::string(line, pos + 1);
-                    ConfigVector[idx].KeyLength = pos;
-                    //BWrapper::Log(BWrapper::LogPriority::Debug, "ConfigManager::Load(): File=%s, Key=[%s] Value=[%s], KeyLength=%u, pos=%u", this->FileName.c_str(), ConfigVector[idx].Key.c_str(), ConfigVector[idx].Value.c_str(), ConfigVector[idx].KeyLength, pos);
                 }
             }
-        } 
+        }
         fr.Close();
         return true;
     }
@@ -131,7 +129,7 @@ bool ConfigManager::Load()
     {
         if (BWrapper::FileSearchPriority::Assets == FSearchPriority)
             logError("ConfigManager::Load(): Asset config file not found %s", this->FileName.c_str());
-    }    
+    }
     fr.Close();
 
     // ругаться, если это assets
@@ -221,7 +219,7 @@ void ConfigManager::PrintConfig()
 {
     logInfo("=== ConfigManager::PrintConfig() ===");
     for (decltype(ConfigVector.size()) i = 0; i < ConfigVector.size(); i++)
-        logInfo("ConfigManager::PrintConfig(): File=%s, Key=[%s] Value=[%s], KeyLength=%u", this->FileName.c_str(), ConfigVector[i].Key.c_str(), ConfigVector[i].Value.c_str(), ConfigVector[i].KeyLength);
+        logInfo("ConfigManager::PrintConfig(): File=%s, Key=[%s] Value=[%s]", this->FileName.c_str(), ConfigVector[i].Key.c_str(), ConfigVector[i].Value.c_str());
 }
 
 #endif // __AKK0RD_CONFIG_MANAGER_H__

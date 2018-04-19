@@ -242,7 +242,7 @@ public:
     //int Draw(AkkordRect Rect);
     //int Draw(AkkordRect RectFromAtlas, AkkordRect Rect);
     const bool Draw(AkkordRect Rect, const AkkordRect* RectFromAtlas = nullptr, unsigned char Flip = AkkordTexture::Flip::None, double Angle = 0, AkkordPoint* Point = nullptr);
-    AkkordPoint GetSize();
+    const AkkordPoint GetSize();
     AkkordTexture();
     ~AkkordTexture();
 };

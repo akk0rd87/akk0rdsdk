@@ -8,7 +8,7 @@
 #include "core/core_defines.h"
 
 class WindowsWrapper
-{    
+{
     public:
 	static bool             OpenURL           (const char* url);
     //static BWrapper::Lang   GetLanguage       ();
@@ -19,17 +19,17 @@ class WindowsWrapper
     static bool             DirRemove         (const char* Dir);
     static bool             DirRemoveRecursive(const char* Dir);
     //static bool             DirRename       (const char* Old, const char* New);
-    
+
     static bool             GetDirContent  (const char* Dir, DirContentElementArray& ArrayList);
 };
 
 
 bool WindowsWrapper::OpenURL(const char* url)
-{    
+{
     HINSTANCE res;
-    CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+    //CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
     res = ShellExecute(NULL, "open", url, NULL, NULL, SW_SHOWNORMAL);
-    CoUninitialize();    
+    //CoUninitialize();
     return true;
 }
 
@@ -46,7 +46,7 @@ std::string WindowsWrapper::GetEnvVariable(const char* EnvVarName)
 {
     char buffer[1024];
     GetEnvironmentVariable((LPCTSTR)EnvVarName, buffer, sizeof(buffer));
-    
+
     return std::string(buffer);
 }
 
@@ -62,7 +62,7 @@ bool WindowsWrapper::DirCreate(const char* Dir)
     // https://stackoverflow.com/questions/1530760/how-do-i-recursively-create-a-folder-in-win32
     // https://stackoverflow.com/questions/1517685/recursive-createdirectory
     //return CreateDirectory((LPCTSTR)Dir, nullptr);
-    
+
     // CreateDirectory https://msdn.microsoft.com/ru-ru/library/windows/desktop/aa363855(v=vs.85).aspx
     // GetLastError    https://msdn.microsoft.com/ru-ru/library/windows/desktop/ms679360(v=vs.85).aspx
 
@@ -78,7 +78,7 @@ bool WindowsWrapper::DirCreate(const char* Dir)
                 logError("Create dir error <%s> <%s>", Dir, path.substr(0, pos).c_str());
                 return false;
             }
-        }                
+        }
     } while (pos != std::string::npos);
 
     return true;
@@ -86,10 +86,10 @@ bool WindowsWrapper::DirCreate(const char* Dir)
 
 
 bool WindowsWrapper::GetDirContent(const char* Dir, DirContentElementArray& ArrayList)
-{    
+{
     WIN32_FIND_DATA fd;
-    std::string Path = std::string(Dir) + "/*";    
-    auto Handle = FindFirstFile((LPCTSTR)Path.c_str(), &fd);    
+    std::string Path = std::string(Dir) + "/*";
+    auto Handle = FindFirstFile((LPCTSTR)Path.c_str(), &fd);
     if (INVALID_HANDLE_VALUE != Handle)
     {
         do
@@ -126,7 +126,7 @@ bool WindowsWrapper::DirRemoveRecursive(const char* Dir)
             {
                 if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) // this a dir
                 {
-                    DirRemoveRecursive(std::string(Path + localPath).c_str());                    
+                    DirRemoveRecursive(std::string(Path + localPath).c_str());
                 }
                 else // file
                 {

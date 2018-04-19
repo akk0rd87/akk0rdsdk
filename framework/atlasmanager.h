@@ -7,18 +7,18 @@
 class AtlasManager
 {
 public:
-    enum struct AtlasType : unsigned char 
-    { 
-        LeshyLabsText /* https://www.leshylabs.com/apps/sstool/ */ 
+    enum struct AtlasType : unsigned char
+    {
+        LeshyLabsText /* https://www.leshylabs.com/apps/sstool/ */
     };
-    
+
     // Load atlas with list file
     unsigned LoadAtlas                  (const char* ListFilename, const char* TextureFilename, AtlasManager::AtlasType Type, BWrapper::FileSearchPriority ListSearchPriority = BWrapper::FileSearchPriority::Assets, BWrapper::FileSearchPriority TextureSearchPriority = BWrapper::FileSearchPriority::Assets); // return the AtlasIndex
-                                        
-    // Get Sprite handle                
+
+    // Get Sprite handle
     unsigned GetIndexBySpriteName       (unsigned AtlasIndex, const char* SpriteName);
-                                        
-    // Draw Sprite                      
+
+    // Draw Sprite
     void DrawSprite                     (unsigned SpriteIndex, AkkordRect Rect, unsigned char Flip = AkkordTexture::Flip::None, double Angle = 0, AkkordPoint* Point = nullptr);
 
     // Return Sprite postion in Atlas
@@ -31,7 +31,7 @@ public:
 
 private:
 
-    // список текстур    
+    // список текстур
 	std::vector<std::unique_ptr<AkkordTexture>> AtlasTextureList;
 
     // структура спрайта
@@ -44,11 +44,11 @@ private:
 
     //список спрайтов в текстурах
     std::vector<SpriteStruct> Sprites;
-    
+
     bool IsValidSpriteIndex(unsigned SpriteIndex);
     bool IsValidAtlasIndex(unsigned AtlasIndex);
     void ParseFile_LeshyLabsText(FileReader& fr, unsigned AtlasIndex);
-    void AddTexture();    
+    void AddTexture();
 };
 
 /////////////////////////////////////////////////
@@ -60,7 +60,7 @@ void AtlasManager::ParseFile_LeshyLabsText(FileReader& fr, unsigned AtlasIndex)
     std::string line;
     SpriteStruct sprite;
     while (fr.ReadLine(line))
-    {        
+    {
         if (line.size() > 0)
         {
             Sprites.push_back(sprite);
@@ -96,11 +96,11 @@ void AtlasManager::ParseFile_LeshyLabsText(FileReader& fr, unsigned AtlasIndex)
 }
 
 unsigned AtlasManager::LoadAtlas(const char* ListFilename, const char* TextureFilename, AtlasManager::AtlasType Type, BWrapper::FileSearchPriority ListSearchPriority, BWrapper::FileSearchPriority TextureSearchPriority)
-{    
+{
     AddTexture();
     auto index = AtlasTextureList.size() - 1;
     AtlasTextureList[index]->LoadFromFile(TextureFilename, AkkordTexture::TextureType::PNG, TextureSearchPriority);
-    
+
     FileReader fr;
     if (fr.Open(ListFilename, ListSearchPriority))
     {
@@ -115,13 +115,13 @@ unsigned AtlasManager::LoadAtlas(const char* ListFilename, const char* TextureFi
         }
     }
     fr.Close();
-    
+
     return index;
 };
 
 bool AtlasManager::IsValidSpriteIndex(unsigned SpriteIndex)
 {
-    if (SpriteIndex < Sprites.size()) 
+    if (SpriteIndex < Sprites.size())
         return true;
 
     logError("AtlasManager: SpriteIndex %u does't exists", SpriteIndex);
@@ -144,28 +144,28 @@ unsigned AtlasManager::GetIndexBySpriteName(unsigned AtlasIndex, const char* Ima
         auto size = Sprites.size();
         for (decltype(size) i = 0; i < size; i++)
         {
-            if ((Sprites[i].altasIndex == AtlasIndex) && (0 == strcmp(Imagename, Sprites[i].imageName.c_str())))
+            if (Sprites[i].altasIndex == AtlasIndex && Imagename == Sprites[i].imageName)
                 return i;
         }
 
         logError("AtlasManager::GetIndexBySpriteName Sprite '%s' with AtlasIndex = %u not found", Imagename, AtlasIndex);
-    }   
-    
+    }
+
     return GConstants::unsigned_max();
 }
 
 void AtlasManager::DrawSprite(unsigned SpriteIndex, AkkordRect Rect, unsigned char Flip, double Angle, AkkordPoint* Point)
-{    
+{
     if (IsValidSpriteIndex(SpriteIndex))
     {
         AtlasTextureList[Sprites[SpriteIndex].altasIndex]->Draw(Rect, &Sprites[SpriteIndex].rect, Flip, Angle, Point);
-    }    
+    }
 }
 
 AkkordPoint AtlasManager::GetSpriteSize(unsigned SpriteIndex)
-{    
+{
     if (IsValidSpriteIndex(SpriteIndex))
-    {        
+    {
         AkkordRect* rect = &Sprites[SpriteIndex].rect;
         return AkkordPoint(rect->x, rect->y);
     }
@@ -176,14 +176,14 @@ AkkordRect AtlasManager::GetSpriteRect(unsigned SpriteIndex)
 {
     if (IsValidSpriteIndex(SpriteIndex))
     {
-        return Sprites[SpriteIndex].rect;        
+        return Sprites[SpriteIndex].rect;
     }
     return AkkordRect(-1, -1, -1, -1);
 
 }
 
 void AtlasManager::Clear()
-{   
+{
     Sprites.clear();
     AtlasTextureList.clear();
 }
@@ -199,7 +199,7 @@ AtlasManager::~AtlasManager()
 }
 
 void AtlasManager::AddTexture()
-{   
+{
 	AtlasTextureList.push_back(std::move(std::unique_ptr<AkkordTexture>(new AkkordTexture())));
 }
 

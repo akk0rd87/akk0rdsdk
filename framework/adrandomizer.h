@@ -9,17 +9,17 @@ public:
     enum struct Apps : unsigned { CFCross, FCross, JCross, JDraw, WordsRu1, WordsRu2, WordsRu8, WordsUs/*, CJCross*/};
     static const int ImageWidth  = 100;
     static const int ImageHeight = 100;
-    
+
     void           ExcludeApp(Apps AppId);
-    unsigned       Randomize(unsigned Count);    
+    unsigned       Randomize(unsigned Count);
     int            DrawImageByIndex(unsigned Index, const AkkordRect &Rect);
     void           OpenURLByIndex(unsigned Index);
     void           OpenURL(BWrapper::OS OSCode, Apps AppId);
-    
+
     AdRandomizer();
     ~AdRandomizer();
 
-private:      
+private:
     const char* AdRandomizerDir = "adrandomizer";
 
     class AppInfoStruct
@@ -32,15 +32,15 @@ private:
         ~AppInfoStruct()
         {
             Path.clear();
-            ImageFiles.clear();            
-            //logVerbose("AdRandomizer:: AppInfoStruct Destroy"); 
+            ImageFiles.clear();
+            //logVerbose("AdRandomizer:: AppInfoStruct Destroy");
         }
-    };    
-    
+    };
+
     void Clear();
-    void InitRootPath();    
+    void InitRootPath();
     bool IsValidIndex(unsigned Index);
-    
+
     std::string RootPath = std::string(AdRandomizerDir);
     void InitApps();
     bool LoadApp(AppInfoStruct& App, unsigned ImageIndex);
@@ -94,7 +94,7 @@ bool AdRandomizer::LoadApp(AppInfoStruct& App, unsigned ImageIndex)
     auto res = App.AdTexture.LoadFromFile(ImagePath.c_str(), AkkordTexture::TextureType::PNG, BWrapper::FileSearchPriority::Assets);
 #else
     auto res = App.AdTexture.LoadFromFile(ImagePath.c_str(), AkkordTexture::TextureType::PNG, BWrapper::FileSearchPriority::FileSystem);
-#endif    
+#endif
 
     return res;
 }
@@ -120,9 +120,9 @@ void AdRandomizer::ExcludeApp(Apps AppId)
 }
 
 unsigned AdRandomizer::Randomize(unsigned Count)
-{   
+{
     BWrapper::RandomInit();
-    
+
     auto Size = CurApps.size();
     if (Count > Size) Count = Size;
 
@@ -134,7 +134,7 @@ unsigned AdRandomizer::Randomize(unsigned Count)
 
     // грузим по ним картинки
     for (auto &v : CurApps)
-    {           
+    {
         LoadApp(v, BWrapper::Random() % v.ImageFiles.size());
     }
 
@@ -143,7 +143,7 @@ unsigned AdRandomizer::Randomize(unsigned Count)
 
 int AdRandomizer::DrawImageByIndex(unsigned Index, const AkkordRect &Rect)
 {
-    if (IsValidIndex(Index)) return CurApps[Index].AdTexture.Draw(Rect);    
+    if (IsValidIndex(Index)) return CurApps[Index].AdTexture.Draw(Rect);
     return 1;
 }
 
@@ -183,12 +183,12 @@ void AdRandomizer::OpenURL(BWrapper::OS OSCode, Apps AppId)
     case Apps::FCross:
         switch (OSCode)
         {
-            case BWrapper::OS::iOS:            
+            case BWrapper::OS::iOS:
                 if (Language == Locale::Lang::Russian) BWrapper::OpenURL("https://itunes.apple.com/ru/app/id1091290034");
                 else                                        BWrapper::OpenURL("https://itunes.apple.com/en/app/id1091290034");
                 break;
 
-            case BWrapper::OS::AndroidOS:             
+            case BWrapper::OS::AndroidOS:
                 BWrapper::OpenURL("https://play.google.com/store/apps/details?id=org.popapp.fcross");
                 break;
         }
@@ -198,7 +198,7 @@ void AdRandomizer::OpenURL(BWrapper::OS OSCode, Apps AppId)
     case Apps::JDraw:
         switch (OSCode)
         {
-            case BWrapper::OS::iOS:            
+            case BWrapper::OS::iOS:
                 if (Language == Locale::Lang::Russian) BWrapper::OpenURL("https://itunes.apple.com/ru/app/id1113501306");
                 else                                        BWrapper::OpenURL("https://itunes.apple.com/en/app/id1113501306");
                 break;
@@ -217,7 +217,7 @@ void AdRandomizer::OpenURL(BWrapper::OS OSCode, Apps AppId)
                 else                                        BWrapper::OpenURL("https://itunes.apple.com/en/app/id1013587052");
                 break;
 
-            case BWrapper::OS::AndroidOS:            
+            case BWrapper::OS::AndroidOS:
                 BWrapper::OpenURL("https://play.google.com/store/apps/details?id=org.popapp.jc");
                 break;
         }
@@ -230,7 +230,7 @@ void AdRandomizer::OpenURL(BWrapper::OS OSCode, Apps AppId)
                 BWrapper::OpenURL("https://itunes.apple.com/ru/app/id960409308");
                 break;
 
-            case BWrapper::OS::AndroidOS:            
+            case BWrapper::OS::AndroidOS:
                 BWrapper::OpenURL("https://play.google.com/store/apps/details?id=com.popapp.WordsRu");
                 break;
         }
@@ -243,7 +243,7 @@ void AdRandomizer::OpenURL(BWrapper::OS OSCode, Apps AppId)
                 BWrapper::OpenURL("https://itunes.apple.com/ru/app/id1080796090");
                 break;
 
-            case BWrapper::OS::AndroidOS:            
+            case BWrapper::OS::AndroidOS:
                 BWrapper::OpenURL("https://play.google.com/store/apps/details?id=org.popapp.WordsRu2");
                 break;
         }
@@ -256,7 +256,7 @@ void AdRandomizer::OpenURL(BWrapper::OS OSCode, Apps AppId)
                 BWrapper::OpenURL("https://itunes.apple.com/ru/app/id1112942939");
                 break;
 
-            case BWrapper::OS::AndroidOS:            
+            case BWrapper::OS::AndroidOS:
                 BWrapper::OpenURL("https://play.google.com/store/apps/details?id=org.popapp.sostav_slova_iz_bukv");
                 break;
         }
@@ -269,7 +269,7 @@ void AdRandomizer::OpenURL(BWrapper::OS OSCode, Apps AppId)
                 BWrapper::OpenURL("https://itunes.apple.com/us/app/id969837546");
                 break;
 
-            case BWrapper::OS::AndroidOS:            
+            case BWrapper::OS::AndroidOS:
                 BWrapper::OpenURL("https://play.google.com/store/apps/details?id=org.popapp.WordsUS");
                 break;
         }
@@ -283,7 +283,7 @@ void AdRandomizer::OpenURL(BWrapper::OS OSCode, Apps AppId)
                 else                                        BWrapper::OpenURL("https://itunes.apple.com/app/id1147212126");
                 break;
 
-            case BWrapper::OS::AndroidOS:            
+            case BWrapper::OS::AndroidOS:
                 BWrapper::OpenURL("https://play.google.com/store/apps/details?id=org.popapp.color_fcross");
                 break;
         }
@@ -294,7 +294,7 @@ void AdRandomizer::OpenURL(BWrapper::OS OSCode, Apps AppId)
 void AdRandomizer::InitApps()
 {
     AppInfoStruct str;
-    
+
     CurApps.push_back(str);
     auto size = CurApps.size() - 1;
     CurApps[size].AppCode = AdRandomizer::Apps::CFCross;
@@ -344,14 +344,14 @@ void AdRandomizer::InitApps()
     CurApps[size].ImageFiles = { "words_us_100.png" };
 
 
-#if defined(_DEBUG) && defined(__WIN32__) // На винде в дебаге всегда проверяем, не протерялись ли ad-картики
+#if defined(_DEBUG) && defined(__WIN32__) // На винде в дебаге всегда проверяем, не протерялись ли ad-картинки
     for (auto &v : CurApps)
     {
-        auto d = v.ImageFiles.size();        
-        for (decltype(d) j = 0; j < v.ImageFiles.size(); j++)            
+        auto d = v.ImageFiles.size();
+        for (decltype(d) j = 0; j < v.ImageFiles.size(); j++)
             LoadApp(v, j);
     }
-#endif    
+#endif
 }
 
 #endif // __AKK0RD_ADRANDOMIZER_H__

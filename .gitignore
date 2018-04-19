@@ -53,3 +53,6 @@ tools/**/*.ilk
 tools/**/*.exe
 tools/**/*.idb
 libraries/SDL/SDL/VisualC/SDL/Win32/Debug/version.res
+
+**/proj.codeblocks/*.depend
+**/proj.codeblocks/*.layout

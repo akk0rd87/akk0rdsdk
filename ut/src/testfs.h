@@ -2,6 +2,8 @@
 #ifndef __AKK0RD_TESTFS_MANAGER_H__
 #define __AKK0RD_TESTFS_MANAGER_H__
 
+#include <cstring>
+
 extern Statistic statistic;
 
 const static char* Subdir1 = "/Full_length__Directory_111";
@@ -16,12 +18,12 @@ private:
     std::string Subdir1_File2         ;
     std::string Subdir1_File3         ;
     std::string Subdir1_File4         ;
-                                      
+
     std::string RecursiveSubdir1_File1;
     std::string RecursiveSubdir1_File2;
     std::string RecursiveSubdir1_File3;
     std::string RecursiveSubdir1_File4;
-                                      
+
     std::string RecursiveSubdir3_File1;
     std::string RecursiveSubdir3_File2;
     std::string RecursiveSubdir3_File3;
@@ -33,7 +35,7 @@ private:
     void RunDeleteRecursive();
     void RunCheckLists();
     void RunCheckFilesData();
-public:    
+public:
     void Run()
     {
         RunCreates();
@@ -46,17 +48,17 @@ public:
     };
 
     TestFS()
-    {       
+    {
         Subdir1_File1          = BWrapper::GetInternalWriteDir() + std::string(Subdir1) + "/File1.txt";
         Subdir1_File2          = BWrapper::GetInternalWriteDir() + std::string(Subdir1) + "/File2.dmg";
         Subdir1_File3          = BWrapper::GetInternalWriteDir() + std::string(Subdir1) + "/File3.java";
         Subdir1_File4          = BWrapper::GetInternalWriteDir() + std::string(Subdir1) + "/File4.dll";
-        
+
         RecursiveSubdir1_File1 = BWrapper::GetInternalWriteDir() + std::string(RecursiveSubdir1) + "/File1.txt";
         RecursiveSubdir1_File2 = BWrapper::GetInternalWriteDir() + std::string(RecursiveSubdir1) + "/File2.dmg";
         RecursiveSubdir1_File3 = BWrapper::GetInternalWriteDir() + std::string(RecursiveSubdir1) + "/File3.java";
         RecursiveSubdir1_File4 = BWrapper::GetInternalWriteDir() + std::string(RecursiveSubdir1) + "/File4.dll";
-        
+
         RecursiveSubdir3_File1 = BWrapper::GetInternalWriteDir() + std::string(RecursiveSubdir3) + "/File_abc1.txt";
         RecursiveSubdir3_File2 = BWrapper::GetInternalWriteDir() + std::string(RecursiveSubdir3) + "/File_abc2.dmg";
         RecursiveSubdir3_File3 = BWrapper::GetInternalWriteDir() + std::string(RecursiveSubdir3) + "/File_abc3.java";
@@ -73,7 +75,7 @@ void TestFS::RunCreates()
     char buffer0[] = "There is the place [0] where 0 code will be situated.\n";
     buffer0[20] = '\0';
     bool checker = true;
-    
+
     // CREATE DIRS
     // create base write dir
     UT_CHECK(BWrapper::DirCreate(BWrapper::GetInternalWriteDir().c_str()));
@@ -90,7 +92,7 @@ void TestFS::RunCreates()
     UT_CHECK(BWrapper::DirExists(std::string(BWrapper::GetInternalWriteDir() + RecursiveSubdir1).c_str()));
     UT_CHECK(BWrapper::DirCreate(std::string(BWrapper::GetInternalWriteDir() + RecursiveSubdir1).c_str()));
     UT_CHECK(BWrapper::DirExists(std::string(BWrapper::GetInternalWriteDir() + RecursiveSubdir1).c_str()));
-    
+
     // create RecursiveSubdir2
     UT_CHECK(BWrapper::DirCreate(std::string(BWrapper::GetInternalWriteDir() + RecursiveSubdir2).c_str()));
     UT_CHECK(BWrapper::DirExists(std::string(BWrapper::GetInternalWriteDir() + RecursiveSubdir2).c_str()));
@@ -185,7 +187,7 @@ void TestFS::RunCreates()
 
     Fname = RecursiveSubdir1_File4; // write nothing
     F = BWrapper::FileOpen(Fname.c_str(), BWrapper::FileSearchPriority::FileSystem, BWrapper::FileOpenMode::WriteBinary);
-    UT_CHECK(F);    
+    UT_CHECK(F);
     BWrapper::FileClose(F);
     UT_CHECK(BWrapper::FileExists(Fname.c_str(), BWrapper::FileSearchPriority::FileSystem));
     UT_CHECK(!F);
@@ -194,7 +196,7 @@ void TestFS::RunCreates()
     Fname = RecursiveSubdir3_File1;
     F = BWrapper::FileOpen(Fname.c_str(), BWrapper::FileSearchPriority::FileSystem, BWrapper::FileOpenMode::WriteBinary);
     UT_CHECK(F);
-    UT_CHECK(BWrapper::FileWriteFormatted(F, "Hello %s\n", "world"));    
+    UT_CHECK(BWrapper::FileWriteFormatted(F, "Hello %s\n", "world"));
     BWrapper::FileClose(F);
     UT_CHECK(BWrapper::FileExists(Fname.c_str(), BWrapper::FileSearchPriority::FileSystem));
     UT_CHECK(!F);
@@ -246,7 +248,7 @@ void TestFS::RunCreates()
     UT_CHECK(checker);
 
     // open in append mode
-    Fname = RecursiveSubdir3_File4;    
+    Fname = RecursiveSubdir3_File4;
     if (BWrapper::FileExists(Fname.c_str(), BWrapper::FileSearchPriority::FileSystem))
         BWrapper::FileDelete(Fname.c_str());
     UT_CHECK(!BWrapper::FileExists(Fname.c_str(), BWrapper::FileSearchPriority::FileSystem));
@@ -255,11 +257,11 @@ void TestFS::RunCreates()
     UT_CHECK(BWrapper::FileWriteFormatted(F, "Hello %s %d %u\n", "world", 100500, 100501));
     BWrapper::FileClose(F);
     UT_CHECK(BWrapper::FileExists(Fname.c_str(), BWrapper::FileSearchPriority::FileSystem));
-    UT_CHECK(!F);    
+    UT_CHECK(!F);
 };
 
 void TestFS::RunDeleteRecursive()
-{        
+{
     //const static char* Subdir1 = "/Full_length__Directory_111";
     //const static char* RecursiveSubdir1 = "/Full_length__Directory_recursive_111/RecrsiveSubdir_One";
     //const static char* RecursiveSubdir2 = "/Full_length__Directory_recursive_222/\\//RecrsiveSubdir_TWO//\\//\\";
@@ -279,7 +281,7 @@ void TestFS::RunDeleteRecursive()
 
     UT_CHECK(BWrapper::DirExists         (std::string(BWrapper::GetInternalWriteDir() + "/Full_length__Directory_recursive_333/").c_str()));
     UT_CHECK(BWrapper::DirRemoveRecursive(std::string(BWrapper::GetInternalWriteDir() + "/Full_length__Directory_recursive_333/").c_str()));
-    UT_CHECK(!BWrapper::DirExists        (std::string(BWrapper::GetInternalWriteDir() + "/Full_length__Directory_recursive_333/").c_str()));    
+    UT_CHECK(!BWrapper::DirExists        (std::string(BWrapper::GetInternalWriteDir() + "/Full_length__Directory_recursive_333/").c_str()));
 }
 
 void TestFS::RunRenames()
@@ -299,7 +301,7 @@ void TestFS::RunRenames()
     UT_CHECK(BWrapper::FileExists(RecursiveSubdir3_File2.c_str(), BWrapper::FileSearchPriority::FileSystem));
     UT_CHECK(BWrapper::FileExists(RecursiveSubdir3_File3.c_str(), BWrapper::FileSearchPriority::FileSystem));
     UT_CHECK(BWrapper::FileExists(RecursiveSubdir3_File4.c_str(), BWrapper::FileSearchPriority::FileSystem));
-        
+
     // RENAMES
     UT_CHECK(BWrapper::FileRename(Subdir1_File1.c_str(), std::string(Subdir1_File1 + ".tmp").c_str()));
     UT_CHECK(BWrapper::FileRename(Subdir1_File2.c_str(), std::string(Subdir1_File2 + ".tmp").c_str()));
@@ -310,7 +312,7 @@ void TestFS::RunRenames()
     UT_CHECK(BWrapper::FileRename(RecursiveSubdir1_File2.c_str(), std::string(RecursiveSubdir1_File2 + ".tmp").c_str()));
     UT_CHECK(BWrapper::FileRename(RecursiveSubdir1_File3.c_str(), std::string(RecursiveSubdir1_File3 + ".tmp").c_str()));
     UT_CHECK(BWrapper::FileRename(RecursiveSubdir1_File4.c_str(), std::string(RecursiveSubdir1_File4 + ".tmp").c_str()));
-    
+
     UT_CHECK(BWrapper::FileRename(RecursiveSubdir3_File1.c_str(), std::string(RecursiveSubdir3_File1 + ".tmp").c_str()));
     UT_CHECK(BWrapper::FileRename(RecursiveSubdir3_File2.c_str(), std::string(RecursiveSubdir3_File2 + ".tmp").c_str()));
     UT_CHECK(BWrapper::FileRename(RecursiveSubdir3_File3.c_str(), std::string(RecursiveSubdir3_File3 + ".tmp").c_str()));
@@ -330,7 +332,7 @@ void TestFS::RunRenames()
     UT_CHECK(BWrapper::FileExists(std::string(RecursiveSubdir3_File1 + ".tmp").c_str(), BWrapper::FileSearchPriority::FileSystem));
     UT_CHECK(BWrapper::FileExists(std::string(RecursiveSubdir3_File2 + ".tmp").c_str(), BWrapper::FileSearchPriority::FileSystem));
     UT_CHECK(BWrapper::FileExists(std::string(RecursiveSubdir3_File3 + ".tmp").c_str(), BWrapper::FileSearchPriority::FileSystem));
-    UT_CHECK(BWrapper::FileExists(std::string(RecursiveSubdir3_File4 + ".tmp").c_str(), BWrapper::FileSearchPriority::FileSystem));    
+    UT_CHECK(BWrapper::FileExists(std::string(RecursiveSubdir3_File4 + ".tmp").c_str(), BWrapper::FileSearchPriority::FileSystem));
 };
 
 void TestFS::RunCheckLists()
@@ -338,19 +340,19 @@ void TestFS::RunCheckLists()
     unsigned all, search;
     DirContentReader   Dr;
     DirContentElement* De;
-    
+
     // Search items in WriteDirectory root
     all = search = 0;
     UT_CHECK(Dr.Open(BWrapper::GetInternalWriteDir().c_str()));
     while (Dr.Next(De))
     {
         ++all;
-        
+
         if (De->isDir)
         {
             if (De->Name == "Full_length__Directory_111" || De->Name == "Full_length__Directory_recursive_111" || De->Name == "Full_length__Directory_recursive_222" || De->Name == "Full_length__Directory_recursive_333")
                 ++search;
-        }        
+        }
     }
     Dr.Close();
     UT_CHECK(all == search && all == 4);
@@ -494,7 +496,7 @@ void TestFS::RunCheckFilesData()
     char buffer2[] = "Unit test for testing FS API.\n";
     char buffer0[] = "There is the place [0] where 0 code will be situated.\n";
     buffer0[20] = '\0';
-    
+
     Fname = Subdir1_File1;
     UT_CHECK(fr.Open(Fname.c_str(), BWrapper::FileSearchPriority::FileSystem));
     lineptr = 0;
@@ -533,7 +535,7 @@ void TestFS::RunCheckFilesData()
         switch (lineptr)
         {
         case 1:
-            UT_CHECK(Line == "Unit test for testing FS API.");            
+            UT_CHECK(Line == "Unit test for testing FS API.");
             break;
         case 2:
             UT_CHECK(Line == "Is's a AKKORD_SDK for win32, ios and Android develop.");
@@ -546,14 +548,14 @@ void TestFS::RunCheckFilesData()
     fr.Close();
     UT_CHECK(2 == lineptr);
 
-    
+
     Fname = Subdir1_File3;
-    UT_CHECK(fr.Open(Fname.c_str(), BWrapper::FileSearchPriority::FileSystem));    
+    UT_CHECK(fr.Open(Fname.c_str(), BWrapper::FileSearchPriority::FileSystem));
     UT_CHECK(fr.ReadLine(Line));
-    UT_CHECK(Line == "Unit test for testing FS API.");    
+    UT_CHECK(Line == "Unit test for testing FS API.");
     UT_CHECK(fr.Read(buffer, sizeof(buffer0) - 1, readed));
     UT_CHECK(sizeof(buffer0) - 1 == readed);
-    UT_CHECK(memcmp(buffer, buffer0, sizeof(buffer0) - 1) == 0);    
+    UT_CHECK(memcmp(buffer, buffer0, sizeof(buffer0) - 1) == 0);
     UT_CHECK(fr.Read(buffer, sizeof(buffer0) - 1, readed));
     UT_CHECK(sizeof(buffer0) - 1 == readed);
     UT_CHECK(memcmp(buffer, buffer0, sizeof(buffer0) - 1) == 0);

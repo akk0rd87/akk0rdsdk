@@ -467,7 +467,7 @@ AkkordTexture::AkkordTexture()
     tex = nullptr;
 }
 
-AkkordPoint AkkordTexture::GetSize()
+const AkkordPoint AkkordTexture::GetSize()
 {
     AkkordPoint Point(-1, -1);
     if (tex)
@@ -483,7 +483,7 @@ AkkordPoint AkkordTexture::GetSize()
 
 AkkordPoint::AkkordPoint()
 {
-    x = -1; y = -1;
+    x = 0; y = 0;
 }
 
 AkkordPoint::AkkordPoint(int X, int Y)
