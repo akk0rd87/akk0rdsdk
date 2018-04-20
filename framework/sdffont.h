@@ -2,6 +2,7 @@
 #ifndef __AKK0RD_SDFFONT_H__
 #define __AKK0RD_SDFFONT_H__
 
+#include <map>
 #include "openglesdriver.h"
 #include "basewrapper.h"
 #include "SDL_image.h"
@@ -291,8 +292,8 @@ class SDFFont
 	}
 
 	void Clear()
-	{
-		CharsVector.clear();
+	{		
+		CharsMap.clear();
 		if (fontAtlas)
 		{
 			SDL_FreeSurface(fontAtlas);
