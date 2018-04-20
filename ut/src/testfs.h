@@ -492,7 +492,7 @@ void TestFS::RunCheckFilesData()
     unsigned lineptr, readed;
     char buffer[1024];
 
-    char buffer1[] = "Is's a AKKORD_SDK for win32, ios and Android develop.\n";
+    //char buffer1[] = "Is's a AKKORD_SDK for win32, ios and Android develop.\n";
     char buffer2[] = "Unit test for testing FS API.\n";
     char buffer0[] = "There is the place [0] where 0 code will be situated.\n";
     buffer0[20] = '\0';

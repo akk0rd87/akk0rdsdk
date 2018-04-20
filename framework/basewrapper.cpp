@@ -329,12 +329,7 @@ bool BWrapper::SetWindowSize(int W, int H)
 bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const BWrapper::FileSearchPriority SearchPriority)
 {    
     std::string Format;
-#ifdef __DEBUG_IMAGES__
-    this->name = std::string(FileName);
-    Format = this->name + " ";
-    logVerbose(std::string(Format + "LoadFromFile").c_str());
-#endif
-    
+
     if (tex)
         this->Destroy();
 
@@ -387,24 +382,13 @@ bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const B
     BWrapper::CloseBuffer(buffer);
     SDL_RWclose(io);
 
-#ifdef __DEBUG_IMAGES__
-    logVerbose(std::string(Format + "Loaded into address %u").c_str(), tex);
-#endif
-
     return result;
 };
 
 void AkkordTexture::Destroy()
 {
-#ifdef __DEBUG_IMAGES__            
-    logVerbose("%s Destructor, TexAddress = %u", name.c_str(), this->tex);
-#endif    
-
     if (tex)
     {
-#ifdef __DEBUG_IMAGES__            
-        logVerbose("%s SDL_DestroyTexture", name.c_str());
-#endif    
         SDL_DestroyTexture(tex);
     }
     tex = nullptr;
@@ -416,13 +400,8 @@ AkkordTexture::~AkkordTexture()
 }
 
 const bool AkkordTexture::Draw(AkkordRect Rect, const AkkordRect* RectFromAtlas, unsigned char Flip, double Angle, AkkordPoint* Point)
-{
-    
+{    
     std::string Format;
-#ifdef __DEBUG_IMAGES__    
-    Format = this->name + " ";
-#endif    
-
     auto NativeDstRect = ConvertRect2Native(Rect); // Rect must be always set
     
     // Converting Source Rect if exists

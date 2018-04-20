@@ -13,6 +13,33 @@ SDL_PROC(void, glGetShaderSource, (GLuint, GLsizei, GLsizei*, GLchar *)) \
 SDL_PROC(void, glDrawElements, (GLenum, GLsizei, GLenum, const GLvoid *))
 ///================================
 
+/*
+#define ADDITIONAL_OPENGL_PROCS \
+SDL_PROC(void, glBlendFunc, (GLenum, GLenum)) \
+SDL_PROC(void, glGetShaderSource, (GLuint, GLsizei, GLsizei*, GLchar *)) \
+SDL_PROC(void, glDrawElements, (GLenum, GLsizei, GLenum, const GLvoid *)) \
+SDL_PROC(GLuint, glCreateShader, (GLenum)) \
+SDL_PROC(void, glShaderSource, (GLuint, GLsizei, const GLchar* const*, const GLint *)) // ANDROID SPECIAL CASE \
+SDL_PROC(void, glCompileShader, (GLuint)) \
+SDL_PROC(GLuint, glCreateProgram, (void)) \
+SDL_PROC(void, glAttachShader, (GLuint, GLuint)) \
+SDL_PROC(void, glBindAttribLocation, (GLuint, GLuint, const char *)) \
+SDL_PROC(void, glLinkProgram, (GLuint)) \
+SDL_PROC(void, glGetIntegerv, (GLenum, GLint *)) \
+SDL_PROC(void, glUseProgram, (GLuint)) \
+SDL_PROC(GLint, glGetUniformLocation, (GLuint, const char *)) \
+SDL_PROC(void, glUniformMatrix4fv, (GLint, GLsizei, GLboolean, const GLfloat *)) \
+SDL_PROC(void, glUniform1i, (GLint, GLint)) \
+SDL_PROC(void, glGenTextures, (GLsizei, GLuint *)) \
+SDL_PROC(void, glBindTexture, (GLenum, GLuint)) \
+SDL_PROC(void, glTexParameteri, (GLenum, GLenum, GLint)) \
+SDL_PROC(void, glTexImage2D, (GLenum, GLint, GLint, GLsizei, GLsizei, GLint, GLenum, GLenum, const void *)) \
+SDL_PROC(void, glEnableVertexAttribArray, (GLuint)) \
+SDL_PROC(void, glVertexAttribPointer, (GLuint, GLint, GLenum, GLboolean, GLsizei, const void *)) \
+SDL_PROC(void, glUniform4f, (GLint, GLfloat, GLfloat, GLfloat, GLfloat)) \
+SDL_PROC(void, glDisableVertexAttribArray, (GLuint))
+*/
+
 class GLESDriverInstance
 {
 public:    

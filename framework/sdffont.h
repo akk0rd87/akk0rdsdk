@@ -190,7 +190,8 @@ class SDFFont
 	SDL_Surface* fontAtlas;
 	unsigned int ScaleW, ScaleH;
 
-	std::vector<SDFCharInfo> CharsVector;
+	//std::vector<SDFCharInfo> CharsVector;
+    std::map<unsigned, SDFCharInfo> CharsMap;
 
 	bool ParseFNTFile(const char* FNTFile, BWrapper::FileSearchPriority SearchPriority)
 	{
@@ -205,6 +206,8 @@ class SDFFont
 
 		decltype(line.find(',')) lpos;
 		decltype(lpos)           rpos;
+        
+        SDFCharInfo sd;
 
 		if (fr.Open(FNTFile, SearchPriority))
 		{
@@ -255,14 +258,15 @@ class SDFFont
 						if (line[rpos] == '\"') ++rpos;
 						auto xa =std::stoi(std::string(line, rpos));
 
-						CharsVector.push_back({ id, x, y, w, h, dx, dy, xa });
+                        sd.x = x; sd.y = y; sd.w = w; sd.h = h; sd.xoffset = dx; sd.yoffset = dy; sd.xadvance = xa;
+                        CharsMap.emplace(id, sd);
 
 						//logDebug("dx=%d, dy=%d, xa=%d", dx, dy, xa);
 					} 
 					else if (line.find("chars", 0) != std::string::npos)
 					{
-						auto cnt = BWrapper::Str2Num(std::string(line, line.find("\"", 0) + 1).c_str());
-						CharsVector.reserve(cnt);						
+						//auto cnt = BWrapper::Str2Num(std::string(line, line.find("\"", 0) + 1).c_str());
+						//CharsVector.reserve(cnt);						
 					}
 					else if (line.find("common", 0) != std::string::npos)
 					{
@@ -384,18 +388,18 @@ public:
 		return true;
 	};
 
-	bool GetCharInfo(unsigned Code, SDFCharInfo& ci)
-	{
-		for (auto v : CharsVector)
-			if (Code == v.id)
-			{
-				ci = v;
-				return true;
-			}
+bool GetCharInfo(unsigned Code, SDFCharInfo& ci)
+{
+    auto res = CharsMap.find(Code);
+    if(res != CharsMap.end())
+    {
+        ci = res->second;
+        return true;
+    }
+    logError("Char with id=%u not found", Code);    
+    return false;
+};
 
-		logError("Char with id=%u not found", Code);
-		return false;
-	};
 };
 
 // Для рисования всегда указывать левую верхнюю точку (удобно для разгаданных слов в "составь слова")

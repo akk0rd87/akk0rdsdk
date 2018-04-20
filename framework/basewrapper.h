@@ -14,10 +14,6 @@
 //#include "userevents.h"
 #include "core/locale.h"
 
-#if defined(__WIN32__) && defined(_DEBUG) 
-#define __DEBUG_IMAGES__ 1
-#endif
-
 class AkkordPoint 
 { 
     public:
@@ -229,10 +225,6 @@ class AkkordTexture
 {
 private:   
     SDL_Texture *tex;
-#ifdef __DEBUG_IMAGES__
-    std::string name;    
-#endif
-
 public:
     enum struct TextureType : unsigned char { BMP, PNG, JPEG };
     struct Flip { enum : unsigned char { None = SDL_FLIP_NONE, Horizontal = SDL_FLIP_HORIZONTAL, Vertical = SDL_FLIP_VERTICAL }; };  

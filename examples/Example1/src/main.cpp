@@ -1,9 +1,6 @@
 #include "basewrapper.h"
 #include "adrandomizer.h"
 #include "atlasmanager.h"
-#include "configmanager.h"
-#include "admob.h"
-#include <future>
 
 AkkordPoint Position;
 AkkordRect ZombiePosition;
@@ -29,7 +26,6 @@ auto Flip = AkkordTexture::Flip::None;
 void UpdateScreen()
 {
     ++ZombieIndex;
-    //logDebug("ZombieIndex %u", ZombieIndex);
     if (ZombieIndex == ZombieVector.size()) ZombieIndex = 0;
 
     if (Flip == AkkordTexture::Flip::None && ZombiePosition.x > BWrapper::GetScreenWidth() - ZombiePosition.w)
@@ -81,28 +77,11 @@ bool UpdateOnClick(int X, int Y)
     if (X < BWrapper::GetScreenWidth() / 2) Flip = AkkordTexture::Flip::Horizontal;
     else                                    Flip = AkkordTexture::Flip::None;
 
-    /*
-    auto length = BWrapper::AndroidToastDuration::Long;
-    std::string Message;
-    if (Y < BWrapper::GetScreenHeight() / 2)
-    {
-        length  = BWrapper::AndroidToastDuration::Short;
-        Message = "Click at (" + std::to_string(X) + ", " + std::to_string(Y) + ") Short";
-    }
-    else
-    {
-        Message = "Click at (" + std::to_string(X) + ", " + std::to_string(Y) + ") Long";
-    }
-
-    BWrapper::AndroidShowToast(Message.c_str(), length);
-    */
-
     return false;
 }
 
 void ReDraw()
 {
-    //logDebug("Redraw() ZombieIndex = %u", ZombieIndex);
     auto ScreenHeight = BWrapper::GetScreenHeight();
     auto ScreenWidth  = BWrapper::GetScreenWidth();
     BWrapper::SetCurrentColor(AkkordColor(255, 255, 255));
@@ -141,7 +120,6 @@ void ReDraw()
         ZombiePosition.w = ZombiePosition.h * 430 / 519;
     }
 
-    //rect.x = (ScreenWidth - rect.w) / 2;
     ZombiePosition.y = (ScreenHeight - ZombiePosition.h) / 2;
 
     int dx = 0;
@@ -180,7 +158,6 @@ void LoadSpriteSheet()
 void LoadZombies()
 {
     auto ZombieAtlasMale = AtlasMgr.LoadAtlas("zombiemale/sprites.txt", "zombiemale/spritesheet.png", AtlasManager::AtlasType::LeshyLabsText);
-    //auto ZombieAtlasFeMale = AtlasManager::LoadAtlas("zombiemale/sprites.txt", "zombiemale/spritesheet.png", AtlasManager::AtlasType::LeshyLabsText);
 
     std::string str;
     for (int i = 0; i < 10; i++)
@@ -189,23 +166,7 @@ void LoadZombies()
         auto idx = AtlasMgr.GetIndexBySpriteName(ZombieAtlasMale, str.c_str());
         ZombieVector.push_back(idx);
     }
-
-    //logDebug("ZombieVector.size = %u", ZombieVector.size());
 }
-
-/*
-void Loop()
-{
-    unsigned n = 10;
-    while (n)
-    {
-        logDebug("Thread");
-        BWrapper::Sleep(1000);
-        --n;
-    }
-    logDebug("Thread Finished");
-}
-*/
 
 int main(int, char**){
 
@@ -222,8 +183,6 @@ int main(int, char**){
 
 	SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
-
-    //logDebug("Android api level %d", BWrapper::AndroidGetApiLevel());
 
     // Add Rects to Control Clicks by Images
     int imagesCnt = adRand.Randomize(4);
@@ -243,23 +202,7 @@ int main(int, char**){
 
     ReDraw();
 
-    //auto handle = std::async(std::launch::async, Loop);
-
-	/*
-	SDL_DisplayMode dm;
-	SDL_GetDesktopDisplayMode(0, &dm);
-	logDebug("Display mode Format=%d, r_rate=%d, w=%d, h=%d", dm.format, dm.refresh_rate, dm.w, dm.h);
-
-	SDL_GetWindowDisplayMode(BWrapper::GetActiveWindow(), &dm);
-	logDebug("Window mode Format=%d, r_rate=%d, w=%d, h=%d", dm.format, dm.refresh_rate, dm.w, dm.h);
-
-	SDL_Rect r;
-	SDL_GetDisplayBounds(0, &r);
-	logDebug("DisplayBounds x=%d, y=%d, w=%d, h=%d", r.x, r.y, r.w, r.h);
-	*/
-
     auto ticks1 = BWrapper::GetTicks();
-
     while (1)
     {
         while (SDL_PollEvent(&event))
@@ -278,7 +221,6 @@ int main(int, char**){
                 case SDL_MOUSEBUTTONDOWN:
                 {
                     UpdateOnClick(event.button.x, event.button.y);
-                    //BWrapper::OpenURL("www.sql.ru");
                     break;
                 }
 
@@ -289,7 +231,6 @@ int main(int, char**){
                         case BWrapper::KeyCodes::Back:
                         case BWrapper::KeyCodes::BackSpace:
                         case BWrapper::KeyCodes::Esc:
-                            BWrapper::Quit();
                             goto end;
                             break;
 
@@ -310,13 +251,11 @@ int main(int, char**){
         auto ticks2 = SDL_GetTicks();
         if (ticks2 - ticks1 > 60)
         {
-			//auto Size = BWrapper::GetScreenSize();
-			//logDebug("Ticks %u, w = %d, h = %d", ticks2, Size.x, Size.y);
             ticks1 = ticks2;
             UpdateScreen();
             ReDraw();
         }
-        SDL_Delay(30);
+        BWrapper::Sleep(30);
     }
 
 end:
