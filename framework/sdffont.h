@@ -301,7 +301,6 @@ class SDFFont
 		};
 	};
 
-
 public:
 	enum struct AlignV : unsigned char { Top, Center, Bottom };
 	enum struct AlignH : unsigned char { Left, Center, Right };
