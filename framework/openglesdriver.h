@@ -1,25 +1,23 @@
-﻿#pragma once
-#ifndef __AKK0RD_OPENGLES_DRIVER_H__
+﻿#ifndef __AKK0RD_OPENGLES_DRIVER_H__
 #define __AKK0RD_OPENGLES_DRIVER_H__
 
 #include "SDL_opengles2.h"
 #include "basewrapper.h"
 
-///================================
-// OPENGLES-функции, которых нет в SDL_opengles2.h, но которые так нужны
-#define ADDITIONAL_OPENGL_PROCS \
-SDL_PROC(void, glBlendFunc, (GLenum, GLenum)) \
-SDL_PROC(void, glGetShaderSource, (GLuint, GLsizei, GLsizei*, GLchar *)) \
-SDL_PROC(void, glDrawElements, (GLenum, GLsizei, GLenum, const GLvoid *))
-///================================
+// выборочный список OPENGLES2-функций из файла "../src/render/opengles2/SDL_gles2funcs.h"
+// некоторых нижеперечисленных ф-ий нет в файле "../src/render/opengles2/SDL_gles2funcs.h"
+#if __NACL__ || __ANDROID__
+#define DEFINE_glShaderSource SDL_PROC(void, glShaderSource, (GLuint, GLsizei, const GLchar **, const GLint *))
+#else
+#define DEFINE_glShaderSource SDL_PROC(void, glShaderSource, (GLuint, GLsizei, const GLchar* const*, const GLint *))
+#endif
 
-/*
-#define ADDITIONAL_OPENGL_PROCS \
+#define OPENGLES2_FUCNTION_LIST \
+DEFINE_glShaderSource \
 SDL_PROC(void, glBlendFunc, (GLenum, GLenum)) \
 SDL_PROC(void, glGetShaderSource, (GLuint, GLsizei, GLsizei*, GLchar *)) \
 SDL_PROC(void, glDrawElements, (GLenum, GLsizei, GLenum, const GLvoid *)) \
 SDL_PROC(GLuint, glCreateShader, (GLenum)) \
-SDL_PROC(void, glShaderSource, (GLuint, GLsizei, const GLchar* const*, const GLint *)) // ANDROID SPECIAL CASE \
 SDL_PROC(void, glCompileShader, (GLuint)) \
 SDL_PROC(GLuint, glCreateProgram, (void)) \
 SDL_PROC(void, glAttachShader, (GLuint, GLuint)) \
@@ -37,21 +35,26 @@ SDL_PROC(void, glTexImage2D, (GLenum, GLint, GLint, GLsizei, GLsizei, GLint, GLe
 SDL_PROC(void, glEnableVertexAttribArray, (GLuint)) \
 SDL_PROC(void, glVertexAttribPointer, (GLuint, GLint, GLenum, GLboolean, GLsizei, const void *)) \
 SDL_PROC(void, glUniform4f, (GLint, GLfloat, GLfloat, GLfloat, GLfloat)) \
-SDL_PROC(void, glDisableVertexAttribArray, (GLuint))
-*/
+SDL_PROC(void, glDisableVertexAttribArray, (GLuint)) \
+SDL_PROC(GLenum, glGetError, (void)) \
+SDL_PROC(void, glGetProgramInfoLog, (GLuint, GLsizei, GLsizei*, GLchar*)) \
+SDL_PROC(void, glGetProgramiv, (GLuint, GLenum, GLint *)) \
+SDL_PROC(void, glGetShaderInfoLog, (GLuint, GLsizei, GLsizei *, char *)) \
+SDL_PROC(void, glGetShaderiv, (GLuint, GLenum, GLint *))
+
 
 class GLESDriverInstance
 {
 public:    
 #define SDL_PROC(ret,func,params) typedef ret (APIENTRY * func##_fnc)params; func##_fnc func = 0;
-#include "../src/render/opengles2/SDL_gles2funcs.h"
-    ADDITIONAL_OPENGL_PROCS // включаем дополнительные OPENGLES-функции
+//#include "../src/render/opengles2/SDL_gles2funcs.h"
+    OPENGLES2_FUCNTION_LIST // включаем дополнительные OPENGLES-функции
 #undef SDL_PROC
     void Init()
     {
 #define SDL_PROC(ret,func,params) func = (func##_fnc)SDL_GL_GetProcAddress(#func); if(func) logVerbose("GLESDriver:: " #func " pointer was loaded successfully"); else logError("GLESDriver:: " #func " pointer was not loaded");
-#include "../src/render/opengles2/SDL_gles2funcs.h"        
-    ADDITIONAL_OPENGL_PROCS // включаем дополнительные OPENGLES-функции
+//#include "../src/render/opengles2/SDL_gles2funcs.h"        
+    OPENGLES2_FUCNTION_LIST // включаем дополнительные OPENGLES-функции
 #undef SDL_PROC
     }
 
