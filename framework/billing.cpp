@@ -12,7 +12,7 @@ int BillingManager::GetStatus()
 extern "C" {
     JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_BillingSetupFinished(JNIEnv*, jclass, jint);
     JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_BillingDisconnected(JNIEnv*, jclass, jint);
-	JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseQueried(JNIEnv*, jclass, jstring, jstring);
+    JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseQueried(JNIEnv*, jclass, jstring, jstring);
 }
 JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_BillingSetupFinished(JNIEnv*, jclass, jint ResponseCode)
 {
@@ -27,14 +27,14 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_BillingDisconnected(JN
 }
 
 JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseQueried(JNIEnv* env, jclass, jstring PurchaseToken, jstring ProductCode)
-{		
-	const char* PToken = env->GetStringUTFChars(PurchaseToken, 0);
-	const char* PCode  = env->GetStringUTFChars(ProductCode, 0);
+{        
+    const char* PToken = env->GetStringUTFChars(PurchaseToken, 0);
+    const char* PCode  = env->GetStringUTFChars(ProductCode, 0);
 
-	logDebug("PurchaseQueried %s %s", PToken, PCode);
+    logDebug("PurchaseQueried %s %s", PToken, PCode);
 
-	env->ReleaseStringUTFChars(PurchaseToken, PToken);
-	env->ReleaseStringUTFChars(ProductCode, PCode);
+    env->ReleaseStringUTFChars(PurchaseToken, PToken);
+    env->ReleaseStringUTFChars(ProductCode, PCode);
 }
 #endif
 
@@ -57,11 +57,11 @@ bool BillingManager::Init()
 bool BillingManager::QueryProductDetails(const std::vector<std::string>& ProdList)
 {
 #ifdef __ANDROID__    
-	return AndroidBillingManager::QueryProductDetails(ProdList);
+    return AndroidBillingManager::QueryProductDetails(ProdList);
 #endif
 
 #ifdef __APPLE__    
-	return iOSBillingManager::QueryProductDetails(ProdList);
+    return iOSBillingManager::QueryProductDetails(ProdList);
 #endif
     return false;
 }
@@ -69,35 +69,35 @@ bool BillingManager::QueryProductDetails(const std::vector<std::string>& ProdLis
 bool BillingManager::RestorePurchases()
 {
 #ifdef __ANDROID__    
-	return AndroidBillingManager::RestorePurchases();
+    return AndroidBillingManager::RestorePurchases();
 #endif
 
 #ifdef __APPLE__    
-	return iOSBillingManager::RestorePurchases();
+    return iOSBillingManager::RestorePurchases();
 #endif 
-	return false;
+    return false;
 }
 
 bool BillingManager::PurchaseProdItem(const char* ProductCode)
 {
 #ifdef __ANDROID__    
-	return AndroidBillingManager::PurchaseProdItem(ProductCode);
+    return AndroidBillingManager::PurchaseProdItem(ProductCode);
 #endif
 
 #ifdef __APPLE__    
-	return iOSBillingManager::RestorePurchases();
+    return iOSBillingManager::RestorePurchases();
 #endif 
-	return false;
+    return false;
 }
 
 bool BillingManager::ConsumeProductItem(const char* PurchaseToken)
 {
 #ifdef __ANDROID__    
-	return AndroidBillingManager::ConsumeProductItem(PurchaseToken);
+    return AndroidBillingManager::ConsumeProductItem(PurchaseToken);
 #endif
 
 #ifdef __APPLE__    
-	return iOSBillingManager::RestorePurchases();
+    return iOSBillingManager::RestorePurchases();
 #endif 
-	return false;
+    return false;
 }

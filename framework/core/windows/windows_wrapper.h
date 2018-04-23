@@ -10,10 +10,10 @@
 class WindowsWrapper
 {
     public:
-	static bool             OpenURL           (const char* url);
+    static bool             OpenURL           (const char* url);
     //static BWrapper::Lang   GetLanguage       ();
     static std::string      GetEnvVariable    (const char* EnvVarName);
-	//static bool             FileExists      (const char* FileName);
+    //static bool             FileExists      (const char* FileName);
     static bool             DirectoryExists   (const char* Dir);
     static bool             DirCreate         (const char* Dir);
     static bool             DirRemove         (const char* Dir);

@@ -17,17 +17,17 @@ static LogParamsStruct LogParams;
 
 bool BWrapper::Init(Uint32 flags)
 {
-	/*
-	Если раскомментить нижеприведенную строку, то на винде валится при закрытии окна приложения (не консоли)		
-	if (SDL_SetMemoryFunctions(std::malloc, std::calloc, std::realloc, std::free) != 0)
-		logError("SDL_SetMemoryFunctions error %s", SDL_GetError());
-	*/
+    /*
+    Если раскомментить нижеприведенную строку, то на винде валится при закрытии окна приложения (не консоли)
+    if (SDL_SetMemoryFunctions(std::malloc, std::calloc, std::realloc, std::free) != 0)
+        logError("SDL_SetMemoryFunctions error %s", SDL_GetError());
+    */
 
-	if (SDL_Init(flags) != 0)
+    if (SDL_Init(flags) != 0)
     {
         logError("BWrapper::Init: Error %s", SDL_GetError());
         return false;
-    }    
+    }
     return true;
 };
 
@@ -39,16 +39,16 @@ FILE* FileOpen_private(const char* Filename, BWrapper::FileSearchPriority Search
 {
     // Здесь не должно быть никакого ERROR-логирования, так как эта процедура будет использоваться для IfFileExists
     logVerbose("FileOpen_private = %s", Filename);
-    
+
     // Assets accesable only in read mode
     if (BWrapper::FileSearchPriority::Assets == SearchPriority)
     {
         if (BWrapper::FileOpenMode::WriteBinary == OpenMode || BWrapper::FileOpenMode::AppendBinary == OpenMode /*|| BWrapper::FileOpenMode::WriteText == OpenMode*/)
-        {            
+        {
             logError("FileOpen_private: Opening assets %s with write mode is not allowed", Filename);
             return nullptr;
         }
-    }    
+    }
 
     char mode[3];
 
@@ -83,11 +83,11 @@ FILE* FileOpen_private(const char* Filename, BWrapper::FileSearchPriority Search
 
 char* File2Buffer_private(FILE* File, unsigned& Size)
 {
-    Size = 0;    
+    Size = 0;
     if(File)
     {
         fseek(File, 0, SEEK_END);
-        Size = ftell(File);     
+        Size = ftell(File);
         rewind(File); // set pointer to beginning
         char* buffer = new char[Size];
         auto readed = fread(buffer, Size, 1, File);
@@ -118,10 +118,10 @@ FILE* BWrapper::FileOpen(const char* FileName, FileSearchPriority SearchPriority
 }
 
 char* BWrapper::File2Buffer(const char* FileName, FileSearchPriority SearchPriority, unsigned& BufferSize)
-{    
+{
     char* buffer = nullptr;
     BufferSize  = 0;
-    
+
     std::string Fname(FileName);
 
     if (FileSearchPriority::Assets == SearchPriority)
@@ -129,36 +129,36 @@ char* BWrapper::File2Buffer(const char* FileName, FileSearchPriority SearchPrior
 #ifdef __ANDROID__ // На андроиде assets читаются особым образом
         buffer = AndroidWrapper::GetAsset2Buffer(Fname.c_str(), BufferSize);
         if (!buffer) logError("FileSearchPriority::Assets: File %s [%s] open error", FileName, Fname.c_str());
-        return buffer;        
+        return buffer;
 #else
       //Во всех остальных случаях читаем из папки assets
         //Fname = std::string("assets/") + Fname;
         Fname = Platforms::GetInternalAssetsDir() + "/" + Fname;
 #endif
     }
-    
+
     auto File = FileOpen_private(Fname.c_str(), SearchPriority, BWrapper::FileOpenMode::ReadBinary);
-    
-    if(!File) 
+
+    if(!File)
     {
         logError("BWrapper::File2Buffer: File %s open error", FileName, Fname.c_str());
         goto end;
-    }    
-    
+    }
+
     buffer = File2Buffer_private(File, BufferSize);
-    if (!buffer) 
+    if (!buffer)
     {
         logError("BWrapper::File2Buffer: File %s read to buffer error", FileName, Fname.c_str());
-    }    
-    
+    }
+
     end:
-    FileClose(File);    
+    FileClose(File);
     return buffer;
 }
 
 
 bool BWrapper::FileExists(const char* FileName, BWrapper::FileSearchPriority SearchPriority)
-{        
+{
 #ifdef __ANDROID__ // На андроиде assets читаются особым образом
     if (BWrapper::FileSearchPriority::Assets == SearchPriority)
     {
@@ -171,11 +171,11 @@ bool BWrapper::FileExists(const char* FileName, BWrapper::FileSearchPriority Sea
         }
         return false;
     }
-#endif       
-    
+#endif
+
     auto File = FileOpen_private(FileName, SearchPriority, BWrapper::FileOpenMode::ReadBinary);
-    
-    if(File) 
+
+    if(File)
     {
         FileClose(File);
         return true;
@@ -186,7 +186,7 @@ bool BWrapper::FileExists(const char* FileName, BWrapper::FileSearchPriority Sea
 
 void BWrapper::CloseBuffer(char*& buffer)
 {
-    if (buffer) 
+    if (buffer)
     {
         delete [] buffer;
     }
@@ -249,13 +249,13 @@ bool BWrapper::FileRename(const char* OldName, const char* NewName)
 
 SDL_Rect ConvertRect2Native(const AkkordRect &Rect)
 {
-    SDL_Rect r; 
+    SDL_Rect r;
     r.x = Rect.x; r.y = Rect.y; r.w = Rect.w; r.h = Rect.h;
     return r;
 }
 
 AkkordWindow* BWrapper::CreateRenderWindow(const char* Title, int X, int Y, int W, int H, Uint32 Flags)
-{    
+{
     auto wnd = SDL_CreateWindow(Title, X, Y, W, H, Flags/* SDL_WINDOW_SHOWN*/);
     if(!wnd) logError("CreateWindow error = %s", SDL_GetError());
     return wnd;
@@ -323,11 +323,11 @@ bool BWrapper::DestroyWindow()
 bool BWrapper::SetWindowSize(int W, int H)
 {
     SDL_SetWindowSize(CurrentContext.CurrentWindow, W, H);
-    return true;    
+    return true;
 }
 
 bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const BWrapper::FileSearchPriority SearchPriority)
-{    
+{
     std::string Format;
 
     if (tex)
@@ -336,15 +336,15 @@ bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const B
     bool result = false;
     unsigned Size;
     auto buffer = BWrapper::File2Buffer(FileName, SearchPriority, Size);
-    
+
     if (!buffer)
     {
         logError(std::string(Format + "Error load file image = %s, error=%s").c_str(), FileName, SDL_GetError());
         return result;
     }
 
-    auto io = SDL_RWFromMem(buffer, Size);    
-    
+    auto io = SDL_RWFromMem(buffer, Size);
+
     if (io)
     {
         SDL_Surface *image = nullptr;
@@ -357,10 +357,10 @@ bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const B
                 image = IMG_LoadPNG_RW(io);
                 break;
             case AkkordTexture::TextureType::JPEG:
-                image = IMG_LoadJPG_RW(io);                
-                break;        
+                image = IMG_LoadJPG_RW(io);
+                break;
         }
-        
+
         if (image)
         {
             tex = SDL_CreateTextureFromSurface(CurrentContext.CurrentRenderer, image);
@@ -395,15 +395,15 @@ void AkkordTexture::Destroy()
 }
 
 AkkordTexture::~AkkordTexture()
-{    
+{
     Destroy();
 }
 
 const bool AkkordTexture::Draw(AkkordRect Rect, const AkkordRect* RectFromAtlas, unsigned char Flip, double Angle, AkkordPoint* Point)
-{    
+{
     std::string Format;
     auto NativeDstRect = ConvertRect2Native(Rect); // Rect must be always set
-    
+
     // Converting Source Rect if exists
     SDL_Rect  NativeSrcRect;
     SDL_Rect* NativeSrcRect_ptr = nullptr;
@@ -413,11 +413,11 @@ const bool AkkordTexture::Draw(AkkordRect Rect, const AkkordRect* RectFromAtlas,
         NativeSrcRect_ptr = &NativeSrcRect;
 
     }
-    
+
     // Converting Angle Point if exists
     SDL_Point point;
     SDL_Point* point_ptr = nullptr;
-    
+
     if (Point)
     {
         point.x = Point->x;
@@ -426,8 +426,8 @@ const bool AkkordTexture::Draw(AkkordRect Rect, const AkkordRect* RectFromAtlas,
     }
 
     // converting Flip
-    const SDL_RendererFlip flip = (SDL_RendererFlip)Flip;    
-    
+    const SDL_RendererFlip flip = (SDL_RendererFlip)Flip;
+
     auto res = SDL_RenderCopyEx(CurrentContext.CurrentRenderer, tex, NativeSrcRect_ptr, &NativeDstRect, Angle, point_ptr, flip);
 
     if (res != 0)
@@ -436,7 +436,7 @@ const bool AkkordTexture::Draw(AkkordRect Rect, const AkkordRect* RectFromAtlas,
         return false;
     }
 
-	//SDL_BlendMode bmd;
+    //SDL_BlendMode bmd;
 
     return true;
 };
@@ -474,8 +474,8 @@ AkkordPoint BWrapper::GetScreenSize()
 {
     AkkordPoint WSize;
     //SDL_GetWindowSize(CurrentContext.CurrentWindow, &WSize.x, &WSize.y);
-	//SDL_GL_GetDrawableSize(CurrentContext.CurrentWindow, &WSize.x, &WSize.y);
-	SDL_GetRendererOutputSize(CurrentContext.CurrentRenderer, &WSize.x, &WSize.y);
+    //SDL_GL_GetDrawableSize(CurrentContext.CurrentWindow, &WSize.x, &WSize.y);
+    SDL_GetRendererOutputSize(CurrentContext.CurrentRenderer, &WSize.x, &WSize.y);
     return WSize;
 };
 
@@ -579,7 +579,7 @@ const unsigned int AkkordColor::GetInt32()
 };
 
 unsigned int AkkordColor::RGBA2Int32(int r, int g, int b, int a)
-{   
+{
     return r
         + g * 256
         + b * 256 * 256
@@ -587,9 +587,9 @@ unsigned int AkkordColor::RGBA2Int32(int r, int g, int b, int a)
 }
 
 bool BWrapper::SetCurrentColor(AkkordColor Color)
-{   
+{
     if(SDL_SetRenderDrawColor(CurrentContext.CurrentRenderer, Color.GetR(), Color.GetG(), Color.GetB(), Color.GetA()) == 0) return true;
-	logError("Draw error %s", SDL_GetError());
+    logError("Draw error %s", SDL_GetError());
     return false;
 }
 
@@ -597,7 +597,7 @@ bool BWrapper::DrawRect(AkkordRect Rect)
 {
     auto NativeRect = ConvertRect2Native(Rect);
     if (SDL_RenderDrawRect(CurrentContext.CurrentRenderer, &NativeRect) == 0) return true;
-	logError("Draw error %s", SDL_GetError());
+    logError("Draw error %s", SDL_GetError());
     return false;
 };
 
@@ -605,14 +605,14 @@ bool BWrapper::FillRect(AkkordRect Rect)
 {
     auto NativeRect = ConvertRect2Native(Rect);
     if (SDL_RenderFillRect(CurrentContext.CurrentRenderer, &NativeRect) == 0) return true;
-	logError("Draw error %s", SDL_GetError());
+    logError("Draw error %s", SDL_GetError());
     return false;
 };
 
 bool BWrapper::DrawLine(AkkordPoint Point1, AkkordPoint Point2)
 {
     if (SDL_RenderDrawLine(CurrentContext.CurrentRenderer, Point1.x, Point1.y, Point2.x, Point2.y) == 0) return true;
-	logError("Draw error %s", SDL_GetError());
+    logError("Draw error %s", SDL_GetError());
     return false;
 };
 
@@ -623,16 +623,16 @@ std::string BWrapper::Int2Str(int Num)
 
 unsigned BWrapper::Str2Num(const char* Str)
 {
-    unsigned num;    
+    unsigned num;
     for (num = 0; '0' <= *Str && *Str <= '9'; Str++)
-        num = (10 * num) + (*Str - '0');    
-    
+        num = (10 * num) + (*Str - '0');
+
     return num;
 }
 
 BWrapper::KeyCodes BWrapper::DecodeKey(SDL_Keysym SDL_Key)
-{    
-    //enum struct KeyCodes { Esc, BackSpace, Back, Enter, Tab, Delete, F1, 
+{
+    //enum struct KeyCodes { Esc, BackSpace, Back, Enter, Tab, Delete, F1,
     // Help, Home, Insert, Find, Copy, PageDown, PageUp, Paste, Pause, PrintScreen, Return, Space, Uknown };
 
     switch (SDL_Key.sym)
@@ -657,13 +657,13 @@ BWrapper::KeyCodes BWrapper::DecodeKey(SDL_Keysym SDL_Key)
         case SDLK_RETURN: return KeyCodes::Return;
         case SDLK_RETURN2: return KeyCodes::Return2;
         case SDLK_SPACE: return KeyCodes::Space;
-		case SDLK_LEFT: return KeyCodes::Left;
-		case SDLK_RIGHT: return KeyCodes::Right;
-		case SDLK_UP: return KeyCodes::Up;
-		case SDLK_DOWN: return KeyCodes::Down;
+        case SDLK_LEFT: return KeyCodes::Left;
+        case SDLK_RIGHT: return KeyCodes::Right;
+        case SDLK_UP: return KeyCodes::Up;
+        case SDLK_DOWN: return KeyCodes::Down;
 
         default: return KeyCodes::Uknown;
-    }    
+    }
 }
 
 /*
@@ -696,7 +696,7 @@ int BWrapper::ShowMessageBox(const char* Message)
             { 255, 0, 255 }
         }
     };
-    
+
     const SDL_MessageBoxData messageboxdata = {
         SDL_MESSAGEBOX_INFORMATION, /* .flags */
         //NULL, /* .window */
@@ -708,9 +708,9 @@ int BWrapper::ShowMessageBox(const char* Message)
         buttons, /* .buttons */
         &colorScheme /* .colorScheme */
     };
-    
+
     int buttonid;
-    
+
     if (SDL_ShowMessageBox(&messageboxdata, &buttonid) < 0) {
         SDL_Log("error displaying message box");
         return 1;
@@ -720,7 +720,7 @@ int BWrapper::ShowMessageBox(const char* Message)
     }
     else {
         SDL_Log("selection was %s", buttons[buttonid].text);
-    }    
+    }
 
     return 0; // Заглушка
 }
@@ -741,12 +741,12 @@ void BWrapper::Quit()
 }
 
 bool BWrapper::OpenURL(const char* url)
-{    
-	if (Platforms::OpenURL(url))
-		return true;
-	
-	logError("URL %s was not opened", url);
-	return false;
+{
+    if (Platforms::OpenURL(url))
+        return true;
+
+    logError("URL %s was not opened", url);
+    return false;
 };
 
 Locale::Lang BWrapper::GetDeviceLanguage()
@@ -783,8 +783,8 @@ LogParamsStruct* BWrapper::GetLogParams()
 }
 
 void BWrapper::Log(BWrapper::LogPriority Priority, const char* File, const char* Function, unsigned Line, SDL_PRINTF_FORMAT_STRING const char *Fmt, ...)
-{    
-    //#if defined(DEBUG) || defined(_DEBUG) || defined(_DEBUG_) || defined(__DEBUG__) || defined(NDK_DEBUG)   
+{
+    //#if defined(DEBUG) || defined(_DEBUG) || defined(_DEBUG_) || defined(__DEBUG__) || defined(NDK_DEBUG)
     // https://wiki.libsdl.org/CategoryLog
     SDL_LogPriority sev = (SDL_LogPriority)Priority;
     char TimeBuffer[16];
@@ -818,18 +818,18 @@ void BWrapper::Log(BWrapper::LogPriority Priority, const char* File, const char*
 
     // Add File Info
     if (LogParams.showFile)
-    {   
+    {
         unsigned pos = 0;
-		const char* p = File;
-		for (unsigned i = 0; (*p); ++p, ++i)        
+        const char* p = File;
+        for (unsigned i = 0; (*p); ++p, ++i)
             if((*p) == '/' || (*p) == '\\')
-                pos = i + 1;            
-        
-		std::string sFile = std::string(File, pos, std::string::npos);
-        
-		auto len = sFile.length();
-		if (len < LogParams.lenFile)
-			sFile.insert(len, LogParams.lenFile - len, 32);
+                pos = i + 1;
+
+        std::string sFile = std::string(File, pos, std::string::npos);
+
+        auto len = sFile.length();
+        if (len < LogParams.lenFile)
+            sFile.insert(len, LogParams.lenFile - len, 32);
 
         sFile = sFile + " | ";
         Format = Format + sFile;
@@ -838,11 +838,11 @@ void BWrapper::Log(BWrapper::LogPriority Priority, const char* File, const char*
     // Add function info
     if (LogParams.showFunction)
     {
-        std::string sFunction = std::string(Function);        
+        std::string sFunction = std::string(Function);
 
-		auto len = sFunction.length();
-		if (len < LogParams.lenFunction)
-			sFunction.insert(len, LogParams.lenFunction - len, 32);
+        auto len = sFunction.length();
+        if (len < LogParams.lenFunction)
+            sFunction.insert(len, LogParams.lenFunction - len, 32);
 
         sFunction = sFunction + " | ";
         Format = Format + sFunction;
@@ -853,27 +853,27 @@ void BWrapper::Log(BWrapper::LogPriority Priority, const char* File, const char*
     {
         std::string sLine = std::to_string(Line);
 
-		auto len = sLine.length();
-		if (len < LogParams.lenLine)
-			sLine.insert(len, LogParams.lenLine - len, 32);
+        auto len = sLine.length();
+        if (len < LogParams.lenLine)
+            sLine.insert(len, LogParams.lenLine - len, 32);
 
         sLine = sLine + " | ";
         Format = Format + sLine;
     }
 
-	int len = 0;
-	switch (Priority)
-	{
-		case BWrapper::LogPriority::Verbose : len = 7; break;
-		case BWrapper::LogPriority::Debug   : len = 5; break;
-		case BWrapper::LogPriority::Info    : len = 4; break;
-		case BWrapper::LogPriority::Warning : len = 4; break; /* base WARN*/
-		case BWrapper::LogPriority::Error   : len = 5; break;
-		case BWrapper::LogPriority::Critical: len = 8; break;
-	}
+    int len = 0;
+    switch (Priority)
+    {
+        case BWrapper::LogPriority::Verbose : len = 7; break;
+        case BWrapper::LogPriority::Debug   : len = 5; break;
+        case BWrapper::LogPriority::Info    : len = 4; break;
+        case BWrapper::LogPriority::Warning : len = 4; break; /* base WARN*/
+        case BWrapper::LogPriority::Error   : len = 5; break;
+        case BWrapper::LogPriority::Critical: len = 8; break;
+    }
 
     Format = Format + Fmt;
-	Format.insert(0, 8 - len, 32);
+    Format.insert(0, 8 - len, 32);
 
     va_list ap;
     va_start(ap, Fmt);
@@ -885,21 +885,21 @@ void BWrapper::Log(BWrapper::LogPriority Priority, const char* File, const char*
 bool BWrapper::PrintDirContent(const char* Path, BWrapper::LogPriority Priority, bool Recursive)
 {
     bool result = false;
-    
+
     const char* file = "[file]";
-    const char* dir  = "[dir ]";    
+    const char* dir  = "[dir ]";
     const char* ptype;
     DirContentReader Dr;
     DirContentElement* Dc;
-    
+
     if (Dr.Open(Path))
     {
         result = true;
         while (Dr.Next(Dc))
-        {            
+        {
             if (Dc->isDir) ptype = dir;
             else           ptype = file;
-            
+
             log(Priority, "%s %s/%s", ptype, Path, Dc->Name.c_str());
 
             if (Recursive && Dc->isDir)
@@ -944,7 +944,7 @@ AkkordRect::AkkordRect()
 {
     x = 0; y = 0; w = 0; h = 0;
 }
-    
+
 AkkordRect::AkkordRect(int X, int Y, int W, int H)
 {
     x = X; y = Y; w = W; h = H;
@@ -984,14 +984,14 @@ DirContentReader::~DirContentReader()
 }
 
 bool DirContentReader::Next(DirContentElement*& Element)
-{   
+{
     if (0 < Size && Pointer < Size)
-    {        
-        Element = List[Pointer]; 
+    {
+        Element = List[Pointer];
         ++Pointer;
         return true;
     }
-    
+
     return false;
 }
 
@@ -1000,7 +1000,7 @@ bool DirContentReader::Open(const char* Dir)
     Close();
 
     if (BWrapper::DirExists(Dir))
-    {        
+    {
         auto res = Platforms::GetDirContent(Dir, List);
         this->Size = List.size();
         return res;
@@ -1033,7 +1033,7 @@ bool FileReader::Open(const char *Fname, BWrapper::FileSearchPriority SearchPrio
 {
     Close();
     std::string Path;
-#ifdef __ANDROID__        
+#ifdef __ANDROID__
     if (BWrapper::FileSearchPriority::Assets == SearchPriority)
     {
         unsigned Size;
@@ -1043,7 +1043,7 @@ bool FileReader::Open(const char *Fname, BWrapper::FileSearchPriority SearchPrio
         {
             sbuf = new membuf(buffer, buffer + Size);
             in = new std::istream(sbuf);
-            opened = true;            
+            opened = true;
         }
         return opened;
     }
@@ -1051,12 +1051,12 @@ bool FileReader::Open(const char *Fname, BWrapper::FileSearchPriority SearchPrio
     if (BWrapper::FileSearchPriority::Assets == SearchPriority)
         Path = Platforms::GetInternalAssetsDir() + "/";
 #endif
-    
+
     Path = Path + Fname;
     if (fb.open(Path.c_str(), std::ios::binary | std::ios::in))
     {
         in = new std::istream(&fb);
-        opened = true;        
+        opened = true;
     }
     return opened;
 };
@@ -1066,11 +1066,11 @@ void FileReader::Close()
     opened = false;
     fb.close();
     if (in) delete in;
-    in = nullptr;     
-    
+    in = nullptr;
+
 #ifdef __ANDROID__
     BWrapper::CloseBuffer(buffer);
-    buffer = nullptr;        
+    buffer = nullptr;
 
     if (sbuf) delete sbuf;
     sbuf = nullptr;
@@ -1098,14 +1098,14 @@ bool FileReader::ReadLine(std::string& Line)
     {
         logError("FileReader is closed");
         return false;
-    }    
+    }
     if (std::getline(*in, Line))
     {
         auto len = Line.size();
 
         while (len && (Line[len - 1] == '\n' || Line[len - 1] == '\r'))
         {
-            Line = std::string(Line, 0, len - 1);           
+            Line = std::string(Line, 0, len - 1);
             len = Line.size();
         }
         return true;

@@ -32,17 +32,10 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
-			<Add directory="${AKKORD_SDK_HOME}/framework" />
-			<Add directory="${AKKORD_SDK_HOME}/libraries/SDL/i686-w64-mingw32/include/SDL2" />
-			<Add directory="${AKKORD_SDK_HOME}/libraries/SDL_image/i686-w64-mingw32/include/SDL2" />
 		</Compiler>
 		<Linker>
 			<Add option="-lmingw32 -lSDL2main -lSDL2 -lSDL2_image" />
-			<Add directory="${AKKORD_SDK_HOME}/libraries/SDL/i686-w64-mingw32/lib" />
-			<Add directory="${AKKORD_SDK_HOME}/libraries/SDL_image/i686-w64-mingw32/lib" />
 		</Linker>
-		<Unit filename="${AKKORD_SDK_HOME}/framework/admob.cpp" />
-		<Unit filename="${AKKORD_SDK_HOME}/framework/basewrapper.cpp" />
 		<Unit filename="../src/main.cpp" />
 		<Extensions>
 			<code_completion />

@@ -45,13 +45,13 @@ class GLESDriverInstance
 public:    
 #define SDL_PROC(ret,func,params) typedef ret (APIENTRY * func##_fnc)params; func##_fnc func = 0;
 #include "../src/render/opengles2/SDL_gles2funcs.h"
-	ADDITIONAL_OPENGL_PROCS // включаем дополнительные OPENGLES-функции
+    ADDITIONAL_OPENGL_PROCS // включаем дополнительные OPENGLES-функции
 #undef SDL_PROC
     void Init()
     {
 #define SDL_PROC(ret,func,params) func = (func##_fnc)SDL_GL_GetProcAddress(#func); if(func) logVerbose("GLESDriver:: " #func " pointer was loaded successfully"); else logError("GLESDriver:: " #func " pointer was not loaded");
-#include "../src/render/opengles2/SDL_gles2funcs.h"		
-	ADDITIONAL_OPENGL_PROCS // включаем дополнительные OPENGLES-функции
+#include "../src/render/opengles2/SDL_gles2funcs.h"        
+    ADDITIONAL_OPENGL_PROCS // включаем дополнительные OPENGLES-функции
 #undef SDL_PROC
     }
 
