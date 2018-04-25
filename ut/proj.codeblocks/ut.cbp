@@ -32,9 +32,14 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
+			<Add directory="../../framework" />
+			<Add directory="../../libraries/SDL/SDL/include" />
+			<Add directory="../../libraries/SDL_image/SDL_image" />
 		</Compiler>
 		<Linker>
-			<Add option="-lmingw32 -lSDL2main -lSDL2 -lSDL2_image" />
+			<Add option="-lSDL2main -lSDL2 -lSDL2_image" />
+			<Add directory="../../libraries/SDL/win32/Release" />
+			<Add directory="../../libraries/SDL_image/win32/Release" />
 		</Linker>
 		<Unit filename="../../framework/admob.cpp" />
 		<Unit filename="../../framework/basewrapper.cpp" />

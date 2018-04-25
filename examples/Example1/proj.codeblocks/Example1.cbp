@@ -32,10 +32,16 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
+			<Add directory="../../../libraries/SDL/SDL/include" />
+			<Add directory="../../../libraries/SDL_image/SDL_image" />
+			<Add directory="../../../framework" />
 		</Compiler>
 		<Linker>
-			<Add option="-lmingw32 -lSDL2main -lSDL2 -lSDL2_image" />
+			<Add option="-lSDL2main -lSDL2 -lSDL2_image" />
+			<Add directory="../../../libraries/SDL/win32/Release" />
+			<Add directory="../../../libraries/SDL_image/win32/Release" />
 		</Linker>
+		<Unit filename="../../../framework/basewrapper.cpp" />
 		<Unit filename="../src/main.cpp" />
 		<Extensions>
 			<code_completion />
