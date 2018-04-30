@@ -14,7 +14,7 @@ public:
     unsigned       Randomize(unsigned Count);
     int            DrawImageByIndex(unsigned Index, const AkkordRect &Rect);
     void           OpenURLByIndex(unsigned Index);
-    void           OpenURL(BWrapper::OS OSCode, Apps AppId);
+    static void    OpenURL(BWrapper::OS OSCode, Apps AppId);
 
     AdRandomizer();
     ~AdRandomizer();
@@ -213,8 +213,8 @@ void AdRandomizer::OpenURL(BWrapper::OS OSCode, Apps AppId)
         switch (OSCode)
         {
             case BWrapper::OS::iOS:
-                if (Language == Locale::Lang::Russian) BWrapper::OpenURL("https://itunes.apple.com/ru/app/id1013587052");
-                else                                        BWrapper::OpenURL("https://itunes.apple.com/en/app/id1013587052");
+                if (Language == Locale::Lang::Russian) BWrapper::OpenURL("https://itunes.apple.com/app/id1013587052");
+                else                                        BWrapper::OpenURL("https://itunes.apple.com/app/id1013587052");
                 break;
 
             case BWrapper::OS::AndroidOS:
