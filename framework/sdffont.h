@@ -493,6 +493,9 @@ public:
         unsigned int i = 0;
         unsigned int a = 0;
         unsigned len = strlen(Text);
+        
+        if(len == 0)
+            logWarning("Zero-length text");
 
         pt.x = 0;
         pt.y = 0;
