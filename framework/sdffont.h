@@ -284,7 +284,7 @@ class SDFFont
                 };
         };
 
-        //for (auto v : CharsVector) logDebug("id=%d, x=%d, y=%d, w=%d, h=%d", v.id, v.x, v.y, v.w, v.h);
+        //for (auto v : CharsMap) logDebug("id=%d, x=%d, y=%d, w=%d, h=%d", v.first, v.second.x, v.second.y, v.second.w, v.second.h);
 
         fr.Close();
 
