@@ -10,6 +10,7 @@
 #include <iostream>
 #include <fstream>
 #include <memory>
+#include <algorithm>
 #include "framework_defines.h"
 //#include "userevents.h"
 #include "core/locale.h"

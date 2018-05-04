@@ -5,8 +5,6 @@
 #include "SDL.h"
 #include <limits>
 
-#define GREATEST(A, B) (A > B ? A : B)
-#define LEAST(A, B) (A < B ? A : B)
 #define VALUE_BETWEEN(Val, Begin, End) (Begin <= Val && Val <= End ? true : false)
 
 typedef SDL_Window   AkkordWindow;
