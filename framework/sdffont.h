@@ -488,7 +488,7 @@ public:
     // сейчас это int, возможно для этой функции сделать отдельный тип со float
     AkkordPoint GetTextSize(const char* Text)
     {
-        AkkordPoint pt;
+        AkkordPoint pt, localpoint;
 
         unsigned int i = 0;
         unsigned int a = 0;
@@ -500,20 +500,40 @@ public:
         pt.x = 0;
         pt.y = 0;
         
+        localpoint.x = 0;
+        localpoint.y = 0;
+        
         SDFCharInfo charParams;
-
+        
         while (i < len)
         {
             a = UTF2Unicode(Text, i);
             
-            sdfFont->GetCharInfo(a, charParams);            
-            
-            pt.x += scaleX * charParams.xoffset;
-            pt.x += (float)scaleX * (charParams.w /*+ charParams.xadvance*/);
+            if (a == 10) // Если это переход строки
+            {
+                pt.y += localpoint.y; // надо учесть общую высоту строки
+                
+                if(pt.x < localpoint.x)
+                    pt.x = localpoint.x;
+                
+                localpoint.x = 0;
+            }
+            else // Если это не переход строки       
+            {
+                sdfFont->GetCharInfo(a, charParams);            
+                
+                localpoint.x += scaleX * charParams.xoffset;
+                localpoint.x += (float)scaleX * (charParams.w /*+ charParams.xadvance*/);
 
-            if (pt.y < scaleY* (charParams.h + charParams.yoffset))
-                pt.y = scaleY* (charParams.h + charParams.yoffset);
+                if (localpoint.y < scaleY* (charParams.h + charParams.yoffset))
+                    localpoint.y = scaleY* (charParams.h + charParams.yoffset);            
+            }
         };
+        
+        if(pt.x < localpoint.x)
+            pt.x = localpoint.x;
+            
+        pt.y += localpoint.y; // надо учесть общую высоту строки
 
         return pt;
     };
