@@ -590,28 +590,36 @@ public:
         while (i < len)
         {                    
             a = UTF2Unicode(Text, i);
-            sdfFont->GetCharInfo(a, charParams);
-            
-            X = X + scaleX * charParams.xoffset;
 
-            UV.push_back(float(charParams.x               ) / atlasW); UV.push_back(float(charParams.y + charParams.h) / atlasH);
-            UV.push_back(float(charParams.x + charParams.w) / atlasW); UV.push_back(float(charParams.y + charParams.h) / atlasH);
-            UV.push_back(float(charParams.x               ) / atlasW); UV.push_back(float(charParams.y               ) / atlasH);
-            UV.push_back(float(charParams.x + charParams.w) / atlasW); UV.push_back(float(charParams.y               ) / atlasH);
+            if (a == 10)
+            {
 
-            squareVertices.push_back(2 * (float)(X / ScrenW) - 1.0f);                                  squareVertices.push_back(2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f);
-            squareVertices.push_back(2 * (float)(X + (float)scaleX * charParams.w) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f);
-            squareVertices.push_back(2 * (float)(X / ScrenW) - 1.0f);                                squareVertices.push_back(2 * (ScrenH - Y - scaleY * charParams.yoffset) / ScrenH - 1.0f);
-            squareVertices.push_back(2 * (float)(X + (float)scaleX * charParams.w) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - Y - scaleY * charParams.yoffset) / ScrenH - 1.0f);
-            
-            Indices.push_back(PointsCnt + 0); Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2);
-            Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2); Indices.push_back(PointsCnt + 3);
+            }
+            else
+            {
+                sdfFont->GetCharInfo(a, charParams);
 
-            if (pt.y < scaleY * (charParams.h + charParams.yoffset))
-                pt.y = scaleY * (charParams.h + charParams.yoffset);
+                X = X + scaleX * charParams.xoffset;
 
-            X = X + (float)scaleX * (charParams.w /*+ charParams.xadvance*/);
-            PointsCnt += 4;
+                UV.push_back(float(charParams.x) / atlasW); UV.push_back(float(charParams.y + charParams.h) / atlasH);
+                UV.push_back(float(charParams.x + charParams.w) / atlasW); UV.push_back(float(charParams.y + charParams.h) / atlasH);
+                UV.push_back(float(charParams.x) / atlasW); UV.push_back(float(charParams.y) / atlasH);
+                UV.push_back(float(charParams.x + charParams.w) / atlasW); UV.push_back(float(charParams.y) / atlasH);
+
+                squareVertices.push_back(2 * (float)(X / ScrenW) - 1.0f);                                  squareVertices.push_back(2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f);
+                squareVertices.push_back(2 * (float)(X + (float)scaleX * charParams.w) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f);
+                squareVertices.push_back(2 * (float)(X / ScrenW) - 1.0f);                                squareVertices.push_back(2 * (ScrenH - Y - scaleY * charParams.yoffset) / ScrenH - 1.0f);
+                squareVertices.push_back(2 * (float)(X + (float)scaleX * charParams.w) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - Y - scaleY * charParams.yoffset) / ScrenH - 1.0f);
+
+                Indices.push_back(PointsCnt + 0); Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2);
+                Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2); Indices.push_back(PointsCnt + 3);
+
+                if (pt.y < scaleY * (charParams.h + charParams.yoffset))
+                    pt.y = scaleY * (charParams.h + charParams.yoffset);
+
+                X = X + (float)scaleX * (charParams.w /*+ charParams.xadvance*/);
+                PointsCnt += 4;
+            }
         };        
 
         pt.x = X - pt.x + 1;
