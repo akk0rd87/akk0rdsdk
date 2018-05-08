@@ -518,6 +518,7 @@ public:
                 
                 localpoint.x = 0;
             }
+            else if (a == 13) {} // ничего не делаем
             else // Если это не переход строки       
             {
                 sdfFont->GetCharInfo(a, charParams);            
@@ -595,6 +596,7 @@ public:
             {
 
             }
+            else if (a == 13) {} // ничего не делаем
             else
             {
                 sdfFont->GetCharInfo(a, charParams);
