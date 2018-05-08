@@ -63,9 +63,8 @@ unsigned ConfigManager::GetConfigIndex(const char* Key)
             return i;
         ++i;
     };
-
-    // return max unsigned value
-    return GConstants::unsigned_max();
+    
+    return (std::numeric_limits<unsigned>::max)();
 }
 
 void ConfigManager::SetValue(const char* Key, const char* Value)
