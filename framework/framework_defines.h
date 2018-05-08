@@ -4,6 +4,13 @@
 
 #include "SDL.h"
 #include <limits>
+#include <time.h>
+#include <string>
+#include <vector>
+#include <iostream>
+#include <fstream>
+#include <memory>
+#include <algorithm>
 
 #define VALUE_BETWEEN(Val, Begin, End) (Begin <= Val && Val <= End ? true : false)
 
@@ -17,33 +24,13 @@ struct membuf : std::streambuf
     }
 };
 
-
 struct DirContentElement
 {
     std::string Name;
     bool isDir;
 };
 
-typedef std::vector<DirContentElement*> DirContentElementArray;
-
-class GConstants
-{
-public:
-    static unsigned unsigned_max()
-    {
-        return (std::numeric_limits<unsigned>::max)();
-    };
-
-    static int int_min()
-    {
-        return (std::numeric_limits<int>::min)();
-    };
-    
-    static int int_max()
-    {
-        return (std::numeric_limits<int>::max)();
-    };
-};
+typedef std::vector<std::unique_ptr<DirContentElement>> DirContentElementArray;
 
 #define log(LogPriority, fmt, ...)  BWrapper::Log(LogPriority, __FILE__, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
 #define logVerbose(fmt, ...)        log(BWrapper::LogPriority::Verbose , fmt, ##__VA_ARGS__)
