@@ -111,7 +111,7 @@ bool AdRandomizer::IsValidIndex(unsigned Index)
 void AdRandomizer::ExcludeApp(Apps AppId)
 {
     // Erase element from Vector
-    for (unsigned i = 0; i < CurApps.size(); i++)
+    for (decltype(CurApps.size()) i = 0; i < CurApps.size(); ++i)
         if (AppId == CurApps[i].AppCode)
         {
             CurApps.erase(CurApps.begin() + i);
@@ -126,17 +126,12 @@ unsigned AdRandomizer::Randomize(unsigned Count)
     auto Size = CurApps.size();
     if (Count > Size) Count = Size;
 
-    while (Size > Count)
-    {
+    for (; Size > Count; --Size)    
         CurApps.erase(CurApps.begin() + (BWrapper::Random() % Size));
-        --Size;
-    }
 
     // грузим по ним картинки
-    for (auto &v : CurApps)
-    {
-        LoadApp(v, BWrapper::Random() % v.ImageFiles.size());
-    }
+    for (auto &v : CurApps)    
+        LoadApp(v, BWrapper::Random() % v.ImageFiles.size());    
 
     return CurApps.size();
 }
@@ -146,8 +141,6 @@ int AdRandomizer::DrawImageByIndex(unsigned Index, const AkkordRect &Rect)
     if (IsValidIndex(Index)) return CurApps[Index].AdTexture.Draw(Rect);
     return 1;
 }
-
-
 
 void AdRandomizer::OpenURLByIndex(unsigned Index)
 {
@@ -294,63 +287,54 @@ void AdRandomizer::OpenURL(BWrapper::OS OSCode, Apps AppId)
 void AdRandomizer::InitApps()
 {
     AppInfoStruct str;
+    
+    CurApps.reserve(20);
 
-    CurApps.push_back(str);
-    auto size = CurApps.size() - 1;
-    CurApps[size].AppCode = AdRandomizer::Apps::CFCross;
-    CurApps[size].Path = "cfcross";
-    CurApps[size].ImageFiles = { "ad_cfcross_1.png", "ad_cfcross_2.png", "ad_cfcross_3.png", "ad_cfcross_4.png", "ad_cfcross_5.png", "ad_cfcross_6.png" };
+    CurApps.push_back(str);    
+    CurApps.back().AppCode = AdRandomizer::Apps::CFCross;
+    CurApps.back().Path = "cfcross";
+    CurApps.back().ImageFiles = { "ad_cfcross_1.png", "ad_cfcross_2.png", "ad_cfcross_3.png", "ad_cfcross_4.png", "ad_cfcross_5.png", "ad_cfcross_6.png" };
 
-    CurApps.push_back(str);
-    size = CurApps.size() - 1;
-    CurApps[size].AppCode = AdRandomizer::Apps::FCross;
-    CurApps[size].Path = "fcross";
-    CurApps[size].ImageFiles = { "ad_fcross_1.png", "ad_fcross_2.png", "ad_fcross_3.png" };
+    CurApps.push_back(str);    
+    CurApps.back().AppCode = AdRandomizer::Apps::FCross;
+    CurApps.back().Path = "fcross";
+    CurApps.back().ImageFiles = { "ad_fcross_1.png", "ad_fcross_2.png", "ad_fcross_3.png" };
 
-    CurApps.push_back(str);
-    size = CurApps.size() - 1;
-    CurApps[size].AppCode = AdRandomizer::Apps::JCross;
-    CurApps[size].Path = "jcross";
-    CurApps[size].ImageFiles = { "ad_jcross_1.png", "ad_jcross_2.png", "ad_jcross_3.png" };
+    CurApps.push_back(str);    
+    CurApps.back().AppCode = AdRandomizer::Apps::JCross;
+    CurApps.back().Path = "jcross";
+    CurApps.back().ImageFiles = { "ad_jcross_1.png", "ad_jcross_2.png", "ad_jcross_3.png" };
 
-    CurApps.push_back(str);
-    size = CurApps.size() - 1;
-    CurApps[size].AppCode = AdRandomizer::Apps::JDraw;
-    CurApps[size].Path = "jdraw";
-    CurApps[size].ImageFiles = { "ad_jdraw_1.png", "ad_jdraw_2.png" };
+    CurApps.push_back(str);    
+    CurApps.back().AppCode = AdRandomizer::Apps::JDraw;
+    CurApps.back().Path = "jdraw";
+    CurApps.back().ImageFiles = { "ad_jdraw_1.png", "ad_jdraw_2.png" };
 
-    CurApps.push_back(str);
-    size = CurApps.size() - 1;
-    CurApps[size].AppCode = AdRandomizer::Apps::WordsRu1;
-    CurApps[size].Path = "wordsru1";
-    CurApps[size].ImageFiles = { "ad_words1_ru_1.png" };
+    CurApps.push_back(str);    
+    CurApps.back().AppCode = AdRandomizer::Apps::WordsRu1;
+    CurApps.back().Path = "wordsru1";
+    CurApps.back().ImageFiles = { "ad_words1_ru_1.png" };
 
-    CurApps.push_back(str);
-    size = CurApps.size() - 1;
-    CurApps[size].AppCode = AdRandomizer::Apps::WordsRu2;
-    CurApps[size].Path = "wordsru2";
-    CurApps[size].ImageFiles = { "ad_words2_ru_1.png" };
+    CurApps.push_back(str);    
+    CurApps.back().AppCode = AdRandomizer::Apps::WordsRu2;
+    CurApps.back().Path = "wordsru2";
+    CurApps.back().ImageFiles = { "ad_words2_ru_1.png" };
 
-    CurApps.push_back(str);
-    size = CurApps.size() - 1;
-    CurApps[size].AppCode = AdRandomizer::Apps::WordsRu8;
-    CurApps[size].Path = "wordsru8";
-    CurApps[size].ImageFiles = { "ad_words8_ru_1.png" };
+    CurApps.push_back(str);    
+    CurApps.back().AppCode = AdRandomizer::Apps::WordsRu8;
+    CurApps.back().Path = "wordsru8";
+    CurApps.back().ImageFiles = { "ad_words8_ru_1.png" };
 
-    CurApps.push_back(str);
-    size = CurApps.size() - 1;
-    CurApps[size].AppCode = AdRandomizer::Apps::WordsUs;
-    CurApps[size].Path = "wordsus";
-    CurApps[size].ImageFiles = { "words_us_100.png" };
+    CurApps.push_back(str);    
+    CurApps.back().AppCode = AdRandomizer::Apps::WordsUs;
+    CurApps.back().Path = "wordsus";
+    CurApps.back().ImageFiles = { "words_us_100.png" };
 
 
 #if defined(_DEBUG) && defined(__WIN32__) // На винде в дебаге всегда проверяем, не протерялись ли ad-картинки
-    for (auto &v : CurApps)
-    {
-        auto d = v.ImageFiles.size();
-        for (decltype(d) j = 0; j < v.ImageFiles.size(); j++)
-            LoadApp(v, j);
-    }
+    for (auto &v : CurApps)            
+        for (decltype(v.ImageFiles.size()) j = 0; j < v.ImageFiles.size(); j++)
+            LoadApp(v, j);    
 #endif
 }
 
