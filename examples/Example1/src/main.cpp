@@ -14,12 +14,12 @@ AkkordTexture Background;
 AkkordRect rect;
 AkkordTexture Ground;
 
-unsigned ZombieIndex = 0;
-std::vector<unsigned> ZombieVector;
+decltype(AtlasMgr.GetIndexBySpriteName(1, ""))  ZombieIndex = 0;
+std::vector<decltype(AtlasMgr.GetIndexBySpriteName(1, "")) > ZombieVector;
 
-unsigned ImageFacebookIndex;
-unsigned ImageeraserIndex;
-unsigned ImageBackIndex;
+decltype(AtlasMgr.GetIndexBySpriteName(1, "")) ImageFacebookIndex;
+decltype(AtlasMgr.GetIndexBySpriteName(1, ""))  ImageeraserIndex;
+decltype(AtlasMgr.GetIndexBySpriteName(1, ""))  ImageBackIndex;
 
 auto Flip = AkkordTexture::Flip::None;
 
@@ -97,8 +97,8 @@ void ReDraw()
     AdImagesRects[1].x = ScreenWidth - AdImagesRects[1].w - 10;
     AdImagesRects[1].y = ScreenHeight - AdImagesRects[1].h - 10;
 
-    unsigned x   = (ScreenWidth - 400 - 10) / 3;
-    unsigned psx = ScreenWidth / 2;
+    auto x   = (ScreenWidth - 400 - 10) / 3;
+    auto psx = ScreenWidth / 2;
 
     AdImagesRects[2].x = psx - AdImagesRects[2].w - x / 2;
     AdImagesRects[2].y = ScreenHeight - AdImagesRects[0].h - 10;
