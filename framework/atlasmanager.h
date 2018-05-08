@@ -124,7 +124,7 @@ bool AtlasManager::IsValidSpriteIndex(unsigned SpriteIndex)
     if (SpriteIndex < Sprites.size())
         return true;
 
-    logError("AtlasManager: SpriteIndex %u does't exists", SpriteIndex);
+    logError("AtlasManager: SpriteIndex %u doesn't exists", SpriteIndex);
     return false;
 }
 
@@ -133,33 +133,28 @@ bool AtlasManager::IsValidAtlasIndex(unsigned AtlasIndex)
     if (AtlasIndex < AtlasTextureList.size())
         return true;
 
-    logError("AtlasManager: AtlasIndex %u does't exists", AtlasIndex);
+    logError("AtlasManager: AtlasIndex %u doesn't exists", AtlasIndex);
     return false;
 }
 
 unsigned AtlasManager::GetIndexBySpriteName(unsigned AtlasIndex, const char* Imagename)
 {
     if (IsValidAtlasIndex(AtlasIndex))
-    {
-        auto size = Sprites.size();
-        for (decltype(size) i = 0; i < size; i++)
-        {
+    {        
+        for (decltype(Sprites.size()) i = 0; i < Sprites.size(); ++i)     
             if (Sprites[i].altasIndex == AtlasIndex && Imagename == Sprites[i].imageName)
-                return i;
-        }
+                return i;        
 
         logError("AtlasManager::GetIndexBySpriteName Sprite '%s' with AtlasIndex = %u not found", Imagename, AtlasIndex);
     }
 
-    return GConstants::unsigned_max();
+    return (std::numeric_limits<unsigned>::max)();
 }
 
 void AtlasManager::DrawSprite(unsigned SpriteIndex, AkkordRect Rect, unsigned char Flip, double Angle, AkkordPoint* Point)
 {
-    if (IsValidSpriteIndex(SpriteIndex))
-    {
-        AtlasTextureList[Sprites[SpriteIndex].altasIndex]->Draw(Rect, &Sprites[SpriteIndex].rect, Flip, Angle, Point);
-    }
+    if (IsValidSpriteIndex(SpriteIndex))    
+        AtlasTextureList[Sprites[SpriteIndex].altasIndex]->Draw(Rect, &Sprites[SpriteIndex].rect, Flip, Angle, Point);    
 }
 
 AkkordPoint AtlasManager::GetSpriteSize(unsigned SpriteIndex)
@@ -174,12 +169,10 @@ AkkordPoint AtlasManager::GetSpriteSize(unsigned SpriteIndex)
 
 AkkordRect AtlasManager::GetSpriteRect(unsigned SpriteIndex)
 {
-    if (IsValidSpriteIndex(SpriteIndex))
-    {
+    if (IsValidSpriteIndex(SpriteIndex))    
         return Sprites[SpriteIndex].rect;
-    }
+    
     return AkkordRect(-1, -1, -1, -1);
-
 }
 
 void AtlasManager::Clear()
