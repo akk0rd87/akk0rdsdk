@@ -458,11 +458,8 @@ class SDFFontBuffer
             if (a == 10) // Если это переход строки
             {
                 pt.y += scaleY * sdfFont->GetLineHeight(); // надо учесть общую высоту строки
-
-                if (pt.x < localpoint.x)
-                    pt.x = localpoint.x;
-
                 VecSize.push_back(localpoint.x);
+                pt.x = std::max(pt.x, localpoint.x);
                 localpoint.x = 0;
             }
             else if (a == 13) {} // ничего не делаем
@@ -472,18 +469,14 @@ class SDFFontBuffer
 
                 localpoint.x += scaleX * charParams.xoffset;
                 localpoint.x += (float)scaleX * (charParams.w /*+ charParams.xadvance*/);
-
-                if (localpoint.y < scaleY* (charParams.h + charParams.yoffset))
-                    localpoint.y = scaleY* (charParams.h + charParams.yoffset);
             }
         };
 
         VecSize.push_back(localpoint.x);
+        pt.x = std::max(pt.x, localpoint.x);
 
-        if (pt.x < localpoint.x)
-            pt.x = localpoint.x;
-
-        pt.y += localpoint.y; // надо учесть общую высоту строки
+        //pt.y += localpoint.y; // надо учесть общую высоту строки
+        pt.y = scaleY * sdfFont->GetLineHeight() * VecSize.size();
 
         return pt;
     }
@@ -562,12 +555,8 @@ public:
         std::vector<unsigned> VecSize;
         auto size = GetTextSizeByLine(Text, VecSize);
 
-        logDebug("LinesCount = %u", VecSize.size());
-        for (const auto & v : VecSize)
-            logDebug("LineWidth = %u", v);
-
-        decltype(X) x_current;
-        pt = AkkordPoint(X, 0);
+        decltype(X) x_start, x_current;
+        pt = AkkordPoint(0, 0);
 
         unsigned int i = 0;
         unsigned int a = 0;
@@ -603,15 +592,17 @@ public:
         switch (alignH)
         {
             case SDFFont::AlignH::Center:
-                x_current = X + (rectW - VecSize[line]) / 2;
+                x_start = X + (rectW - VecSize[line]) / 2;                
                 break;
             case SDFFont::AlignH::Right:
-                x_current = X + (rectW - VecSize[line]);
+                x_start = X + (rectW - VecSize[line]);                
                 break;
             default:
-                x_current = X;
+                x_start = X;                
                 break;
-        };
+        };        
+
+        x_current = x_start;
 
         while (i < len)
         {
@@ -621,7 +612,9 @@ public:
             {
                 ++line;
                 Y += scaleY * sdfFont->GetLineHeight();
-                goto check_h_align;                                        
+
+                pt.x = std::max(pt.x, x_current - x_start + 1);
+                goto check_h_align;                                                        
             }
             else if (a == 13) {} // ничего не делаем
             else
@@ -643,17 +636,17 @@ public:
                 Indices.push_back(PointsCnt + 0); Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2);
                 Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2); Indices.push_back(PointsCnt + 3);
 
-                if (pt.y < scaleY * (charParams.h + charParams.yoffset))
-                    pt.y = scaleY * (charParams.h + charParams.yoffset);
-
                 x_current = x_current + (float)scaleX * (charParams.w /*+ charParams.xadvance*/);
                 PointsCnt += 4;
             }
         };        
 
-        //pt.x = X - pt.x + 1;
-        return size;
-        //return pt;
+        pt.x = std::max(pt.x, x_current - x_start + 1);
+        pt.y = scaleY * sdfFont->GetLineHeight() * VecSize.size();
+
+        //logDebug("[%d %d] [%d %d]", size.x, size.y, pt.x, pt.y);
+
+        return pt;
     };
 };
 
