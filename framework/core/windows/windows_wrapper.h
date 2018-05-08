@@ -26,10 +26,11 @@ class WindowsWrapper
 
 bool WindowsWrapper::OpenURL(const char* url)
 {
-    HINSTANCE res;
+    //HINSTANCE res;
     //CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-    res = ShellExecute(NULL, "open", url, NULL, NULL, SW_SHOWNORMAL);
+    //res = ShellExecute(NULL, "open", url, NULL, NULL, SW_SHOWNORMAL);
     //CoUninitialize();
+    ShellExecute(NULL, "open", url, NULL, NULL, SW_SHOWNORMAL);
     return true;
 }
 
@@ -67,7 +68,7 @@ bool WindowsWrapper::DirCreate(const char* Dir)
     // GetLastError    https://msdn.microsoft.com/ru-ru/library/windows/desktop/ms679360(v=vs.85).aspx
 
     std::string path(Dir);
-    unsigned int pos = 0;
+    decltype(path.find_first_of("\\/", 1)) pos = 0;
     do
     {
         pos = path.find_first_of("\\/", pos + 1);
@@ -88,7 +89,7 @@ bool WindowsWrapper::DirCreate(const char* Dir)
 bool WindowsWrapper::GetDirContent(const char* Dir, DirContentElementArray& ArrayList)
 {
     WIN32_FIND_DATA fd;
-    std::string Path = std::string(Dir) + "/*";
+    auto Path = std::string(Dir) + "/*";
     auto Handle = FindFirstFile((LPCTSTR)Path.c_str(), &fd);
     if (INVALID_HANDLE_VALUE != Handle)
     {
@@ -96,11 +97,11 @@ bool WindowsWrapper::GetDirContent(const char* Dir, DirContentElementArray& Arra
         {
             Path = std::string(fd.cFileName);
             if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY && (Path == ".." || Path == ".")))
-            {
-                auto dc = new DirContentElement();
+            {                
+                std::unique_ptr<DirContentElement> dc (new DirContentElement());
                 dc->Name = std::string(fd.cFileName);
                 dc->isDir = ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0);
-                ArrayList.push_back(dc);
+                ArrayList.push_back(std::move(dc));
             }
         } while (FindNextFile(Handle, &fd) != 0);
     }
