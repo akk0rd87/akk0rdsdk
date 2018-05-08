@@ -457,7 +457,7 @@ class SDFFontBuffer
 
             if (a == 10) // Если это переход строки
             {
-                pt.y += localpoint.y; // надо учесть общую высоту строки
+                pt.y += scaleY * sdfFont->GetLineHeight(); // надо учесть общую высоту строки
 
                 if (pt.x < localpoint.x)
                     pt.x = localpoint.x;
@@ -555,7 +555,7 @@ public:
         return GetTextSizeByLine(Text, VecSize);
     };
 
-    AkkordPoint DrawText(int X1, int Y, const char* Text)
+    AkkordPoint DrawText(int X, int Y, const char* Text)
     {
         AkkordPoint pt;    
 
@@ -566,11 +566,8 @@ public:
         for (const auto & v : VecSize)
             logDebug("LineWidth = %u", v);
 
-        decltype(X1) x_current;
-
-
-
-        pt = AkkordPoint(X1, 0);
+        decltype(X) x_current;
+        pt = AkkordPoint(X, 0);
 
         unsigned int i = 0;
         unsigned int a = 0;
@@ -606,13 +603,13 @@ public:
         switch (alignH)
         {
             case SDFFont::AlignH::Center:
-                x_current = X1 + (rectW - VecSize[line]) / 2;
+                x_current = X + (rectW - VecSize[line]) / 2;
                 break;
             case SDFFont::AlignH::Right:
-                x_current = X1 + (rectW - VecSize[line]);
+                x_current = X + (rectW - VecSize[line]);
                 break;
             default:
-                x_current = X1;
+                x_current = X;
                 break;
         };
 
@@ -623,9 +620,8 @@ public:
             if (a == 10)
             {
                 ++line;
-                Y = Y + scaleX * sdfFont->GetLineHeight();
-                goto check_h_align;                
-                        
+                Y += scaleY * sdfFont->GetLineHeight();
+                goto check_h_align;                                        
             }
             else if (a == 13) {} // ничего не делаем
             else
@@ -656,8 +652,8 @@ public:
         };        
 
         //pt.x = X - pt.x + 1;
-
-        return pt;
+        return size;
+        //return pt;
     };
 };
 
