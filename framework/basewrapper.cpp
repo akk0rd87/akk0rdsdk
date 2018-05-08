@@ -967,10 +967,6 @@ std::string BWrapper::GetInternalWriteDir() { return Platforms::GetInternalWrite
 //
 bool DirContentReader::Close()
 {
-    auto size = List.size();
-    for (decltype(size) i = 0; i < size; i++)
-        delete List[i];
-
     List.clear();
     this->Pointer = 0;
     this->Size = 0;
@@ -987,7 +983,7 @@ bool DirContentReader::Next(DirContentElement*& Element)
 {
     if (0 < Size && Pointer < Size)
     {
-        Element = List[Pointer];
+        Element = List[Pointer].get();
         ++Pointer;
         return true;
     }
@@ -1005,7 +1001,7 @@ bool DirContentReader::Open(const char* Dir)
         this->Size = List.size();
         return res;
     }
-
+    
     return false;
 }
 
