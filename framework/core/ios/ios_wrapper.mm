@@ -128,6 +128,7 @@ bool iOSWrapper::GetDirContent      (const char* Dir, DirContentElementArray& Ar
     for(count = 0; count < [dirContent count]; ++count)
     {        
         std::unique_ptr<DirContentElement> dc (new DirContentElement());
+        URL = [dirContent objectAtIndex:count];
         dc->isDir = URL.hasDirectoryPath;
         dc->Name  = std::string([URL.pathComponents[URL.pathComponents.count - 1] UTF8String]);        
         ArrayList.push_back(std::move(dc));
