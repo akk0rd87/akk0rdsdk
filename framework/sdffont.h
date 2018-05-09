@@ -487,10 +487,7 @@ public:
         sdfFont = Font;
         DigitsCount;        
         color = Color;
-
-        UV.reserve(DigitsCount * 4);
-        squareVertices.reserve(DigitsCount * 4);
-        Indices.reserve(DigitsCount * 6);
+        Reserve(DigitsCount);
     }
 
     void SetFont(SDFFont* Font){ sdfFont = Font; };    
@@ -506,11 +503,7 @@ public:
 
     void SetSDFParams(float Offset, float Contrast, float OutlineOffset, float OutlineContrast) { offset = Offset; contrast = Contrast; outlineOffset = OutlineOffset; outlineContrast = OutlineContrast; };
 
-    void SetRect(int W, int H)
-    { 
-        rectW = W;
-        rectH = H; 
-    }
+    void SetRect(int W, int H) { rectW = W; rectH = H; }
 
     void SetAlignment(SDFFont::AlignH AlignH, SDFFont::AlignV AlignV){ alignH = AlignH; alignV = AlignV; }    
     void SetAlignmentH(SDFFont::AlignH AlignH){ alignH = AlignH; }
@@ -518,6 +511,13 @@ public:
 
     SDFFont::AlignH GetAlignH() { return alignH; }
     SDFFont::AlignV GetAlignV() { return alignV; }
+
+    void Reserve(unsigned Count) 
+    {
+        UV.reserve(Count * 4);
+        squareVertices.reserve(Count * 4);
+        Indices.reserve(Count * 6);
+    }
 
     void Clear()
     {
