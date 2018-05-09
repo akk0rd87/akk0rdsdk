@@ -3,9 +3,33 @@
 #define __AKK0RD_SDFFONT_H__
 
 #include <map>
-#include "openglesdriver.h"
 #include "basewrapper.h"
 #include "SDL_image.h"
+
+// https://habrahabr.ru/post/282191/
+static inline unsigned int UTF2Unicode(const /*unsigned*/ char *txt, unsigned int &i){
+    unsigned int a = txt[i++];
+    if ((a & 0x80) == 0)return a;
+    if ((a & 0xE0) == 0xC0){
+        a = (a & 0x1F) << 6;
+        a |= txt[i++] & 0x3F;
+    }
+    else if ((a & 0xF0) == 0xE0){
+        a = (a & 0xF) << 12;
+        a |= (txt[i++] & 0x3F) << 6;
+        a |= txt[i++] & 0x3F;
+    }
+    else if ((a & 0xF8) == 0xF0){
+        a = (a & 0x7) << 18;
+        a |= (a & 0x3F) << 12;
+        a |= (txt[i++] & 0x3F) << 6;
+        a |= txt[i++] & 0x3F;
+    }
+    return a;
+};
+
+#ifndef __CODEBLOCKS
+#include "openglesdriver.h"
 
 static const GLchar* SDF_vertexSource =
 "varying lowp vec4 result_color; \n\
@@ -66,28 +90,6 @@ struct ShaderProgramStruct
 {
     GLuint shaderProgram;
     GLint sdf_outline_color, sdf_params, font_color;
-};
-
-// https://habrahabr.ru/post/282191/
-static inline unsigned int UTF2Unicode(const /*unsigned*/ char *txt, unsigned int &i){
-    unsigned int a = txt[i++];
-    if ((a & 0x80) == 0)return a;
-    if ((a & 0xE0) == 0xC0){
-        a = (a & 0x1F) << 6;
-        a |= txt[i++] & 0x3F;
-    }
-    else if ((a & 0xF0) == 0xE0){
-        a = (a & 0xF) << 12;
-        a |= (txt[i++] & 0x3F) << 6;
-        a |= txt[i++] & 0x3F;
-    }
-    else if ((a & 0xF8) == 0xF0){
-        a = (a & 0x7) << 18;
-        a |= (a & 0x3F) << 12;
-        a |= (txt[i++] & 0x3F) << 6;
-        a |= txt[i++] & 0x3F;
-    }
-    return a;
 };
 
 class SDFProgram
@@ -153,7 +155,7 @@ class SDFProgram
         //logDebug("sdf_outline_color = %d; sdf_params = %d; mat = %d, base_texture = %d, font_color = %d", Program->sdf_outline_color, Program->sdf_params, mat, base_texture, Program->font_color);
         return true;
     }
-    
+
 public :
     bool Init()
     {        
@@ -168,6 +170,7 @@ public :
         return Inited;
     };
 
+
     ShaderProgramStruct* GetShaderProgram(bool Outline)
     {
         if (Outline)
@@ -178,6 +181,7 @@ public :
 };
 
 SDFProgram sdfProgram;
+#endif;
 
 struct SDFCharInfo
 {
@@ -187,7 +191,9 @@ struct SDFCharInfo
 
 class SDFFont
 {
+#ifndef __CODEBLOCKS    
     GLuint texture;
+#endif
     SDL_Surface* fontAtlas;
     unsigned int ScaleW, ScaleH, LineHeight;
 
@@ -320,6 +326,7 @@ public:
 
     bool Load(const char* FileName, BWrapper::FileSearchPriority SearchPriority)
     {
+#ifndef __CODEBLOCKS    
         sdfProgram.Init();
         auto Driver = GLESDriver::GetInstance();
         
@@ -345,12 +352,13 @@ public:
 
         ParseFNTFile("sdf/font.fnt", BWrapper::FileSearchPriority::Assets);
         //ParseFNTFile("sdf/HieroCalibri.fnt", BWrapper::FileSearchPriority::Assets);
-
+#endif
         return true;
     };
 
     bool Draw(bool Outline, unsigned Count, AkkordColor& FontColor, AkkordColor& OutlineColor, float Offset, float Contrast, float OutlineOffset, float OutlineContrast, const float* UV, const float* squareVertices, unsigned short* Indices)
     {
+#ifndef __CODEBLOCKS
         GLint oldProgramId;
         auto shaderProgram = sdfProgram.GetShaderProgram(Outline);
 
@@ -389,7 +397,7 @@ public:
         Driver->glDisableVertexAttribArray(SDF_ATTRIB_UV); Driver->CheckError(__LINE__);
 
         Driver->glUseProgram(oldProgramId); Driver->CheckError(__LINE__); Driver->CheckError(__LINE__);
-
+#endif
         return true;
     };
 
@@ -545,13 +553,17 @@ public:
     AkkordPoint GetTextSize(const char* Text)
     {
         std::vector<unsigned> VecSize;
-        return GetTextSizeByLine(Text, VecSize);
+        AkkordPoint pt;
+#ifndef __CODEBLOCKS
+        pt = GetTextSizeByLine(Text, VecSize);
+#endif
+        return pt;
     };
 
     AkkordPoint DrawText(int X, int Y, const char* Text)
     {
         AkkordPoint pt;    
-
+#ifndef __CODEBLOCKS
         std::vector<unsigned> VecSize;
         auto size = GetTextSizeByLine(Text, VecSize);
 
@@ -645,7 +657,7 @@ public:
         pt.y = scaleY * sdfFont->GetLineHeight() * VecSize.size();
 
         //logDebug("[%d %d] [%d %d]", size.x, size.y, pt.x, pt.y);
-
+#endif
         return pt;
     };
 };
