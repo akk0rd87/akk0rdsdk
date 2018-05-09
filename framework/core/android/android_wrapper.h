@@ -164,12 +164,12 @@ bool AndroidWrapper::GetDirContent(const char* Dir, DirContentElementArray& Arra
         jstring jstr         = (jstring)env->CallStaticObjectMethod(localClass, JavaMethodFName, i);
         const char* FileName = env->GetStringUTFChars(jstr, 0);
         
-        jint IsDir           = env->CallStaticIntMethod(localClass, JavaMethodIsDir, i);
+        jint IsDir           = env->CallStaticIntMethod(localClass, JavaMethodIsDir, i);        
         
-        auto dc   = new DirContentElement();
+        std::unique_ptr<DirContentElement> dc (new DirContentElement());
         dc->Name  = std::string(FileName);
         dc->isDir = IsDir;        
-        ArrayList.push_back(dc);
+        ArrayList.push_back(std::move(dc));
         
         env->ReleaseStringUTFChars(jstr, FileName);
     }
