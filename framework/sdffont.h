@@ -555,7 +555,7 @@ public:
     AkkordPoint GetTextSize(const char* Text)
     {
         std::vector<unsigned> VecSize;
-        AkkordPoint pt/*(200, 200)*/;
+        AkkordPoint pt(1, 1);
 #ifndef __CODEBLOCKS
         pt = GetTextSizeByLine(Text, VecSize);
 #endif
@@ -564,7 +564,7 @@ public:
 
     AkkordPoint DrawText(int X, int Y, const char* Text)
     {
-        AkkordPoint pt/*(200, 200)*/;
+        AkkordPoint pt(1, 1);
 #ifndef __CODEBLOCKS
         std::vector<unsigned> VecSize;
         auto size = GetTextSizeByLine(Text, VecSize);
