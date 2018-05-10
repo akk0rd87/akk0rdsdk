@@ -28,8 +28,6 @@ static inline unsigned int UTF2Unicode(const /*unsigned*/ char *txt, unsigned in
     return a;
 };
 
-#define __CODEBLOCKS 1
-
 #ifndef __CODEBLOCKS
 #include "openglesdriver.h"
 
