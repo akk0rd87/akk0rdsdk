@@ -28,6 +28,8 @@ static inline unsigned int UTF2Unicode(const /*unsigned*/ char *txt, unsigned in
     return a;
 };
 
+#define __CODEBLOCKS 1
+
 #ifndef __CODEBLOCKS
 #include "openglesdriver.h"
 
@@ -446,7 +448,7 @@ class SDFFontBuffer
 
         unsigned int i = 0;
         unsigned int a = 0;
-        unsigned len = strlen(Text);
+        unsigned len = std::string(Text).size();
 
         if (len == 0)
             logWarning("Zero-length text");
@@ -553,7 +555,7 @@ public:
     AkkordPoint GetTextSize(const char* Text)
     {
         std::vector<unsigned> VecSize;
-        AkkordPoint pt;
+        AkkordPoint pt/*(200, 200)*/;
 #ifndef __CODEBLOCKS
         pt = GetTextSizeByLine(Text, VecSize);
 #endif
@@ -562,7 +564,7 @@ public:
 
     AkkordPoint DrawText(int X, int Y, const char* Text)
     {
-        AkkordPoint pt;    
+        AkkordPoint pt/*(200, 200)*/;
 #ifndef __CODEBLOCKS
         std::vector<unsigned> VecSize;
         auto size = GetTextSizeByLine(Text, VecSize);
