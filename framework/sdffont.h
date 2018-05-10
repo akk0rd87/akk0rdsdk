@@ -349,10 +349,10 @@ public:
         Driver->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); Driver->CheckError(__LINE__);
 
         Driver->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fontAtlas->w, fontAtlas->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, fontAtlas->pixels); Driver->CheckError(__LINE__);
-
+#endif
         ParseFNTFile("sdf/font.fnt", BWrapper::FileSearchPriority::Assets);
         //ParseFNTFile("sdf/HieroCalibri.fnt", BWrapper::FileSearchPriority::Assets);
-#endif
+
         return true;
     };
 
@@ -554,19 +554,16 @@ public:
     {
         std::vector<unsigned> VecSize;
         AkkordPoint pt(1, 1);
-#ifndef __CODEBLOCKS
         pt = GetTextSizeByLine(Text, VecSize);
-#endif
         return pt;
     };
 
     AkkordPoint DrawText(int X, int Y, const char* Text)
-    {
-        AkkordPoint pt(1, 1);
-#ifndef __CODEBLOCKS
+    {        
         std::vector<unsigned> VecSize;
-        auto size = GetTextSizeByLine(Text, VecSize);
-
+        AkkordPoint pt, size;
+        pt = size = GetTextSizeByLine(Text, VecSize);        
+#ifndef __CODEBLOCKS
         decltype(X) x_start, x_current;
         pt = AkkordPoint(0, 0);
 
