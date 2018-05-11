@@ -87,7 +87,7 @@ public:
         {
             GLchar *log = (GLchar *)malloc(logLength);
             glGetProgramInfoLog(Program, logLength, &logLength, log);
-            if (strlen(log) > 0)
+            if (std::string(log).size() > 0)
                 logDebug("Program log [line=%u]: %s", Line, log);
             free(log);
         }
@@ -101,7 +101,7 @@ public:
         {
             GLchar *log = (GLchar *)malloc(logLength);
             glGetShaderInfoLog(Shader, logLength, &logLength, log);
-            if (strlen(log) > 0)
+            if (std::string(log).size() > 0)
                 logDebug("Shader log [line=%u]: %s", Line, log);
             free(log);
         }
@@ -115,7 +115,7 @@ public:
         { 
             GLchar *log = (GLchar *)malloc(logLength);
             glGetShaderSource(Shader, logLength, &logLength, log);
-            if (strlen(log) > 0)
+            if (std::string(log).size() > 0)
                 logDebug("Shader Source:\n %s\n\n", log);
             free(log);
         }

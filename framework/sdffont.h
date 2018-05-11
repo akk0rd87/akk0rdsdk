@@ -569,7 +569,7 @@ public:
 
         unsigned int i = 0;
         unsigned int a = 0;
-        unsigned len = strlen(Text);
+        unsigned len = std::string(Text).size();
 
         auto atlasW = sdfFont->GetAtlasW();
         auto atlasH = sdfFont->GetAtlasH();
