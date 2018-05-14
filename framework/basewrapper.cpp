@@ -609,6 +609,11 @@ bool BWrapper::FillRect(AkkordRect Rect)
     return false;
 };
 
+bool BWrapper::FillRect(int X, int Y, int W, int H)
+{
+    return BWrapper::FillRect(AkkordRect(X, Y, W, H));
+}
+
 bool BWrapper::DrawLine(AkkordPoint Point1, AkkordPoint Point2)
 {
     if (SDL_RenderDrawLine(CurrentContext.CurrentRenderer, Point1.x, Point1.y, Point2.x, Point2.y) == 0) return true;

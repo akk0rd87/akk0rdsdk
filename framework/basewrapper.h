@@ -132,6 +132,7 @@ public:
     static bool                SetCurrentColor             (AkkordColor Color);
     static bool                DrawRect                    (AkkordRect Rect);
     static bool                FillRect                    (AkkordRect Rect);
+    static bool                FillRect                    (int X, int Y, int W, int H);
     static bool                DrawLine                    (AkkordPoint Point1, AkkordPoint Point2);
     static bool                IsPointInRect               (AkkordPoint Point, AkkordRect Rect);    
                                                            
