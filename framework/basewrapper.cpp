@@ -600,6 +600,11 @@ bool BWrapper::DrawRect(AkkordRect Rect)
     return false;
 };
 
+bool BWrapper::DrawRect(int X, int Y, int W, int H)
+{
+    return DrawRect(AkkordRect(X, Y, W, H));
+}
+
 bool BWrapper::FillRect(AkkordRect Rect)
 {
     auto NativeRect = ConvertRect2Native(Rect);
