@@ -122,7 +122,7 @@ char* BWrapper::File2Buffer(const char* FileName, FileSearchPriority SearchPrior
     char* buffer = nullptr;
     BufferSize  = 0;
 
-    std::string Fname = std::string(FileName);
+    std::string Fname(FileName);
 
     if (FileSearchPriority::Assets == SearchPriority)
     {
@@ -133,7 +133,7 @@ char* BWrapper::File2Buffer(const char* FileName, FileSearchPriority SearchPrior
 #else
       //Во всех остальных случаях читаем из папки assets
         //Fname = std::string("assets/") + Fname;
-        Fname = Platforms::GetInternalAssetsDir() + Fname;
+        Fname = Platforms::GetInternalAssetsDir() + std::string(FileName);
 #endif
     }
 
