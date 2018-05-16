@@ -131,8 +131,7 @@ char* BWrapper::File2Buffer(const char* FileName, FileSearchPriority SearchPrior
         if (!buffer) logError("FileSearchPriority::Assets: File %s [%s] open error", FileName, Fname.c_str());
         return buffer;
 #else
-      //Во всех остальных случаях читаем из папки assets
-        //Fname = std::string("assets/") + Fname;
+      //Во всех остальных случаях читаем из папки assets        
         Fname = Platforms::GetInternalAssetsDir() + std::string(FileName);
 #endif
     }
