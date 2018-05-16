@@ -131,8 +131,7 @@ char* BWrapper::File2Buffer(const char* FileName, FileSearchPriority SearchPrior
         if (!buffer) logError("FileSearchPriority::Assets: File %s [%s] open error", FileName, Fname.c_str());
         return buffer;
 #else
-      //Во всех остальных случаях читаем из папки assets
-        //Fname = std::string("assets/") + Fname;
+      //Во всех остальных случаях читаем из папки assets        
         Fname = Platforms::GetInternalAssetsDir() + std::string(FileName);
 #endif
     }
@@ -600,6 +599,11 @@ bool BWrapper::DrawRect(AkkordRect Rect)
     logError("Draw error %s", SDL_GetError());
     return false;
 };
+
+bool BWrapper::DrawRect(int X, int Y, int W, int H)
+{
+    return DrawRect(AkkordRect(X, Y, W, H));
+}
 
 bool BWrapper::FillRect(AkkordRect Rect)
 {
