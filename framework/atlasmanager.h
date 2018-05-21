@@ -13,22 +13,23 @@ public:
     };
 
     // Load atlas with list file
-    unsigned LoadAtlas                  (const char* ListFilename, const char* TextureFilename, AtlasManager::AtlasType Type, BWrapper::FileSearchPriority ListSearchPriority = BWrapper::FileSearchPriority::Assets, BWrapper::FileSearchPriority TextureSearchPriority = BWrapper::FileSearchPriority::Assets); // return the AtlasIndex
+    std::vector<std::unique_ptr<AkkordTexture>>::size_type LoadAtlas (const char* ListFilename, const char* TextureFilename, AtlasManager::AtlasType Type, BWrapper::FileSearchPriority ListSearchPriority = BWrapper::FileSearchPriority::Assets, BWrapper::FileSearchPriority TextureSearchPriority = BWrapper::FileSearchPriority::Assets); // return the AtlasIndex
 
     // Get Sprite handle
-    unsigned GetIndexBySpriteName       (unsigned AtlasIndex, const char* SpriteName);
+    std::vector<std::unique_ptr<AkkordTexture>>::size_type GetIndexBySpriteName (std::vector<std::unique_ptr<AkkordTexture>>::size_type AtlasIndex, const char* SpriteName);
 
     // Draw Sprite
-    void DrawSprite                     (unsigned SpriteIndex, AkkordRect Rect, unsigned char Flip = AkkordTexture::Flip::None, double Angle = 0, AkkordPoint* Point = nullptr);
+    void DrawSprite                     (std::vector<std::unique_ptr<AkkordTexture>>::size_type SpriteIndex, AkkordRect Rect, unsigned char Flip = AkkordTexture::Flip::None, double Angle = 0, AkkordPoint* Point = nullptr);
 
     // Return Sprite postion in Atlas
-    AkkordPoint GetSpriteSize           (unsigned SpriteIndex);
-    AkkordRect  GetSpriteRect           (unsigned SpriteIndex);
+    AkkordPoint GetSpriteSize           (std::vector<std::unique_ptr<AkkordTexture>>::size_type SpriteIndex);
+    AkkordRect  GetSpriteRect           (std::vector<std::unique_ptr<AkkordTexture>>::size_type SpriteIndex);
     void        Clear();
 
     AtlasManager();
     ~AtlasManager();
 
+private:
 private:
 
     // список текстур
@@ -39,15 +40,15 @@ private:
         std::string imageName;
         //int x, y, w, h;
         AkkordRect rect;
-        unsigned altasIndex;
+        std::vector<std::unique_ptr<AkkordTexture>>::size_type altasIndex;
     };
 
     //список спрайтов в текстурах
     std::vector<SpriteStruct> Sprites;
 
-    bool IsValidSpriteIndex(unsigned SpriteIndex);
-    bool IsValidAtlasIndex(unsigned AtlasIndex);
-    void ParseFile_LeshyLabsText(FileReader& fr, unsigned AtlasIndex);
+    bool IsValidSpriteIndex(std::vector<std::unique_ptr<AkkordTexture>>::size_type SpriteIndex);
+    bool IsValidAtlasIndex(std::vector<std::unique_ptr<AkkordTexture>>::size_type AtlasIndex);
+    void ParseFile_LeshyLabsText(FileReader& fr, std::vector<std::unique_ptr<AkkordTexture>>::size_type AtlasIndex);
     void AddTexture();
 };
 
@@ -55,7 +56,7 @@ private:
 ////////// REALIZATION
 /////////////////////////////////////////////////
 
-void AtlasManager::ParseFile_LeshyLabsText(FileReader& fr, unsigned AtlasIndex)
+void AtlasManager::ParseFile_LeshyLabsText(FileReader& fr, std::vector<std::unique_ptr<AkkordTexture>>::size_type AtlasIndex)
 {
     std::string line;
     SpriteStruct sprite;
@@ -95,7 +96,7 @@ void AtlasManager::ParseFile_LeshyLabsText(FileReader& fr, unsigned AtlasIndex)
     }
 }
 
-unsigned AtlasManager::LoadAtlas(const char* ListFilename, const char* TextureFilename, AtlasManager::AtlasType Type, BWrapper::FileSearchPriority ListSearchPriority, BWrapper::FileSearchPriority TextureSearchPriority)
+std::vector<std::unique_ptr<AkkordTexture>>::size_type AtlasManager::LoadAtlas(const char* ListFilename, const char* TextureFilename, AtlasManager::AtlasType Type, BWrapper::FileSearchPriority ListSearchPriority, BWrapper::FileSearchPriority TextureSearchPriority)
 {
     AddTexture();
     auto index = AtlasTextureList.size() - 1;
@@ -119,7 +120,7 @@ unsigned AtlasManager::LoadAtlas(const char* ListFilename, const char* TextureFi
     return index;
 };
 
-bool AtlasManager::IsValidSpriteIndex(unsigned SpriteIndex)
+bool AtlasManager::IsValidSpriteIndex(std::vector<std::unique_ptr<AkkordTexture>>::size_type SpriteIndex)
 {
     if (SpriteIndex < Sprites.size())
         return true;
@@ -128,7 +129,7 @@ bool AtlasManager::IsValidSpriteIndex(unsigned SpriteIndex)
     return false;
 }
 
-bool AtlasManager::IsValidAtlasIndex(unsigned AtlasIndex)
+bool AtlasManager::IsValidAtlasIndex(std::vector<std::unique_ptr<AkkordTexture>>::size_type AtlasIndex)
 {
     if (AtlasIndex < AtlasTextureList.size())
         return true;
@@ -137,7 +138,7 @@ bool AtlasManager::IsValidAtlasIndex(unsigned AtlasIndex)
     return false;
 }
 
-unsigned AtlasManager::GetIndexBySpriteName(unsigned AtlasIndex, const char* Imagename)
+std::vector<std::unique_ptr<AkkordTexture>>::size_type AtlasManager::GetIndexBySpriteName(std::vector<std::unique_ptr<AkkordTexture>>::size_type AtlasIndex, const char* Imagename)
 {
     if (IsValidAtlasIndex(AtlasIndex))
     {        
@@ -148,16 +149,16 @@ unsigned AtlasManager::GetIndexBySpriteName(unsigned AtlasIndex, const char* Ima
         logError("AtlasManager::GetIndexBySpriteName Sprite '%s' with AtlasIndex = %u not found", Imagename, AtlasIndex);
     }
 
-    return (std::numeric_limits<unsigned>::max)();
+    return (std::numeric_limits<std::vector<std::unique_ptr<AkkordTexture>>::size_type>::max)();
 }
 
-void AtlasManager::DrawSprite(unsigned SpriteIndex, AkkordRect Rect, unsigned char Flip, double Angle, AkkordPoint* Point)
+void AtlasManager::DrawSprite(std::vector<std::unique_ptr<AkkordTexture>>::size_type SpriteIndex, AkkordRect Rect, unsigned char Flip, double Angle, AkkordPoint* Point)
 {
     if (IsValidSpriteIndex(SpriteIndex))    
         AtlasTextureList[Sprites[SpriteIndex].altasIndex]->Draw(Rect, &Sprites[SpriteIndex].rect, Flip, Angle, Point);    
 }
 
-AkkordPoint AtlasManager::GetSpriteSize(unsigned SpriteIndex)
+AkkordPoint AtlasManager::GetSpriteSize(std::vector<std::unique_ptr<AkkordTexture>>::size_type SpriteIndex)
 {
     if (IsValidSpriteIndex(SpriteIndex))
     {
@@ -167,7 +168,7 @@ AkkordPoint AtlasManager::GetSpriteSize(unsigned SpriteIndex)
     return AkkordPoint(-1, -1);
 }
 
-AkkordRect AtlasManager::GetSpriteRect(unsigned SpriteIndex)
+AkkordRect AtlasManager::GetSpriteRect(std::vector<std::unique_ptr<AkkordTexture>>::size_type SpriteIndex)
 {
     if (IsValidSpriteIndex(SpriteIndex))    
         return Sprites[SpriteIndex].rect;
