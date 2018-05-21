@@ -14,12 +14,12 @@ AkkordTexture Background;
 AkkordRect rect;
 AkkordTexture Ground;
 
-decltype(AtlasMgr.GetIndexBySpriteName(1, ""))  ZombieIndex = 0;
-std::vector<decltype(AtlasMgr.GetIndexBySpriteName(1, "")) > ZombieVector;
+AtlasManager::index_size_type ZombieIndex = 0;
+std::vector<AtlasManager::index_size_type> ZombieVector;
 
-decltype(AtlasMgr.GetIndexBySpriteName(1, "")) ImageFacebookIndex;
-decltype(AtlasMgr.GetIndexBySpriteName(1, ""))  ImageeraserIndex;
-decltype(AtlasMgr.GetIndexBySpriteName(1, ""))  ImageBackIndex;
+AtlasManager::index_size_type ImageFacebookIndex;
+AtlasManager::index_size_type ImageeraserIndex;
+AtlasManager::index_size_type ImageBackIndex;
 
 auto Flip = AkkordTexture::Flip::None;
 
