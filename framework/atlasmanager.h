@@ -7,7 +7,7 @@
 class AtlasManager
 {
 public:
-    using index_size_type = std::vector<int>::size_type;
+    using IndexType = std::vector<int>::size_type;
     
     enum struct AtlasType : unsigned char
     {
@@ -15,17 +15,17 @@ public:
     };
 
     // Load atlas with list file
-    index_size_type LoadAtlas (const char* ListFilename, const char* TextureFilename, AtlasManager::AtlasType Type, BWrapper::FileSearchPriority ListSearchPriority = BWrapper::FileSearchPriority::Assets, BWrapper::FileSearchPriority TextureSearchPriority = BWrapper::FileSearchPriority::Assets); // return the AtlasIndex
+    IndexType LoadAtlas (const char* ListFilename, const char* TextureFilename, AtlasManager::AtlasType Type, BWrapper::FileSearchPriority ListSearchPriority = BWrapper::FileSearchPriority::Assets, BWrapper::FileSearchPriority TextureSearchPriority = BWrapper::FileSearchPriority::Assets); // return the AtlasIndex
 
     // Get Sprite handle
-    index_size_type GetIndexBySpriteName (index_size_type AtlasIndex, const char* SpriteName);
+    IndexType GetIndexBySpriteName (IndexType AtlasIndex, const char* SpriteName);
 
     // Draw Sprite
-    void DrawSprite                     (index_size_type SpriteIndex, AkkordRect Rect, unsigned char Flip = AkkordTexture::Flip::None, double Angle = 0, AkkordPoint* Point = nullptr);
+    void DrawSprite                     (IndexType SpriteIndex, AkkordRect Rect, unsigned char Flip = AkkordTexture::Flip::None, double Angle = 0, AkkordPoint* Point = nullptr);
 
     // Return Sprite postion in Atlas
-    AkkordPoint GetSpriteSize           (index_size_type SpriteIndex);
-    AkkordRect  GetSpriteRect           (index_size_type SpriteIndex);
+    AkkordPoint GetSpriteSize           (IndexType SpriteIndex);
+    AkkordRect  GetSpriteRect           (IndexType SpriteIndex);
     void        Clear();
 
     AtlasManager();
@@ -41,15 +41,15 @@ private:
         std::string imageName;
         //int x, y, w, h;
         AkkordRect rect;
-        index_size_type altasIndex;
+        IndexType altasIndex;
     };
 
     //список спрайтов в текстурах
     std::vector<SpriteStruct> Sprites;
 
-    bool IsValidSpriteIndex(index_size_type SpriteIndex);
-    bool IsValidAtlasIndex(index_size_type AtlasIndex);
-    void ParseFile_LeshyLabsText(FileReader& fr, index_size_type AtlasIndex);
+    bool IsValidSpriteIndex(IndexType SpriteIndex);
+    bool IsValidAtlasIndex(IndexType AtlasIndex);
+    void ParseFile_LeshyLabsText(FileReader& fr, IndexType AtlasIndex);
     void AddTexture();
 };
 
@@ -57,7 +57,7 @@ private:
 ////////// REALIZATION
 /////////////////////////////////////////////////
 
-void AtlasManager::ParseFile_LeshyLabsText(FileReader& fr, index_size_type AtlasIndex)
+void AtlasManager::ParseFile_LeshyLabsText(FileReader& fr, IndexType AtlasIndex)
 {
     std::string line;
     SpriteStruct sprite;
@@ -97,7 +97,7 @@ void AtlasManager::ParseFile_LeshyLabsText(FileReader& fr, index_size_type Atlas
     }
 }
 
-AtlasManager::index_size_type AtlasManager::LoadAtlas(const char* ListFilename, const char* TextureFilename, AtlasManager::AtlasType Type, BWrapper::FileSearchPriority ListSearchPriority, BWrapper::FileSearchPriority TextureSearchPriority)
+AtlasManager::IndexType AtlasManager::LoadAtlas(const char* ListFilename, const char* TextureFilename, AtlasManager::AtlasType Type, BWrapper::FileSearchPriority ListSearchPriority, BWrapper::FileSearchPriority TextureSearchPriority)
 {
     AddTexture();
     auto index = AtlasTextureList.size() - 1;
@@ -121,7 +121,7 @@ AtlasManager::index_size_type AtlasManager::LoadAtlas(const char* ListFilename, 
     return index;
 };
 
-bool AtlasManager::IsValidSpriteIndex(index_size_type SpriteIndex)
+bool AtlasManager::IsValidSpriteIndex(IndexType SpriteIndex)
 {
     if (SpriteIndex < Sprites.size())
         return true;
@@ -130,7 +130,7 @@ bool AtlasManager::IsValidSpriteIndex(index_size_type SpriteIndex)
     return false;
 }
 
-bool AtlasManager::IsValidAtlasIndex(index_size_type AtlasIndex)
+bool AtlasManager::IsValidAtlasIndex(IndexType AtlasIndex)
 {
     if (AtlasIndex < AtlasTextureList.size())
         return true;
@@ -139,7 +139,7 @@ bool AtlasManager::IsValidAtlasIndex(index_size_type AtlasIndex)
     return false;
 }
 
-AtlasManager::index_size_type AtlasManager::GetIndexBySpriteName(index_size_type AtlasIndex, const char* Imagename)
+AtlasManager::IndexType AtlasManager::GetIndexBySpriteName(IndexType AtlasIndex, const char* Imagename)
 {
     if (IsValidAtlasIndex(AtlasIndex))
     {        
@@ -150,16 +150,16 @@ AtlasManager::index_size_type AtlasManager::GetIndexBySpriteName(index_size_type
         logError("AtlasManager::GetIndexBySpriteName Sprite '%s' with AtlasIndex = %u not found", Imagename, AtlasIndex);
     }
 
-    return (std::numeric_limits<index_size_type>::max)();
+    return (std::numeric_limits<IndexType>::max)();
 }
 
-void AtlasManager::DrawSprite(index_size_type SpriteIndex, AkkordRect Rect, unsigned char Flip, double Angle, AkkordPoint* Point)
+void AtlasManager::DrawSprite(IndexType SpriteIndex, AkkordRect Rect, unsigned char Flip, double Angle, AkkordPoint* Point)
 {
     if (IsValidSpriteIndex(SpriteIndex))    
         AtlasTextureList[Sprites[SpriteIndex].altasIndex]->Draw(Rect, &Sprites[SpriteIndex].rect, Flip, Angle, Point);    
 }
 
-AkkordPoint AtlasManager::GetSpriteSize(index_size_type SpriteIndex)
+AkkordPoint AtlasManager::GetSpriteSize(IndexType SpriteIndex)
 {
     if (IsValidSpriteIndex(SpriteIndex))
     {
@@ -169,7 +169,7 @@ AkkordPoint AtlasManager::GetSpriteSize(index_size_type SpriteIndex)
     return AkkordPoint(-1, -1);
 }
 
-AkkordRect AtlasManager::GetSpriteRect(index_size_type SpriteIndex)
+AkkordRect AtlasManager::GetSpriteRect(IndexType SpriteIndex)
 {
     if (IsValidSpriteIndex(SpriteIndex))    
         return Sprites[SpriteIndex].rect;
