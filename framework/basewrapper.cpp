@@ -577,6 +577,26 @@ const unsigned int AkkordColor::GetInt32()
     return color;
 };
 
+void AkkordColor::SetR(unsigned char R)
+{
+    SetRGBA(R, GetG(), GetB(), GetA());
+};
+
+void AkkordColor::SetG(unsigned char G)
+{
+    SetRGBA(GetR(), G, GetB(), GetA());
+};
+
+void AkkordColor::SetB(unsigned char B)
+{
+    SetRGBA(GetR(), GetG(), B, GetA());
+};
+
+void AkkordColor::SetA(unsigned char A)
+{
+    SetRGBA(GetR(), GetG(), GetB(), A);
+};
+
 unsigned int AkkordColor::RGBA2Int32(int r, int g, int b, int a)
 {
     return r

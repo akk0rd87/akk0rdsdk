@@ -39,6 +39,11 @@ public:
     void                 SetRGB  (unsigned char R, unsigned char G, unsigned char B);
     void                 SetRGBA (unsigned char R, unsigned char G, unsigned char B, unsigned char A);
     
+    void                 SetR    (unsigned char R);
+    void                 SetG    (unsigned char G);
+    void                 SetB    (unsigned char B);
+    void                 SetA    (unsigned char A);
+    
     const unsigned int   GetInt32();    
     const unsigned char  GetR    ();
     const unsigned char  GetG    ();
