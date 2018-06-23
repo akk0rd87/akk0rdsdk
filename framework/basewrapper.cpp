@@ -663,7 +663,7 @@ BWrapper::KeyCodes BWrapper::DecodeKey(SDL_Keysym SDL_Key)
 {
     //enum struct KeyCodes { Esc, BackSpace, Back, Enter, Tab, Delete, F1,
     // Help, Home, Insert, Find, Copy, PageDown, PageUp, Paste, Pause, PrintScreen, Return, Space, Uknown };
-
+	
     switch (SDL_Key.sym)
     {
         case SDLK_ESCAPE: return KeyCodes::Esc;
@@ -674,7 +674,8 @@ BWrapper::KeyCodes BWrapper::DecodeKey(SDL_Keysym SDL_Key)
         case SDLK_DELETE: return KeyCodes::Delete;
         case SDLK_F1: return KeyCodes::F1;
         case SDLK_HELP: return KeyCodes::Help;
-        case SDLK_HOME: return KeyCodes::Home;
+		case SDLK_HOME: return KeyCodes::Home;
+		case SDLK_END: return KeyCodes::End;
         case SDLK_INSERT: return KeyCodes::Insert;
         case SDLK_FIND: return KeyCodes::Find;
         case SDLK_COPY: return KeyCodes::Copy;
@@ -690,6 +691,55 @@ BWrapper::KeyCodes BWrapper::DecodeKey(SDL_Keysym SDL_Key)
         case SDLK_RIGHT: return KeyCodes::Right;
         case SDLK_UP: return KeyCodes::Up;
         case SDLK_DOWN: return KeyCodes::Down;
+
+		case SDLK_KP_0: return KeyCodes::Numpad0;
+		case SDLK_KP_1: return KeyCodes::Numpad1;
+		case SDLK_KP_2: return KeyCodes::Numpad2;
+		case SDLK_KP_3: return KeyCodes::Numpad3;
+		case SDLK_KP_4: return KeyCodes::Numpad4;
+		case SDLK_KP_5: return KeyCodes::Numpad5;
+		case SDLK_KP_6: return KeyCodes::Numpad6;
+		case SDLK_KP_7: return KeyCodes::Numpad7;
+		case SDLK_KP_8: return KeyCodes::Numpad8;
+		case SDLK_KP_9: return KeyCodes::Numpad9;
+
+		case SDLK_0: return KeyCodes::N0;
+		case SDLK_1: return KeyCodes::N1;
+		case SDLK_2: return KeyCodes::N2;
+		case SDLK_3: return KeyCodes::N3;
+		case SDLK_4: return KeyCodes::N4;
+		case SDLK_5: return KeyCodes::N5;
+		case SDLK_6: return KeyCodes::N6;
+		case SDLK_7: return KeyCodes::N7;
+		case SDLK_8: return KeyCodes::N8;
+		case SDLK_9: return KeyCodes::N9;
+
+		case SDLK_a: return KeyCodes::A;
+		case SDLK_b: return KeyCodes::B;
+		case SDLK_c: return KeyCodes::C;
+		case SDLK_d: return KeyCodes::D;
+		case SDLK_e: return KeyCodes::E;
+		case SDLK_f: return KeyCodes::F;
+		case SDLK_g: return KeyCodes::G;
+		case SDLK_h: return KeyCodes::H;
+		case SDLK_i: return KeyCodes::I;
+		case SDLK_j: return KeyCodes::J;
+		case SDLK_k: return KeyCodes::K;
+		case SDLK_l: return KeyCodes::L;
+		case SDLK_m: return KeyCodes::M;
+		case SDLK_n: return KeyCodes::N;
+		case SDLK_o: return KeyCodes::O;
+		case SDLK_p: return KeyCodes::P;
+		case SDLK_q: return KeyCodes::Q;
+		case SDLK_r: return KeyCodes::R;
+		case SDLK_s: return KeyCodes::S;
+		case SDLK_t: return KeyCodes::T;
+		case SDLK_u: return KeyCodes::U;
+		case SDLK_v: return KeyCodes::V;
+		case SDLK_w: return KeyCodes::W;
+		case SDLK_x: return KeyCodes::X;
+		case SDLK_y: return KeyCodes::Y;
+		case SDLK_z: return KeyCodes::Z;
 
         default: return KeyCodes::Uknown;
     }
