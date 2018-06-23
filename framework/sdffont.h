@@ -163,7 +163,8 @@ class SDFProgram
 public :
     bool Init()
     {        
-        if (!Inited)
+        logDebug("Inited = %d", (Inited == true ? 1 : 0));
+        if (!Inited || 1)
         {
             if(InitVertexShader())  // Инициализируем общий вертексный шейдер
                 if (this->CompileProgram(&ShaderProgram, SDF_fragmentSource) && this->CompileProgram(&ShaderProgramOutline, (std::string("#define SDF_OUTLINE \n") + SDF_fragmentSource).c_str()))
@@ -181,9 +182,15 @@ public :
 
         return &ShaderProgram;
     };
+    
+    SDFProgram()
+    {
+        logDebug("SDFProgram constructor");
+    }
 
     ~SDFProgram()
     {
+        logDebug("SDFProgram destructor");
         Clear();
     }
 };
