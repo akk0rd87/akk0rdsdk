@@ -104,13 +104,12 @@ class SDFProgram
 
         // Create and compile the vertex shader
         vertexShader = Driver->glCreateShader(GL_VERTEX_SHADER); 
-        
-        Driver->CheckError(__LINE__); 
+        CheckGLESError();
 
-        Driver->PrintShaderLog(vertexShader, __LINE__);
+        PrintGLESShaderLog(vertexShader);
 
-        Driver->glShaderSource(vertexShader, 1, &SDF_vertexSource, NULL); Driver->CheckError(__LINE__); Driver->PrintShaderLog(vertexShader, __LINE__);
-        Driver->glCompileShader(vertexShader); Driver->CheckError(__LINE__); Driver->PrintShaderLog(vertexShader, __LINE__);
+        Driver->glShaderSource(vertexShader, 1, &SDF_vertexSource, NULL); CheckGLESError(); PrintGLESShaderLog(vertexShader);
+        Driver->glCompileShader(vertexShader); CheckGLESError(); PrintGLESShaderLog(vertexShader);
 
         return true;
     }
@@ -122,32 +121,32 @@ class SDFProgram
         auto Driver = GLESDriver::GetInstance();        
 
         // Create and compile the fragment shader
-        GLuint fragmentShader = Driver->glCreateShader(GL_FRAGMENT_SHADER); Driver->CheckError(__LINE__); Driver->PrintShaderLog(fragmentShader, __LINE__);
-        Driver->glShaderSource(fragmentShader, 1, &FragmentShader, NULL); Driver->CheckError(__LINE__); Driver->PrintShaderLog(fragmentShader, __LINE__);
-        Driver->glCompileShader(fragmentShader); Driver->CheckError(__LINE__); Driver->PrintShaderLog(fragmentShader, __LINE__);
+        GLuint fragmentShader = Driver->glCreateShader(GL_FRAGMENT_SHADER); CheckGLESError(); PrintGLESShaderLog(fragmentShader);
+        Driver->glShaderSource(fragmentShader, 1, &FragmentShader, NULL); CheckGLESError(); PrintGLESShaderLog(fragmentShader);
+        Driver->glCompileShader(fragmentShader); CheckGLESError(); PrintGLESShaderLog(fragmentShader);
 
         // Link the vertex and fragment shader into a shader program
-        Program->shaderProgram = Driver->glCreateProgram(); Driver->CheckError(__LINE__); Driver->PrintProgamLog(Program->shaderProgram, __LINE__);
-        Driver->glAttachShader(Program->shaderProgram, vertexShader); Driver->CheckError(__LINE__); Driver->PrintProgamLog(Program->shaderProgram, __LINE__);
-        Driver->glAttachShader(Program->shaderProgram, fragmentShader); Driver->CheckError(__LINE__); Driver->PrintProgamLog(Program->shaderProgram, __LINE__);
+        Program->shaderProgram = Driver->glCreateProgram(); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
+        Driver->glAttachShader(Program->shaderProgram, vertexShader); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
+        Driver->glAttachShader(Program->shaderProgram, fragmentShader); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
 
-        Driver->glBindAttribLocation(Program->shaderProgram, SDF_ATTRIB_POSITION, "position"); Driver->CheckError(__LINE__); Driver->PrintProgamLog(Program->shaderProgram, __LINE__);        
-        Driver->glBindAttribLocation(Program->shaderProgram, SDF_ATTRIB_UV, "uv"); Driver->CheckError(__LINE__); Driver->PrintProgamLog(Program->shaderProgram, __LINE__);
+        Driver->glBindAttribLocation(Program->shaderProgram, SDF_ATTRIB_POSITION, "position"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);        
+        Driver->glBindAttribLocation(Program->shaderProgram, SDF_ATTRIB_UV, "uv"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
 
-        Driver->glLinkProgram(Program->shaderProgram); Driver->CheckError(__LINE__); Driver->PrintProgamLog(Program->shaderProgram, __LINE__);
+        Driver->glLinkProgram(Program->shaderProgram); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
 
         Driver->glGetIntegerv(GL_CURRENT_PROGRAM, &oldProgramId);
-        Driver->glUseProgram(Program->shaderProgram); Driver->CheckError(__LINE__); Driver->PrintProgamLog(Program->shaderProgram, __LINE__);
+        Driver->glUseProgram(Program->shaderProgram); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
 
-        auto mat = Driver->glGetUniformLocation(Program->shaderProgram, "mat"); Driver->CheckError(__LINE__); Driver->PrintProgamLog(Program->shaderProgram, __LINE__);
-        auto base_texture = Driver->glGetUniformLocation(Program->shaderProgram, "base_texture"); Driver->CheckError(__LINE__); Driver->PrintProgamLog(Program->shaderProgram, __LINE__);
-        Program->sdf_outline_color = Driver->glGetUniformLocation(Program->shaderProgram, "sdf_outline_color"); Driver->CheckError(__LINE__); Driver->PrintProgamLog(Program->shaderProgram, __LINE__);
+        auto mat = Driver->glGetUniformLocation(Program->shaderProgram, "mat"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
+        auto base_texture = Driver->glGetUniformLocation(Program->shaderProgram, "base_texture"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
+        Program->sdf_outline_color = Driver->glGetUniformLocation(Program->shaderProgram, "sdf_outline_color"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
         
         //c = Vector4(offset, contrast, outlineOffset, contrast); // sdf_params
-        Program->sdf_params = Driver->glGetUniformLocation(Program->shaderProgram, "sdf_params"); Driver->CheckError(__LINE__); Driver->PrintProgamLog(Program->shaderProgram, __LINE__);
-        Program->font_color = Driver->glGetUniformLocation(Program->shaderProgram, "font_color"); Driver->CheckError(__LINE__); Driver->PrintProgamLog(Program->shaderProgram, __LINE__);
+        Program->sdf_params = Driver->glGetUniformLocation(Program->shaderProgram, "sdf_params"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
+        Program->font_color = Driver->glGetUniformLocation(Program->shaderProgram, "font_color"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
 
-        Driver->glUniformMatrix4fv(mat, 1, GL_FALSE, SDF_Mat);    Driver->CheckError(__LINE__);
+        Driver->glUniformMatrix4fv(mat, 1, GL_FALSE, SDF_Mat);    CheckGLESError();
         Driver->glUniform1i(base_texture, 0);
 
         Driver->glUseProgram(oldProgramId);
@@ -353,12 +352,12 @@ public:
             return false;
         }
 
-        Driver->glGenTextures(1, &texture); Driver->CheckError(__LINE__);
-        Driver->glBindTexture(GL_TEXTURE_2D, texture); Driver->CheckError(__LINE__);
-        Driver->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); Driver->CheckError(__LINE__);
-        Driver->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); Driver->CheckError(__LINE__);
+        Driver->glGenTextures(1, &texture); CheckGLESError();
+        Driver->glBindTexture(GL_TEXTURE_2D, texture); CheckGLESError();
+        Driver->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); CheckGLESError();
+        Driver->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); CheckGLESError();
 
-        Driver->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fontAtlas->w, fontAtlas->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, fontAtlas->pixels); Driver->CheckError(__LINE__);
+        Driver->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fontAtlas->w, fontAtlas->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, fontAtlas->pixels); CheckGLESError();
 #endif
         ParseFNTFile("sdf/font.fnt", BWrapper::FileSearchPriority::Assets);
         //ParseFNTFile("sdf/HieroCalibri.fnt", BWrapper::FileSearchPriority::Assets);
@@ -375,38 +374,38 @@ public:
         auto Driver = GLESDriver::GetInstance();
 
         Driver->glGetIntegerv(GL_CURRENT_PROGRAM, &oldProgramId);
-        Driver->glUseProgram(shaderProgram->shaderProgram); Driver->CheckError(__LINE__); Driver->PrintProgamLog(shaderProgram->shaderProgram, __LINE__);
+        Driver->glUseProgram(shaderProgram->shaderProgram); CheckGLESError(); PrintGLESProgamLog(shaderProgram->shaderProgram);
 
-        Driver->glBindTexture(GL_TEXTURE_2D, texture); Driver->CheckError(__LINE__);
+        Driver->glBindTexture(GL_TEXTURE_2D, texture); CheckGLESError();
 
-        Driver->glEnableVertexAttribArray(SDF_ATTRIB_POSITION); Driver->CheckError(__LINE__);
-        Driver->glVertexAttribPointer(SDF_ATTRIB_POSITION, 2, GL_FLOAT, 0, 0, squareVertices); Driver->CheckError(__LINE__);
+        Driver->glEnableVertexAttribArray(SDF_ATTRIB_POSITION); CheckGLESError();
+        Driver->glVertexAttribPointer(SDF_ATTRIB_POSITION, 2, GL_FLOAT, 0, 0, squareVertices); CheckGLESError();
 
-        Driver->glEnableVertexAttribArray(SDF_ATTRIB_UV); Driver->CheckError(__LINE__);
-        Driver->glVertexAttribPointer(SDF_ATTRIB_UV, 2, GL_FLOAT, 0, 0, UV); Driver->CheckError(__LINE__);
+        Driver->glEnableVertexAttribArray(SDF_ATTRIB_UV); CheckGLESError();
+        Driver->glVertexAttribPointer(SDF_ATTRIB_UV, 2, GL_FLOAT, 0, 0, UV); CheckGLESError();
 
-        Driver->glUniform4f(shaderProgram->font_color, float(FontColor.GetR()) / 255, float(FontColor.GetG()) / 255, float(FontColor.GetB()) / 255, 1.0f); Driver->CheckError(__LINE__);
+        Driver->glUniform4f(shaderProgram->font_color, float(FontColor.GetR()) / 255, float(FontColor.GetG()) / 255, float(FontColor.GetB()) / 255, 1.0f); CheckGLESError();
 
         //c = Vector4(offset, contrast, outlineOffset, contrast); // sdf_params
-        Driver->glUniform4f(shaderProgram->sdf_params, Offset, Contrast, OutlineOffset, OutlineContrast); Driver->CheckError(__LINE__);
-        //Driver->glUniform4f(shaderProgram->sdf_params, 0.5f, 10.0f, 0.4f, 10.0f); Driver->CheckError(__LINE__);
+        Driver->glUniform4f(shaderProgram->sdf_params, Offset, Contrast, OutlineOffset, OutlineContrast); CheckGLESError();
+        //Driver->glUniform4f(shaderProgram->sdf_params, 0.5f, 10.0f, 0.4f, 10.0f); CheckGLESError();
 
         if (Outline) 
             if (shaderProgram->sdf_outline_color >= 0)
             {
-                Driver->glUniform4f(shaderProgram->sdf_outline_color, float(OutlineColor.GetR()) / 255, float(OutlineColor.GetG()) / 255, float(OutlineColor.GetB()) / 255, 1.0f); Driver->CheckError(__LINE__);
+                Driver->glUniform4f(shaderProgram->sdf_outline_color, float(OutlineColor.GetR()) / 255, float(OutlineColor.GetG()) / 255, float(OutlineColor.GetB()) / 255, 1.0f); CheckGLESError();
             }
             else
             {
                 logError("shaderProgram->sdf_outline_color error %d", shaderProgram->sdf_outline_color);
             }
 
-        Driver->glDrawElements(GL_TRIANGLES, Count, GL_UNSIGNED_SHORT, Indices); Driver->CheckError(__LINE__);
+        Driver->glDrawElements(GL_TRIANGLES, Count, GL_UNSIGNED_SHORT, Indices); CheckGLESError();
 
-        Driver->glDisableVertexAttribArray(SDF_ATTRIB_POSITION); Driver->CheckError(__LINE__);
-        Driver->glDisableVertexAttribArray(SDF_ATTRIB_UV); Driver->CheckError(__LINE__);
+        Driver->glDisableVertexAttribArray(SDF_ATTRIB_POSITION); CheckGLESError();
+        Driver->glDisableVertexAttribArray(SDF_ATTRIB_UV); CheckGLESError();
 
-        Driver->glUseProgram(oldProgramId); Driver->CheckError(__LINE__); Driver->CheckError(__LINE__);
+        Driver->glUseProgram(oldProgramId); CheckGLESError(); CheckGLESError();
 #endif
         return true;
     };

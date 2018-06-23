@@ -42,6 +42,9 @@ SDL_PROC(void, glGetProgramiv, (GLuint, GLenum, GLint *)) \
 SDL_PROC(void, glGetShaderInfoLog, (GLuint, GLsizei, GLsizei *, char *)) \
 SDL_PROC(void, glGetShaderiv, (GLuint, GLenum, GLint *))
 
+#define CheckGLESError()            GLESDriver::GetInstance()->CheckError    (         __FILE__, __FUNCTION__, __LINE__)
+#define PrintGLESProgamLog(Program) GLESDriver::GetInstance()->PrintProgamLog(Program, __FILE__, __FUNCTION__, __LINE__)
+#define PrintGLESShaderLog(Shader)  GLESDriver::GetInstance()->PrintShaderLog(Shader , __FILE__, __FUNCTION__, __LINE__)
 
 class GLESDriverInstance
 {
@@ -58,7 +61,7 @@ public:
 #undef SDL_PROC
     }
 
-    bool CheckError(unsigned Line)
+    bool CheckError(const char* File, const char* Function, unsigned Line)
     {                 
         auto glErr = this->glGetError();
         if (glErr != GL_NO_ERROR)
@@ -72,14 +75,14 @@ public:
                 case GL_OUT_OF_MEMORY:                 ErrorMsg =  "GL_OUT_OF_MEMORY"; break;
                 case GL_INVALID_VALUE:                 ErrorMsg =  "GL_INVALID_VALUE"; break;                
                 default:                               ErrorMsg =  "UNKNOWN ERROR"; break;
-            }            
-            logError("glGetError() = %u on line = %u, Msg = %s", glErr, Line, ErrorMsg.c_str());
+            }
+            BWrapper::Log(BWrapper::LogPriority::Error, File, Function, Line, "glGetError() = %u, Msg = %s", glErr, ErrorMsg.c_str());
             return true;
         }
         return false;        
     };
 
-    void PrintProgamLog(GLuint Program, unsigned Line)
+    void PrintProgamLog(GLuint Program, const char* File, const char* Function, unsigned Line)
     {
         GLint logLength;
         glGetProgramiv(Program, GL_INFO_LOG_LENGTH, &logLength);
@@ -87,13 +90,13 @@ public:
         {
             GLchar *log = (GLchar *)malloc(logLength);
             glGetProgramInfoLog(Program, logLength, &logLength, log);
-            if (std::string(log).size() > 0)
-                logDebug("Program log [line=%u]: %s", Line, log);
+            if (std::string(log).size() > 0)                
+                BWrapper::Log(BWrapper::LogPriority::Debug, File, Function, Line, "Program log [Program=%u]: %s", Program, log);
             free(log);
         }
     }    
 
-    void PrintShaderLog(GLuint Shader, unsigned Line)
+    void PrintShaderLog(GLuint Shader, const char* File, const char* Function, unsigned Line)
     {
         GLint logLength;
         glGetShaderiv (Shader, GL_INFO_LOG_LENGTH, &logLength);
@@ -101,8 +104,8 @@ public:
         {
             GLchar *log = (GLchar *)malloc(logLength);
             glGetShaderInfoLog(Shader, logLength, &logLength, log);
-            if (std::string(log).size() > 0)
-                logDebug("Shader log [line=%u]: %s", Line, log);
+            if (std::string(log).size() > 0)                
+                BWrapper::Log(BWrapper::LogPriority::Debug, File, Function, Line, "Shader log [Shader=%u]: %s", Shader, log);
             free(log);
         }
     };
