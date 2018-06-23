@@ -156,6 +156,11 @@ class SDFProgram
         return true;
     }
 
+    void Clear()
+    {
+        Inited = false;
+    }
+
 public :
     bool Init()
     {        
@@ -170,7 +175,6 @@ public :
         return Inited;
     };
 
-
     ShaderProgramStruct* GetShaderProgram(bool Outline)
     {
         if (Outline)
@@ -178,6 +182,11 @@ public :
 
         return &ShaderProgram;
     };
+
+    ~SDFProgram()
+    {
+        Clear();
+    }
 };
 
 SDFProgram sdfProgram;
@@ -194,7 +203,7 @@ class SDFFont
 #ifndef __CODEBLOCKS    
     GLuint texture;
 #endif
-    SDL_Surface* fontAtlas;
+    SDL_Surface* fontAtlas = nullptr;
     unsigned int ScaleW, ScaleH, LineHeight;
 
     //std::vector<SDFCharInfo> CharsVector;
@@ -326,7 +335,8 @@ public:
 
     bool Load(const char* FileName, BWrapper::FileSearchPriority SearchPriority)
     {
-#ifndef __CODEBLOCKS    
+#ifndef __CODEBLOCKS
+        this->Clear();
         sdfProgram.Init();
         auto Driver = GLESDriver::GetInstance();
         
