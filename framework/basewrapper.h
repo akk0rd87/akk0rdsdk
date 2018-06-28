@@ -113,10 +113,12 @@ public:
         };
     };
 
-    // System init-quit functions
-    static bool                Init                (Uint32 flags);
-    static void                Quit                ();
-
+    
+    static std::string         GetSDKVersionInfo           ();
+                                                           
+    // System init-quit functions                          
+    static bool                Init                        (Uint32 flags);
+    static void                Quit                        ();
 
     // Windows and Render functions
     static AkkordWindow*       CreateRenderWindow          (const char* Title, int X, int Y, int W, int H, Uint32 Flags);
@@ -162,10 +164,7 @@ public:
     static bool                FileDelete                  (const char* FileName);
     static bool                FileRename                  (const char* OldName, const char* NewName);
     static void                FileClose                   (FILE*& File);
-    static void                CloseBuffer                 (char*& buffer);
-                                                           
-                                                           
-                                                           
+    static void                CloseBuffer                 (char*& buffer);                                                           
                                                            
     // Working with directories                            
     static bool                DirCreate                   (const char* Dir);
