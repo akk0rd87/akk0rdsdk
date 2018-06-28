@@ -1019,6 +1019,18 @@ void BWrapper::Sleep(unsigned MilliSeconds)
     SDL_Delay(MilliSeconds);
 }
 
+std::string BWrapper::GetSDKVersionInfo()
+{
+    std::string VersionString;
+    SDL_version version;
+    SDL_VERSION(&version);
+    VersionString = std::string("Compiled version: ") + std::to_string(version.major) + "." + std::to_string(version.minor) + std::to_string(version.patch) + "; ";
+
+    SDL_GetVersion(&version);
+    VersionString += std::string("Linked version: ") + std::to_string(version.major) + "." + std::to_string(version.minor) + std::to_string(version.patch) + ", Revision: " + SDL_GetRevision();
+    return VersionString;
+}
+
 AkkordRect::AkkordRect()
 {
     x = 0; y = 0; w = 0; h = 0;
