@@ -181,6 +181,8 @@ int main(int, char**){
         return 1;
     }
 
+    logDebug(BWrapper::GetSDKVersionInfo().c_str());
+
 	SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 
