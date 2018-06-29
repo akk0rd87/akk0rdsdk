@@ -184,6 +184,21 @@ int main(int, char**){
 	SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 
+    switch (BWrapper::GetDeviceLanguage())
+    {
+        case Locale::Lang::Russian:
+            logDebug("Russian;");
+            break;
+
+        case Locale::Lang::English:
+            logDebug("English;");
+            break;
+
+        default:
+            logDebug("Other language");
+            break;
+    }
+
     // Add Rects to Control Clicks by Images
     int imagesCnt = adRand.Randomize(4);
     for (int i = 0; i < imagesCnt; i++)

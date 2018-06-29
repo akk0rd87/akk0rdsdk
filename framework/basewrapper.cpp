@@ -830,8 +830,8 @@ bool BWrapper::OpenURL(const char* url)
 
 Locale::Lang BWrapper::GetDeviceLanguage()
 {
-    //return Platforms::GetDeviceLanguage();
-    return Locale::Lang::Unknown;
+    return Platforms::GetDeviceLanguage();
+    //return Locale::Lang::Unknown;
 };
 
 
