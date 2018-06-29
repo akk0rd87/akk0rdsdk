@@ -8,8 +8,7 @@
       android:label="Составь слова">
     <activity android:name=".MainActivity"
               android:label="Составь слова"
-              android:configChanges="keyboardHidden|orientation|screenSize"              
-              android:launchMode="singleTask"
+              android:configChanges="keyboardHidden|orientation|screenSize"
               >
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
