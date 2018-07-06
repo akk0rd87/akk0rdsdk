@@ -35,40 +35,37 @@ static const GLchar* SDF_vertexSource =
 "varying lowp vec4 result_color; \n\
 varying mediump vec2 result_uv; \n\
 uniform lowp vec4 sdf_outline_color; \n\
-uniform mediump vec4 sdf_params; \n\
 uniform mediump mat4 mat; \n\
 uniform vec4 font_color; \n\
+uniform float smooth; \n\
 attribute vec2 position; \n\
 attribute vec2 uv; \n\
+varying mediump float SmoothDistance; \n\
 void main()  \n\
 {\n\
     gl_Position = mat * vec4(position, 0.0, 1.0);  \n\
     result_color = font_color; \n\
     result_uv = uv; \n\
+    SmoothDistance = smooth; \n\
+    //SmoothDistance = 0.625/3.333; \n\
 }\n";
 
 static const GLchar* SDF_fragmentSource =
 "varying lowp vec4 result_color; \n\
 varying mediump vec2 result_uv; \n\
 uniform lowp vec4 sdf_outline_color; \n\
-uniform mediump vec4 sdf_params; \n\
 uniform lowp sampler2D base_texture; \n\
-lowp vec4 get_base_sdf() \n\
-{\n\
-    lowp float tx = texture2D(base_texture, result_uv).r; \n\
-#ifdef SDF_OUTLINE \n\
-    lowp float b =   min((tx - sdf_params.z) * sdf_params.w, 1.0); \n\
-    lowp float a = clamp((tx - sdf_params.x) * sdf_params.y, 0.0, 1.0); \n\
-    lowp vec4 res = (sdf_outline_color + (result_color - sdf_outline_color)*a) * b; \n\
-#else \n\
-    lowp float a = min((tx - sdf_params.x) * sdf_params.y, 1.0); \n\
-    lowp vec4 res = result_color * a; \n\
-#endif \n\
-    return res;\n\
-} \n\
+varying mediump float	SmoothDistance; \n\
+lowp float my_smoothstep(lowp float edge0, lowp float edge1, lowp float x) { \n\
+x = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0); \n\
+return x * x * (3.0 - 2.0 * x); \n\
+}\n\
 void main() \n\
-{    \n\
-    gl_FragColor = get_base_sdf();\n\
+{  \n\
+    mediump float distAlpha = texture2D(base_texture, result_uv).a; \n\
+    lowp vec4 rgba = result_color; \n\
+    rgba.a *= my_smoothstep(0.5 - SmoothDistance, 0.5 + SmoothDistance, distAlpha); \n\
+    gl_FragColor = rgba; \n\
 }\n";
 
 static const GLfloat SDF_Mat[] =
@@ -89,7 +86,7 @@ enum {
 struct ShaderProgramStruct
 {
     GLuint shaderProgram;
-    GLint sdf_outline_color, sdf_params, font_color;
+    GLint sdf_outline_color, font_color, smooth;
 };
 
 class SDFProgram
@@ -140,11 +137,9 @@ class SDFProgram
 
         auto mat = Driver->glGetUniformLocation(Program->shaderProgram, "mat"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
         auto base_texture = Driver->glGetUniformLocation(Program->shaderProgram, "base_texture"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
-        Program->sdf_outline_color = Driver->glGetUniformLocation(Program->shaderProgram, "sdf_outline_color"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
-        
-        //c = Vector4(offset, contrast, outlineOffset, contrast); // sdf_params
-        Program->sdf_params = Driver->glGetUniformLocation(Program->shaderProgram, "sdf_params"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
+        Program->sdf_outline_color = Driver->glGetUniformLocation(Program->shaderProgram, "sdf_outline_color"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);                
         Program->font_color = Driver->glGetUniformLocation(Program->shaderProgram, "font_color"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
+        Program->smooth = Driver->glGetUniformLocation(Program->shaderProgram, "smooth"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
 
         Driver->glUniformMatrix4fv(mat, 1, GL_FALSE, SDF_Mat);    CheckGLESError();
         Driver->glUniform1i(base_texture, 0);
@@ -210,13 +205,15 @@ class SDFFont
     GLuint texture;
 #endif
     SDL_Surface* fontAtlas = nullptr;
-    unsigned int ScaleW, ScaleH, LineHeight;
+    unsigned int ScaleW, ScaleH, LineHeight, Spread;
+    
 
     //std::vector<SDFCharInfo> CharsVector;
     std::map<unsigned, SDFCharInfo> CharsMap;
 
     bool ParseFNTFile(const char* FNTFile, BWrapper::FileSearchPriority SearchPriority)
     {
+        Spread = 2; // пока хардкодим
         /*        
         http://www.angelcode.com/products/bmfont/doc/file_format.html
         http://www.angelcode.com/products/bmfont/doc/export_options.html
@@ -347,7 +344,7 @@ public:
         auto Driver = GLESDriver::GetInstance();
         
         unsigned Size;
-        auto buffer = BWrapper::File2Buffer(FileName, SearchPriority, Size);
+        auto buffer = BWrapper::File2Buffer("sdf/calibri.png", SearchPriority, Size);
         auto io = SDL_RWFromMem(buffer, Size);        
         fontAtlas = IMG_LoadPNG_RW(io);
         BWrapper::CloseBuffer(buffer);
@@ -366,13 +363,13 @@ public:
 
         Driver->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fontAtlas->w, fontAtlas->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, fontAtlas->pixels); CheckGLESError();
 #endif
-        ParseFNTFile("sdf/font.fnt", BWrapper::FileSearchPriority::Assets);
+        ParseFNTFile("sdf/calibri.fnt", BWrapper::FileSearchPriority::Assets);
         //ParseFNTFile("sdf/HieroCalibri.fnt", BWrapper::FileSearchPriority::Assets);
 
         return true;
     };
 
-    bool Draw(bool Outline, unsigned Count, AkkordColor& FontColor, AkkordColor& OutlineColor, float Offset, float Contrast, float OutlineOffset, float OutlineContrast, const float* UV, const float* squareVertices, unsigned short* Indices)
+    bool Draw(bool Outline, unsigned Count, AkkordColor& FontColor, AkkordColor& OutlineColor, float Offset, float Contrast, float OutlineOffset, float OutlineContrast, const float* UV, const float* squareVertices, unsigned short* Indices, float Scale)
     {
 #ifndef __CODEBLOCKS
         GLint oldProgramId;
@@ -391,11 +388,13 @@ public:
         Driver->glEnableVertexAttribArray(SDF_ATTRIB_UV); CheckGLESError();
         Driver->glVertexAttribPointer(SDF_ATTRIB_UV, 2, GL_FLOAT, 0, 0, UV); CheckGLESError();
 
-        Driver->glUniform4f(shaderProgram->font_color, float(FontColor.GetR()) / 255, float(FontColor.GetG()) / 255, float(FontColor.GetB()) / 255, 1.0f); CheckGLESError();
+        Driver->glUniform4f(shaderProgram->font_color, float(FontColor.GetR()) / 255, float(FontColor.GetG()) / 255, float(FontColor.GetB()) / 255, 1.0f); CheckGLESError();        
+        
+        float smoothness = std::min(0.3f, 0.25f / (float)Spread / Scale* 1.5f) * 850.0f / 255.f / 3.333f;
 
-        //c = Vector4(offset, contrast, outlineOffset, contrast); // sdf_params
-        Driver->glUniform4f(shaderProgram->sdf_params, Offset, Contrast, OutlineOffset, OutlineContrast); CheckGLESError();
-        //Driver->glUniform4f(shaderProgram->sdf_params, 0.5f, 10.0f, 0.4f, 10.0f); CheckGLESError();
+        //0.25f / (float)Spread / Scale*/*smoothfact*/1.5)*850.0f
+
+        Driver->glUniform1f(shaderProgram->smooth, smoothness);
 
         if (Outline) 
             if (shaderProgram->sdf_outline_color >= 0)
@@ -430,7 +429,6 @@ public:
     };
 
     unsigned GetLineHeight() { return LineHeight; }
-
 };
 
 // Для рисования всегда указывать левую верхнюю точку (удобно для разгаданных слов в "составь слова")
@@ -525,8 +523,6 @@ public:
     float GetScaleX(){ return scaleX; }
     float GetScaleY(){ return scaleY; }
 
-    void SetSDFParams(float Offset, float Contrast, float OutlineOffset, float OutlineContrast) { offset = Offset; contrast = Contrast; outlineOffset = OutlineOffset; outlineContrast = OutlineContrast; };
-
     void SetRect(int W, int H) { rectW = W; rectH = H; }
 
     void SetAlignment(SDFFont::AlignH AlignH, SDFFont::AlignV AlignV){ alignH = AlignH; alignV = AlignV; }    
@@ -554,7 +550,7 @@ public:
     {        
         if (Indices.size() > 0)
         {
-            sdfFont->Draw(this->outline, Indices.size(), this->color, this->outlineColor, offset, contrast, outlineOffset, outlineContrast, &UV.front(), &squareVertices.front(), &Indices.front());
+            sdfFont->Draw(this->outline, Indices.size(), this->color, this->outlineColor, offset, contrast, outlineOffset, outlineContrast, &UV.front(), &squareVertices.front(), &Indices.front(), this->scaleX);
         }
         Clear();
     };    
