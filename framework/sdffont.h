@@ -6,6 +6,11 @@
 #include "basewrapper.h"
 #include "SDL_image.h"
 
+/*
+https://github.com/libgdx/libgdx/wiki/Hiero
+"java -cp gdx.jar;gdx-natives.jar;gdx-backend-lwjgl.jar;gdx-backend-lwjgl-natives.jar;extensions\gdx-freetype\gdx-freetype.jar;extensions\gdx-freetype\gdx-freetype-natives.jar;extensions\gdx-tools\gdx-tools.jar com.badlogic.gdx.tools.hiero.Hiero"
+*/
+
 // https://habrahabr.ru/post/282191/
 static inline unsigned int UTF2Unicode(const /*unsigned*/ char *txt, unsigned int &i){
     unsigned int a = txt[i++];
