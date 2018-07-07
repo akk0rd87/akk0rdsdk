@@ -341,15 +341,15 @@ public:
     unsigned int GetAtlasW(){ return ScaleW; }
     unsigned int GetAtlasH(){ return ScaleH; }
 
-    bool Load(const char* FileName, BWrapper::FileSearchPriority SearchPriority)
+    bool Load(const char* FileNameFNT, const char* FileNamePNG,  BWrapper::FileSearchPriority SearchPriority)
     {
-#ifndef __CODEBLOCKS
         this->Clear();
+#ifndef __CODEBLOCKS        
         sdfProgram.Init();
         auto Driver = GLESDriver::GetInstance();
         
         unsigned Size;
-        auto buffer = BWrapper::File2Buffer("sdf/calibri.png", SearchPriority, Size);
+        auto buffer = BWrapper::File2Buffer(FileNamePNG, SearchPriority, Size);
         auto io = SDL_RWFromMem(buffer, Size);        
         fontAtlas = IMG_LoadPNG_RW(io);
         BWrapper::CloseBuffer(buffer);
@@ -368,9 +368,7 @@ public:
 
         Driver->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fontAtlas->w, fontAtlas->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, fontAtlas->pixels); CheckGLESError();
 #endif
-        ParseFNTFile("sdf/calibri.fnt", BWrapper::FileSearchPriority::Assets);
-        //ParseFNTFile("sdf/HieroCalibri.fnt", BWrapper::FileSearchPriority::Assets);
-
+        ParseFNTFile(FileNameFNT, BWrapper::FileSearchPriority::Assets);
         return true;
     };
 
