@@ -45,24 +45,22 @@ uniform float smooth; \n\
 attribute vec2 position; \n\
 attribute vec2 uv; \n\
 varying mediump float SmoothDistance; \n\
-\n\
-uniform lowp vec4 sdf_outline_color; \n\
-uniform float Border;\n\
-varying lowp    vec4    outBorderCol; \n\
-varying mediump float	outlineMaxValue0; \n\
-varying mediump float	outlineMaxValue1; \n\
 varying mediump float	center; \n\
+    uniform lowp vec4 sdf_outline_color; \n\
+    uniform float border;\n\
+    varying lowp    vec4    outBorderCol; \n\
+    varying mediump float	outlineMaxValue0; \n\
+    varying mediump float	outlineMaxValue1; \n\
 void main()  \n\
 {\n\
     gl_Position = mat * vec4(position, 0.0, 1.0);  \n\
     result_color = font_color; \n\
     result_uv = uv; \n\
     SmoothDistance = smooth; \n\
-    outlineMaxValue0 = 0.5 - Border; \n\
-    outlineMaxValue1 = 0.5 + Border; \n\
-    center = outlineMaxValue0 - Border; \n\
-    \n\
     outBorderCol = sdf_outline_color; \n\
+    outlineMaxValue0 = 0.5 - border; \n\
+    outlineMaxValue1 = 0.5 + border; \n\
+    center = outlineMaxValue0 - border; \n\
 }\n";
 
 static const GLchar* SDF_fragmentSource =
@@ -86,7 +84,7 @@ void main() \n\
     mediump float distAlpha = texture2D(base_texture, result_uv).a; \n\
     lowp vec4 rgba = result_color; \n\
 #ifdef SDF_OUTLINE \n\
-    rgba.xyz = mix(rgba.xyz, outBorderCol.xyz, my_smoothstep(outlineMaxValue1,outlineMaxValue0,distAlpha)); \n\
+    rgba.xyz = mix(rgba.xyz, outBorderCol.xyz, my_smoothstep(outlineMaxValue1, outlineMaxValue0, distAlpha)); \n\
 #endif \n\
     rgba.a *= my_smoothstep(center - SmoothDistance, center + SmoothDistance, distAlpha); \n\
     gl_FragColor = rgba; \n\
@@ -110,7 +108,7 @@ enum {
 struct ShaderProgramStruct
 {
     GLuint shaderProgram;
-    GLint sdf_outline_color, font_color, smooth;
+    GLint sdf_outline_color, font_color, smooth, border;
 };
 
 class SDFProgram
@@ -164,6 +162,7 @@ class SDFProgram
         Program->sdf_outline_color = Driver->glGetUniformLocation(Program->shaderProgram, "sdf_outline_color"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);                
         Program->font_color = Driver->glGetUniformLocation(Program->shaderProgram, "font_color"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
         Program->smooth = Driver->glGetUniformLocation(Program->shaderProgram, "smooth"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
+        Program->border = Driver->glGetUniformLocation(Program->shaderProgram, "border"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
 
         Driver->glUniformMatrix4fv(mat, 1, GL_FALSE, SDF_Mat);    CheckGLESError();
         Driver->glUniform1i(base_texture, 0);
@@ -391,7 +390,7 @@ public:
         return true;
     };
 
-    bool Draw(bool Outline, unsigned Count, AkkordColor& FontColor, AkkordColor& OutlineColor, float Offset, float Contrast, float OutlineOffset, float OutlineContrast, const float* UV, const float* squareVertices, unsigned short* Indices, float Scale)
+    bool Draw(bool Outline, unsigned Count, AkkordColor& FontColor, AkkordColor& OutlineColor, float Offset, float Contrast, float OutlineOffset, float OutlineContrast, const float* UV, const float* squareVertices, unsigned short* Indices, float Scale, float Border)
     {
 #ifndef __CODEBLOCKS
         GLint oldProgramId;
@@ -418,7 +417,8 @@ public:
 
         Driver->glUniform1f(shaderProgram->smooth, smoothness);
 
-        if (Outline) 
+        if (Outline)
+        {
             if (shaderProgram->sdf_outline_color >= 0)
             {
                 Driver->glUniform4f(shaderProgram->sdf_outline_color, float(OutlineColor.GetR()) / 255, float(OutlineColor.GetG()) / 255, float(OutlineColor.GetB()) / 255, 1.0f); CheckGLESError();
@@ -427,6 +427,16 @@ public:
             {
                 logError("shaderProgram->sdf_outline_color error %d", shaderProgram->sdf_outline_color);
             }
+
+            if (shaderProgram->border >= 0)
+            {
+                Driver->glUniform1f(shaderProgram->border, Border); CheckGLESError();
+            }
+            else
+            {
+                logError("shaderProgram->border error %d", shaderProgram->border);
+            }
+        }
 
         Driver->glDrawElements(GL_TRIANGLES, Count, GL_UNSIGNED_SHORT, Indices); CheckGLESError();
 
@@ -459,6 +469,7 @@ class SDFFontBuffer
 {
     float scaleX = 1.0f;
     float scaleY = 1.0f;
+    float Border = 0.0f;
 
     SDFFont* sdfFont = nullptr;
     int rectW = -1, rectH = -1;
@@ -541,9 +552,10 @@ public:
     void SetColor(const AkkordColor Color) { color = Color; };
     void SetOutline(bool Outline){ outline = Outline; }
     void SetOutlineColor(const AkkordColor OutlineColor) { outlineColor = OutlineColor; };
+    void SetBorder(float BordeWidth){ this->Border = BordeWidth; }
 
     float GetScaleX(){ return scaleX; }
-    float GetScaleY(){ return scaleY; }
+    float GetScaleY(){ return scaleY; }    
 
     void SetRect(int W, int H) { rectW = W; rectH = H; }
 
@@ -572,7 +584,7 @@ public:
     {        
         if (Indices.size() > 0)
         {
-            sdfFont->Draw(this->outline, Indices.size(), this->color, this->outlineColor, offset, contrast, outlineOffset, outlineContrast, &UV.front(), &squareVertices.front(), &Indices.front(), this->scaleX);
+            sdfFont->Draw(this->outline, Indices.size(), this->color, this->outlineColor, offset, contrast, outlineOffset, outlineContrast, &UV.front(), &squareVertices.front(), &Indices.front(), this->scaleX, this->Border);
         }
         Clear();
     };    
