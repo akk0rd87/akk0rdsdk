@@ -41,26 +41,32 @@ static const GLchar* SDF_vertexSource =
 varying mediump vec2 result_uv; \n\
 uniform mediump mat4 mat; \n\
 uniform vec4 font_color; \n\
-uniform float smooth; \n\
+uniform mediump float smooth; \n\
 attribute vec2 position; \n\
 attribute vec2 uv; \n\
 varying mediump float SmoothDistance; \n\
-varying mediump float	center; \n\
+varying mediump float center; \n\
+#ifdef SDF_OUTLINE \n\
     uniform lowp vec4 sdf_outline_color; \n\
-    uniform float border;\n\
+    uniform mediump float border;\n\
     varying lowp    vec4    outBorderCol; \n\
     varying mediump float	outlineMaxValue0; \n\
     varying mediump float	outlineMaxValue1; \n\
+#endif \n\
 void main()  \n\
 {\n\
     gl_Position = mat * vec4(position, 0.0, 1.0);  \n\
     result_color = font_color; \n\
     result_uv = uv; \n\
     SmoothDistance = smooth; \n\
+#ifdef SDF_OUTLINE \n\
     outBorderCol = sdf_outline_color; \n\
     outlineMaxValue0 = 0.5 - border; \n\
     outlineMaxValue1 = 0.5 + border; \n\
     center = outlineMaxValue0 - border; \n\
+#else \n\
+    center = 0.5; \n\
+#endif \n\
 }\n";
 
 static const GLchar* SDF_fragmentSource =
@@ -75,7 +81,7 @@ varying mediump float   center; \n\
 \n\
 varying lowp vec4       outBorderCol; \n\
 \n\
-lowp float my_smoothstep(lowp float edge0, lowp float edge1, lowp float x) { \n\
+mediump float my_smoothstep(lowp float edge0, lowp float edge1, lowp float x) { \n\
 x = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0); \n\
 return x * x * (3.0 - 2.0 * x); \n\
 }\n\
@@ -115,29 +121,17 @@ class SDFProgram
 {
     bool Inited = false;
     ShaderProgramStruct ShaderProgram, ShaderProgramOutline;
-    GLuint vertexShader;
 
-    bool InitVertexShader() // Вершинный шейдер одинаковый Outline и withoutOutline программ
-    {
-        auto Driver = GLESDriver::GetInstance();
-
-        // Create and compile the vertex shader
-        vertexShader = Driver->glCreateShader(GL_VERTEX_SHADER); 
-        CheckGLESError();
-
-        PrintGLESShaderLog(vertexShader);
-
-        Driver->glShaderSource(vertexShader, 1, &SDF_vertexSource, NULL); CheckGLESError(); PrintGLESShaderLog(vertexShader);
-        Driver->glCompileShader(vertexShader); CheckGLESError(); PrintGLESShaderLog(vertexShader);
-
-        return true;
-    }
-
-    bool CompileProgram(ShaderProgramStruct* Program, const char* FragmentShader)
+    bool CompileProgram(ShaderProgramStruct* Program, const char* VertextShader, const char* FragmentShader)
     {
         GLint oldProgramId;
 
         auto Driver = GLESDriver::GetInstance();        
+
+        // Create and compile the fragment shader
+        GLuint vertexShader = Driver->glCreateShader(GL_VERTEX_SHADER); CheckGLESError(); PrintGLESShaderLog(vertexShader);
+        Driver->glShaderSource(vertexShader, 1, &VertextShader, NULL); CheckGLESError(); PrintGLESShaderLog(vertexShader);
+        Driver->glCompileShader(vertexShader); CheckGLESError(); PrintGLESShaderLog(vertexShader);
 
         // Create and compile the fragment shader
         GLuint fragmentShader = Driver->glCreateShader(GL_FRAGMENT_SHADER); CheckGLESError(); PrintGLESShaderLog(fragmentShader);
@@ -183,12 +177,11 @@ public :
     {        
         logDebug("Inited = %d", (Inited == true ? 1 : 0));
         if (!Inited || 1)
-        {
-            if(InitVertexShader())  // Инициализируем общий вертексный шейдер
-                if (this->CompileProgram(&ShaderProgram, SDF_fragmentSource) && this->CompileProgram(&ShaderProgramOutline, (std::string("#define SDF_OUTLINE \n") + SDF_fragmentSource).c_str()))
-                {
-                    Inited = true;            
-                }                        
+        {   
+            if (this->CompileProgram(&ShaderProgram, SDF_vertexSource, SDF_fragmentSource) && this->CompileProgram(&ShaderProgramOutline, (std::string("#define SDF_OUTLINE \n") + SDF_vertexSource).c_str(), (std::string("#define SDF_OUTLINE \n") + SDF_fragmentSource).c_str()))
+            {
+                Inited = true;            
+            }                        
         };
         return Inited;
     };
