@@ -430,7 +430,7 @@ public:
 
             if (shaderProgram->border >= 0)
             {
-                Driver->glUniform1f(shaderProgram->border, Border); CheckGLESError();
+                Driver->glUniform1f(shaderProgram->border, Border / 6.666f); CheckGLESError();
             }
             else
             {
