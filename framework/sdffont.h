@@ -39,20 +39,30 @@ static inline unsigned int UTF2Unicode(const /*unsigned*/ char *txt, unsigned in
 static const GLchar* SDF_vertexSource =
 "varying lowp vec4 result_color; \n\
 varying mediump vec2 result_uv; \n\
-uniform lowp vec4 sdf_outline_color; \n\
 uniform mediump mat4 mat; \n\
 uniform vec4 font_color; \n\
 uniform float smooth; \n\
 attribute vec2 position; \n\
 attribute vec2 uv; \n\
 varying mediump float SmoothDistance; \n\
+\n\
+uniform lowp vec4 sdf_outline_color; \n\
+uniform float Border;\n\
+varying lowp    vec4    outBorderCol; \n\
+varying mediump float	outlineMaxValue0; \n\
+varying mediump float	outlineMaxValue1; \n\
+varying mediump float	center; \n\
 void main()  \n\
 {\n\
     gl_Position = mat * vec4(position, 0.0, 1.0);  \n\
     result_color = font_color; \n\
     result_uv = uv; \n\
     SmoothDistance = smooth; \n\
-    //SmoothDistance = 0.625/3.333; \n\
+    outlineMaxValue0 = 0.5 - Border; \n\
+    outlineMaxValue1 = 0.5 + Border; \n\
+    center = outlineMaxValue0 - Border; \n\
+    \n\
+    outBorderCol = sdf_outline_color; \n\
 }\n";
 
 static const GLchar* SDF_fragmentSource =
@@ -60,7 +70,13 @@ static const GLchar* SDF_fragmentSource =
 varying mediump vec2 result_uv; \n\
 uniform lowp vec4 sdf_outline_color; \n\
 uniform lowp sampler2D base_texture; \n\
-varying mediump float	SmoothDistance; \n\
+varying mediump float SmoothDistance; \n\
+varying mediump float   outlineMaxValue0; \n\
+varying mediump float   outlineMaxValue1; \n\
+varying mediump float   center; \n\
+\n\
+varying lowp vec4       outBorderCol; \n\
+\n\
 lowp float my_smoothstep(lowp float edge0, lowp float edge1, lowp float x) { \n\
 x = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0); \n\
 return x * x * (3.0 - 2.0 * x); \n\
@@ -69,7 +85,10 @@ void main() \n\
 {  \n\
     mediump float distAlpha = texture2D(base_texture, result_uv).a; \n\
     lowp vec4 rgba = result_color; \n\
-    rgba.a *= my_smoothstep(0.5 - SmoothDistance, 0.5 + SmoothDistance, distAlpha); \n\
+#ifdef SDF_OUTLINE \n\
+    rgba.xyz = mix(rgba.xyz, outBorderCol.xyz, my_smoothstep(outlineMaxValue1,outlineMaxValue0,distAlpha)); \n\
+#endif \n\
+    rgba.a *= my_smoothstep(center - SmoothDistance, center + SmoothDistance, distAlpha); \n\
     gl_FragColor = rgba; \n\
 }\n";
 
