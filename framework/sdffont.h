@@ -671,15 +671,15 @@ public:
 
                 x_current = x_current + scaleX * charParams.xoffset;
 
-                UV.push_back(float(charParams.x) / atlasW); UV.push_back(float(charParams.y + charParams.h) / atlasH);
-                UV.push_back(float(charParams.x + charParams.w) / atlasW); UV.push_back(float(charParams.y + charParams.h) / atlasH);
-                UV.push_back(float(charParams.x) / atlasW); UV.push_back(float(charParams.y) / atlasH);
-                UV.push_back(float(charParams.x + charParams.w) / atlasW); UV.push_back(float(charParams.y) / atlasH);
+                UV.push_back(float(charParams.x) / atlasW);                    UV.push_back(float(charParams.y + charParams.h - 1) / atlasH);
+                UV.push_back(float(charParams.x + charParams.w - 1) / atlasW); UV.push_back(float(charParams.y + charParams.h - 1) / atlasH);
+                UV.push_back(float(charParams.x) / atlasW);                    UV.push_back(float(charParams.y) / atlasH);
+                UV.push_back(float(charParams.x + charParams.w - 1) / atlasW); UV.push_back(float(charParams.y) / atlasH);
 
-                squareVertices.push_back(2 * (float)(x_current / ScrenW) - 1.0f);                                squareVertices.push_back(2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f);
-                squareVertices.push_back(2 * (float)(x_current + (float)scaleX * charParams.w) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f);
-                squareVertices.push_back(2 * (float)(x_current / ScrenW) - 1.0f);                                squareVertices.push_back(2 * (ScrenH - Y - scaleY * charParams.yoffset) / ScrenH - 1.0f);
-                squareVertices.push_back(2 * (float)(x_current + (float)scaleX * charParams.w) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - Y - scaleY * charParams.yoffset) / ScrenH - 1.0f);
+                squareVertices.push_back(2 * (float)(x_current / ScrenW) - 1.0f);                                      squareVertices.push_back(2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f);
+                squareVertices.push_back(2 * (float)(x_current + (float)scaleX * (charParams.w - 1)) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f);
+                squareVertices.push_back(2 * (float)(x_current / ScrenW) - 1.0f);                                      squareVertices.push_back(2 * (ScrenH - Y - scaleY * charParams.yoffset) / ScrenH - 1.0f);
+                squareVertices.push_back(2 * (float)(x_current + (float)scaleX * (charParams.w - 1)) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - Y - scaleY * charParams.yoffset) / ScrenH - 1.0f);
 
                 Indices.push_back(PointsCnt + 0); Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2);
                 Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2); Indices.push_back(PointsCnt + 3);
