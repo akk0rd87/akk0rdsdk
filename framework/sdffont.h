@@ -41,7 +41,7 @@ static const GLchar* SDF_vertexSource =
 varying mediump vec2 result_uv; \n\
 uniform mediump mat4 mat; \n\
 uniform vec4 font_color; \n\
-uniform mediump float smooth; \n\
+uniform mediump float smooth_param; \n\
 attribute vec2 position; \n\
 attribute vec2 uv; \n\
 varying mediump float SmoothDistance; \n\
@@ -58,7 +58,7 @@ void main()  \n\
     gl_Position = mat * vec4(position, 0.0, 1.0);  \n\
     result_color = font_color; \n\
     result_uv = uv; \n\
-    SmoothDistance = smooth; \n\
+    SmoothDistance = smooth_param; \n\
 #ifdef SDF_OUTLINE \n\
     outBorderCol = sdf_outline_color; \n\
     outlineMaxValue0 = 0.5 - border; \n\
@@ -155,7 +155,7 @@ class SDFProgram
         auto base_texture = Driver->glGetUniformLocation(Program->shaderProgram, "base_texture"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
         Program->sdf_outline_color = Driver->glGetUniformLocation(Program->shaderProgram, "sdf_outline_color"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);                
         Program->font_color = Driver->glGetUniformLocation(Program->shaderProgram, "font_color"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
-        Program->smooth = Driver->glGetUniformLocation(Program->shaderProgram, "smooth"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
+        Program->smooth = Driver->glGetUniformLocation(Program->shaderProgram, "smooth_param"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
         Program->border = Driver->glGetUniformLocation(Program->shaderProgram, "border"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
 
         Driver->glUniformMatrix4fv(mat, 1, GL_FALSE, SDF_Mat);    CheckGLESError();
