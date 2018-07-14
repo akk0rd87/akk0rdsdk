@@ -532,8 +532,7 @@ public:
     SDFFontBuffer(SDFFont* Font, unsigned int DigitsCount, AkkordColor Color)
     {
         this->Clear();
-        sdfFont = Font;
-        DigitsCount;        
+        sdfFont = Font;        
         color = Color;
         Reserve(DigitsCount);
     }
