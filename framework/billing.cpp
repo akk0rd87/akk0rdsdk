@@ -42,6 +42,10 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseQueried(JNIEnv
 #include "core/ios/ios_billing.h"
 #endif
 
+////////////////////////////////////////
+//////  API
+////////////////////////////////////////
+
 bool BillingManager::Init()
 {
 #ifdef __ANDROID__
@@ -84,9 +88,6 @@ bool BillingManager::PurchaseProdItem(const char* ProductCode)
     return AndroidBillingManager::PurchaseProdItem(ProductCode);
 #endif
 
-#ifdef __APPLE__    
-    return iOSBillingManager::RestorePurchases();
-#endif 
     return false;
 }
 
@@ -96,8 +97,5 @@ bool BillingManager::ConsumeProductItem(const char* PurchaseToken)
     return AndroidBillingManager::ConsumeProductItem(PurchaseToken);
 #endif
 
-#ifdef __APPLE__    
-    return iOSBillingManager::RestorePurchases();
-#endif 
     return false;
 }
