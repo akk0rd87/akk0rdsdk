@@ -955,7 +955,7 @@ void BWrapper::Log(BWrapper::LogPriority Priority, const char* File, const char*
     }
 
     Format = Format + Fmt;
-    Format.insert(0, 8 - len, 32);
+    Format.insert(0, 8 - len, ' ');
 
     va_list ap;
     va_start(ap, Fmt);

@@ -6,6 +6,11 @@
 #include "basewrapper.h"
 #include "SDL_image.h"
 
+/*
+https://github.com/libgdx/libgdx/wiki/Hiero
+"java -cp gdx.jar;gdx-natives.jar;gdx-backend-lwjgl.jar;gdx-backend-lwjgl-natives.jar;extensions\gdx-freetype\gdx-freetype.jar;extensions\gdx-freetype\gdx-freetype-natives.jar;extensions\gdx-tools\gdx-tools.jar com.badlogic.gdx.tools.hiero.Hiero"
+*/
+
 // https://habrahabr.ru/post/282191/
 static inline unsigned int UTF2Unicode(const /*unsigned*/ char *txt, unsigned int &i){
     unsigned int a = txt[i++];
@@ -34,41 +39,61 @@ static inline unsigned int UTF2Unicode(const /*unsigned*/ char *txt, unsigned in
 static const GLchar* SDF_vertexSource =
 "varying lowp vec4 result_color; \n\
 varying mediump vec2 result_uv; \n\
-uniform lowp vec4 sdf_outline_color; \n\
-uniform mediump vec4 sdf_params; \n\
 uniform mediump mat4 mat; \n\
 uniform vec4 font_color; \n\
+uniform mediump float smooth_param; \n\
 attribute vec2 position; \n\
 attribute vec2 uv; \n\
+varying mediump float SmoothDistance; \n\
+varying mediump float center; \n\
+#ifdef SDF_OUTLINE \n\
+    uniform lowp vec4 sdf_outline_color; \n\
+    uniform mediump float border;\n\
+    varying lowp    vec4    outBorderCol; \n\
+    varying mediump float	outlineMaxValue0; \n\
+    varying mediump float	outlineMaxValue1; \n\
+#endif \n\
 void main()  \n\
 {\n\
     gl_Position = mat * vec4(position, 0.0, 1.0);  \n\
     result_color = font_color; \n\
     result_uv = uv; \n\
+    SmoothDistance = smooth_param; \n\
+#ifdef SDF_OUTLINE \n\
+    outBorderCol = sdf_outline_color; \n\
+    outlineMaxValue0 = 0.5 - border; \n\
+    outlineMaxValue1 = 0.5 + border; \n\
+    center = outlineMaxValue0 - border; \n\
+#else \n\
+    center = 0.5; \n\
+#endif \n\
 }\n";
 
 static const GLchar* SDF_fragmentSource =
 "varying lowp vec4 result_color; \n\
 varying mediump vec2 result_uv; \n\
 uniform lowp vec4 sdf_outline_color; \n\
-uniform mediump vec4 sdf_params; \n\
 uniform lowp sampler2D base_texture; \n\
-lowp vec4 get_base_sdf() \n\
-{\n\
-    lowp float tx = texture2D(base_texture, result_uv).r; \n\
-#ifdef SDF_OUTLINE \n\
-    lowp float b =   min((tx - sdf_params.z) * sdf_params.w, 1.0); \n\
-    lowp float a = clamp((tx - sdf_params.x) * sdf_params.y, 0.0, 1.0); \n\
-    lowp vec4 res = (sdf_outline_color + (result_color - sdf_outline_color)*a) * b; \n\
-#else \n\
-    lowp float a = min((tx - sdf_params.x) * sdf_params.y, 1.0); \n\
-    lowp vec4 res = result_color * a; \n\
-#endif \n\
-    return res;\n\
-} \n\
+varying mediump float SmoothDistance; \n\
+varying mediump float   outlineMaxValue0; \n\
+varying mediump float   outlineMaxValue1; \n\
+varying mediump float   center; \n\
+\n\
+varying lowp vec4       outBorderCol; \n\
+\n\
+mediump float my_smoothstep(lowp float edge0, lowp float edge1, lowp float x) { \n\
+x = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0); \n\
+return x * x * (3.0 - 2.0 * x); \n\
+}\n\
 void main() \n\
-{    \n\
-    gl_FragColor = get_base_sdf();\n\
+{  \n\
+    mediump float distAlpha = texture2D(base_texture, result_uv).a; \n\
+    lowp vec4 rgba = result_color; \n\
+#ifdef SDF_OUTLINE \n\
+    rgba.xyz = mix(rgba.xyz, outBorderCol.xyz, my_smoothstep(outlineMaxValue1, outlineMaxValue0, distAlpha)); \n\
+#endif \n\
+    rgba.a *= my_smoothstep(center - SmoothDistance, center + SmoothDistance, distAlpha); \n\
+    gl_FragColor = rgba; \n\
 }\n";
 
 static const GLfloat SDF_Mat[] =
@@ -89,36 +114,24 @@ enum {
 struct ShaderProgramStruct
 {
     GLuint shaderProgram;
-    GLint sdf_outline_color, sdf_params, font_color;
+    GLint sdf_outline_color, font_color, smooth, border;
 };
 
 class SDFProgram
 {
     bool Inited = false;
     ShaderProgramStruct ShaderProgram, ShaderProgramOutline;
-    GLuint vertexShader;
 
-    bool InitVertexShader() // Вершинный шейдер одинаковый Outline и withoutOutline программ
-    {
-        auto Driver = GLESDriver::GetInstance();
-
-        // Create and compile the vertex shader
-        vertexShader = Driver->glCreateShader(GL_VERTEX_SHADER); 
-        CheckGLESError();
-
-        PrintGLESShaderLog(vertexShader);
-
-        Driver->glShaderSource(vertexShader, 1, &SDF_vertexSource, NULL); CheckGLESError(); PrintGLESShaderLog(vertexShader);
-        Driver->glCompileShader(vertexShader); CheckGLESError(); PrintGLESShaderLog(vertexShader);
-
-        return true;
-    }
-
-    bool CompileProgram(ShaderProgramStruct* Program, const char* FragmentShader)
+    bool CompileProgram(ShaderProgramStruct* Program, const char* VertextShader, const char* FragmentShader)
     {
         GLint oldProgramId;
 
         auto Driver = GLESDriver::GetInstance();        
+
+        // Create and compile the fragment shader
+        GLuint vertexShader = Driver->glCreateShader(GL_VERTEX_SHADER); CheckGLESError(); PrintGLESShaderLog(vertexShader);
+        Driver->glShaderSource(vertexShader, 1, &VertextShader, NULL); CheckGLESError(); PrintGLESShaderLog(vertexShader);
+        Driver->glCompileShader(vertexShader); CheckGLESError(); PrintGLESShaderLog(vertexShader);
 
         // Create and compile the fragment shader
         GLuint fragmentShader = Driver->glCreateShader(GL_FRAGMENT_SHADER); CheckGLESError(); PrintGLESShaderLog(fragmentShader);
@@ -140,11 +153,10 @@ class SDFProgram
 
         auto mat = Driver->glGetUniformLocation(Program->shaderProgram, "mat"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
         auto base_texture = Driver->glGetUniformLocation(Program->shaderProgram, "base_texture"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
-        Program->sdf_outline_color = Driver->glGetUniformLocation(Program->shaderProgram, "sdf_outline_color"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
-        
-        //c = Vector4(offset, contrast, outlineOffset, contrast); // sdf_params
-        Program->sdf_params = Driver->glGetUniformLocation(Program->shaderProgram, "sdf_params"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
+        Program->sdf_outline_color = Driver->glGetUniformLocation(Program->shaderProgram, "sdf_outline_color"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);                
         Program->font_color = Driver->glGetUniformLocation(Program->shaderProgram, "font_color"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
+        Program->smooth = Driver->glGetUniformLocation(Program->shaderProgram, "smooth_param"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
+        Program->border = Driver->glGetUniformLocation(Program->shaderProgram, "border"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
 
         Driver->glUniformMatrix4fv(mat, 1, GL_FALSE, SDF_Mat);    CheckGLESError();
         Driver->glUniform1i(base_texture, 0);
@@ -165,12 +177,11 @@ public :
     {        
         logDebug("Inited = %d", (Inited == true ? 1 : 0));
         if (!Inited || 1)
-        {
-            if(InitVertexShader())  // Инициализируем общий вертексный шейдер
-                if (this->CompileProgram(&ShaderProgram, SDF_fragmentSource) && this->CompileProgram(&ShaderProgramOutline, (std::string("#define SDF_OUTLINE \n") + SDF_fragmentSource).c_str()))
-                {
-                    Inited = true;            
-                }                        
+        {   
+            if (this->CompileProgram(&ShaderProgram, SDF_vertexSource, SDF_fragmentSource) && this->CompileProgram(&ShaderProgramOutline, (std::string("#define SDF_OUTLINE \n") + SDF_vertexSource).c_str(), (std::string("#define SDF_OUTLINE \n") + SDF_fragmentSource).c_str()))
+            {
+                Inited = true;            
+            }                        
         };
         return Inited;
     };
@@ -210,13 +221,15 @@ class SDFFont
     GLuint texture;
 #endif
     SDL_Surface* fontAtlas = nullptr;
-    unsigned int ScaleW, ScaleH, LineHeight;
+    unsigned int ScaleW, ScaleH, LineHeight, Spread;
+    
 
     //std::vector<SDFCharInfo> CharsVector;
     std::map<unsigned, SDFCharInfo> CharsMap;
 
     bool ParseFNTFile(const char* FNTFile, BWrapper::FileSearchPriority SearchPriority)
     {
+        Spread = 2; // пока хардкодим
         /*        
         http://www.angelcode.com/products/bmfont/doc/file_format.html
         http://www.angelcode.com/products/bmfont/doc/export_options.html
@@ -339,15 +352,15 @@ public:
     unsigned int GetAtlasW(){ return ScaleW; }
     unsigned int GetAtlasH(){ return ScaleH; }
 
-    bool Load(const char* FileName, BWrapper::FileSearchPriority SearchPriority)
+    bool Load(const char* FileNameFNT, const char* FileNamePNG,  BWrapper::FileSearchPriority SearchPriority)
     {
-#ifndef __CODEBLOCKS
         this->Clear();
+#ifndef __CODEBLOCKS        
         sdfProgram.Init();
         auto Driver = GLESDriver::GetInstance();
         
         unsigned Size;
-        auto buffer = BWrapper::File2Buffer(FileName, SearchPriority, Size);
+        auto buffer = BWrapper::File2Buffer(FileNamePNG, SearchPriority, Size);
         auto io = SDL_RWFromMem(buffer, Size);        
         fontAtlas = IMG_LoadPNG_RW(io);
         BWrapper::CloseBuffer(buffer);
@@ -366,13 +379,11 @@ public:
 
         Driver->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fontAtlas->w, fontAtlas->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, fontAtlas->pixels); CheckGLESError();
 #endif
-        ParseFNTFile("sdf/font.fnt", BWrapper::FileSearchPriority::Assets);
-        //ParseFNTFile("sdf/HieroCalibri.fnt", BWrapper::FileSearchPriority::Assets);
-
+        ParseFNTFile(FileNameFNT, BWrapper::FileSearchPriority::Assets);
         return true;
     };
 
-    bool Draw(bool Outline, unsigned Count, AkkordColor& FontColor, AkkordColor& OutlineColor, float Offset, float Contrast, float OutlineOffset, float OutlineContrast, const float* UV, const float* squareVertices, unsigned short* Indices)
+    bool Draw(bool Outline, unsigned Count, AkkordColor& FontColor, AkkordColor& OutlineColor, float Offset, float Contrast, float OutlineOffset, float OutlineContrast, const float* UV, const float* squareVertices, unsigned short* Indices, float Scale, float Border)
     {
 #ifndef __CODEBLOCKS
         GLint oldProgramId;
@@ -391,13 +402,16 @@ public:
         Driver->glEnableVertexAttribArray(SDF_ATTRIB_UV); CheckGLESError();
         Driver->glVertexAttribPointer(SDF_ATTRIB_UV, 2, GL_FLOAT, 0, 0, UV); CheckGLESError();
 
-        Driver->glUniform4f(shaderProgram->font_color, float(FontColor.GetR()) / 255, float(FontColor.GetG()) / 255, float(FontColor.GetB()) / 255, 1.0f); CheckGLESError();
+        Driver->glUniform4f(shaderProgram->font_color, float(FontColor.GetR()) / 255, float(FontColor.GetG()) / 255, float(FontColor.GetB()) / 255, 1.0f); CheckGLESError();        
+        
+        float smoothness = std::min(0.3f, 0.25f / (float)Spread / Scale* 1.5f) * 850.0f / 255.f / 3.333f;
 
-        //c = Vector4(offset, contrast, outlineOffset, contrast); // sdf_params
-        Driver->glUniform4f(shaderProgram->sdf_params, Offset, Contrast, OutlineOffset, OutlineContrast); CheckGLESError();
-        //Driver->glUniform4f(shaderProgram->sdf_params, 0.5f, 10.0f, 0.4f, 10.0f); CheckGLESError();
+        //0.25f / (float)Spread / Scale*/*smoothfact*/1.5)*850.0f
 
-        if (Outline) 
+        Driver->glUniform1f(shaderProgram->smooth, smoothness);
+
+        if (Outline)
+        {
             if (shaderProgram->sdf_outline_color >= 0)
             {
                 Driver->glUniform4f(shaderProgram->sdf_outline_color, float(OutlineColor.GetR()) / 255, float(OutlineColor.GetG()) / 255, float(OutlineColor.GetB()) / 255, 1.0f); CheckGLESError();
@@ -406,6 +420,16 @@ public:
             {
                 logError("shaderProgram->sdf_outline_color error %d", shaderProgram->sdf_outline_color);
             }
+
+            if (shaderProgram->border >= 0)
+            {
+                Driver->glUniform1f(shaderProgram->border, Border / 6.666f); CheckGLESError();
+            }
+            else
+            {
+                logError("shaderProgram->border error %d", shaderProgram->border);
+            }
+        }
 
         Driver->glDrawElements(GL_TRIANGLES, Count, GL_UNSIGNED_SHORT, Indices); CheckGLESError();
 
@@ -430,7 +454,6 @@ public:
     };
 
     unsigned GetLineHeight() { return LineHeight; }
-
 };
 
 // Для рисования всегда указывать левую верхнюю точку (удобно для разгаданных слов в "составь слова")
@@ -439,6 +462,7 @@ class SDFFontBuffer
 {
     float scaleX = 1.0f;
     float scaleY = 1.0f;
+    float Border = 0.0f;
 
     SDFFont* sdfFont = nullptr;
     int rectW = -1, rectH = -1;
@@ -508,8 +532,7 @@ public:
     SDFFontBuffer(SDFFont* Font, unsigned int DigitsCount, AkkordColor Color)
     {
         this->Clear();
-        sdfFont = Font;
-        DigitsCount;        
+        sdfFont = Font;        
         color = Color;
         Reserve(DigitsCount);
     }
@@ -521,11 +544,10 @@ public:
     void SetColor(const AkkordColor Color) { color = Color; };
     void SetOutline(bool Outline){ outline = Outline; }
     void SetOutlineColor(const AkkordColor OutlineColor) { outlineColor = OutlineColor; };
+    void SetBorder(float BordeWidth){ this->Border = BordeWidth; }
 
     float GetScaleX(){ return scaleX; }
-    float GetScaleY(){ return scaleY; }
-
-    void SetSDFParams(float Offset, float Contrast, float OutlineOffset, float OutlineContrast) { offset = Offset; contrast = Contrast; outlineOffset = OutlineOffset; outlineContrast = OutlineContrast; };
+    float GetScaleY(){ return scaleY; }    
 
     void SetRect(int W, int H) { rectW = W; rectH = H; }
 
@@ -554,7 +576,7 @@ public:
     {        
         if (Indices.size() > 0)
         {
-            sdfFont->Draw(this->outline, Indices.size(), this->color, this->outlineColor, offset, contrast, outlineOffset, outlineContrast, &UV.front(), &squareVertices.front(), &Indices.front());
+            sdfFont->Draw(this->outline, Indices.size(), this->color, this->outlineColor, offset, contrast, outlineOffset, outlineContrast, &UV.front(), &squareVertices.front(), &Indices.front(), this->scaleX, this->Border);
         }
         Clear();
     };    
@@ -648,15 +670,15 @@ public:
 
                 x_current = x_current + scaleX * charParams.xoffset;
 
-                UV.push_back(float(charParams.x) / atlasW); UV.push_back(float(charParams.y + charParams.h) / atlasH);
-                UV.push_back(float(charParams.x + charParams.w) / atlasW); UV.push_back(float(charParams.y + charParams.h) / atlasH);
-                UV.push_back(float(charParams.x) / atlasW); UV.push_back(float(charParams.y) / atlasH);
-                UV.push_back(float(charParams.x + charParams.w) / atlasW); UV.push_back(float(charParams.y) / atlasH);
+                UV.push_back(float(charParams.x) / atlasW);                    UV.push_back(float(charParams.y + charParams.h - 1) / atlasH);
+                UV.push_back(float(charParams.x + charParams.w - 1) / atlasW); UV.push_back(float(charParams.y + charParams.h - 1) / atlasH);
+                UV.push_back(float(charParams.x) / atlasW);                    UV.push_back(float(charParams.y) / atlasH);
+                UV.push_back(float(charParams.x + charParams.w - 1) / atlasW); UV.push_back(float(charParams.y) / atlasH);
 
-                squareVertices.push_back(2 * (float)(x_current / ScrenW) - 1.0f);                                squareVertices.push_back(2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f);
-                squareVertices.push_back(2 * (float)(x_current + (float)scaleX * charParams.w) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f);
-                squareVertices.push_back(2 * (float)(x_current / ScrenW) - 1.0f);                                squareVertices.push_back(2 * (ScrenH - Y - scaleY * charParams.yoffset) / ScrenH - 1.0f);
-                squareVertices.push_back(2 * (float)(x_current + (float)scaleX * charParams.w) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - Y - scaleY * charParams.yoffset) / ScrenH - 1.0f);
+                squareVertices.push_back(2 * (float)(x_current / ScrenW) - 1.0f);                                      squareVertices.push_back(2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f);
+                squareVertices.push_back(2 * (float)(x_current + (float)scaleX * (charParams.w - 1)) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f);
+                squareVertices.push_back(2 * (float)(x_current / ScrenW) - 1.0f);                                      squareVertices.push_back(2 * (ScrenH - Y - scaleY * charParams.yoffset) / ScrenH - 1.0f);
+                squareVertices.push_back(2 * (float)(x_current + (float)scaleX * (charParams.w - 1)) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - Y - scaleY * charParams.yoffset) / ScrenH - 1.0f);
 
                 Indices.push_back(PointsCnt + 0); Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2);
                 Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2); Indices.push_back(PointsCnt + 3);
