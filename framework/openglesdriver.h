@@ -34,7 +34,6 @@ SDL_PROC(void, glTexParameteri, (GLenum, GLenum, GLint)) \
 SDL_PROC(void, glTexImage2D, (GLenum, GLint, GLint, GLsizei, GLsizei, GLint, GLenum, GLenum, const void *)) \
 SDL_PROC(void, glEnableVertexAttribArray, (GLuint)) \
 SDL_PROC(void, glVertexAttribPointer, (GLuint, GLint, GLenum, GLboolean, GLsizei, const void *)) \
-SDL_PROC(void, glUniform1f, (GLint, GLfloat)) \
 SDL_PROC(void, glUniform4f, (GLint, GLfloat, GLfloat, GLfloat, GLfloat)) \
 SDL_PROC(void, glDisableVertexAttribArray, (GLuint)) \
 SDL_PROC(GLenum, glGetError, (void)) \
