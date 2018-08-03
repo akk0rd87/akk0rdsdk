@@ -115,6 +115,7 @@ public class Utils {
             public void run() {              
                  AlertDialog.Builder builder;
                  //android.os.Build.VERSION.SDK_INT
+				 // https://developer.android.com/reference/android/app/AlertDialog
                     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
                         builder = new AlertDialog.Builder(_context, android.R.style.Theme_Material_Dialog_Alert);
                     } else {
