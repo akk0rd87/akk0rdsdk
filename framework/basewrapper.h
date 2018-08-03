@@ -277,97 +277,94 @@ public:
 };
 
 
-//class MessageBox
-//{
-//private:
-//    struct MessageBoxColor{ unsigned char r, g, b; };
-//    MessageBoxColor BackGround, Text, ButtonBorder, ButtonBackGround, ButtonSelected;
-//    AkkordWindow* ParentWindow = nullptr;
-//public:
-//    enum struct Priority  /*withouttype*/ { Info = SDL_MESSAGEBOX_INFORMATION, Warning = SDL_MESSAGEBOX_WARNING, Error = SDL_MESSAGEBOX_ERROR };
-//private:
-//    MessageBox::Priority MessageBoxPriority;
-//public:
-//
-//    void SetBackGroundColor(unsigned char R, unsigned char G, unsigned char B) { BackGround.r = R; BackGround.g = G; BackGround.b = B; };
-//    void SetTextColor(unsigned char R, unsigned char G, unsigned char B) { ButtonBorder.r = R; ButtonBorder.g = G; ButtonBorder.b = B; };
-//    void SetButtonBorderColor(unsigned char R, unsigned char G, unsigned char B) { ButtonBorder.r = R; ButtonBorder.g = G; ButtonBorder.b = B; };
-//    void SetButtonBackGroundColor(unsigned char R, unsigned char G, unsigned char B) { ButtonBackGround.r = R; ButtonBackGround.g = G; ButtonBackGround.b = B; };
-//    void SetButtonSelectedColor(unsigned char R, unsigned char G, unsigned char B) { ButtonSelected.r = R; ButtonSelected.g = G; ButtonSelected.b = B; };
-//    void SetParentWindow(AkkordWindow* ParentWindow){ this->ParentWindow = ParentWindow; }
-//
-//    void SetPriority(MessageBox::Priority Priority){ MessageBoxPriority = Priority; };
-//
-//    int Show(const char* Title, const char* Message, const char* Button0, const char* Button1 = nullptr, const char* Button2 = nullptr)
-//    {
-//        const SDL_MessageBoxColorScheme SDLColorScheme =
-//        {
-//            { /* .colors (.r, .g, .b) */
-//                /* [SDL_MESSAGEBOX_COLOR_BACKGROUND] */
-//                { BackGround.r, BackGround.g, BackGround.b },
-//                /* [SDL_MESSAGEBOX_COLOR_TEXT] */
-//                { Text.r, Text.g, Text.b },
-//                /* [SDL_MESSAGEBOX_COLOR_BUTTON_BORDER] */
-//                { ButtonBorder.r, ButtonBorder.g, ButtonBorder.b },
-//                /* [SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND] */
-//                { ButtonBackGround.r, ButtonBackGround.g, ButtonBackGround.b },
-//                /* [SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED] */
-//                { ButtonSelected.r, ButtonSelected.g, ButtonSelected.b }
-//            }
-//        };
-//
-//        SDL_MessageBoxButtonData Buttons[3];
-//
-//        int Count = 1 + (Button1 ? 1 : 0) + (Button2 ? 1 : 0);
-//        int ButtonCnt = 0;
-//
-//        if (Button2)
-//        {
-//            Buttons[ButtonCnt].text = Button2;
-//            Buttons[ButtonCnt].flags = 0; //= SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
-//            Buttons[ButtonCnt].buttonid = Count - ButtonCnt - 1;
-//            ++ButtonCnt;
-//        }
-//
-//        if (Button1)
-//        {
-//            Buttons[ButtonCnt].text = Button1;
-//            Buttons[ButtonCnt].flags = 0; //= SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
-//            Buttons[ButtonCnt].buttonid = Count - ButtonCnt - 1;
-//            ++ButtonCnt;
-//        }
-//
-//        Buttons[ButtonCnt].text = Button0;
-//        Buttons[ButtonCnt].flags = 0;
-//        Buttons[ButtonCnt].buttonid = Count - ButtonCnt - 1;
-//        ++ButtonCnt;
-//
-//        const SDL_MessageBoxData messageboxdata = {
-//            (SDL_MessageBoxFlags)MessageBoxPriority, /* .flags */
-//            ParentWindow, /* .window */
-//            Title, /* .title */
-//            Message, /* .message */
-//            ButtonCnt, /*SDL_arraysize(buttons),*/ /* .numbuttons */
-//            Buttons, /* .buttons */
-//            &SDLColorScheme /* .colorScheme */
-//        };
-//
-//        int buttonid;
-//
-//        if (SDL_ShowMessageBox(&messageboxdata, &buttonid) < 0)
-//        {
-//            logError("MessageBox show error");
-//            return -2;
-//        }
-//
-//        if (buttonid == -1) {
-//            logVerbose("No selection");
-//            return -1;
-//        }
-//
-//        return buttonid;
-//    };
-//};
+class MessageBox
+{
+private:
+    struct MessageBoxColor{ unsigned char r, g, b; };
+    MessageBoxColor BackGround, Text, ButtonBorder, ButtonBackGround, ButtonSelected;
+    AkkordWindow* ParentWindow = nullptr;
+public:
+    enum struct Priority  /*withouttype*/ { Info = SDL_MESSAGEBOX_INFORMATION, Warning = SDL_MESSAGEBOX_WARNING, Error = SDL_MESSAGEBOX_ERROR };
+private:    
+public:
+
+    void SetBackGroundColor(unsigned char R, unsigned char G, unsigned char B) { BackGround.r = R; BackGround.g = G; BackGround.b = B; };
+    void SetTextColor(unsigned char R, unsigned char G, unsigned char B) { ButtonBorder.r = R; ButtonBorder.g = G; ButtonBorder.b = B; };
+    void SetButtonBorderColor(unsigned char R, unsigned char G, unsigned char B) { ButtonBorder.r = R; ButtonBorder.g = G; ButtonBorder.b = B; };
+    void SetButtonBackGroundColor(unsigned char R, unsigned char G, unsigned char B) { ButtonBackGround.r = R; ButtonBackGround.g = G; ButtonBackGround.b = B; };
+    void SetButtonSelectedColor(unsigned char R, unsigned char G, unsigned char B) { ButtonSelected.r = R; ButtonSelected.g = G; ButtonSelected.b = B; };
+    void SetParentWindow(AkkordWindow* ParentWindow){ this->ParentWindow = ParentWindow; }
+
+	int Show(MessageBox::Priority MessageBoxPriority, const char* Title, const char* Message, const char* Button0, const char* Button1 = nullptr, const char* Button2 = nullptr)
+    {
+        const SDL_MessageBoxColorScheme SDLColorScheme =
+        {
+            { /* .colors (.r, .g, .b) */
+                /* [SDL_MESSAGEBOX_COLOR_BACKGROUND] */
+                { BackGround.r, BackGround.g, BackGround.b },
+                /* [SDL_MESSAGEBOX_COLOR_TEXT] */
+                { Text.r, Text.g, Text.b },
+                /* [SDL_MESSAGEBOX_COLOR_BUTTON_BORDER] */
+                { ButtonBorder.r, ButtonBorder.g, ButtonBorder.b },
+                /* [SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND] */
+                { ButtonBackGround.r, ButtonBackGround.g, ButtonBackGround.b },
+                /* [SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED] */
+                { ButtonSelected.r, ButtonSelected.g, ButtonSelected.b }
+            }
+        };
+
+        SDL_MessageBoxButtonData Buttons[3];
+
+        int Count = 1 + (Button1 ? 1 : 0) + (Button2 ? 1 : 0);
+        int ButtonCnt = 0;
+
+        if (Button2)
+        {
+            Buttons[ButtonCnt].text = Button2;
+            Buttons[ButtonCnt].flags = 0; //SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
+            Buttons[ButtonCnt].buttonid = Count - ButtonCnt - 1;
+            ++ButtonCnt;
+        }
+
+        if (Button1)
+        {
+            Buttons[ButtonCnt].text = Button1;
+            Buttons[ButtonCnt].flags = 0; //= SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
+            Buttons[ButtonCnt].buttonid = Count - ButtonCnt - 1;
+            ++ButtonCnt;
+        }
+
+        Buttons[ButtonCnt].text = Button0;
+        Buttons[ButtonCnt].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
+        Buttons[ButtonCnt].buttonid = Count - ButtonCnt - 1;
+        ++ButtonCnt;
+
+        const SDL_MessageBoxData messageboxdata = {
+            (SDL_MessageBoxFlags)MessageBoxPriority, /* .flags */
+            ParentWindow, /* .window */
+            Title, /* .title */
+            Message, /* .message */
+            ButtonCnt, /*SDL_arraysize(buttons),*/ /* .numbuttons */
+            Buttons, /* .buttons */
+            &SDLColorScheme /* .colorScheme */
+        };
+
+        int buttonid;
+
+        if (SDL_ShowMessageBox(&messageboxdata, &buttonid) < 0)
+        {
+            logError("MessageBox show error");
+            return -2;
+        }
+
+        if (buttonid == -1) {
+            logVerbose("No selection");
+            return -1;
+        }
+
+        return buttonid;
+    };
+};
 
 #include "customevents.h"
 
