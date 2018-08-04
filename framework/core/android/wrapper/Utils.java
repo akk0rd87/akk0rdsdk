@@ -102,7 +102,7 @@ public class Utils {
     public static void openURL(String url) {
         //Intent browseIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         //_context.startActivity(browseIntent);
-        showMessageBox("My Lovely Title", "My Custom Message", "OK. That's right", "Maybe Cancel", "");
+        showMessageBox("My Lovely Title", "My Custom Message", "OK. That's right", "Maybe Cancel", "Hello world");
     }
 
     public static int showMessageBox(String Title, String Message, String Button1, String Button2, String Button3)
@@ -117,13 +117,11 @@ public class Utils {
             // https://stackoverflow.com/questions/5853167/runnable-with-a-parameter
             OneShotTask(String Title, String Message, String Button1, String Button2, String Button3)
             {
-                Log.v(TAG, "OneShotTask constructor start()");
                 msgTitle   = Title;
                 msgMessage = Message;
                 msgButton1 = Button1;
                 msgButton2 = Button2;
                 msgButton3 = Button3;
-                Log.v(TAG, "OneShotTask constructor finish");
             }
             public void run() {
                 AlertDialog.Builder builder;
@@ -137,29 +135,30 @@ public class Utils {
                         .setMessage(msgMessage)
                         .setPositiveButton(msgButton1, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
-                                // continue with delete
+                                Log.v(TAG, "PositiveButton click");
                             }
                         });
 
-                builder.setIcon(android.R.drawable.ic_dialog_alert);
+                //builder.setIcon(android.R.drawable.ic_dialog_alert);
+				builder.setIconAttribute(android.R.attr.alertDialogIcon);
 
                 if(msgButton3.isEmpty()) {
                     builder.setNegativeButton(msgButton2, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
-                            // do nothing
+                            Log.v(TAG, "NegativeButton click");
                         }
                     });
                 }
                 else {
                     builder.setNeutralButton(msgButton2, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
-                            // do nothing
+                            Log.v(TAG, "NeutralButton click");
                         }
                     });
 
                     builder.setNegativeButton(msgButton3, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
-                            // do nothing
+                            Log.v(TAG, "NegativeButton click");
                         }
                     });
                 }
