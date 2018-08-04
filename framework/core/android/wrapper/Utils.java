@@ -106,56 +106,64 @@ public class Utils {
 //    }
 
     public static void openURL(String url) {
-        Log.v(TAG, "openURL 1");
-        //AkkordCallback("Hello world");
-        Log.v(TAG, "openURL 2");
         //Intent browseIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         //_context.startActivity(browseIntent);
-        _context.runOnUiThread(new Runnable() {
-            public void run() {              
-                 AlertDialog.Builder builder;
-                 //android.os.Build.VERSION.SDK_INT
-				 // https://developer.android.com/reference/android/app/AlertDialog
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-                        builder = new AlertDialog.Builder(_context, android.R.style.Theme_Material_Dialog_Alert);
-                    } else {
-                        builder = new AlertDialog.Builder(_context);
-                    }
-                    builder.setTitle("Delete entry")
-                    .setMessage("Are you sure you want to delete this entry?")
-                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) { 
-                            // continue with delete
-                        }
-                     })
-                    .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) { 
-                            // do nothing
-                        }
-                     })
-                    .setIcon(android.R.drawable.ic_dialog_alert)
-                    .show();
+        showMessageBox("My Lovely Title", "My Custom Message", "OK. That's right", "Maybe Cancel", "No, Sorry");
+    }
+
+    public static int showMessageBox(String Title, String Message, String Button1, String Button2, String Button3)
+    {
+        class OneShotTask implements Runnable {
+            String msgTitle;
+            String msgMessage;
+            String msgButton1;
+            String msgButton2;
+            String msgButton3;
+
+            // https://stackoverflow.com/questions/5853167/runnable-with-a-parameter
+            OneShotTask(String Title, String Message, String Button1, String Button2, String Button3)
+            {
+                Log.v(TAG, "OneShotTask constructor start()");
+                msgTitle   = Title;
+				msgMessage = Message;
+				msgButton1 = Button1;
+				msgButton2 = Button2;
+				msgButton3 = Button3;
+                Log.v(TAG, "OneShotTask constructor finish");
             }
-        });             
-        
-        /*
-        Log.v(TAG, "00001");
-        AlertDialog alertDialog = new AlertDialog.Builder(_context).create();
-        Log.v(TAG, "00002");
-        alertDialog.setTitle("Alert");
-        Log.v(TAG, "00003");
-        alertDialog.setMessage("Alert message to be shown");
-        Log.v(TAG, "00004");
-        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",        
-            new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
+            public void run() {
+                AlertDialog.Builder builder;
+                //android.os.Build.VERSION.SDK_INT
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                    builder = new AlertDialog.Builder(_context, android.R.style.Theme_Material_Dialog_Alert);
+                } else {
+                    builder = new AlertDialog.Builder(_context);
                 }
-            });
-        Log.v(TAG, "00005");
-        alertDialog.show(); 
-        Log.v(TAG, "00006");
-        */
+                builder.setTitle(msgTitle)
+                        .setMessage(msgMessage)
+                        .setPositiveButton(msgButton1, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // continue with delete
+                            }
+                        });
+
+                builder.setIcon(android.R.drawable.ic_dialog_alert);
+
+                builder.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                    }
+                });
+
+                builder.show();
+            }
+        }
+
+        Log.v(TAG, "before Thread create");
+        _context.runOnUiThread(new OneShotTask(Title, Message, Button1, Button2, Button3));
+        Log.v(TAG, "after Thread create");
+
+        return -1;
     }
     
     public static void showToast(String Msg, int Duration, int Gravity, int xOffset, int yOffset){
