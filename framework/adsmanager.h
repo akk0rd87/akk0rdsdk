@@ -70,8 +70,9 @@ class adsManager
 		if (currentAdmobUnit != searchUnit)
 		{
 			currentAdmobUnit = searchUnit;
-			logDebug("set adUnit = %s", AdMobUnits[currentAdmobUnit].Id.c_str());
+			logDebug("set adUnit before = %s", AdMobUnits[currentAdmobUnit].Id.c_str());
 			AdMob::InterstitialSetUnitId(AdMobUnits[currentAdmobUnit].Id.c_str());
+			logDebug("set adUnit after = %s", AdMobUnits[currentAdmobUnit].Id.c_str());
 		}
 	};
 
