@@ -4,7 +4,7 @@
 #include "admob.h"
 
 class adsManager
-{
+{	
 	// структура данных, которая хранит id блока и время, когда на него переключаться
 	struct AdMobUnit
 	{
@@ -12,15 +12,17 @@ class adsManager
 		Uint32      TimePriority; // время, когда на него переключаться
 		AdMobUnit(const std::string& Id, Uint32 TimePriority) :Id(Id), TimePriority(TimePriority){}
 	};
+
+	//using s_type = 
 	
 	// список AdUnit-ов
-	static std::vector<AdMobUnit> AdMobUnits;
+	std::vector<AdMobUnit> AdMobUnits;
 	
-	Uint32                      ShowDelay        = 3 * 60; // 3 минуты  секундах
-	Uint32                      LoadDelay        = 3;      // 3 секунды
-	Uint32                      LastShowed       = 0;
-	Uint32                      AdMobLastLoad    = 0;
-	decltype(AdMobUnits.size()) currentAdmobUnit = std::numeric_limits<decltype(AdMobUnits.size())>::max();
+	Uint32                            ShowDelay        = 3 * 60; // 3 минуты  секундах
+	Uint32                            LoadDelay        = 3;      // 3 секунды
+	Uint32                            LastShowed       = 0;
+	Uint32                            AdMobLastLoad    = 0;
+	std::vector<AdMobUnit>::size_type currentAdmobUnit = std::numeric_limits<std::vector<AdMobUnit>::size_type>::max();
 
 	// время в секундах с момента старта
 	Uint32 GetSeconds()
@@ -40,7 +42,7 @@ class adsManager
 		auto CurrentTm = GetSeconds();
 		auto NextTm    = GetInterstitialNextShowTime();
 
-		decltype(AdMobUnits.size()) searchUnit = std::numeric_limits<decltype(AdMobUnits.size())>::max();
+		decltype(AdMobUnits.size()) searchUnit = std::numeric_limits<std::vector<AdMobUnit>::size_type>::max();
 
 		// Если новое время еще наступило
 		if (NextTm > CurrentTm)
@@ -68,7 +70,8 @@ class adsManager
 		if (currentAdmobUnit != searchUnit)
 		{
 			currentAdmobUnit = searchUnit;
-			AdMob::InterstitialSetUnitId(AdMobUnits[0].Id.c_str());
+			logDebug("set adUnit = %s", AdMobUnits[currentAdmobUnit].Id.c_str());
+			AdMob::InterstitialSetUnitId(AdMobUnits[currentAdmobUnit].Id.c_str());
 		}
 	};
 
@@ -89,17 +92,36 @@ public:
 		AdMobUnits.emplace_back(AdMobUnit(Id, TimePriority));
 	}
 
-	void AddMobInterstitialLoad()
+	bool InterstitialLoad()
 	{
-		auto NewTm = GetSeconds(); // время в секундах
-
-		if (NewTm - AdMobLastLoad > LoadDelay || 0 == AdMobLastLoad)
-			if (AdMob::InterstitialGetStatus() == AdMob::InterstitialStatus::Inited)
+		if (AdMob::InterstitialGetStatus() == AdMob::InterstitialStatus::Inited)
+		{
+			auto NewTm = GetSeconds(); // время в секундах
+			if (NewTm - AdMobLastLoad > LoadDelay || 0 == AdMobLastLoad)
 			{
-				ChooseAdmobAdBlock();				
+				ChooseAdmobAdBlock();
 				AdMob::InterstitialLoad();
 				AdMobLastLoad = NewTm;
+				return true;
+			}; 
+		};
+
+		return false;
+	};
+
+	bool InterstitialShow()
+	{
+		if (AdMob::InterstitialGetStatus() == AdMob::InterstitialStatus::Loaded)
+		{
+			auto NewTm = GetSeconds(); // время в секундах
+			if (NewTm <= GetInterstitialNextShowTime())
+			{
+				LastShowed = NewTm;
+				AdMob::InterstitialShow();
+				return true;
 			}
+		};
+		return false;
 	};
 };
 
