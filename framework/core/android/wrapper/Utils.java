@@ -108,7 +108,7 @@ public class Utils {
     public static void openURL(String url) {
         //Intent browseIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         //_context.startActivity(browseIntent);
-        showMessageBox("My Lovely Title", "My Custom Message", "OK. That's right", "Maybe Cancel", "No, Sorry");
+        showMessageBox("My Lovely Title", "My Custom Message", "OK. That's right", "Maybe Cancel", "");
     }
 
     public static int showMessageBox(String Title, String Message, String Button1, String Button2, String Button3)
@@ -149,11 +149,26 @@ public class Utils {
 
                 builder.setIcon(android.R.drawable.ic_dialog_alert);
 
-                builder.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        // do nothing
-                    }
-                });
+                if(msgButton3.isEmpty()) {
+                    builder.setNegativeButton(msgButton2, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            // do nothing
+                        }
+                    });
+                }
+                else {
+                    builder.setNeutralButton(msgButton2, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            // do nothing
+                        }
+                    });
+
+                    builder.setNegativeButton(msgButton3, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            // do nothing
+                        }
+                    });
+                }
 
                 builder.show();
             }
