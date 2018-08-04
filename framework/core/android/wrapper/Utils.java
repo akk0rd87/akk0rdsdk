@@ -30,13 +30,7 @@ public class Utils {
     private static  Activity _context;
     private static  AssetManager AssetMgr;
     //private static Context context;
-    
-    private static String ToastMessage;
-    private static int    ToastLength;
-    private static int    ToastGravity;
-    private static int    ToastxOffset;
-    private static int    ToastyOffset;
-    
+
     public static native void AkkordCallback(String str);
 
     public static void Init(Activity ActivityContext){
@@ -125,10 +119,10 @@ public class Utils {
             {
                 Log.v(TAG, "OneShotTask constructor start()");
                 msgTitle   = Title;
-				msgMessage = Message;
-				msgButton1 = Button1;
-				msgButton2 = Button2;
-				msgButton3 = Button3;
+                msgMessage = Message;
+                msgButton1 = Button1;
+                msgButton2 = Button2;
+                msgButton3 = Button3;
                 Log.v(TAG, "OneShotTask constructor finish");
             }
             public void run() {
@@ -173,37 +167,32 @@ public class Utils {
                 builder.show();
             }
         }
-
-        Log.v(TAG, "before Thread create");
         _context.runOnUiThread(new OneShotTask(Title, Message, Button1, Button2, Button3));
-        Log.v(TAG, "after Thread create");
-
         return -1;
     }
     
     public static void showToast(String Msg, int Duration, int Gravity, int xOffset, int yOffset){
-        //Log.v(TAG, "showToast() before: " + Msg + " Duration " + Duration);
-        
-        ToastMessage = Msg;
-        ToastLength  = Duration;
-        ToastGravity = Gravity;
-        ToastxOffset = xOffset;
-        ToastyOffset = yOffset;        
-
-        _context.runOnUiThread(new Runnable() {
-            public void run() {                
-                if(ToastLength >= 0)
-                {
-                    Toast toast = Toast.makeText(_context, ToastMessage, ToastLength);
-                    if(ToastGravity >= 0) toast.setGravity(ToastGravity, ToastxOffset, ToastyOffset);                    
-                    toast.show();
-                }
-                
-                ToastLength  = -1;
-                ToastMessage = null;
+        class OneShotTask implements Runnable {
+            String toastMsg;
+            int    toastDuration;
+            int    toastGravity;
+            int    toastxOffset;
+            int    toastyOffset;
+            OneShotTask(String Msg, int Duration, int Gravity, int xOffset, int yOffset)
+            {
+                toastMsg      = Msg;
+                toastDuration = Duration;
+                toastGravity  = Gravity;
+                toastxOffset  = xOffset;
+                toastyOffset  = yOffset;
             }
-        });        
-        
+            public void run() {
+                Toast toast = Toast.makeText(_context, toastMsg, toastDuration);
+                if(toastGravity >= 0) toast.setGravity(toastGravity, toastxOffset, toastyOffset);
+                toast.show();
+            }
+        }
+        _context.runOnUiThread(new OneShotTask(Msg, Duration, Gravity, xOffset, yOffset));
     }
     
     public static int GetApiLevel()
