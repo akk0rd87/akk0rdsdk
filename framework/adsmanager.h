@@ -103,7 +103,7 @@ public:
 	{
 		if (AdMob::InterstitialGetStatus() == AdMob::InterstitialStatus::Inited)
 		{
-			logDebug("Timing current = %u, LastLoad = %u", GetSeconds(), AdMobLastLoad);
+			//logDebug("Timing current = %u, LastLoad = %u", GetSeconds(), AdMobLastLoad);
 			auto NewTm = GetSeconds(); // время в секундах
 			if (NewTm - AdMobLastLoad > LoadDelay || 0 == AdMobLastLoad)
 			{
