@@ -67,16 +67,22 @@ class adsManager
 			searchUnit = 0;
 		}
 
+		logDebug("(currentAdmobUnit = %u; searchUnit = %u", currentAdmobUnit, searchUnit);
 		if (currentAdmobUnit != searchUnit)
 		{
-			currentAdmobUnit = searchUnit;
-			logDebug("set adUnit before = %s", AdMobUnits[currentAdmobUnit].Id.c_str());
-			AdMob::InterstitialSetUnitId(AdMobUnits[currentAdmobUnit].Id.c_str());
-			logDebug("set adUnit after = %s", AdMobUnits[currentAdmobUnit].Id.c_str());
+			currentAdmobUnit = searchUnit;			
+			logDebug("set adUnit = %s",  AdMobUnits[currentAdmobUnit].Id.c_str());
+		    AdMob::InterstitialSetUnitId(AdMobUnits[currentAdmobUnit].Id.c_str());			
 		}
 	};
 
 public:
+	
+	void Init()
+	{
+		AdMobUnits.clear();
+		currentAdmobUnit = std::numeric_limits<std::vector<AdMobUnit>::size_type>::max();
+	}
 	
 	void SetIntersitialShowDelay(Uint32 DelaySeconds)
 	{
@@ -124,6 +130,12 @@ public:
 		};
 		return false;
 	};
+
+	void ShowAdUnits()
+	{
+		for (auto &v : AdMobUnits)
+			logDebug("Ad Unit %s %u", v.Id.c_str(), v.TimePriority);
+	}
 };
 
 #endif // __AKK0RD_ADS_H__
