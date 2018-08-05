@@ -121,8 +121,9 @@ public:
 	{
 		if (AdMob::InterstitialGetStatus() == AdMob::InterstitialStatus::Loaded)
 		{
+			logDebug("NewTm = %u, NextShowTime = %u", GetSeconds(), GetInterstitialNextShowTime());
 			auto NewTm = GetSeconds(); // время в секундах
-			if (NewTm <= GetInterstitialNextShowTime())
+			if (NewTm >= GetInterstitialNextShowTime())
 			{
 				LastShowed = NewTm;
 				AdMob::InterstitialShow();
