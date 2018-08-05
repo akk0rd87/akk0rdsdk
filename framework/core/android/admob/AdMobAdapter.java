@@ -141,9 +141,18 @@ public class AdMobAdapter {
     
     public static void InterstitialSetUnitId(String ID)
     {
-        //Log.v(TAG, "InterstitialSetUnitId start");
-        mInterstitialAd.setAdUnitId(ID);
-        //Log.v(TAG, "InterstitialSetUnitId finish");
+        try
+		{
+		    Log.v(TAG, "InterstitialSetUnitId start");
+            mInterstitialAd.setAdUnitId(ID);
+            Log.v(TAG, "InterstitialSetUnitId finish");
+		}
+		
+        catch(Exception e) 
+        {
+            System.err.println(e.getMessage());  
+            Log.v(TAG, e.getMessage());            
+        }
     }
     
     public static String InterstitialGetUnitId()

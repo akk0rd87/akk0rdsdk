@@ -50,23 +50,27 @@ bool AdMob_ProcessInterstitialAdEvent(AdEvent* Event)
     switch (EventType)
     {
         case AdMob::InterstitialEvent::Closed:
-        case AdMob::InterstitialEvent::Failed:
-        case AdMob::InterstitialEvent::LeftApplication:
+        case AdMob::InterstitialEvent::Failed:			
+        case AdMob::InterstitialEvent::LeftApplication:		
             AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::Inited);
+			logDebug("Interstitial Inited");
             return true;
 
         case AdMob::InterstitialEvent::Loaded:
             AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::Loaded);
+			logDebug("Interstitial Loaded");
             return true;
             break;
 
         case AdMob::InterstitialEvent::Opened:
             AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::Opened);
+			logDebug("Interstitial Opened");
             return true;
             break;
 
         default:
-            return false;
+			logDebug("Interstitial Something else");
+			return false;
             break;
     }
     return false;
