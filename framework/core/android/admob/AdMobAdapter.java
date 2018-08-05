@@ -29,6 +29,7 @@ public class AdMobAdapter {
     private static final int EVENT_REWARDEDVIDEO_LEFTAPPLICATION = 105;
     private static final int EVENT_REWARDEDVIDEO_STARTED         = 106;
     private static final int EVENT_REWARDEDVIDEO_REWARDED        = 107;
+    private static final int EVENT_REWARDEDVIDEO_COMPLETED       = 108;
     
     private static final int AD_INTERSTITIAL       = 1;
     private static final int AD_REWARDEDVIDEO      = 2;
@@ -46,7 +47,7 @@ public class AdMobAdapter {
         MobileAds.initialize(Utils.GetContext(), PublisherID);
     }
     
-    public static void InterstitialInit()
+    private static void InterstitialReCreate()
     {                
         mInterstitialAd = new InterstitialAd(Utils.GetContext());        
         mInterstitialAd.setAdListener(new AdListener() {
@@ -91,7 +92,12 @@ public class AdMobAdapter {
         
         Log.v(TAG, "InterstitialInit finish");
     }
-    
+
+    public static void InterstitialInit()
+    {
+
+    }
+
     public static void RewardedVideoInit()
     {   
         Activity ctx = Utils.GetContext();
@@ -131,9 +137,14 @@ public class AdMobAdapter {
                     }
                     
                     @Override
-                    public void onRewardedVideoAdFailedToLoad(int i) {            
-                        AdCallback(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_FAILED, i);
-                    }        
+                    public void onRewardedVideoAdFailedToLoad(int errorCode) {
+                        AdCallback(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_FAILED, errorCode);
+                    }
+
+                    @Override
+                    public void onRewardedVideoCompleted() {
+                        AdCallback(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_COMPLETED, 0);
+                    }
                 });
            }
         });       
@@ -144,6 +155,7 @@ public class AdMobAdapter {
         try
 		{
 		    Log.v(TAG, "InterstitialSetUnitId start");
+            InterstitialReCreate();
             mInterstitialAd.setAdUnitId(ID);
             Log.v(TAG, "InterstitialSetUnitId finish");
 		}
