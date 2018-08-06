@@ -44,6 +44,8 @@ public:
     
     static bool              ShowToast            (const char* Message, BWrapper::AndroidToastDuration Duration, int Gravity, int xOffset, int yOffset);
     static bool              GetDirContent        (const char* Dir, DirContentElementArray& ArrayList);
+	
+	static void              MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3);
 };
 
 jclass AndroidWrapper::FindAkkordClassUtils(JNIEnv *env)
@@ -355,5 +357,10 @@ void AndroidWrapper::GetInternalDirs(std::string& InternalDir, std::string& Inte
     if(InternalDir[InternalDir.length() - 1] != '/')
         InternalDir = InternalDir + "/";    
 }
+
+void AndroidWrapper::MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3)
+{
+	
+};
 
 #endif // __AKK0RD_ANDROID_BASEWRAPPER_H__

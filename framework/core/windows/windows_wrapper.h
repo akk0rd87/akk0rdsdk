@@ -21,6 +21,7 @@ class WindowsWrapper
     //static bool             DirRename       (const char* Old, const char* New);
 
     static bool             GetDirContent  (const char* Dir, DirContentElementArray& ArrayList);
+	static void             MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3);
 };
 
 
@@ -150,6 +151,56 @@ bool WindowsWrapper::DirRemove(const char* Dir)
 
     return false;
 }
+
+void WindowsWrapper::MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3)
+{
+    const SDL_MessageBoxButtonData buttons[] = {
+        { /* .flags, .buttonid, .text */        0, 0, "Ok" },
+        { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "yes" },
+        { SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 2, "cancel" },
+    };
+    const SDL_MessageBoxColorScheme colorScheme = {
+        { /* .colors (.r, .g, .b) */
+            /* [SDL_MESSAGEBOX_COLOR_BACKGROUND] */
+            { 88, 135, 63 },
+            /* [SDL_MESSAGEBOX_COLOR_TEXT] */
+            { 250, 250, 250 },
+            /* [SDL_MESSAGEBOX_COLOR_BUTTON_BORDER] */
+            { 255, 255, 0 },
+            /* [SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND] */
+            { 0, 0, 255 },
+            /* [SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED] */
+            { 255, 0, 255 }
+        }
+    };
+
+    const SDL_MessageBoxData messageboxdata = {
+        SDL_MESSAGEBOX_INFORMATION, /* .flags */
+        //NULL, /* .window */
+        //CurrentContext.CurrentWindow,
+		BWrapper::GetActiveWindow(),
+        //NULL,
+        "example message box", /* .title */
+        Message, /* .message */
+        SDL_arraysize(buttons), /* .numbuttons */
+        buttons, /* .buttons */
+        &colorScheme /* .colorScheme */
+    };
+
+    int buttonid;
+
+    if (SDL_ShowMessageBox(&messageboxdata, &buttonid) < 0) {
+        SDL_Log("error displaying message box");
+		return;
+    }
+    if (buttonid == -1) {
+        SDL_Log("no selection");
+    }
+    else {
+        SDL_Log("selection was %s", buttons[buttonid].text);
+    }
+};
+
 
 #endif //__AKK0RD_WINDOWS_BASEWRAPPER_H__
 

@@ -57,6 +57,8 @@ public:
     static bool                AndroidShowToast(const char* Message, BWrapper::AndroidToastDuration Duration, int Gravity, int xOffset, int yOffset);
 
     static bool                GetDirContent  (const char* Dir, DirContentElementArray& ArrayList);
+
+	static void                MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3);
 };
 
 /////////////////////////////////////////
@@ -277,6 +279,18 @@ std::string Platforms::GetEnvVariable(const char* Variable)
     return WindowsWrapper::GetEnvVariable(Variable);
 #endif        
     return std::string("");
+}
+
+
+void Platforms::MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3)
+{
+#ifdef __WIN32__
+	return WindowsWrapper::MessageBoxShow(Code, Title, Message, Button1, Button2, Button3);
+#endif
+
+#ifdef __ANDROID__
+	return AndroidWrapper::MessageBoxShow(Code, Title, Message, Button1, Button2, Button3);
+#endif
 }
 
 #endif // __AKK0RD_PLATFORMS_H__

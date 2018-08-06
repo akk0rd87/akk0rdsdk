@@ -10,6 +10,7 @@ struct CurrentContextStruct
 {
     AkkordRenderer*           CurrentRenderer = nullptr;
     AkkordWindow*             CurrentWindow = nullptr;
+	Uint32                    MessageBoxEvent;
 };
 
 static CurrentContextStruct CurrentContext;
@@ -28,6 +29,9 @@ bool BWrapper::Init(Uint32 flags)
         logError("BWrapper::Init: Error %s", SDL_GetError());
         return false;
     }
+
+	CurrentContext.MessageBoxEvent = SDL_RegisterEvents(1);
+
     return true;
 };
 
@@ -755,57 +759,57 @@ void BWrapper::MessageBoxSetColorScheme(MessageBoxColorScheme& Scheme)
 }
 */
 
-int BWrapper::ShowMessageBox(const char* Message)
-{
-    // https://wiki.libsdl.org/SDL_ShowMessageBox
-    // https://wiki.libsdl.org/SDL_ShowSimpleMessageBox
-    const SDL_MessageBoxButtonData buttons[] = {
-        { /* .flags, .buttonid, .text */        0, 0, "Ok" },
-        { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "yes" },
-        { SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 2, "cancel" },
-    };
-    const SDL_MessageBoxColorScheme colorScheme = {
-        { /* .colors (.r, .g, .b) */
-            /* [SDL_MESSAGEBOX_COLOR_BACKGROUND] */
-            { 88, 135, 63 },
-            /* [SDL_MESSAGEBOX_COLOR_TEXT] */
-            { 250, 250, 250 },
-            /* [SDL_MESSAGEBOX_COLOR_BUTTON_BORDER] */
-            { 255, 255, 0 },
-            /* [SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND] */
-            { 0, 0, 255 },
-            /* [SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED] */
-            { 255, 0, 255 }
-        }
-    };
-
-    const SDL_MessageBoxData messageboxdata = {
-        SDL_MESSAGEBOX_INFORMATION, /* .flags */
-        //NULL, /* .window */
-        CurrentContext.CurrentWindow,
-        //NULL,
-        "example message box", /* .title */
-        Message, /* .message */
-        SDL_arraysize(buttons), /* .numbuttons */
-        buttons, /* .buttons */
-        &colorScheme /* .colorScheme */
-    };
-
-    int buttonid;
-
-    if (SDL_ShowMessageBox(&messageboxdata, &buttonid) < 0) {
-        SDL_Log("error displaying message box");
-        return 1;
-    }
-    if (buttonid == -1) {
-        SDL_Log("no selection");
-    }
-    else {
-        SDL_Log("selection was %s", buttons[buttonid].text);
-    }
-
-    return 0; // Заглушка
-}
+//int BWrapper::ShowMessageBox(const char* Message)
+//{
+//    // https://wiki.libsdl.org/SDL_ShowMessageBox
+//    // https://wiki.libsdl.org/SDL_ShowSimpleMessageBox
+//    const SDL_MessageBoxButtonData buttons[] = {
+//        { /* .flags, .buttonid, .text */        0, 0, "Ok" },
+//        { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "yes" },
+//        { SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 2, "cancel" },
+//    };
+//    const SDL_MessageBoxColorScheme colorScheme = {
+//        { /* .colors (.r, .g, .b) */
+//            /* [SDL_MESSAGEBOX_COLOR_BACKGROUND] */
+//            { 88, 135, 63 },
+//            /* [SDL_MESSAGEBOX_COLOR_TEXT] */
+//            { 250, 250, 250 },
+//            /* [SDL_MESSAGEBOX_COLOR_BUTTON_BORDER] */
+//            { 255, 255, 0 },
+//            /* [SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND] */
+//            { 0, 0, 255 },
+//            /* [SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED] */
+//            { 255, 0, 255 }
+//        }
+//    };
+//
+//    const SDL_MessageBoxData messageboxdata = {
+//        SDL_MESSAGEBOX_INFORMATION, /* .flags */
+//        //NULL, /* .window */
+//        CurrentContext.CurrentWindow,
+//        //NULL,
+//        "example message box", /* .title */
+//        Message, /* .message */
+//        SDL_arraysize(buttons), /* .numbuttons */
+//        buttons, /* .buttons */
+//        &colorScheme /* .colorScheme */
+//    };
+//
+//    int buttonid;
+//
+//    if (SDL_ShowMessageBox(&messageboxdata, &buttonid) < 0) {
+//        SDL_Log("error displaying message box");
+//        return 1;
+//    }
+//    if (buttonid == -1) {
+//        SDL_Log("no selection");
+//    }
+//    else {
+//        SDL_Log("selection was %s", buttons[buttonid].text);
+//    }
+//
+//    return 0; // Заглушка
+//}
 
 /*
 int BWrapper::GetDisplayDPI(float* Ddpi, float* Hdpi, float* Vdpi)
@@ -962,6 +966,16 @@ void BWrapper::Log(BWrapper::LogPriority Priority, const char* File, const char*
     SDL_LogMessageV(SDL_LOG_CATEGORY_APPLICATION, sev, Format.c_str(), ap);
     va_end(ap);
     //#endif
+}
+
+Uint32 BWrapper::MessageBoxGetEventCode()
+{
+	return CurrentContext.MessageBoxEvent;
+}
+
+void BWrapper::MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3)
+{
+	Platforms::MessageBoxShow(Code, Title, Message, Button1, Button2, Button3);
 }
 
 bool BWrapper::PrintDirContent(const char* Path, BWrapper::LogPriority Priority, bool Recursive)

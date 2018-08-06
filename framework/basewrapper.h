@@ -178,12 +178,7 @@ public:
     static unsigned            Str2Num                     (const char* Str);
                                                            
     // Event-handling functions                            
-    static BWrapper::KeyCodes  DecodeKey                   (SDL_Keysym SDL_Key);
-
-        // MessageBox functions    
-    static int                 ShowMessageBox              (const char* Message);
-    //static void                MessageBoxSetColorScheme    (MessageBoxColorScheme& Scheme);
-    //static int                 MessageBoxShow              (BWrapper::MessageBoxPriority Priority, const char* Title, const char* Message, AkkordWindow* ParentWindow, const char* Button0, const char* Button1 = nullptr, const char* Button2 = nullptr);
+    static BWrapper::KeyCodes  DecodeKey                   (SDL_Keysym SDL_Key);    
                                                            
     // Logging and debugging functions                     
     static void                Log                         (BWrapper::LogPriority Priority, const char* File, const char* Function, unsigned Line, SDL_PRINTF_FORMAT_STRING const char *Fmt, ...); 
@@ -213,7 +208,11 @@ public:
     // Thread functions                                    
     static void                Sleep                       (unsigned MilliSeconds);
     
-
+    
+	
+	    // MessageBox functions    
+    static void                MessageBoxShow              (int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3);
+	static Uint32              MessageBoxGetEventCode      ();
 
     // For test. Do not use this function in your projects
     //static void                Test                ();
