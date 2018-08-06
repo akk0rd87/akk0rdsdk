@@ -105,7 +105,7 @@ public class Utils {
         showMessageBox(10, "My Lovely Title", "My Custom Message", "OK. That's right", "Maybe Cancel", "Hello world");
     }
 
-    public static int showMessageBox(int Code, String Title, String Message, String Button1, String Button2, String Button3)
+    public static void showMessageBox(int Code, String Title, String Message, String Button1, String Button2, String Button3)
     {
         class OneShotTask implements Runnable {
             String msgTitle;
@@ -167,7 +167,6 @@ public class Utils {
             }
         }
         _context.runOnUiThread(new OneShotTask(Title, Message, Button1, Button2, Button3));
-        return -1;
     }
     
     public static void showToast(String Msg, int Duration, int Gravity, int xOffset, int yOffset){

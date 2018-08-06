@@ -360,7 +360,15 @@ void AndroidWrapper::GetInternalDirs(std::string& InternalDir, std::string& Inte
 
 void AndroidWrapper::MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3)
 {
+    JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();        
+    jclass activity = FindAkkordClassUtils(env);
+    jmethodID ShowMessageBox = env->GetStaticMethodID(activity, "showMessageBox", "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)");
 	
+	if(!ShowMessageBox)
+	{
+		logError("AndroidWrapper showMessageBox Java method not Found");
+		return;
+	}
 };
 
 #endif // __AKK0RD_ANDROID_BASEWRAPPER_H__
