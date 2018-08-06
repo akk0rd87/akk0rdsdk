@@ -369,6 +369,22 @@ void AndroidWrapper::MessageBoxShow(int Code, const char* Title, const char* Mes
 		logError("AndroidWrapper showMessageBox Java method not Found");
 		return;
 	}
+	
+	jstring jstring_Title   = (jstring)env->NewStringUTF(Title);
+	jstring jstring_Message = (jstring)env->NewStringUTF(Message);
+	jstring jstring_Button1 = (jstring)env->NewStringUTF(Button1);
+	jstring jstring_Button2 = (jstring)env->NewStringUTF(Button2);
+	jstring jstring_Button3 = (jstring)env->NewStringUTF(Button3);
+	
+	env->CallStaticVoidMethod(activity, ShowMessageBox, Code, jstring_Title, jstring_Message, jstring_Button1, jstring_Button2, jstring_Button3);
+	
+	env->DeleteLocalRef(jstring_Title  );
+	env->DeleteLocalRef(jstring_Message);
+	env->DeleteLocalRef(jstring_Button1);
+	env->DeleteLocalRef(jstring_Button2);
+	env->DeleteLocalRef(jstring_Button3);
+	
+	env->DeleteLocalRef(activity);
 };
 
 #endif // __AKK0RD_ANDROID_BASEWRAPPER_H__
