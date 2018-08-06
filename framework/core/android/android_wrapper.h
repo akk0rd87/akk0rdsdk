@@ -362,7 +362,7 @@ void AndroidWrapper::MessageBoxShow(int Code, const char* Title, const char* Mes
 {
     JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();        
     jclass activity = FindAkkordClassUtils(env);
-    jmethodID ShowMessageBox = env->GetStaticMethodID(activity, "showMessageBox", "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)");
+    jmethodID ShowMessageBox = env->GetStaticMethodID(activity, "showMessageBox", "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
 	
 	if(!ShowMessageBox)
 	{
