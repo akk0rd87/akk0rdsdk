@@ -200,6 +200,8 @@ void WindowsWrapper::MessageBoxShow(int Code, const char* Title, const char* Mes
     else {
         SDL_Log("selection was %s", buttons[buttonid].text);
     }
+
+	CustomEvents::MessageBoxCallback(Code, buttonid);
 };
 
 

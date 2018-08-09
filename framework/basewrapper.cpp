@@ -968,14 +968,21 @@ void BWrapper::Log(BWrapper::LogPriority Priority, const char* File, const char*
     //#endif
 }
 
-Uint32 BWrapper::MessageBoxGetEventCode()
+Uint32 msgBox::GetEventCode()
 {
 	return CurrentContext.MessageBoxEvent;
 }
 
-void BWrapper::MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3)
+void msgBox::Show(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3)
 {
 	Platforms::MessageBoxShow(Code, Title, Message, Button1, Button2, Button3);
+}
+
+void msgBox::DecodeEvent(const SDL_Event& Event, int& Code, msgBox::Action& Action)
+{	
+	Code = Event.user.code;
+	Action = (msgBox::Action)(int)Event.user.data1;
+	
 }
 
 bool BWrapper::PrintDirContent(const char* Path, BWrapper::LogPriority Priority, bool Recursive)

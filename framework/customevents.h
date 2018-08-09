@@ -73,11 +73,11 @@ public:
 class CustomEvents
 {
 public:
-	void MessageBoxCallback(int Code, int Result)
+	static void MessageBoxCallback(int Code, int Result)
 	{
 		logDebug("MessageBoxCallback %d %d", Code, Result);
 		SDL_Event Event;
-		Event.user.type = BWrapper::MessageBoxGetEventCode();
+		Event.user.type = msgBox::GetEventCode();
 		Event.user.code =  (Sint32)Code;
 		Event.user.data1 = (void*)Result;
 		SDL_PushEvent(&Event);
