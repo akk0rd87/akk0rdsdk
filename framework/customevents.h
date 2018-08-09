@@ -4,7 +4,8 @@
 
 #include "core/core_defines.h"
 
-class BaseCustomEvent // абстрактный базовый класс пользовательского события
+/*
+class BaseCustomEvent // Р°Р±СЃС‚СЂР°РєС‚РЅС‹Р№ Р±Р°Р·РѕРІС‹Р№ РєР»Р°СЃСЃ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРѕРіРѕ СЃРѕР±С‹С‚РёСЏ
 {
 
 };
@@ -20,13 +21,6 @@ public:
     };
 };
 
-/*
-class AdEvent : BaseCustomEvent
-{
-public:        
-    unsigned AdType, EventType, Code;
-};
-*/
 
 class CustomEvents
 {
@@ -40,7 +34,7 @@ public:
         Event.user.type  = SDL_USEREVENT;
         Event.user.code  = (Sint32)Type;
         Event.user.data1 = Data;
-        Event.user.data2 = (void*)1; // ставим константу 1
+        Event.user.data2 = (void*)1; // СЃС‚Р°РІРёРј РєРѕРЅСЃС‚Р°РЅС‚Сѓ 1
         
         SDL_PushEvent(&Event);
     };
@@ -51,7 +45,7 @@ public:
         Event.user.type = SDL_USEREVENT;
         Event.user.code = (Sint32)Type;
         Event.user.data1 = Data;
-        Event.user.data2 = (void*)2; // ставим константу 2
+        Event.user.data2 = (void*)2; // СЃС‚Р°РІРёРј РєРѕРЅСЃС‚Р°РЅС‚Сѓ 2
 
         SDL_PushEvent(&Event);
     };
@@ -73,6 +67,21 @@ public:
         logError("Unknown event type!");
         return EventLevel::Unknown;
     };
+};
+*/
+
+class CustomEvents
+{
+public:
+	void MessageBoxCallback(int Code, int Result)
+	{
+		logDebug("MessageBoxCallback %d %d", Code, Result);
+		SDL_Event Event;
+		Event.user.type = BWrapper::MessageBoxGetEventCode();
+		Event.user.code =  (Sint32)Code;
+		Event.user.data1 = (void*)Result;
+		SDL_PushEvent(&Event);
+	};
 };
 
 #endif // __AKK0RD_CustomEvents_H__

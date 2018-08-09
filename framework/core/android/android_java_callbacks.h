@@ -3,6 +3,7 @@
 #define __AKK0RD_ANDROID_JAVACALLBACKS_H__
 
 #include "basewrapper.h"
+#include "customevents.h"
 #include "jni.h"
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
@@ -22,6 +23,11 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_Utils_AkkordCallback(JNIEnv* mEnv, jc
     CustomEvents::GenerateSDKEvent(CustomEvents::SDKEventType::Test, (BaseCustomEvent*)Event);
     logDebug(str);
     mEnv->ReleaseStringUTFChars(data, str);
+};
+
+JNIEXPORT void JNICALL Java_org_akkord_lib_Utils_MessageBoxCallback(JNIEnv* mEnv, jclass cls, int Code, int Result)
+{
+	CustomEvents::MessageBoxCallback(Code, Result);	
 };
 
 /*

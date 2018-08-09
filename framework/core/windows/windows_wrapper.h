@@ -6,6 +6,7 @@
 #include <shellapi.h>
 #include "basewrapper.h"
 #include "core/core_defines.h"
+#include "customevents.h"
 
 class WindowsWrapper
 {
