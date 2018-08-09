@@ -139,7 +139,7 @@ public class Utils {
                         .setPositiveButton(msgButton1, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 Log.v(TAG, "PositiveButton click");
-                                MessageBoxCallback(Code, 1);
+                                MessageBoxCallback(msgCode, 1);
                             }
                         });
 
@@ -150,7 +150,7 @@ public class Utils {
                     builder.setNegativeButton(msgButton2, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             Log.v(TAG, "NegativeButton click");
-                            MessageBoxCallback(Code, 2);
+                            MessageBoxCallback(msgCode, 2);
                         }
                     });
                 }
@@ -158,14 +158,14 @@ public class Utils {
                     builder.setNeutralButton(msgButton2, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             Log.v(TAG, "NeutralButton click");
-                            MessageBoxCallback(Code, 2);
+                            MessageBoxCallback(msgCode, 2);
                         }
                     });
 
                     builder.setNegativeButton(msgButton3, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             Log.v(TAG, "NegativeButton click");
-                            MessageBoxCallback(Code, 3);
+                            MessageBoxCallback(msgCode, 3);
                         }
                     });
                 }
