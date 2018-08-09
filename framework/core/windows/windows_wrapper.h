@@ -160,6 +160,7 @@ void WindowsWrapper::MessageBoxShow(int Code, const char* Title, const char* Mes
         { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "yes" },
         { SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 2, "cancel" },
     };
+	
     const SDL_MessageBoxColorScheme colorScheme = {
         { /* .colors (.r, .g, .b) */
             /* [SDL_MESSAGEBOX_COLOR_BACKGROUND] */
@@ -181,7 +182,7 @@ void WindowsWrapper::MessageBoxShow(int Code, const char* Title, const char* Mes
         //CurrentContext.CurrentWindow,
 		BWrapper::GetActiveWindow(),
         //NULL,
-        "example message box", /* .title */
+		Title, /* .title */
         Message, /* .message */
         SDL_arraysize(buttons), /* .numbuttons */
         buttons, /* .buttons */
@@ -190,18 +191,19 @@ void WindowsWrapper::MessageBoxShow(int Code, const char* Title, const char* Mes
 
     int buttonid;
 
-    if (SDL_ShowMessageBox(&messageboxdata, &buttonid) < 0) {
-        SDL_Log("error displaying message box");
+    if (SDL_ShowMessageBox(&messageboxdata, &buttonid) < 0) {        
+		logError("error displaying message box");
 		return;
     }
+
     if (buttonid == -1) {
         SDL_Log("no selection");
+		CustomEvents::MessageBoxCallback(Code, 0); // 0 - Cancel
     }
     else {
-        SDL_Log("selection was %s", buttons[buttonid].text);
+        //SDL_Log("selection was %s", buttons[buttonid].text);
+		CustomEvents::MessageBoxCallback(Code, buttonid + 1); // msgBox::Action Button[n]
     }
-
-	CustomEvents::MessageBoxCallback(Code, buttonid);
 };
 
 
