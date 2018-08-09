@@ -196,12 +196,13 @@ void WindowsWrapper::MessageBoxShow(int Code, const char* Title, const char* Mes
 		return;
     }
 
-    if (buttonid == -1) {
-        SDL_Log("no selection");
+    if (buttonid == -1)
+	{
+        logDebug("no selection");
 		CustomEvents::MessageBoxCallback(Code, 0); // 0 - Cancel
     }
-    else {
-        //SDL_Log("selection was %s", buttons[buttonid].text);
+    else 
+	{        
 		CustomEvents::MessageBoxCallback(Code, buttonid + 1); // msgBox::Action Button[n]
     }
 };
