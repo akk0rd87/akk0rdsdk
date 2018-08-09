@@ -11,7 +11,6 @@
 
 extern "C" {
 JNIEXPORT void JNICALL Java_org_akkord_lib_Utils_AkkordCallback(JNIEnv*, jclass, jstring);
-//JNIEXPORT void JNICALL Java_org_akkord_lib_AdMobAdapter_AdCallback(JNIEnv*, jclass, jint, jint, jint);
 }
 
 JNIEXPORT void JNICALL Java_org_akkord_lib_Utils_AkkordCallback(JNIEnv* mEnv, jclass cls, jstring data)
@@ -19,7 +18,11 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_Utils_AkkordCallback(JNIEnv* mEnv, jc
     
 };
 
-JNIEXPORT void JNICALL Java_org_akkord_lib_Utils_MessageBoxCallback(JNIEnv* mEnv, jclass cls, int Code, int Result)
+extern "C" {
+JNIEXPORT void JNICALL Java_org_akkord_lib_Utils_MessageBoxCallback(JNIEnv*, jclass, jint, jint);
+}
+
+JNIEXPORT void JNICALL Java_org_akkord_lib_Utils_MessageBoxCallback(JNIEnv* mEnv, jclass cls, jint Code, jint Result)
 {
 	CustomEvents::MessageBoxCallback(Code, Result);	
 };
