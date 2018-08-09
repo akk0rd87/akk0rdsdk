@@ -109,6 +109,7 @@ public class Utils {
     public static void showMessageBox(int Code, String Title, String Message, String Button1, String Button2, String Button3)
     {
         class OneShotTask implements Runnable {
+            int    msgCode;
             String msgTitle;
             String msgMessage;
             String msgButton1;
@@ -116,8 +117,9 @@ public class Utils {
             String msgButton3;
 
             // https://stackoverflow.com/questions/5853167/runnable-with-a-parameter
-            OneShotTask(String Title, String Message, String Button1, String Button2, String Button3)
+            OneShotTask(int Code, String Title, String Message, String Button1, String Button2, String Button3)
             {
+                msgCode    = Code;
                 msgTitle   = Title;
                 msgMessage = Message;
                 msgButton1 = Button1;
@@ -137,6 +139,7 @@ public class Utils {
                         .setPositiveButton(msgButton1, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 Log.v(TAG, "PositiveButton click");
+                                MessageBoxCallback(Code, 1);
                             }
                         });
 
@@ -147,6 +150,7 @@ public class Utils {
                     builder.setNegativeButton(msgButton2, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             Log.v(TAG, "NegativeButton click");
+                            MessageBoxCallback(Code, 2);
                         }
                     });
                 }
@@ -154,12 +158,14 @@ public class Utils {
                     builder.setNeutralButton(msgButton2, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             Log.v(TAG, "NeutralButton click");
+                            MessageBoxCallback(Code, 2);
                         }
                     });
 
                     builder.setNegativeButton(msgButton3, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             Log.v(TAG, "NegativeButton click");
+                            MessageBoxCallback(Code, 3);
                         }
                     });
                 }
@@ -167,7 +173,7 @@ public class Utils {
                 builder.show();
             }
         }
-        _context.runOnUiThread(new OneShotTask(Title, Message, Button1, Button2, Button3));
+        _context.runOnUiThread(new OneShotTask(Code, Title, Message, Button1, Button2, Button3));
     }
     
     public static void showToast(String Msg, int Duration, int Gravity, int xOffset, int yOffset){
