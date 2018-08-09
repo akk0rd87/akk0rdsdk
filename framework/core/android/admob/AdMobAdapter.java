@@ -28,8 +28,9 @@ public class AdMobAdapter {
     private static final int EVENT_REWARDEDVIDEO_FAILED          = 104; 
     private static final int EVENT_REWARDEDVIDEO_LEFTAPPLICATION = 105;
     private static final int EVENT_REWARDEDVIDEO_STARTED         = 106;
-    private static final int EVENT_REWARDEDVIDEO_REWARDED        = 107;
-    private static final int EVENT_REWARDEDVIDEO_COMPLETED       = 108;
+    private static final int EVENT_REWARDEDVIDEO_COMPLETED       = 107;
+    private static final int EVENT_REWARDEDVIDEO_REWARDED        = 108;
+
     
     private static final int AD_INTERSTITIAL       = 1;
     private static final int AD_REWARDEDVIDEO      = 2;
