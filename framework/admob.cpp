@@ -7,6 +7,7 @@ class AdContextClass
 private:
     std::atomic<int> InterstitialStatus;
     std::atomic<int> RewardedVideoStatus;
+	Uint32           AdMobEventCode;
 public:    
     AdMob::InterstitialStatus InterstitialGetStatus()
     {
@@ -33,6 +34,9 @@ public:
         InterstitialSetStatus(AdMob::InterstitialStatus::NotInited);
         RewardedVideoSetStatus(AdMob::RewardedVideoStatus::NotInited);
     }
+
+	Uint32 GetAdMobEventCode(){ return AdMobEventCode; }
+	void   SetAdMobEventCode(){ AdMobEventCode = SDL_RegisterEvents(1); }
 };
 
 AdContextClass AdContext;
@@ -116,22 +120,31 @@ bool AdMob_ProcessRewardedVideoAdEvent(AdEvent* Event)
 
 // Разбор Общего Event-а
 bool AdMob_ProcessAdEvent(AdEvent* Event)
-{
-    switch (Event->AdFormat)
+{    
+	switch (Event->AdFormat)
     {
         case AdMob::Format::Interstitial:
-            return AdMob_ProcessInterstitialAdEvent(Event);
+            AdMob_ProcessInterstitialAdEvent(Event);
             break;
 
         case AdMob::Format::RewardedVideo:
-            return AdMob_ProcessRewardedVideoAdEvent(Event);
+            AdMob_ProcessRewardedVideoAdEvent(Event);			
             break;
 
         default:
-            logError("Unsupported ad format type %u", Event->AdFormat);
-            return false;
+            logError("Unsupported ad format type %u", Event->AdFormat);            
             break;
     }
+
+	{
+		// Пушим евент в основной поток
+		SDL_Event sdl_Event;
+		sdl_Event.user.type = AdContext.GetAdMobEventCode();
+		sdl_Event.user.code = (Sint32)Event->AdFormat;
+		sdl_Event.user.data1 = (void*)Event->EventType;
+		sdl_Event.user.data2 = (void*)Event->Code;
+		SDL_PushEvent(&sdl_Event);
+	}
 
     return false;
 }
@@ -168,8 +181,15 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_AdMobAdapter_AdCallback(JNIEnv*, jcla
 #include "core/ios/ios_admob.h"
 #endif
 
+Uint32 AdMob::GetEventCode()
+{
+	return AdContext.GetAdMobEventCode();
+}
+
 bool AdMob::Init(const char* PublisherID, int Formats)
 {
+	AdContext.SetAdMobEventCode();
+
 #ifdef __ANDROID__
     if (AdMobAndroid::Init(PublisherID, Formats))
     {

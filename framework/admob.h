@@ -29,6 +29,8 @@ public:
     static AdMob::RewardedVideoStatus  RewardedVideoGetStatus();
     static bool                        RewardedVideoLoad();
     static bool                        RewardedVideoShow();
+	
+	static Uint32                      GetEventCode();
 };
 
 #endif // __AKK0RD_ADMOBWRAPPER_H__

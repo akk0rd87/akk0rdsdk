@@ -75,7 +75,7 @@ class CustomEvents
 public:
 	static void MessageBoxCallback(int Code, int Result)
 	{
-		logDebug("MessageBoxCallback %d %d", Code, Result);
+		//logDebug("MessageBoxCallback %d %d", Code, Result);
 		SDL_Event Event;
 		Event.user.type = msgBox::GetEventCode();
 		Event.user.code =  (Sint32)Code;
