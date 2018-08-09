@@ -31,7 +31,10 @@ public:
     static bool                        RewardedVideoShow();
 	
 	static Uint32                      GetEventCode();
-	static int                         GetEventAdFormat(SDL_Event& Event);
+	static int                         GetEventAdFormat       (const SDL_Event& Event);
+	static void                        InterstitialDecodeEvent(const SDL_Event& Event, AdMob::InterstitialEvent& EventType);
+	static void                        RewarededDecodeEvent   (const SDL_Event& Event, AdMob::RewardedVideoEvent& EventType, int& Result);
+	
 };
 
 #endif // __AKK0RD_ADMOBWRAPPER_H__
