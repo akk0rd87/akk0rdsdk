@@ -16,13 +16,7 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_Utils_AkkordCallback(JNIEnv*, jclass,
 
 JNIEXPORT void JNICALL Java_org_akkord_lib_Utils_AkkordCallback(JNIEnv* mEnv, jclass cls, jstring data)
 {
-    //const char* str = (*mEnv)->GetStringUTFChars(mEnv, data, NULL);
-    const char* str = mEnv->GetStringUTFChars(data, 0);
-    TestEvent* Event = new TestEvent();
-    Event->Name = std::string(str);
-    CustomEvents::GenerateSDKEvent(CustomEvents::SDKEventType::Test, (BaseCustomEvent*)Event);
-    logDebug(str);
-    mEnv->ReleaseStringUTFChars(data, str);
+    
 };
 
 JNIEXPORT void JNICALL Java_org_akkord_lib_Utils_MessageBoxCallback(JNIEnv* mEnv, jclass cls, int Code, int Result)
