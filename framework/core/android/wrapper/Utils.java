@@ -127,71 +127,82 @@ public class Utils {
                 msgButton3 = Button3;
             }
             public void run() {
-                AlertDialog.Builder builder;
-                //android.os.Build.VERSION.SDK_INT
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-                    builder = new AlertDialog.Builder(_context, android.R.style.Theme_Material_Dialog_Alert);
-                } else {
-                    builder = new AlertDialog.Builder(_context);
-                }
-                builder.setTitle(msgTitle)
-                        .setMessage(msgMessage)
-                        .setPositiveButton(msgButton1, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                Log.v(TAG, "PositiveButton click");
-                                MessageBoxCallback(msgCode, 1);
-                            }
-                        });
-
-                //builder.setIcon(android.R.drawable.ic_dialog_alert);
-				builder.setIconAttribute(android.R.attr.alertDialogIcon);
-
-                if(msgButton3.isEmpty()) {
-                    builder.setNegativeButton(msgButton2, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            Log.v(TAG, "NegativeButton click");
-                            MessageBoxCallback(msgCode, 2);
-                        }
-                    });
-                }
-                else {
-                    builder.setNeutralButton(msgButton2, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            Log.v(TAG, "NeutralButton click");
-                            MessageBoxCallback(msgCode, 2);
-                        }
-                    });
-
-                    builder.setNegativeButton(msgButton3, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            Log.v(TAG, "NegativeButton click");
-                            MessageBoxCallback(msgCode, 3);
-                        }
-                    });
-                }
-
-                builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialog) {
-                        Log.v(TAG, "setOnCancelListener: onCancel");
-                        MessageBoxCallback(msgCode, 0);
+                try
+                {
+                    AlertDialog.Builder builder;
+                    //android.os.Build.VERSION.SDK_INT
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                        builder = new AlertDialog.Builder(_context, android.R.style.Theme_Material_Dialog_Alert);
+                    } else {
+                        builder = new AlertDialog.Builder(_context);
                     }
-                });
+                    builder.setTitle(msgTitle)
+                            .setMessage(msgMessage)
+                            .setPositiveButton(msgButton1, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Log.v(TAG, "PositiveButton click");
+                                    MessageBoxCallback(msgCode, 1);
+                                }
+                            });
 
-                /* OnDismissListener не нужен. Он вызывается всегда при закрытии мессаджбокса
-                builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                    @Override
-                    public void onDismiss(DialogInterface dialog) {
-                        Log.v(TAG, "setOnCancelListener: onDismiss");
-                        MessageBoxCallback(msgCode, 550);
+                    //builder.setIcon(android.R.drawable.ic_dialog_alert);
+                    builder.setIconAttribute(android.R.attr.alertDialogIcon);
+
+                    if(msgButton2 != null && !msgButton2.isEmpty()) {
+                        if (msgButton3 != null && !msgButton3.isEmpty()) {
+                            builder.setNeutralButton(msgButton2, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Log.v(TAG, "NeutralButton click");
+                                    MessageBoxCallback(msgCode, 2);
+                                }
+                            });
+
+                            builder.setNegativeButton(msgButton3, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Log.v(TAG, "NegativeButton click");
+                                    MessageBoxCallback(msgCode, 3);
+                                }
+                            });
+                        } else {
+                            builder.setNegativeButton(msgButton2, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Log.v(TAG, "NegativeButton click");
+                                    MessageBoxCallback(msgCode, 2);
+                                }
+                            });
+                        }
                     }
-                });
-                */
 
-                builder.show();
+                    builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialog) {
+                            Log.v(TAG, "setOnCancelListener: onCancel");
+                            MessageBoxCallback(msgCode, 0);
+                        }
+                    });
+
+                    /* OnDismissListener не нужен. Он вызывается всегда при закрытии мессаджбокса
+                    builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialog) {
+                            Log.v(TAG, "setOnCancelListener: onDismiss");
+                            MessageBoxCallback(msgCode, 550);
+                        }
+                    });
+                    */
+
+                    builder.show();
+            }
+            catch(Exception e)
+                {
+                    System.err.println(e.getMessage());
+                    Log.v(TAG, e.getMessage());
+                }
             }
         }
+        Log.v(TAG, "before runOnUiThread");
         _context.runOnUiThread(new OneShotTask(Code, Title, Message, Button1, Button2, Button3));
+        Log.v(TAG, "after runOnUiThread");
     }
     
     public static void showToast(String Msg, int Duration, int Gravity, int xOffset, int yOffset){
