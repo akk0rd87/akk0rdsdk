@@ -272,7 +272,7 @@ public:
 class msgBox
 {
 public:	
-	enum struct Action : unsigned char { Button1 = 1, Button2 = 2, Button3 = 3, Dismiss = 0 };
+	enum struct Action : int { Cancel = 0, Button1 = 1, Button2 = 2, Button3 = 3 };
 	
 	static void   Show(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3);
 	static Uint32 GetEventCode();
