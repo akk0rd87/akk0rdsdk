@@ -11,7 +11,7 @@ private:
     //static bool ProcessInterstitialAdEvent(AdEvent* Event);    
     //bool AdMob::ProcessAdEvent(AdEvent* Event);
 public:    
-    struct Format { enum : int { Interstitial = 1, RewardedVideo = 2, NativeAdsAdvanced = 4 }; };
+    struct Format { enum : int { Interstitial = 1, RewardedVideo = 2, NativeAdsAdvanced = 4, Unknown = 0 }; };
 
     enum struct InterstitialEvent   : int { Loaded = 1, Opened = 2, Closed = 3, Failed = 4, LeftApplication = 5 }; // Совпадает с Java-кодами
     enum struct InterstitialStatus  : int { NotInited, Inited, TryingToLoad, Loaded, TryingToShow, Opened };
@@ -31,6 +31,7 @@ public:
     static bool                        RewardedVideoShow();
 	
 	static Uint32                      GetEventCode();
+	static int                         GetEventAdFormat(SDL_Event& Event);
 };
 
 #endif // __AKK0RD_ADMOBWRAPPER_H__

@@ -149,6 +149,12 @@ bool AdMob_ProcessAdEvent(AdEvent* Event)
     return false;
 }
 
+int AdMob::GetEventAdFormat(SDL_Event& Event)
+{
+	int fmt = (int)Event.user.code;
+	return fmt;
+}
+
 AdMob::InterstitialStatus AdMob::InterstitialGetStatus()
 {
     return AdContext.InterstitialGetStatus();
