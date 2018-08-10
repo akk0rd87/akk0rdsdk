@@ -75,6 +75,9 @@ https://developer.android.com/studio/index.html#downloads
 
 SET ANDROID_HOME=C:\PortablePrograms\android-sdk
 
+**Android KeyStore Directory**
+
+ANDROID_KEYSTORE_HOME
      
 
 **ADB utility**
