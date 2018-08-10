@@ -156,14 +156,14 @@ int AdMob::GetEventAdFormat(const SDL_Event& Event)
 }
 
 void AdMob::RewarededDecodeEvent(const SDL_Event& Event, AdMob::RewardedVideoEvent& EventType, int& Result)
-{
-	EventType = (AdMob::RewardedVideoEvent)(int)Event.user.data1;
-	Result = (int)Event.user.data2;
+{	
+	EventType = (AdMob::RewardedVideoEvent)(int)(size_t)(Event.user.data1);
+	Result = (int)(size_t)Event.user.data2;
 };
 
 void AdMob::InterstitialDecodeEvent(const SDL_Event& Event, AdMob::InterstitialEvent& EventType)
 {
-	EventType = (AdMob::InterstitialEvent)(int)Event.user.data1;
+	EventType = (AdMob::InterstitialEvent)(int)(size_t)Event.user.data1;
 };
 
 AdMob::InterstitialStatus AdMob::InterstitialGetStatus()

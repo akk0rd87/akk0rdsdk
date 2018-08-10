@@ -981,7 +981,7 @@ void msgBox::Show(int Code, const char* Title, const char* Message, const char* 
 void msgBox::DecodeEvent(const SDL_Event& Event, int& Code, msgBox::Action& Action)
 {	
 	Code = Event.user.code;
-	Action = (msgBox::Action)(int)Event.user.data1;
+	Action = (msgBox::Action)(int)(size_t)Event.user.data1;
 	
 }
 
