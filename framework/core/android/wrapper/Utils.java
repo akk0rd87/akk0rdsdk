@@ -206,27 +206,48 @@ public class Utils {
     }
     
     public static void showToast(String Msg, int Duration, int Gravity, int xOffset, int yOffset){
-        class OneShotTask implements Runnable {
-            String toastMsg;
-            int    toastDuration;
-            int    toastGravity;
-            int    toastxOffset;
-            int    toastyOffset;
-            OneShotTask(String Msg, int Duration, int Gravity, int xOffset, int yOffset)
-            {
-                toastMsg      = Msg;
-                toastDuration = Duration;
-                toastGravity  = Gravity;
-                toastxOffset  = xOffset;
-                toastyOffset  = yOffset;
+        try
+        {
+            Log.v(TAG, "showToast started");
+            class OneShotTask implements Runnable {
+                String toastMsg;
+                int toastDuration;
+                int toastGravity;
+                int toastxOffset;
+                int toastyOffset;
+
+                OneShotTask(String Msg, int Duration, int Gravity, int xOffset, int yOffset) {
+                    toastMsg = Msg;
+                    toastDuration = Duration;
+                    toastGravity = Gravity;
+                    toastxOffset = xOffset;
+                    toastyOffset = yOffset;
+                }
+
+                public void run() {
+                    try
+                    {
+                        Log.v(TAG, "showToast makeTest");
+                        Toast toast = Toast.makeText(_context, toastMsg, toastDuration);
+                        if (toastGravity >= 0)
+                            toast.setGravity(toastGravity, toastxOffset, toastyOffset);
+                        toast.show();
+                        Log.v(TAG, "showToast after show");
+                    }
+                    catch(Exception e)
+                    {
+                        System.err.println(e.getMessage());
+                        Log.v(TAG, e.getMessage());
+                    }
+                }
             }
-            public void run() {
-                Toast toast = Toast.makeText(_context, toastMsg, toastDuration);
-                if(toastGravity >= 0) toast.setGravity(toastGravity, toastxOffset, toastyOffset);
-                toast.show();
-            }
+            _context.runOnUiThread(new OneShotTask(Msg, Duration, Gravity, xOffset, yOffset));
         }
-        _context.runOnUiThread(new OneShotTask(Msg, Duration, Gravity, xOffset, yOffset));
+        catch(Exception e)
+        {
+            System.err.println(e.getMessage());
+            Log.v(TAG, e.getMessage());
+        }
     }
     
     public static int GetApiLevel()
