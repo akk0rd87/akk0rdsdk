@@ -57,18 +57,18 @@ bool AdMob_ProcessInterstitialAdEvent(AdEvent* Event)
         case AdMob::InterstitialEvent::Failed:			
         case AdMob::InterstitialEvent::LeftApplication:		
             AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::Inited);
-			logDebug("Interstitial Inited");
+			//logDebug("Interstitial Inited");
             return true;
 
         case AdMob::InterstitialEvent::Loaded:
             AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::Loaded);
-			logDebug("Interstitial Loaded");
+			//logDebug("Interstitial Loaded");
             return true;
             break;
 
         case AdMob::InterstitialEvent::Opened:
             AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::Opened);
-			logDebug("Interstitial Opened");
+			//logDebug("Interstitial Opened");
             return true;
             break;
 
@@ -189,7 +189,7 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_AdMobAdapter_AdCallback(JNIEnv*, jcla
     Event.AdFormat = (int)AdType;
     Event.EventType = (int)EventType;
     Event.Code = (int)Code;
-    logDebug("Add callback event %d %d %d", Event.AdFormat, Event.EventType, Event.Code);
+    //logDebug("Add callback event %d %d %d", Event.AdFormat, Event.EventType, Event.Code);
     AdMob_ProcessAdEvent(&Event);
 }
 #endif
