@@ -206,29 +206,36 @@ Uint32 AdMob::GetEventCode()
 bool AdMob::Init(const char* PublisherID, int Formats)
 {
 	AdContext.SetAdMobEventCode();
+	bool inited = false;
+
+#ifdef __WIN32__
+	inited = true; // inited безусловно ставим Inited
+#endif
 
 #ifdef __ANDROID__
     if (AdMobAndroid::Init(PublisherID, Formats))
     {
-        if (Formats & AdMob::Format::Interstitial)
-            AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::Inited);
-
-        if (Formats & AdMob::Format::RewardedVideo)
-            AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::Inited);
-
-        return true;
+		inited = true;
     };
 #endif
 
 #ifdef __APPLE__
     if (AdMobiOS::Init(PublisherID, Formats))
     {
-
-        return true;
+		inited = true;
     };
 #endif
 
-    return false;
+	if (inited)
+	{
+		if (Formats & AdMob::Format::Interstitial)
+			AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::Inited);
+
+		if (Formats & AdMob::Format::RewardedVideo)
+			AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::Inited);
+	}
+
+	return inited;
 };
 
 bool AdMob::InterstitialSetUnitId(const char* UnitId)
