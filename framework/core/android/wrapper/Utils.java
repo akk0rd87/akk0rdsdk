@@ -227,10 +227,13 @@ public class Utils {
                 public void run() {
                     try
                     {
-                        Log.v(TAG, "showToast makeTest");
+                        Log.v(TAG, "showToast makeTest " +  Integer.toString(toastGravity));
+
                         Toast toast = Toast.makeText(_context, toastMsg, toastDuration);
-                        if (toastGravity >= 0)
+                        if (toastGravity >= 0) {
+                            Log.v(TAG, "showToast set toastGravity");
                             toast.setGravity(toastGravity, toastxOffset, toastyOffset);
+                        }
                         toast.show();
                         Log.v(TAG, "showToast after show");
                     }
