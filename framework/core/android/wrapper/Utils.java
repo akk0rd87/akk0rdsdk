@@ -101,9 +101,9 @@ public class Utils {
 //    }
 
     public static void openURL(String url) {
-        //Intent browseIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        //_context.startActivity(browseIntent);
-        showMessageBox(10, "My Lovely Title", "My Custom Message", "OK. That's right", "Maybe Cancel", "Hello world");
+        Intent browseIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        _context.startActivity(browseIntent);
+        //showMessageBox(10, "My Lovely Title", "My Custom Message", "OK. That's right", "Maybe Cancel", "Hello world");
     }
 
     public static void showMessageBox(int Code, String Title, String Message, String Button1, String Button2, String Button3)
