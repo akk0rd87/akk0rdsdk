@@ -21,7 +21,7 @@ public:
 
 private:
     const char* AdRandomizerDir = "adrandomizer";
-	static void AdRandomizer::OpenURL_private(BWrapper::OS OSCode, Apps AppId);
+	static void OpenURL_private(BWrapper::OS OSCode, Apps AppId);
 
     class AppInfoStruct
     {
