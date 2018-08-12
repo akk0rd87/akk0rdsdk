@@ -14,13 +14,14 @@ public:
     unsigned       Randomize(unsigned Count);
     int            DrawImageByIndex(unsigned Index, const AkkordRect &Rect);
     void           OpenURLByIndex(unsigned Index);
-    static void    OpenURL(BWrapper::OS OSCode, Apps AppId);
+    static void    OpenURL(Apps AppId);
 
     AdRandomizer();
     ~AdRandomizer();
 
 private:
     const char* AdRandomizerDir = "adrandomizer";
+	static void AdRandomizer::OpenURL_private(BWrapper::OS OSCode, Apps AppId);
 
     class AppInfoStruct
     {
@@ -145,27 +146,14 @@ int AdRandomizer::DrawImageByIndex(unsigned Index, const AkkordRect &Rect)
 void AdRandomizer::OpenURLByIndex(unsigned Index)
 {
     if (!IsValidIndex(Index)) return;
-
-    auto DeviceOs = BWrapper::GetDeviceOS();
-    switch (DeviceOs)
-    {
-        // на Windows открываем ссылки по всем платформам
-        case BWrapper::OS::Windows:
-            this->OpenURL(BWrapper::OS::AndroidOS, CurApps[Index].AppCode);
-            this->OpenURL(BWrapper::OS::iOS      , CurApps[Index].AppCode);
-            break;
-        // на остальных платформах открываем согласно текущей платформе
-        default:
-            this->OpenURL(DeviceOs, CurApps[Index].AppCode);
-            break;
-    }
+	AdRandomizer::OpenURL(CurApps[Index].AppCode);
 }
 
 ///////////////////////////////
 ///////////////////////////////
 ///////////////////////////////
 
-void AdRandomizer::OpenURL(BWrapper::OS OSCode, Apps AppId)
+void AdRandomizer::OpenURL_private(BWrapper::OS OSCode, Apps AppId)
 {
     logVerbose("Open URL OSCode=%d, AppId", OSCode, AppId);
 
@@ -282,6 +270,23 @@ void AdRandomizer::OpenURL(BWrapper::OS OSCode, Apps AppId)
         }
         break;
     }
+}
+
+void AdRandomizer::OpenURL(Apps AppId)
+{
+	auto DeviceOs = BWrapper::GetDeviceOS();
+	switch (DeviceOs)
+	{
+		// на Windows открываем ссылки по всем платформам
+		case BWrapper::OS::Windows:
+			AdRandomizer::OpenURL_private(BWrapper::OS::AndroidOS, AppId);
+			AdRandomizer::OpenURL_private(BWrapper::OS::iOS, AppId);
+			break;
+			// на остальных платформах открываем согласно текущей платформе
+		default:
+			AdRandomizer::OpenURL_private(DeviceOs, AppId);
+			break;
+	}
 }
 
 void AdRandomizer::InitApps()
