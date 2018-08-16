@@ -135,7 +135,8 @@ bool AndroidBillingManager::ConsumeProductItem(const char* PurchaseToken)
     jstring purch_jstring = (jstring)env->NewStringUTF(PurchaseToken);
     env->CallStaticVoidMethod(activity, ConsumeProductItem, purch_jstring);
     env->DeleteLocalRef(purch_jstring);
-    env->DeleteLocalRef(activity);    
+    env->DeleteLocalRef(activity);
+    return true;	
 }
 
 #endif // __AKK0RD_ANDROID_INAPP_BILLING_H__

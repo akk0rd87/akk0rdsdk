@@ -127,7 +127,7 @@ class BillingManager {
                             }
                             else
                             {
-                                Log.v(TAG, "QueryPurchases error, responseCode = " + purchasesResult.getResponseCode());
+                                Log.v(TAG, "QueryPurchases error, responseCode = " + responseCode);
                             }
 
                         }                
