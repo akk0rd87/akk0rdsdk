@@ -7,12 +7,20 @@
 class BillingManager
 {
 public:
-    static bool                 Init();
+	enum struct OperAction : int { Restored = 0, Boufght = 1 };
+
+	typedef bool (BillingPurchaseUpdatedCallback)(const char* PurchaseToken, const char* SKUid, OperAction Action);
+	
+
+	static bool                 Init();
     static int                  GetStatus();
     static bool                 QueryProductDetails(const std::vector<std::string>& ProdList);
     static bool                 RestorePurchases();
     static bool                 PurchaseProdItem(const char* ProductCode);
     static bool                 ConsumeProductItem(const char* PurchaseToken);
+
+	
+	static void                 SetPurchaseUpdatedCallback(BillingPurchaseUpdatedCallback* Callback);
 };
 
 #endif // __AKK0RD_INAPP_BILLING_H__

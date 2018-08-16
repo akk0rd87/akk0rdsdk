@@ -29,6 +29,9 @@ import java.util.Arrays;
 class BillingManager {
     private static String TAG = "SDL";
     public static final int BILLING_MANAGER_NOT_INITIALIZED  = -1;
+
+    public static final int PURCHASE_RESTORED = 0;
+    public static final int PURCHASE_BOUGHT   = 1;
     
     private static BillingClient mBillingClient;
     private static int mBillingClientResponseCode = BILLING_MANAGER_NOT_INITIALIZED;
@@ -36,7 +39,7 @@ class BillingManager {
     
     private static native void BillingSetupFinished(int ResponseCode);
     private static native void BillingDisconnected();
-    private static native void PurchaseQueried(String PurchaseToken, String ProductSKU);
+    private static native void PurchaseQueried(String PurchaseToken, String ProductSKU, int Type);
     
     private static String DecodeBillingResponse(int billingResponseCode)
     {
@@ -115,13 +118,25 @@ class BillingManager {
                         {
                             // тут приходит одна покупка или несколько?
                             Log.v(TAG, "onPurchasesUpdated Response: " + DecodeBillingResponse(responseCode) + "; purch_count = " + purchases.size());
+
+                            if(BillingResponse.OK == responseCode)
+                            {
+                                for (Purchase purchase : purchases) {
+                                    PurchaseQueried(purchase.getPurchaseToken(), purchase.getSku(), PURCHASE_BOUGHT);
+                                }
+                            }
+                            else
+                            {
+                                Log.v(TAG, "QueryPurchases error, responseCode = " + purchasesResult.getResponseCode());
+                            }
+
                         }                
                     }
                 ).build();
-                Log.v(TAG, "BillingManager after build");            
+                Log.v(TAG, "BillingManager after build");
             
-            
-                startServiceConnection(new Runnable() {
+                /*
+				startServiceConnection(new Runnable() {
                     @Override
                     public void run() {
                         // Notifying the listener that billing client is ready                             
@@ -129,6 +144,7 @@ class BillingManager {
                         //queryPurchases();
                     }
                 });    
+				*/
             }
         });
     }
@@ -181,7 +197,7 @@ class BillingManager {
                     for (Purchase purchase : purchases) {
                         //handlePurchase(purchase);
                         //Log.v(TAG, "QueryPurchases: " + purchase.getSku());
-                        PurchaseQueried(purchase.getPurchaseToken(), purchase.getSku());
+                        PurchaseQueried(purchase.getPurchaseToken(), purchase.getSku(), PURCHASE_RESTORED);
                     }
                 }
                 else

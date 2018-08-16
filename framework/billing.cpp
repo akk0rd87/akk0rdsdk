@@ -1,6 +1,7 @@
 #include "billing.h"
 
 static int BillingStatus = -1;
+static BillingManager::BillingPurchaseUpdatedCallback* AppPurchaseRestored = nullptr;
 
 int BillingManager::GetStatus()
 {
@@ -12,7 +13,7 @@ int BillingManager::GetStatus()
 extern "C" {
     JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_BillingSetupFinished(JNIEnv*, jclass, jint);
     JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_BillingDisconnected(JNIEnv*, jclass, jint);
-    JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseQueried(JNIEnv*, jclass, jstring, jstring);
+	JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseQueried(JNIEnv*, jclass, jstring, jstring, jstring ProductCode, jint Type);
 }
 JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_BillingSetupFinished(JNIEnv*, jclass, jint ResponseCode)
 {
@@ -26,12 +27,21 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_BillingDisconnected(JN
     logDebug("BillingDisconnected");
 }
 
-JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseQueried(JNIEnv* env, jclass, jstring PurchaseToken, jstring ProductCode)
+JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseQueried(JNIEnv* env, jclass, jstring PurchaseToken, jstring ProductCode, jint Type)  /* Type: 0 - restored, 1- boufght */
 {        
     const char* PToken = env->GetStringUTFChars(PurchaseToken, 0);
     const char* PCode  = env->GetStringUTFChars(ProductCode, 0);
 
-    logDebug("PurchaseQueried %s %s", PToken, PCode);
+	logDebug("PurchaseQueried %s %s %s", PToken, PCode, (Type == 0 ? "restored" : "boufght"));
+	 
+	if(AppPurchaseRestored)
+	{
+		AppPurchaseRestored(PToken, PCode);
+	}
+	else
+	{
+		logError("AppPurchaseRestored is not set");
+	}
 
     env->ReleaseStringUTFChars(PurchaseToken, PToken);
     env->ReleaseStringUTFChars(ProductCode, PCode);
@@ -99,3 +109,8 @@ bool BillingManager::ConsumeProductItem(const char* PurchaseToken)
 
     return false;
 }
+
+void BillingManager::SetPurchaseUpdatedCallback(BillingPurchaseUpdatedCallback* Callback)
+{
+	AppPurchaseRestored = Callback;
+};
