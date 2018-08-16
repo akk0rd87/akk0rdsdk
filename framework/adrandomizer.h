@@ -15,6 +15,7 @@ public:
     int            DrawImageByIndex(unsigned Index, const AkkordRect &Rect);
     void           OpenURLByIndex(unsigned Index);
     static void    OpenURL(Apps AppId);
+	void           Clear();
 
     AdRandomizer();
     ~AdRandomizer();
@@ -38,7 +39,7 @@ private:
         }
     };
 
-    void Clear();
+    
     void InitRootPath();
     bool IsValidIndex(unsigned Index);
 
