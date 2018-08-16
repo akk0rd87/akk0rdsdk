@@ -1,7 +1,7 @@
 #include "billing.h"
 
 static int BillingStatus = -1;
-static BillingManager::BillingPurchaseUpdatedCallback* AppPurchaseRestored = nullptr;
+static BillingManager::BillingPurchaseUpdatedCallback* AppPurchaseUpdated = nullptr;
 
 int BillingManager::GetStatus()
 {
@@ -31,16 +31,17 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseQueried(JNIEnv
 {        
     const char* PToken = env->GetStringUTFChars(PurchaseToken, 0);
     const char* PCode  = env->GetStringUTFChars(ProductCode, 0);
+	int ActionType = (int)Type;
 
-	logDebug("PurchaseQueried %s %s %s", PToken, PCode, (Type == 0 ? "restored" : "boufght"));
+	logDebug("PurchaseQueried %s %s %s", PToken, PCode, (ActionType == 0 ? "restored" : "boufght"));
 	 
-	if(AppPurchaseRestored)
+	if(AppPurchaseUpdated)
 	{
-		AppPurchaseRestored(PToken, PCode);
+		AppPurchaseUpdated(PToken, PCode, (BillingManager::OperAction)ActionType);
 	}
 	else
 	{
-		logError("AppPurchaseRestored is not set");
+		logError("AppPurchaseUpdated is not set");
 	}
 
     env->ReleaseStringUTFChars(PurchaseToken, PToken);
@@ -112,5 +113,5 @@ bool BillingManager::ConsumeProductItem(const char* PurchaseToken)
 
 void BillingManager::SetPurchaseUpdatedCallback(BillingPurchaseUpdatedCallback* Callback)
 {
-	AppPurchaseRestored = Callback;
+	AppPurchaseUpdated = Callback;
 };
