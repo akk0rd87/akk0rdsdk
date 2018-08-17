@@ -22,6 +22,9 @@ public:
 	static void                             SetPurchaseUpdatedCallback(BillingPurchaseUpdatedCallback* Callback);
 	
 	static decltype(SDL_RegisterEvents(1))  GetEventCode();
+	
+	static void                             DecodeEvent(const SDL_Event& Event, int& Code, int& Result);
+	static void                             PushEvent  (const int& Code, const int& Result);
 };
 
 #endif // __AKK0RD_INAPP_BILLING_H__

@@ -128,3 +128,19 @@ decltype(SDL_RegisterEvents(1)) BillingManager::GetEventCode()
 {
 	return BillingContext.BillingEventCode;
 };
+
+void BillingManager::DecodeEvent(const SDL_Event& Event, int& Code, int& Result)
+{
+	Code = Event.user.code;
+	Result = (int)(size_t)Event.user.data1;
+};
+
+void BillingManager::PushEvent(const int& Code, const int& Result)
+{
+	// ѕушим евент в основной поток
+	SDL_Event sdl_Event;
+	sdl_Event.user.type = BillingManager::GetEventCode();
+	sdl_Event.user.code = (Sint32)(Code);
+	sdl_Event.user.data1 = (void*)Result;
+	SDL_PushEvent(&sdl_Event);
+};
