@@ -12,6 +12,11 @@
 #include <memory>
 #include <algorithm>
 
+// Макросы дебага
+#if defined(_DEBUG) && defined(__WIN32__) || defined(__ANDROID__) && !defined(NDEBUG) || defined(__APPLE__)
+	#define __AKK0RD_DEBUG_MACRO__ 1
+#endif
+
 #define VALUE_BETWEEN(Val, Begin, End) (Begin <= Val && Val <= End ? true : false)
 
 typedef SDL_Window   AkkordWindow;
@@ -32,7 +37,12 @@ struct DirContentElement
 
 typedef std::vector<std::unique_ptr<DirContentElement>> DirContentElementArray;
 
-#define log(LogPriority, fmt, ...)  BWrapper::Log(LogPriority, __FILE__, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
+#ifdef __AKK0RD_DEBUG_MACRO__
+	#define log(LogPriority, fmt, ...)  BWrapper::Log(LogPriority, __FILE__, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
+#else
+	#define log(LogPriority, fmt, ...)
+#endif
+
 #define logVerbose(fmt, ...)        log(BWrapper::LogPriority::Verbose , fmt, ##__VA_ARGS__)
 #define logDebug(fmt, ...)          log(BWrapper::LogPriority::Debug   , fmt, ##__VA_ARGS__)
 #define logInfo(fmt, ...)           log(BWrapper::LogPriority::Info    , fmt, ##__VA_ARGS__)

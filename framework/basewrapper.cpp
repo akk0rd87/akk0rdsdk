@@ -870,7 +870,7 @@ LogParamsStruct* BWrapper::GetLogParams()
 
 void BWrapper::Log(BWrapper::LogPriority Priority, const char* File, const char* Function, unsigned Line, SDL_PRINTF_FORMAT_STRING const char *Fmt, ...)
 {
-    //#if defined(DEBUG) || defined(_DEBUG) || defined(_DEBUG_) || defined(__DEBUG__) || defined(NDK_DEBUG)
+#ifdef __AKK0RD_DEBUG_MACRO__
     // https://wiki.libsdl.org/CategoryLog
     SDL_LogPriority sev = (SDL_LogPriority)Priority;
     char TimeBuffer[16];
@@ -965,7 +965,7 @@ void BWrapper::Log(BWrapper::LogPriority Priority, const char* File, const char*
     va_start(ap, Fmt);
     SDL_LogMessageV(SDL_LOG_CATEGORY_APPLICATION, sev, Format.c_str(), ap);
     va_end(ap);
-    //#endif
+#endif
 }
 
 Uint32 msgBox::GetEventCode()
