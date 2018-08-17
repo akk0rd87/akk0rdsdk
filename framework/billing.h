@@ -9,7 +9,7 @@ class BillingManager
 public:
 	enum struct OperAction : int { Restored = 0, Boufght = 1 };
 
-	typedef bool (BillingPurchaseUpdatedCallback)(const char* PurchaseToken, const char* SKUid, OperAction Action);
+	typedef void (BillingPurchaseUpdatedCallback)(const char* PurchaseToken, const char* SKUid, BillingManager::OperAction Action);
 	
 
 	static bool                 Init();
