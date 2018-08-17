@@ -33,13 +33,13 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_BillingDisconnected(JN
     logDebug("BillingDisconnected");
 }
 
-JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseQueried(JNIEnv* env, jclass, jstring PurchaseToken, jstring ProductCode, jint Type)  /* Type: 0 - restored, 1- boufght */
+JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseQueried(JNIEnv* env, jclass, jstring PurchaseToken, jstring ProductCode, jint Type)  /* Type: 0 - restored, 1- bought */
 {        
     const char* PToken = env->GetStringUTFChars(PurchaseToken, 0);
     const char* PCode  = env->GetStringUTFChars(ProductCode, 0);
 	int ActionType = (int)Type;
 
-	logDebug("PurchaseQueried %s %s %s", PToken, PCode, (ActionType == 0 ? "restored" : "boufght"));
+	logDebug("PurchaseQueried %s %s %s", PToken, PCode, (ActionType == 0 ? "restored" : "bought"));
 	 
 	if(BillingContext.AppPurchaseUpdated)
 	{
@@ -135,7 +135,7 @@ void BillingManager::DecodeEvent(const SDL_Event& Event, int& Code, int& Result)
 	Result = (int)(size_t)Event.user.data1;
 };
 
-void BillingManager::PushEvent(const int& Code, const int& Result)
+void BillingManager::PushEvent(int Code, int Result)
 {
 	// ѕушим евент в основной поток
 	SDL_Event sdl_Event;

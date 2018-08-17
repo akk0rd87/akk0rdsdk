@@ -7,7 +7,7 @@
 class BillingManager
 {
 public:
-	enum struct OperAction : int { Restored = 0, Boufght = 1 };
+	enum struct OperAction : int { Restored = 0, Bought = 1 };
 
 	typedef void (BillingPurchaseUpdatedCallback)(const char* PurchaseToken, const char* SKUid, BillingManager::OperAction Action);
 	
@@ -24,7 +24,7 @@ public:
 	static decltype(SDL_RegisterEvents(1))  GetEventCode();
 	
 	static void                             DecodeEvent(const SDL_Event& Event, int& Code, int& Result);
-	static void                             PushEvent  (const int& Code, const int& Result);
+	static void                             PushEvent  (int Code, const int Result);
 };
 
 #endif // __AKK0RD_INAPP_BILLING_H__
