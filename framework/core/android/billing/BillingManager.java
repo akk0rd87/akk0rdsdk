@@ -67,7 +67,7 @@ class BillingManager {
         mBillingClient.startConnection(new BillingClientStateListener() {
             @Override
             public void onBillingSetupFinished(@BillingResponse int billingResponseCode) {
-                Log.d(TAG, "Setup finished. Response: " + DecodeBillingResponse(billingResponseCode));
+                Log.v(TAG, "Setup finished. Response: " + DecodeBillingResponse(billingResponseCode));
 
                 if (billingResponseCode == BillingResponse.OK) {
                     mIsServiceConnected = true;
@@ -140,7 +140,7 @@ class BillingManager {
                     @Override
                     public void run() {
                         // Notifying the listener that billing client is ready                             
-                        Log.d(TAG, "Setup successful");
+                        Log.v(TAG, "Setup successful");
                         //queryPurchases();
                     }
                 });    
