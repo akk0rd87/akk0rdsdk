@@ -1,11 +1,17 @@
 #include "billing.h"
 
-static int BillingStatus = -1;
-static BillingManager::BillingPurchaseUpdatedCallback* AppPurchaseUpdated = nullptr;
+struct BillingContextStruct
+{
+	int BillingStatus = -1;
+	BillingManager::BillingPurchaseUpdatedCallback* AppPurchaseUpdated = nullptr;
+	decltype(SDL_RegisterEvents(1)) BillingEventCode;
+};
+
+static BillingContextStruct BillingContext;
 
 int BillingManager::GetStatus()
 {
-    return BillingStatus;
+	return BillingContext.BillingStatus;
 };
 
 #ifdef __ANDROID__
@@ -19,7 +25,7 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_BillingSetupFinished(J
 {
     int Code = (int)ResponseCode;
     logDebug("BillingSetupFinished %d", Code);
-    BillingStatus = Code;
+    BillingContext.BillingStatus = Code;
 }
 
 JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_BillingDisconnected(JNIEnv*, jclass)
@@ -35,9 +41,9 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseQueried(JNIEnv
 
 	logDebug("PurchaseQueried %s %s %s", PToken, PCode, (ActionType == 0 ? "restored" : "boufght"));
 	 
-	if(AppPurchaseUpdated)
+	if(BillingContext.AppPurchaseUpdated)
 	{
-		AppPurchaseUpdated(PToken, PCode, (BillingManager::OperAction)ActionType);
+		BillingContext.AppPurchaseUpdated(PToken, PCode, (BillingManager::OperAction)ActionType);
 	}
 	else
 	{
@@ -59,6 +65,8 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseQueried(JNIEnv
 
 bool BillingManager::Init()
 {
+	BillingContext.BillingEventCode = SDL_RegisterEvents(1);
+
 #ifdef __ANDROID__
     return AndroidBillingManager::Init();
 #endif
@@ -113,5 +121,10 @@ bool BillingManager::ConsumeProductItem(const char* PurchaseToken)
 
 void BillingManager::SetPurchaseUpdatedCallback(BillingPurchaseUpdatedCallback* Callback)
 {
-	AppPurchaseUpdated = Callback;
+	BillingContext.AppPurchaseUpdated = Callback;
+};
+
+decltype(SDL_RegisterEvents(1)) BillingManager::GetEventCode()
+{
+	return BillingContext.BillingEventCode;
 };

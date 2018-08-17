@@ -12,15 +12,16 @@ public:
 	typedef void (BillingPurchaseUpdatedCallback)(const char* PurchaseToken, const char* SKUid, BillingManager::OperAction Action);
 	
 
-	static bool                 Init();
-    static int                  GetStatus();
-    static bool                 QueryProductDetails(const std::vector<std::string>& ProdList);
-    static bool                 RestorePurchases();
-    static bool                 PurchaseProdItem(const char* ProductCode);
-    static bool                 ConsumeProductItem(const char* PurchaseToken);
-
+	static bool                             Init();
+    static int                              GetStatus();
+    static bool                             QueryProductDetails(const std::vector<std::string>& ProdList);
+    static bool                             RestorePurchases();
+    static bool                             PurchaseProdItem(const char* ProductCode);
+    static bool                             ConsumeProductItem(const char* PurchaseToken);
 	
-	static void                 SetPurchaseUpdatedCallback(BillingPurchaseUpdatedCallback* Callback);
+	static void                             SetPurchaseUpdatedCallback(BillingPurchaseUpdatedCallback* Callback);
+	
+	static decltype(SDL_RegisterEvents(1))  GetEventCode();
 };
 
 #endif // __AKK0RD_INAPP_BILLING_H__
