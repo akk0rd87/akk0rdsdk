@@ -167,13 +167,14 @@ class BillingManager {
                             @Override
                             public void onSkuDetailsResponse(int responseCode,
                                                              List<SkuDetails> skuDetailsList) {
-                                //listener.onSkuDetailsResponse(responseCode, skuDetailsList);
-                                Log.v(TAG, "onSkuDetailsResponse responseCode = " + responseCode + ", len = " + skuDetailsList.size());
-                                for(int i = 0; i < skuDetailsList.size(); i++)
-                                {
-                                    SkuDetails sku = skuDetailsList.get(i);
-                                    Log.v(TAG, sku.getSku() + "-" + sku.getPrice() + "-" + sku.getPriceCurrencyCode());
-                                }
+                                if(BillingResponse.OK == responseCode)
+                                    if(skuDetailsList != null)
+                                        for(int i = 0; i < skuDetailsList.size(); i++)
+                                        {
+                                            // Need to set Java Callback
+                                            //SkuDetails sku = skuDetailsList.get(i);
+                                            //Log.v(TAG, sku.getSku() + "-" + sku.getPrice() + "-" + sku.getPriceCurrencyCode());
+                                        }
                             }
                         });                
             }
