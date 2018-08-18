@@ -120,9 +120,9 @@ class BillingManager {
 
                             if(BillingResponse.OK == responseCode)
                             {
-                                for (Purchase purchase : purchases) {
-                                    PurchaseQueried(purchase.getPurchaseToken(), purchase.getSku(), PURCHASE_BOUGHT);
-                                }
+                                if(purchases != null)
+                                    for (Purchase purchase : purchases)
+                                        PurchaseQueried(purchase.getPurchaseToken(), purchase.getSku(), PURCHASE_BOUGHT);
                             }
                             else
                             {
