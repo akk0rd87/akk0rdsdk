@@ -171,7 +171,7 @@ class BillingManager {
                                     if(skuDetailsList != null)
                                         for(int i = 0; i < skuDetailsList.size(); i++)
                                         {
-                                            // Need to set Java Callback
+                                            // Need to set Java Native Callback
                                             //SkuDetails sku = skuDetailsList.get(i);
                                             //Log.v(TAG, sku.getSku() + "-" + sku.getPrice() + "-" + sku.getPriceCurrencyCode());
                                         }
