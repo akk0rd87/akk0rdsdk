@@ -39,7 +39,7 @@ public:
 	void   SetAdMobEventCode(){ AdMobEventCode = SDL_RegisterEvents(1); }
 };
 
-AdContextClass AdContext;
+static AdContextClass AdContext;
 
 struct AdEvent
 {    
