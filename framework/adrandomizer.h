@@ -173,6 +173,9 @@ void AdRandomizer::OpenURL_private(BWrapper::OS OSCode, Apps AppId)
             case BWrapper::OS::AndroidOS:
                 BWrapper::OpenURL("https://play.google.com/store/apps/details?id=org.popapp.fcross");
                 break;
+
+			default:
+				break;
         }
         break;
 
@@ -188,6 +191,9 @@ void AdRandomizer::OpenURL_private(BWrapper::OS OSCode, Apps AppId)
             case BWrapper::OS::AndroidOS:
                 BWrapper::OpenURL("https://play.google.com/store/apps/details?id=org.popapp.jdraw");
                 break;
+
+			default:
+				break;
         }
         break;
 
@@ -202,6 +208,9 @@ void AdRandomizer::OpenURL_private(BWrapper::OS OSCode, Apps AppId)
             case BWrapper::OS::AndroidOS:
                 BWrapper::OpenURL("https://play.google.com/store/apps/details?id=org.popapp.jc");
                 break;
+
+			default:
+				break;
         }
         break;
 
@@ -214,7 +223,10 @@ void AdRandomizer::OpenURL_private(BWrapper::OS OSCode, Apps AppId)
 
             case BWrapper::OS::AndroidOS:
                 BWrapper::OpenURL("https://play.google.com/store/apps/details?id=com.popapp.WordsRu");
-                break;
+				break;
+
+			default:
+				break;
         }
         break;
 
@@ -227,7 +239,10 @@ void AdRandomizer::OpenURL_private(BWrapper::OS OSCode, Apps AppId)
 
             case BWrapper::OS::AndroidOS:
                 BWrapper::OpenURL("https://play.google.com/store/apps/details?id=org.popapp.WordsRu2");
-                break;
+				break;
+
+			default:
+				break;
         }
         break;
 
@@ -240,7 +255,10 @@ void AdRandomizer::OpenURL_private(BWrapper::OS OSCode, Apps AppId)
 
             case BWrapper::OS::AndroidOS:
                 BWrapper::OpenURL("https://play.google.com/store/apps/details?id=org.popapp.sostav_slova_iz_bukv");
-                break;
+				break;
+
+			default:
+				break;
         }
         break;
 
@@ -253,7 +271,10 @@ void AdRandomizer::OpenURL_private(BWrapper::OS OSCode, Apps AppId)
 
             case BWrapper::OS::AndroidOS:
                 BWrapper::OpenURL("https://play.google.com/store/apps/details?id=org.popapp.WordsUS");
-                break;
+				break;
+
+			default:
+				break;
         }
         break;
 
@@ -267,7 +288,10 @@ void AdRandomizer::OpenURL_private(BWrapper::OS OSCode, Apps AppId)
 
             case BWrapper::OS::AndroidOS:
                 BWrapper::OpenURL("https://play.google.com/store/apps/details?id=org.popapp.color_fcross");
-                break;
+				break;
+
+			default:
+				break;
         }
         break;
     }
