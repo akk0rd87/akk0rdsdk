@@ -117,7 +117,10 @@ FILE* BWrapper::FileOpen(const char* FileName, FileSearchPriority SearchPriority
     }
 
     auto File = FileOpen_private(FileName, SearchPriority, OpenMode);
-    if(!File) logError("BWrapper::FileOpen: File %s open error", FileName);
+
+	if (nullptr == File)
+		logError("BWrapper::FileOpen: File %s open error", FileName);
+
     return File;
 }
 
@@ -132,7 +135,10 @@ char* BWrapper::File2Buffer(const char* FileName, FileSearchPriority SearchPrior
     {
 #ifdef __ANDROID__ // На андроиде assets читаются особым образом
         buffer = AndroidWrapper::GetAsset2Buffer(Fname.c_str(), BufferSize);
-        if (!buffer) logError("FileSearchPriority::Assets: File %s [%s] open error", FileName, Fname.c_str());
+        
+		if (nullptr == buffer)
+			logError("FileSearchPriority::Assets: File %s [%s] open error", FileName, Fname.c_str());
+
         return buffer;
 #else
       //Во всех остальных случаях читаем из папки assets        
@@ -142,14 +148,14 @@ char* BWrapper::File2Buffer(const char* FileName, FileSearchPriority SearchPrior
 
     auto File = FileOpen_private(Fname.c_str(), SearchPriority, BWrapper::FileOpenMode::ReadBinary);
 
-    if(!File)
+    if(nullptr == File)
     {
         logError("BWrapper::File2Buffer: File %s open error", FileName, Fname.c_str());
         goto end;
     }
 
     buffer = File2Buffer_private(File, BufferSize);
-    if (!buffer)
+    if (nullptr == buffer)
     {
         logError("BWrapper::File2Buffer: File %s read to buffer error", FileName, Fname.c_str());
     }
@@ -260,14 +266,16 @@ SDL_Rect ConvertRect2Native(const AkkordRect &Rect)
 AkkordWindow* BWrapper::CreateRenderWindow(const char* Title, int X, int Y, int W, int H, Uint32 Flags)
 {
     auto wnd = SDL_CreateWindow(Title, X, Y, W, H, Flags/* SDL_WINDOW_SHOWN*/);
-    if(!wnd) logError("CreateWindow error = %s", SDL_GetError());
+    if(nullptr == wnd) 
+		logError("CreateWindow error = %s", SDL_GetError());
     return wnd;
 };
 
 AkkordRenderer* BWrapper::CreateRenderer(AkkordWindow* window, int index, Uint32 flags)
 {
     auto rnd = SDL_CreateRenderer(window, index, flags);
-    if (!rnd) logError("CreateRenderer error = %s", SDL_GetError());
+    if (nullptr == rnd) 
+		logError("CreateRenderer error = %s", SDL_GetError());
     return rnd;
 };
 
@@ -340,7 +348,7 @@ bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const B
     unsigned Size;
     auto buffer = BWrapper::File2Buffer(FileName, SearchPriority, Size);
 
-    if (!buffer)
+    if (nullptr == buffer)
     {
         logError(std::string(Format + "Error load file image = %s, error=%s").c_str(), FileName, SDL_GetError());
         return result;
