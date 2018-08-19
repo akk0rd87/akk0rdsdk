@@ -207,7 +207,7 @@ public :
 };
 
 SDFProgram sdfProgram;
-#endif;
+#endif
 
 struct SDFCharInfo
 {
