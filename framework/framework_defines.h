@@ -13,7 +13,7 @@
 #include <algorithm>
 
 // Макросы дебага
-#if defined(_DEBUG) && defined(__WIN32__) || defined(__ANDROID__) && !defined(NDEBUG) || defined(__APPLE__)
+#if defined(_DEBUG) && defined(__WIN32__) || defined(__ANDROID__) && !defined(NDEBUG) || defined(__APPLE__) || defined(__CODEBLOCKS)
 	#define __AKK0RD_DEBUG_MACRO__ 1
 #endif
 
