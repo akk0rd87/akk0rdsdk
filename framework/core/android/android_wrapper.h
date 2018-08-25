@@ -10,6 +10,8 @@
 #include "android_java_callbacks.h"
 //#include "../core_types.h"
 
+#include <dirent.h>
+
 struct AndroidFilesHandleStruct
 {
     jclass FileListManager;
@@ -125,7 +127,26 @@ bool AndroidWrapper::OpenURL(const char* url)
 
 bool AndroidWrapper::GetDirContent(const char* Dir, DirContentElementArray& ArrayList)
 {    
-    JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();    
+    struct dirent *entry;
+    DIR *dir = opendir(Dir);
+	
+	if(dir != nullptr)
+	{
+		while ((entry = readdir(dir)) != nullptr)
+		{
+			logDebug("%s %c\n",entry->d_name, entry->d_type);
+			
+            std::unique_ptr<DirContentElement> dc (new DirContentElement());
+            dc->Name  = std::string(entry->d_name);
+            dc->isDir = 0;
+            ArrayList.push_back(std::move(dc));
+		}
+		closedir(dir);
+	}
+	
+		
+	/*
+	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();    
     jclass localClass = env->FindClass("org/akkord/lib/FileListManager"); 
     
     jmethodID JavaMethodGetList = env->GetStaticMethodID(localClass, "GetList", "(Ljava/lang/String;)I");    
@@ -178,7 +199,7 @@ bool AndroidWrapper::GetDirContent(const char* Dir, DirContentElementArray& Arra
 
     env->CallStaticVoidMethod(localClass, JavaMethodCloseList);        
     env->DeleteLocalRef(localClass);    
-    
+    */
     return true;
 }
 
