@@ -1,6 +1,6 @@
 /*
   SDL_image:  An example image loading library for use with SDL
-  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -483,10 +483,14 @@ static unsigned char * load_xcf_tile_rle (SDL_RWops * src, Uint32 len, int bpp, 
   int i, size, count, j, length;
   unsigned char val;
 
+  if (len == 0) {  /* probably bogus data. */
+    return NULL;
+  }
+
   t = load = (unsigned char *) SDL_malloc (len);
   reallen = SDL_RWread (src, t, 1, len);
 
-  data = (unsigned char *) SDL_malloc (x*y*bpp);
+  data = (unsigned char *) SDL_calloc (1, x*y*bpp);
   for (i = 0; i < bpp; i++) {
     d    = data + i;
     size = x*y;
@@ -497,38 +501,54 @@ static unsigned char * load_xcf_tile_rle (SDL_RWops * src, Uint32 len, int bpp, 
 
       length = val;
       if (length >= 128) {
-    length = 255 - (length - 1);
-    if (length == 128) {
-      length = (*t << 8) + t[1];
-      t += 2;
-    }
+        length = 255 - (length - 1);
+        if (length == 128) {
+          length = (*t << 8) + t[1];
+          t += 2;
+        }
 
-    count += length;
-    size -= length;
+        if (((size_t) (t - load) + length) >= len) {
+          break;  /* bogus data */
+        } else if (length > size) {
+          break;  /* bogus data */
+        }
 
-    while (length-- > 0) {
-      *d = *t++;
-      d += bpp;
-    }
+        count += length;
+        size -= length;
+
+        while (length-- > 0) {
+          *d = *t++;
+          d += bpp;
+        }
+      } else {
+        length += 1;
+        if (length == 128) {
+          length = (*t << 8) + t[1];
+          t += 2;
+        }
+
+        if (((size_t) (t - load)) >= len) {
+          break;  /* bogus data */
+        } else if (length > size) {
+          break;  /* bogus data */
+        }
+
+        count += length;
+        size -= length;
+
+        val = *t++;
+
+        for (j = 0; j < length; j++) {
+          *d = val;
+          d += bpp;
+        }
       }
-      else {
-    length += 1;
-    if (length == 128) {
-      length = (*t << 8) + t[1];
-      t += 2;
     }
 
-    count += length;
-    size -= length;
-
-    val = *t++;
-
-    for (j = 0; j < length; j++) {
-      *d = val;
-      d += bpp;
+    if (size > 0) {
+      break;  /* just drop out, untouched data initialized to zero. */
     }
-      }
-    }
+
   }
 
   SDL_free (load);
@@ -575,6 +595,18 @@ do_layer_surface(SDL_Surface * surface, SDL_RWops * src, xcf_header * head, xcf_
     SDL_RWseek(src, layer->hierarchy_file_offset, RW_SEEK_SET);
     hierarchy = read_xcf_hierarchy(src);
 
+    if (hierarchy->bpp > 4) {  /* unsupported. */
+        SDL_Log("Unknown Gimp image bpp (%u)\n", (unsigned int) hierarchy->bpp);
+        free_xcf_hierarchy(hierarchy);
+        return 1;
+    }
+
+    if ((hierarchy->width > 20000) || (hierarchy->height > 20000)) {  /* arbitrary limit to avoid integer overflow. */
+        SDL_Log("Gimp image too large (%ux%u)\n", (unsigned int) hierarchy->width, (unsigned int) hierarchy->height);
+        free_xcf_hierarchy(hierarchy);
+        return 1;
+    }
+
     level = NULL;
     for (i = 0; hierarchy->level_file_offsets[i]; i++) {
         SDL_RWseek(src, hierarchy->level_file_offsets[i], RW_SEEK_SET);
@@ -590,6 +622,16 @@ do_layer_surface(SDL_Surface * surface, SDL_RWops * src, xcf_header * head, xcf_
                 tile = load_tile(src, level->tile_file_offsets[j + 1] - level->tile_file_offsets[j], hierarchy->bpp, ox, oy);
             } else {
                 tile = load_tile(src, ox * oy * 6, hierarchy->bpp, ox, oy);
+            }
+
+            if (!tile) {
+                if (hierarchy) {
+                    free_xcf_hierarchy(hierarchy);
+                }
+                if (level) {
+                    free_xcf_level(level);
+                }
+                return 1;
             }
 
             p8 = tile;
@@ -633,11 +675,8 @@ do_layer_surface(SDL_Surface * surface, SDL_RWops * src, xcf_header * head, xcf_
                         }
                         break;
                     default:
-                        fprintf(stderr, "Unknown Gimp image type (%d)\n", head->image_type);
+                        SDL_Log("Unknown Gimp image type (%d)\n", head->image_type);
                         if (hierarchy) {
-                            if (hierarchy->level_file_offsets)
-                                SDL_free(hierarchy->level_file_offsets);
-
                             free_xcf_hierarchy(hierarchy);
                         }
                         if (level)
@@ -667,7 +706,7 @@ do_layer_surface(SDL_Surface * surface, SDL_RWops * src, xcf_header * head, xcf_
                         }
                         break;
                     default:
-                        fprintf(stderr, "Unknown Gimp image type (%d)\n", head->image_type);
+                        SDL_Log("Unknown Gimp image type (%d)\n", head->image_type);
                         if (tile)
                             free_xcf_tile(tile);
                         if (level)
@@ -733,7 +772,7 @@ SDL_Surface *IMG_LoadXCF_RW(SDL_RWops *src)
     load_tile = load_xcf_tile_rle;
     break;
   default:
-    fprintf (stderr, "Unsupported Compression.\n");
+    SDL_Log("Unsupported Compression.\n");
     free_xcf_header (head);
     return NULL;
   }

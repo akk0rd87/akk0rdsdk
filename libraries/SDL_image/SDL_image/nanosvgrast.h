@@ -44,7 +44,7 @@ typedef struct NSVGrasterizer NSVGrasterizer;
 */
 
 // Allocated rasterizer context.
-NSVGrasterizer* nsvgCreateRasterizer();
+NSVGrasterizer* nsvgCreateRasterizer(void);
 
 // Rasterizes SVG image, returns RGBA image (non-premultiplied alpha)
 //   r - pointer to rasterizer context
@@ -71,7 +71,9 @@ void nsvgDeleteRasterizer(NSVGrasterizer*);
 
 #ifdef NANOSVGRAST_IMPLEMENTATION
 
+/*
 #include <math.h>
+*/
 
 #define NSVG__SUBSAMPLES	5
 #define NSVG__FIXSHIFT		10

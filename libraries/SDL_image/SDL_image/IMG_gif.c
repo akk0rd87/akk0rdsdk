@@ -1,6 +1,6 @@
 /*
   SDL_image:  An example image loading library for use with SDL
-  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -497,8 +497,10 @@ LWZReadByte(SDL_RWops *src, int flag, int input_code_size)
             return -3;
         }
         *sp++ = table[1][code];
-        if (code == table[0][code])
-        RWSetMsg("circular table entry BIG ERROR");
+        if (code == table[0][code]) {
+            RWSetMsg("circular table entry BIG ERROR");
+            return -3;
+        }
         code = table[0][code];
     }
 

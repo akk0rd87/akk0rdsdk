@@ -178,9 +178,11 @@ void nsvgDelete(NSVGimage* image);
 
 #ifdef NANOSVG_IMPLEMENTATION
 
+/*
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+*/
 
 #define NSVG_PI (3.14159265358979323846264338327f)
 #define NSVG_KAPPA90 (0.5522847493f)	// Length proportional to radius of a cubic bezier handle for 90deg arcs.
@@ -1146,7 +1148,7 @@ static double nsvg__atof(const char* s)
 	if (*cur == 'e' || *cur == 'E') {
 		int expPart = 0;
 		cur++; // skip 'E'
-		expPart = strtol(cur, &end, 10); // Parse digit sequence with sign
+		expPart = (int)strtol(cur, &end, 10); // Parse digit sequence with sign
 		if (cur != end) {
 			res *= pow(10.0, (double)expPart);
 		}

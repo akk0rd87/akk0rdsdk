@@ -1,6 +1,6 @@
 /*
   showimage:  A test application for the SDL image loading library.
-  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 
     flags = SDL_WINDOW_HIDDEN;
     for ( i=1; argv[i]; ++i ) {
-        if ( strcmp(argv[i], "-fullscreen") == 0 ) {
+        if ( SDL_strcmp(argv[i], "-fullscreen") == 0 ) {
             SDL_ShowCursor(0);
             flags |= SDL_WINDOW_FULLSCREEN;
         }
@@ -87,11 +87,11 @@ int main(int argc, char *argv[])
     }
 
     for ( i=1; argv[i]; ++i ) {
-        if ( strcmp(argv[i], "-fullscreen") == 0 ) {
+        if ( SDL_strcmp(argv[i], "-fullscreen") == 0 ) {
             continue;
         }
 
-        if ( strcmp(argv[i], "-save") == 0 && argv[i+1] ) {
+        if ( SDL_strcmp(argv[i], "-save") == 0 && argv[i+1] ) {
             ++i;
             saveFile = argv[i];
             continue;
@@ -109,7 +109,16 @@ int main(int argc, char *argv[])
         if ( saveFile ) {
             SDL_Surface *surface = IMG_Load(argv[i]);
             if (surface) {
-                if ( IMG_SavePNG(surface, saveFile) < 0 ) {
+                int result;
+                const char *ext = SDL_strrchr(saveFile, '.');
+                if ( ext && SDL_strcasecmp(ext, ".bmp") == 0 ) {
+                    result = SDL_SaveBMP(surface, saveFile);
+                } else if ( ext && SDL_strcasecmp(ext, ".jpg") == 0 ) {
+                    result = IMG_SaveJPG(surface, saveFile, 90);
+                } else {
+                    result = IMG_SavePNG(surface, saveFile);
+                }
+                if ( result < 0 ) {
                     fprintf(stderr, "Couldn't save %s: %s\n", saveFile, SDL_GetError());
                 }
             } else {

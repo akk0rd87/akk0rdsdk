@@ -1,6 +1,6 @@
 /*
   SDL_image:  An example image loading library for use with SDL
-  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -147,7 +147,7 @@ SDL_Surface *IMG_LoadPCX_RW(SDL_RWops *src)
     if (bpl > surface->pitch) {
         error = "bytes per line is too large (corrupt?)";
     }
-    buf = (Uint8 *)SDL_malloc(bpl);
+    buf = (Uint8 *)SDL_calloc(SDL_max(bpl, surface->pitch), 1);
     row = (Uint8 *)surface->pixels;
     for ( y=0; y<surface->h; ++y ) {
         /* decode a scan line to a temporary buffer first */

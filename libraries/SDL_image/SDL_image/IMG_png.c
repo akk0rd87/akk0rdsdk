@@ -1,6 +1,6 @@
 /*
   SDL_image:  An example image loading library for use with SDL
-  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -78,6 +78,9 @@ typedef png_bytep png_const_bytep;
 #if (PNG_LIBPNG_VER_MINOR < 6)
 typedef png_structp png_const_structrp;
 typedef png_infop png_const_inforp;
+typedef png_structp png_structrp;
+typedef png_infop png_inforp;
+typedef const png_color * png_const_colorp;
 #endif
 #endif
 
@@ -101,6 +104,7 @@ static struct {
     void (*png_set_packing) (png_structrp png_ptr);
     void (*png_set_read_fn) (png_structrp png_ptr, png_voidp io_ptr, png_rw_ptr read_data_fn);
     void (*png_set_strip_16) (png_structrp png_ptr);
+    int (*png_set_interlace_handling) (png_structrp png_ptr);
     int (*png_sig_cmp) (png_const_bytep sig, png_size_t start, png_size_t num_to_check);
 #ifndef LIBPNG_VERSION_12
     jmp_buf* (*png_set_longjmp_fn) (png_structrp, png_longjmp_ptr, size_t);
@@ -150,6 +154,7 @@ int IMG_InitPNG()
         FUNCTION_LOADER(png_set_packing, void (*) (png_structrp png_ptr))
         FUNCTION_LOADER(png_set_read_fn, void (*) (png_structrp png_ptr, png_voidp io_ptr, png_rw_ptr read_data_fn))
         FUNCTION_LOADER(png_set_strip_16, void (*) (png_structrp png_ptr))
+        FUNCTION_LOADER(png_set_interlace_handling, int (*) (png_structrp png_ptr))
         FUNCTION_LOADER(png_sig_cmp, int (*) (png_const_bytep sig, png_size_t start, png_size_t num_to_check))
 #ifndef LIBPNG_VERSION_12
         FUNCTION_LOADER(png_set_longjmp_fn, jmp_buf* (*) (png_structrp, png_longjmp_ptr, size_t))
@@ -284,7 +289,10 @@ SDL_Surface *IMG_LoadPNG_RW(SDL_RWops *src)
             &color_type, &interlace_type, NULL, NULL);
 
     /* tell libpng to strip 16 bit/color files down to 8 bits/color */
-    lib.png_set_strip_16(png_ptr) ;
+    lib.png_set_strip_16(png_ptr);
+
+    /* tell libpng to de-interlace (if the image is interlaced) */
+    lib.png_set_interlace_handling(png_ptr);
 
     /* Extract multiple pixels with bit depths of 1, 2, and 4 from a single
      * byte into separate bytes (useful for paletted and grayscale images).
@@ -597,6 +605,15 @@ static int IMG_SavePNG_RW_libpng(SDL_Surface *surface, SDL_RWops *dst, int freed
 }
 
 #endif /* USE_LIBPNG */
+
+/* Replace C runtime functions with SDL C runtime functions for building on Windows */
+#define MINIZ_NO_STDIO
+#define MINIZ_NO_TIME
+#define MINIZ_SDL_MALLOC
+#define MZ_ASSERT(x) SDL_assert(x)
+#undef memset
+#define memset  SDL_memset
+#define strlen  SDL_strlen
 
 #include "miniz.h"
 

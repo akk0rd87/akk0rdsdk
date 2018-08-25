@@ -1,6 +1,6 @@
 /*
   SDL_image:  An example image loading library for use with SDL
-  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -245,7 +245,7 @@ static SDL_Surface *LoadBMP_RW (SDL_RWops *src, int freesrc)
     /* The Win32 BITMAPINFOHEADER struct (40 bytes) */
     Uint32 biSize;
     Sint32 biWidth;
-    Sint32 biHeight;
+    Sint32 biHeight = 0;
     Uint16 biPlanes;
     Uint16 biBitCount;
     Uint32 biCompression;
@@ -735,6 +735,14 @@ LoadICOCUR_RW(SDL_RWops * src, int type, int freesrc)
         goto done;
     }
 
+    /* sanity check image size, so we don't overflow integers, etc. */
+    if ((biWidth < 0) || (biWidth > 0xFFFFFF) ||
+        (biHeight < 0) || (biHeight > 0xFFFFFF)) {
+        IMG_SetError("Unsupported or invalid ICO dimensions");
+        was_error = SDL_TRUE;
+        goto done;
+    }
+
     /* Create a RGBA surface */
     biHeight = biHeight >> 1;
     //printf("%d x %d\n", biWidth, biHeight);
@@ -751,6 +759,11 @@ LoadICOCUR_RW(SDL_RWops * src, int type, int freesrc)
     if (biBitCount <= 8) {
         if (biClrUsed == 0) {
             biClrUsed = 1 << biBitCount;
+        }
+        if (biClrUsed > SDL_arraysize(palette)) {
+            IMG_SetError("Unsupported or incorrect biClrUsed field");
+            was_error = SDL_TRUE;
+            goto done;
         }
         for (i = 0; i < (int) biClrUsed; ++i) {
             SDL_RWread(src, &palette[i], 4, 1);

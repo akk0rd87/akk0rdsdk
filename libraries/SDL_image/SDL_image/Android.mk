@@ -62,6 +62,7 @@ LOCAL_SRC_FILES :=  \
     IMG_tga.c       \
     IMG_tif.c       \
     IMG_webp.c      \
+    IMG_WIC.c       \
     IMG_xcf.c       \
     IMG_xpm.c.arm   \
     IMG_xv.c        \

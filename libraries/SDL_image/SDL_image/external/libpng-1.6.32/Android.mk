@@ -7,12 +7,6 @@ common_SRC_FILES := \
 	pngget.c pngmem.c pngpread.c pngread.c pngrio.c pngrtran.c pngrutil.c \
 	pngset.c pngtrans.c pngwio.c pngwrite.c pngwtran.c pngwutil.c
 
-ifeq ($(TARGET_ARCH),arm)
-common_SRC_FILES += \
-    arm/arm_init1.c \
-    arm/filter_neon.S \
-    arm/filter_neon_intrinsics.c
-
 common_CFLAGS := ## -fomit-frame-pointer
 
 common_C_INCLUDES += \
