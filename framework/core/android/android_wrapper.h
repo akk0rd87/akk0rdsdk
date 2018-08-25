@@ -127,18 +127,19 @@ bool AndroidWrapper::OpenURL(const char* url)
 
 bool AndroidWrapper::GetDirContent(const char* Dir, DirContentElementArray& ArrayList)
 {    
-    struct dirent *entry;
+    // https://www.gnu.org/software/libc/manual/html_node/Directory-Entries.html
+	struct dirent *entry;
     DIR *dir = opendir(Dir);
 	
 	if(dir != nullptr)
 	{
 		while ((entry = readdir(dir)) != nullptr)
 		{
-			logDebug("%s %c\n",entry->d_name, entry->d_type);
+			//logDebug("%s %d\n",entry->d_name, int(entry->d_type));
 			
             std::unique_ptr<DirContentElement> dc (new DirContentElement());
             dc->Name  = std::string(entry->d_name);
-            dc->isDir = 0;
+            dc->isDir = (DT_DIR == entry->d_type ? 1 : 0);
             ArrayList.push_back(std::move(dc));
 		}
 		closedir(dir);
