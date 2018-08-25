@@ -509,9 +509,8 @@ class SDFFontBuffer
                 VecSize.push_back(localpoint.x);
                 pt.x = std::max(pt.x, localpoint.x);
                 localpoint.x = 0;
-            }
-            else if (a == 13) {} // ничего не делаем
-            else // Если это не переход строки       
+            }            
+            else if (a != 13) // Если это не переход строки       
             {
                 sdfFont->GetCharInfo(a, charParams);
 
