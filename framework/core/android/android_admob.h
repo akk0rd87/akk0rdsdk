@@ -7,41 +7,40 @@
 #include <jni.h>
 #include "core/core_defines.h"
 
+static jclass AdMobClass = nullptr;
+
+static jmethodID midInterstitialSetUnitId  = nullptr;
+static jmethodID midInterstitialLoad       = nullptr;
+static jmethodID midInterstitialShow       = nullptr;
+static jmethodID midRewardedVideoSetUnitId = nullptr;
+static jmethodID midRewardedVideoLoad      = nullptr;
+static jmethodID midRewardedVideoShow      = nullptr;
+
 class AdMobAndroid
 {
 
 private:    
-    static jclass FindAdmobClass(JNIEnv *env)
-    {
-        const char* ClassName = "org/akkord/lib/AdMobAdapter";
-        jclass admobClass = env->FindClass(ClassName);
-        if(!admobClass)
-        {
-            logError("Cannot find class %s", ClassName);
-            return nullptr;
-        }
-        return admobClass;
-    };
+
 public:    
-    static bool                       Init(const char* PublisherID, int Formats);
+    static bool Init(const char* PublisherID, int Formats);
     
-    static bool                       InterstitialSetUnitId(const char* UnitId);
-    static bool                       InterstitialLoad();
-    static bool                       InterstitialShow();
+    static bool InterstitialSetUnitId(const char* UnitId);
+    static bool InterstitialLoad();
+    static bool InterstitialShow();
     
-    static bool                       RewardedVideoSetUnitId(const char* UnitId);
-    static bool                       RewardedVideoLoad();
-    static bool                       RewardedVideoShow();
+    static bool RewardedVideoSetUnitId(const char* UnitId);
+    static bool RewardedVideoLoad();
+    static bool RewardedVideoShow();
 };
 
 
 bool AdMobAndroid::Init(const char* PublisherID, int Formats)
 {    
     JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-    jclass activity = FindAdmobClass(env);
+    jclass localClass = env->FindClass("org/akkord/lib/AdMobAdapter");
+    AdMobClass = reinterpret_cast<jclass>(env->NewGlobalRef(localClass));	
     
-    // Common Initialize method
-    jmethodID AdmobInit = env->GetStaticMethodID(activity, "Initialize", "(Ljava/lang/String;)V");
+    jmethodID AdmobInit = env->GetStaticMethodID(AdMobClass, "Initialize", "(Ljava/lang/String;)V");
     if(!AdmobInit)
     {
         logError("Initialize Java method not Found");        
@@ -49,85 +48,81 @@ bool AdMobAndroid::Init(const char* PublisherID, int Formats)
     }
     
     jstring url_jstring = (jstring)env->NewStringUTF(PublisherID);
-    env->CallStaticVoidMethod(activity, AdmobInit, url_jstring);
+    env->CallStaticVoidMethod(AdMobClass, AdmobInit, url_jstring);
     env->DeleteLocalRef(url_jstring);     
     
     if(Formats & AdMob::Format::Interstitial)
     {
         // InterstitialInit method
-        AdmobInit = env->GetStaticMethodID(activity, "InterstitialInit", "()V");
+        AdmobInit = env->GetStaticMethodID(AdMobClass, "InterstitialInit", "()V");
         if(!AdmobInit)
         {
             logError("InterstitialInit Java method not Found");        
             return false;        
         }    
-        env->CallStaticVoidMethod(activity, AdmobInit);
+        env->CallStaticVoidMethod(AdMobClass, AdmobInit);
     }
     
     if(Formats & AdMob::Format::RewardedVideo)
     {
         // RewardedVideoInit method
-        AdmobInit = env->GetStaticMethodID(activity, "RewardedVideoInit", "()V");
+        AdmobInit = env->GetStaticMethodID(AdMobClass, "RewardedVideoInit", "()V");
         if(!AdmobInit)
         {
             logError("RewardedVideoInit Java method not Found");        
             return false;        
         }    
-        env->CallStaticVoidMethod(activity, AdmobInit);
-    }
-    
-    env->DeleteLocalRef(activity);
-    
+        env->CallStaticVoidMethod(AdMobClass, AdmobInit);
+    }    
+
+    midInterstitialSetUnitId   = env->GetStaticMethodID(AdMobClass, "InterstitialSetUnitId", "(Ljava/lang/String;)V");
+    midInterstitialLoad        = env->GetStaticMethodID(AdMobClass, "InterstitialLoad", "()V");
+    midInterstitialShow        = env->GetStaticMethodID(AdMobClass, "InterstitialShow", "()I");
+    midRewardedVideoSetUnitId  = env->GetStaticMethodID(AdMobClass, "RewardedVideoSetUnitId", "(Ljava/lang/String;)V");
+    midRewardedVideoLoad       = env->GetStaticMethodID(AdMobClass, "RewardedVideoLoad", "()V");
+    midRewardedVideoShow       = env->GetStaticMethodID(AdMobClass, "RewardedVideoShow", "()I");
+	
     return true;
 };
 
 bool AdMobAndroid::InterstitialSetUnitId(const char* UnitId)
 {
     JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-    jclass activity = FindAdmobClass(env);
-    jmethodID InterstitialSetUnitId = env->GetStaticMethodID(activity, "InterstitialSetUnitId", "(Ljava/lang/String;)V");
-    if(!InterstitialSetUnitId)
+    if(!midInterstitialSetUnitId)
     {
         logError("InterstitialSetUnitId Java method not Found");        
         return false;        
     }
     jstring url_jstring = (jstring)env->NewStringUTF(UnitId);
-    env->CallStaticVoidMethod(activity, InterstitialSetUnitId, url_jstring);
-    env->DeleteLocalRef(url_jstring);   
-    env->DeleteLocalRef(activity);    
+    env->CallStaticVoidMethod(AdMobClass, midInterstitialSetUnitId, url_jstring);
+    env->DeleteLocalRef(url_jstring);          
     return true;
 };
 
 bool AdMobAndroid::InterstitialLoad()
 {
-    JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-    jclass activity = FindAdmobClass(env);
-    jmethodID AdmobLoad = env->GetStaticMethodID(activity, "InterstitialLoad", "()V");
-    if(!AdmobLoad)
+    JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();    
+    if(!midInterstitialLoad)
     {
         logError("InterstitialLoad Java method not Found");        
         return false;        
     }    
-    env->CallStaticVoidMethod(activity, AdmobLoad);
-    env->DeleteLocalRef(activity);
+    env->CallStaticVoidMethod(AdMobClass, midInterstitialLoad);    
     
     return true;
 };
 
 bool AdMobAndroid::InterstitialShow()
 {
-    JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-    jclass activity = FindAdmobClass(env);
-    jmethodID InterstitialShow = env->GetStaticMethodID(activity, "InterstitialShow", "()I");
-    if(!InterstitialShow)
+    JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();    
+    if(!midInterstitialShow)
     {
         logError("InterstitialShow Java method not Found");        
         return false;        
     }        
-    jint value = env->CallStaticIntMethod(activity, InterstitialShow);        
+    jint value = env->CallStaticIntMethod(AdMobClass, midInterstitialShow);        
     int retval = (int)value;
-    logDebug("retval %d", retval);
-    env->DeleteLocalRef(activity);
+    logDebug("retval %d", retval);    
     
     if(retval) return true;
     return false;
@@ -135,51 +130,41 @@ bool AdMobAndroid::InterstitialShow()
 
 bool AdMobAndroid::RewardedVideoSetUnitId(const char* UnitId)
 {
-    JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-    jclass activity = FindAdmobClass(env);
-    jmethodID RewardedVideoSetUnitId = env->GetStaticMethodID(activity, "RewardedVideoSetUnitId", "(Ljava/lang/String;)V");
-    if(!RewardedVideoSetUnitId)
+    JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();    
+    if(!midRewardedVideoSetUnitId)
     {
         logError("RewardedVideoSetUnitId Java method not Found");        
         return false;        
     }
     jstring url_jstring = (jstring)env->NewStringUTF(UnitId);
-    env->CallStaticVoidMethod(activity, RewardedVideoSetUnitId, url_jstring);
-    env->DeleteLocalRef(url_jstring);   
-    env->DeleteLocalRef(activity);    
+    env->CallStaticVoidMethod(AdMobClass, midRewardedVideoSetUnitId, url_jstring);
+    env->DeleteLocalRef(url_jstring);       
     return true;
 };
 
 bool AdMobAndroid::RewardedVideoLoad()
 {
-    JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-    jclass activity = FindAdmobClass(env);
-    jmethodID AdmobLoad = env->GetStaticMethodID(activity, "RewardedVideoLoad", "()V");
-    if(!AdmobLoad)
+    JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();    
+    if(!midRewardedVideoLoad)
     {
         logError("RewardedVideoLoad Java method not Found");        
         return false;        
     }    
-    env->CallStaticVoidMethod(activity, AdmobLoad);
-    env->DeleteLocalRef(activity);
+    env->CallStaticVoidMethod(AdMobClass, midRewardedVideoLoad);    
     
     return true;
 };
 
 bool AdMobAndroid::RewardedVideoShow()
 {
-    JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-    jclass activity = FindAdmobClass(env);
-    jmethodID RewardedVideoShow = env->GetStaticMethodID(activity, "RewardedVideoShow", "()I");
-    if(!RewardedVideoShow)
+    JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();    
+    if(!midRewardedVideoShow)
     {
         logError("RewardedVideoShow Java method not Found");        
         return false;        
     }        
-    jint value = env->CallStaticIntMethod(activity, RewardedVideoShow);        
-    int retval = (int)value;
-    logDebug("retval %d", retval);
-    env->DeleteLocalRef(activity);
+    jint value = env->CallStaticIntMethod(AdMobClass, midRewardedVideoShow);        
+    int retval = (int)value; 
     
     if(retval) return true;
     return false;
