@@ -12,25 +12,41 @@
 
 #include <dirent.h>
 
+/*
 struct AndroidFilesHandleStruct
 {
     jclass FileListManager;
     unsigned ItemsCount = 0;
     unsigned Pointer = 0;
 };
+*/
+static jclass globalUtils = nullptr;
 
-static AAssetManager *AssetMgr = NULL;
+static jmethodID midDirectoryDelete = nullptr;
+static jmethodID midDirectoryExists = nullptr;
+static jmethodID midOpenURL  = nullptr;
+static jmethodID midShowToast  = nullptr;
+static jmethodID midGetApiLevel  = nullptr;
+static jmethodID midMkDir  = nullptr;
+static jmethodID midGetLanguage  = nullptr;
+static jmethodID midShowMessageBox  = nullptr;
+static jmethodID midGetAssetManager  = nullptr;
+static jmethodID midGetInternalWriteDir  = nullptr;
+static jmethodID midGetInternalDir  = nullptr;
+
+static AAssetManager *AssetMgr = nullptr;
 
 class AndroidWrapper
 {   
 private:    
     static bool   private_DirRemove(const char* Dir, bool Recursive);
-    static jclass FindAkkordClassUtils(JNIEnv *env);   
+    //static jclass FindAkkordClassUtils(JNIEnv *env);   
     
     static void              InitAssetsManager    ();
  
 public:
-    static bool              OpenURL              (const char* url);    
+    static bool              Init();
+	static bool              OpenURL              (const char* url);    
     static std::string       GetLanguage          ();
     static int               GetApiLevel          ();    
     
@@ -50,19 +66,52 @@ public:
 	static void              MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3);
 };
 
-jclass AndroidWrapper::FindAkkordClassUtils(JNIEnv *env)
+bool AndroidWrapper::Init()
 {
-    return env->FindClass("org/akkord/lib/Utils");    
+	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
+	jclass localClass = env->FindClass("org/akkord/lib/Utils");
+	globalUtils = reinterpret_cast<jclass>(env->NewGlobalRef(localClass));	
+
+	midDirectoryDelete	   = env->GetStaticMethodID(globalUtils, "DirectoryDelete", "(Ljava/lang/String;I)I");
+	midDirectoryExists	   = env->GetStaticMethodID(globalUtils, "DirectoryExists", "(Ljava/lang/String;)I");
+	midOpenURL	           = env->GetStaticMethodID(globalUtils, "openURL", "(Ljava/lang/String;)V");
+	midShowToast	       = env->GetStaticMethodID(globalUtils, "showToast", "(Ljava/lang/String;IIII)V");
+	midGetApiLevel	       = env->GetStaticMethodID(globalUtils, "GetApiLevel", "()I");
+	midMkDir	           = env->GetStaticMethodID(globalUtils, "MkDir", "(Ljava/lang/String;)I");
+	midGetLanguage	       = env->GetStaticMethodID(globalUtils, "getLanguage", "()Ljava/lang/String;");
+	midShowMessageBox      = env->GetStaticMethodID(globalUtils, "showMessageBox", "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
+	midGetAssetManager	   = env->GetStaticMethodID(globalUtils, "GetAssetManager", "()Landroid/content/res/AssetManager;");
+	midGetInternalWriteDir = env->GetStaticMethodID(globalUtils, "GetInternalWriteDir", "()Ljava/lang/String;");
+	midGetInternalDir      = env->GetStaticMethodID(globalUtils, "GetInternalDir", "()Ljava/lang/String;");	
+		
+	if(midDirectoryDelete	  == nullptr) logError("midDirectoryDelete	   Java method not found");
+	if(midDirectoryExists	  == nullptr) logError("midDirectoryExists	   Java method not found");
+	if(midOpenURL	          == nullptr) logError("midOpenURL	           Java method not found");
+	if(midShowToast	          == nullptr) logError("midShowToast	       Java method not found");  
+	if(midGetApiLevel	      == nullptr) logError("midGetApiLevel	       Java method not found");
+	if(midMkDir	              == nullptr) logError("midMkDir	           Java method not found");  
+	if(midGetLanguage	      == nullptr) logError("midGetLanguage	       Java method not found");
+	if(midShowMessageBox      == nullptr) logError("midShowMessageBox      Java method not found");
+	if(midGetAssetManager	  == nullptr) logError("midGetAssetManager	   Java method not found");
+	if(midGetInternalWriteDir == nullptr) logError("midGetInternalWriteDir Java method not found");
+	if(midGetInternalDir      == nullptr) logError("midGetInternalDir      Java method not found");
+	
+	return true;
 }
+
+//jclass AndroidWrapper::FindAkkordClassUtils(JNIEnv *env)
+//{
+//    return env->FindClass("org/akkord/lib/Utils");    
+//}
 
 bool AndroidWrapper::private_DirRemove(const char* Dir, bool Recursive)
 {
     JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-    jclass activity = FindAkkordClassUtils(env);
+    //jclass activity = FindAkkordClassUtils(env);
 	logDebug("GetStaticMethodID before");
-    jmethodID DirRemove = env->GetStaticMethodID(activity, "DirectoryDelete", "(Ljava/lang/String;I)I");
+    //jmethodID DirRemove = env->GetStaticMethodID(activity, "DirectoryDelete", "(Ljava/lang/String;I)I");
 	logDebug("GetStaticMethodID after");
-    if(!DirRemove)
+    if(!midDirectoryDelete)
     {        
         logError("AndroidWrapper: DirectoryDelete Java method not Found");        
         return false;
@@ -71,9 +120,9 @@ bool AndroidWrapper::private_DirRemove(const char* Dir, bool Recursive)
     jstring url_jstring = (jstring)env->NewStringUTF(Dir);
     int Recurs = ((Recursive == true) ? (1) : (0));
     
-    jint value = env->CallStaticIntMethod(activity, DirRemove, url_jstring, Recurs);
+    jint value = env->CallStaticIntMethod(globalUtils, midDirectoryDelete, url_jstring, Recurs);
     env->DeleteLocalRef(url_jstring);    
-    env->DeleteLocalRef(activity);     
+    //env->DeleteLocalRef(activity);     
     
     int result = value;
     
@@ -93,19 +142,19 @@ bool AndroidWrapper::DirRemoveRecursive(const char* Dir)
 bool AndroidWrapper::DirectoryExists(const char* Dir)
 {
     JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-    jclass activity = FindAkkordClassUtils(env);
+    //jclass activity = FindAkkordClassUtils(env);
 	logDebug("GetStaticMethodID before");
-    jmethodID DirectoryExists = env->GetStaticMethodID(activity, "DirectoryExists", "(Ljava/lang/String;)I");
+    //jmethodID DirectoryExists = env->GetStaticMethodID(activity, "DirectoryExists", "(Ljava/lang/String;)I");
 	logDebug("GetStaticMethodID after");
-    if(!DirectoryExists)
+    if(!midDirectoryExists)
     {        
         logError("AndroidWrapper: DirectoryExists Java method not Found");        
         return false;
     }        
     jstring url_jstring = (jstring)env->NewStringUTF(Dir);
-    jint value = env->CallStaticIntMethod(activity, DirectoryExists, url_jstring);
+    jint value = env->CallStaticIntMethod(globalUtils, midDirectoryExists, url_jstring);
     env->DeleteLocalRef(url_jstring);    
-    env->DeleteLocalRef(activity);   
+    //env->DeleteLocalRef(activity);   
     
     int v = value;
     if(v == 2) return true;
@@ -115,19 +164,19 @@ bool AndroidWrapper::DirectoryExists(const char* Dir)
 bool AndroidWrapper::OpenURL(const char* url)
 {    
     JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-    jclass activity = FindAkkordClassUtils(env);
+    //jclass activity = FindAkkordClassUtils(env);
 	logDebug("GetStaticMethodID before");
-    jmethodID openURL = env->GetStaticMethodID(activity, "openURL", "(Ljava/lang/String;)V");
+    //jmethodID openURL = env->GetStaticMethodID(activity, "openURL", "(Ljava/lang/String;)V");
 	logDebug("GetStaticMethodID after");
-    if(!openURL)
+    if(!midOpenURL)
     {        
         logError("AndroidWrapper: OpenURL Java method not Found");        
         return false;
     }        
     jstring url_jstring = (jstring)env->NewStringUTF(url);
-    env->CallStaticVoidMethod(activity, openURL, url_jstring);
+    env->CallStaticVoidMethod(globalUtils, midOpenURL, url_jstring);
     env->DeleteLocalRef(url_jstring);    
-    env->DeleteLocalRef(activity);
+    //env->DeleteLocalRef(activity);
     return true;
 }
 
@@ -151,62 +200,6 @@ bool AndroidWrapper::GetDirContent(const char* Dir, DirContentElementArray& Arra
 		closedir(dir);
 	}
 	
-		
-	/*
-	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();    
-    jclass localClass = env->FindClass("org/akkord/lib/FileListManager"); 
-    
-    jmethodID JavaMethodGetList = env->GetStaticMethodID(localClass, "GetList", "(Ljava/lang/String;)I");    
-    if(!JavaMethodGetList)
-    {
-        logError("AndroidWrapper::GetDirContent: GetList Java method not Found");        
-        return false;        
-    }    
-    
-    jstring Path = (jstring)env->NewStringUTF(Dir);  
-    jint value = env->CallStaticIntMethod(localClass, JavaMethodGetList, Path);
-    env->DeleteLocalRef(Path);
-    unsigned Count = (unsigned)value;
-    
-    jmethodID JavaMethodFName = env->GetStaticMethodID(localClass, "GetFileName", "(I)Ljava/lang/String;");
-    if(!JavaMethodFName)
-    {
-        logError("AndroidWrapper::GetDirContent: GetFileName Java method not Found");        
-        return false;        
-    }        
-    
-    jmethodID JavaMethodIsDir = env->GetStaticMethodID(localClass, "GetIsDir", "(I)I");
-    if(!JavaMethodIsDir)
-    {
-        logError("AndroidWrapper::GetDirContent: GetIsDir Java method not Found");        
-        return false;        
-    }
-
-    jmethodID JavaMethodCloseList = env->GetStaticMethodID(localClass, "CloseList", "()V");
-    if(!JavaMethodCloseList)
-    {
-        logError("AndroidWrapper::CloseList Java method not Found");        
-        return false;        
-    }         
-    
-    for(unsigned i = 0; i < Count; i++)
-    {
-        jstring jstr         = (jstring)env->CallStaticObjectMethod(localClass, JavaMethodFName, i);
-        const char* FileName = env->GetStringUTFChars(jstr, 0);
-        
-        jint IsDir           = env->CallStaticIntMethod(localClass, JavaMethodIsDir, i);        
-        
-        std::unique_ptr<DirContentElement> dc (new DirContentElement());
-        dc->Name  = std::string(FileName);
-        dc->isDir = IsDir;        
-        ArrayList.push_back(std::move(dc));
-        
-        env->ReleaseStringUTFChars(jstr, FileName);
-    }
-
-    env->CallStaticVoidMethod(localClass, JavaMethodCloseList);        
-    env->DeleteLocalRef(localClass);    
-    */
     return true;
 }
 
@@ -217,19 +210,19 @@ bool AndroidWrapper::ShowToast(const char* Message, BWrapper::AndroidToastDurati
     // http://developer.alexanderklimov.ru/android/toast.php
         
     JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-    jclass activity = FindAkkordClassUtils(env);
+    //jclass activity = FindAkkordClassUtils(env);
 	logDebug("GetStaticMethodID before");
-    jmethodID showToastJava = env->GetStaticMethodID(activity, "showToast", "(Ljava/lang/String;IIII)V");    
+    //jmethodID showToastJava = env->GetStaticMethodID(activity, "showToast", "(Ljava/lang/String;IIII)V");    
 	logDebug("GetStaticMethodID after");
-    if(!showToastJava)
+    if(!midShowToast)
     {        
         logError("AndroidWrapper::ShowToast Java method not Found");        
         return false;
     }    
     jstring url_jstring = (jstring)env->NewStringUTF(Message);
-    env->CallStaticVoidMethod(activity, showToastJava, url_jstring, Duration, Gravity, xOffset, yOffset);    
+    env->CallStaticVoidMethod(globalUtils, midShowToast, url_jstring, Duration, Gravity, xOffset, yOffset);    
     env->DeleteLocalRef(url_jstring);        
-    env->DeleteLocalRef(activity);      
+    //env->DeleteLocalRef(activity);      
     return true;
 }
 
@@ -238,40 +231,40 @@ int AndroidWrapper::GetApiLevel()
     // https://stackoverflow.com/questions/10196361/how-to-check-the-device-running-api-level-using-c-code-via-ndk
     // https://stackoverflow.com/questions/19355783/getting-os-version-with-ndk-in-c
     JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();    
-    jclass activity = FindAkkordClassUtils(env);   
+    //jclass activity = FindAkkordClassUtils(env);   
 	logDebug("GetStaticMethodID before");	
-    jmethodID GetApiLevelJava = env->GetStaticMethodID(activity, "GetApiLevel", "()I"); 
+    //jmethodID GetApiLevelJava = env->GetStaticMethodID(activity, "GetApiLevel", "()I"); 
 	logDebug("GetStaticMethodID after");
-    if(!GetApiLevelJava)
+    if(!midGetApiLevel)
     {        
         logError("AndroidWrapper GetApiLevel Java method not Found");        
         return 0;
     }
     
-    jint value = env->CallStaticIntMethod(activity, GetApiLevelJava);        
+    jint value = env->CallStaticIntMethod(globalUtils, midGetApiLevel);        
     int retval = (int)value;
-    env->DeleteLocalRef(activity);        
+    //env->DeleteLocalRef(activity);        
     return retval;
 };
 
 bool AndroidWrapper::DirCreate(const char* Path)
 {    
     JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv(); 
-    jclass activity = FindAkkordClassUtils(env);
+    //jclass activity = FindAkkordClassUtils(env);
 	logDebug("GetStaticMethodID before");
-    jmethodID MkDir = env->GetStaticMethodID(activity, "MkDir", "(Ljava/lang/String;)I");    
+    //jmethodID MkDir = env->GetStaticMethodID(activity, "MkDir", "(Ljava/lang/String;)I");    
 	logDebug("GetStaticMethodID after");
-    if(!MkDir)
+    if(!midMkDir)
     {        
         logError("AndroidWrapper MkDir Java method not Found");        
         return false;
     }        
     
     jstring url_jstring = (jstring)env->NewStringUTF(Path);    
-    jint value = env->CallStaticIntMethod(activity, MkDir, url_jstring);    
+    jint value = env->CallStaticIntMethod(globalUtils, midMkDir, url_jstring);    
     env->DeleteLocalRef(url_jstring);
     int retval = (int)value;    
-    env->DeleteLocalRef(activity);                
+    //env->DeleteLocalRef(activity);                
     
     switch(retval)
     {
@@ -298,25 +291,25 @@ bool AndroidWrapper::DirCreate(const char* Path)
 std::string AndroidWrapper::GetLanguage()
 {       
     JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();    
-    jclass activity = FindAkkordClassUtils(env);    
+    //jclass activity = FindAkkordClassUtils(env);    
 	logDebug("GetStaticMethodID before");
-    jmethodID getLanguage = env->GetStaticMethodID(activity, "getLanguage", "()Ljava/lang/String;");            
+    //jmethodID getLanguage = env->GetStaticMethodID(activity, "getLanguage", "()Ljava/lang/String;");            
 	logDebug("GetStaticMethodID after");
-    if(!getLanguage)
+    if(!midGetLanguage)
     {        
         logError("AndroidWrapper getLanguage Java method not Found");        
         return "+-";
     } 
     
 	logDebug("CallStaticObjectMethod before");
-    jstring jstr = (jstring)env->CallStaticObjectMethod(activity, getLanguage);
+    jstring jstr = (jstring)env->CallStaticObjectMethod(globalUtils, midGetLanguage);
 	logDebug("CallStaticObjectMethod after");
     const char* LangStr = env->GetStringUTFChars(jstr, 0);
     
     std::string Lang(LangStr);
     
     env->ReleaseStringUTFChars(jstr, LangStr);
-	env->DeleteLocalRef(activity);
+	//env->DeleteLocalRef(activity);
     logDebug("GetLanguage()");
     return Lang;
 };
@@ -326,20 +319,20 @@ void AndroidWrapper::InitAssetsManager()
     if(!AssetMgr) 
     {   
         JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();        
-        jclass activity = FindAkkordClassUtils(env);    
+        //jclass activity = FindAkkordClassUtils(env);    
 		logDebug("GetStaticMethodID before");		
-        jmethodID GetAssetManager = env->GetStaticMethodID(activity, "GetAssetManager", "()Landroid/content/res/AssetManager;");
+        //jmethodID GetAssetManager = env->GetStaticMethodID(activity, "GetAssetManager", "()Landroid/content/res/AssetManager;");
 		logDebug("GetStaticMethodID after");
-        if(!GetAssetManager)
+        if(!midGetAssetManager)
         {        
             logError("AndroidWrapper GetAssetManager Java method not Found");        
             return;
         }
         logDebug("CallStaticObjectMethod before");
-        jobject jAssetsMgr = (jobject)env->CallStaticObjectMethod(activity, GetAssetManager);
+        jobject jAssetsMgr = (jobject)env->CallStaticObjectMethod(globalUtils, midGetAssetManager);
 		logDebug("CallStaticObjectMethod after");
         AssetMgr = AAssetManager_fromJava(env, jAssetsMgr);
-		env->DeleteLocalRef(activity);
+		//env->DeleteLocalRef(activity);
     }
 };
 
@@ -367,39 +360,39 @@ char* AndroidWrapper::GetAsset2Buffer(const char* FileName, unsigned& Size)
 void AndroidWrapper::GetInternalDirs(std::string& InternalDir, std::string& InternalWriteDir)
 {
     JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();        
-    jclass activity = FindAkkordClassUtils(env);
+    //jclass activity = FindAkkordClassUtils(env);
 	logDebug("GetStaticMethodID before");
-    jmethodID GetDir = env->GetStaticMethodID(activity, "GetInternalWriteDir", "()Ljava/lang/String;");        
+    //jmethodID GetDir = env->GetStaticMethodID(activity, "GetInternalWriteDir", "()Ljava/lang/String;");        
 	logDebug("GetStaticMethodID after");
-    if(!GetDir)
+    if(!midGetInternalWriteDir)
     {        
         logError("AndroidWrapper GetDir Java method not Found");        
         return;
     }     
     
     logDebug("CallStaticObjectMethod before");
-	jstring jstr = (jstring)env->CallStaticObjectMethod(activity, GetDir);   
+	jstring jstr = (jstring)env->CallStaticObjectMethod(globalUtils, midGetInternalWriteDir);   
 	logDebug("CallStaticObjectMethod after");	
     const char* javaDir = env->GetStringUTFChars(jstr, 0);      
     InternalWriteDir = std::string(javaDir);    
     env->ReleaseStringUTFChars(jstr, javaDir);
     
     logDebug("GetStaticMethodID before");
-	GetDir = env->GetStaticMethodID(activity, "GetInternalDir", "()Ljava/lang/String;");    
+	//GetDir = env->GetStaticMethodID(activity, "GetInternalDir", "()Ljava/lang/String;");    
 	logDebug("GetStaticMethodID after");
-    if(!GetDir)
+    if(!midGetInternalDir)
     {        
         logError("AndroidWrapper GetInternalDir Java method not Found");        
         return;
     }         
     logDebug("CallStaticObjectMethod before");
-    jstr = (jstring)env->CallStaticObjectMethod(activity, GetDir);
+    jstr = (jstring)env->CallStaticObjectMethod(globalUtils, midGetInternalDir);
 	logDebug("CallStaticObjectMethod after");	
     const char* javaInternalDir = env->GetStringUTFChars(jstr, 0);
     InternalDir = std::string(javaInternalDir);
     env->ReleaseStringUTFChars(jstr, javaInternalDir);    
     
-    env->DeleteLocalRef(activity);       
+    //env->DeleteLocalRef(activity);       
     
     if(InternalWriteDir[InternalWriteDir.length() - 1] != '/')
         InternalWriteDir = InternalWriteDir + "/";
@@ -411,11 +404,11 @@ void AndroidWrapper::GetInternalDirs(std::string& InternalDir, std::string& Inte
 void AndroidWrapper::MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3)
 {
     JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();        
-    jclass activity = FindAkkordClassUtils(env);
+    //jclass activity = FindAkkordClassUtils(env);
     logDebug("GetStaticMethodID before");
-	jmethodID ShowMessageBox = env->GetStaticMethodID(activity, "showMessageBox", "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
+	//jmethodID ShowMessageBox = env->GetStaticMethodID(activity, "showMessageBox", "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
 	logDebug("GetStaticMethodID after");
-	if(!ShowMessageBox)
+	if(!midShowMessageBox)
 	{
 		logError("AndroidWrapper showMessageBox Java method not Found");
 		return;
@@ -427,7 +420,7 @@ void AndroidWrapper::MessageBoxShow(int Code, const char* Title, const char* Mes
 	jstring jstring_Button2 = (jstring)env->NewStringUTF(Button2);
 	jstring jstring_Button3 = (jstring)env->NewStringUTF(Button3);
 	
-	env->CallStaticVoidMethod(activity, ShowMessageBox, Code, jstring_Title, jstring_Message, jstring_Button1, jstring_Button2, jstring_Button3);
+	env->CallStaticVoidMethod(globalUtils, midShowMessageBox, Code, jstring_Title, jstring_Message, jstring_Button1, jstring_Button2, jstring_Button3);
 	
 	env->DeleteLocalRef(jstring_Title  );
 	env->DeleteLocalRef(jstring_Message);
@@ -435,7 +428,7 @@ void AndroidWrapper::MessageBoxShow(int Code, const char* Title, const char* Mes
 	env->DeleteLocalRef(jstring_Button2);
 	env->DeleteLocalRef(jstring_Button3);
 	
-	env->DeleteLocalRef(activity);
+	//env->DeleteLocalRef(activity);
 };
 
 #endif // __AKK0RD_ANDROID_BASEWRAPPER_H__

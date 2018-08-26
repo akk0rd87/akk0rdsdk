@@ -31,6 +31,8 @@ bool BWrapper::Init(Uint32 flags)
 
 	CurrentContext.MessageBoxEvent = SDL_RegisterEvents(1);
 
+	Platforms::Init();
+
     return true;
 };
 

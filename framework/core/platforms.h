@@ -36,7 +36,8 @@ class Platforms
 private:
     static bool InitInternalDirs();
 public:    
-    static Locale::Lang        GetDeviceLanguage();
+	static bool                Init();
+	static Locale::Lang        GetDeviceLanguage();
     static BWrapper::OS        GetDeviceOS();
     static std::string         GetEnvVariable   (const char* Variable); // Only for windows
     
@@ -292,5 +293,14 @@ void Platforms::MessageBoxShow(int Code, const char* Title, const char* Message,
 	return AndroidWrapper::MessageBoxShow(Code, Title, Message, Button1, Button2, Button3);
 #endif
 }
+
+bool Platforms::Init()
+{
+#ifdef __ANDROID__
+	return AndroidWrapper::Init();
+#endif
+
+	return true;
+};
 
 #endif // __AKK0RD_PLATFORMS_H__
