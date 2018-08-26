@@ -138,6 +138,11 @@ public:
 		for (auto &v : AdMobUnits)
 			logDebug("Ad Unit %s %u", v.Id.c_str(), v.TimePriority);
 	}
+	
+	void Clear()
+	{
+		AdMobUnits.clear();
+	}
 };
 
 #endif // __AKK0RD_ADS_H__
