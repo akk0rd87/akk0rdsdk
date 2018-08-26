@@ -301,6 +301,7 @@ std::string AndroidWrapper::GetLanguage()
     
     env->ReleaseStringUTFChars(jstr, LangStr);
     
+	env->DeleteLocalRef(activity);
     return Lang;
 };
 
@@ -319,6 +320,7 @@ void AndroidWrapper::InitAssetsManager()
         
         jobject jAssetsMgr = (jobject)env->CallStaticObjectMethod(activity, GetAssetManager);        
         AssetMgr = AAssetManager_fromJava(env, jAssetsMgr);        
+		env->DeleteLocalRef(activity);
     }
 };
 
