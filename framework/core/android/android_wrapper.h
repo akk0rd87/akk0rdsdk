@@ -70,7 +70,8 @@ bool AndroidWrapper::Init()
 {
 	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
 	jclass localClass = env->FindClass("org/akkord/lib/Utils");
-	globalUtils = reinterpret_cast<jclass>(env->NewGlobalRef(localClass));	
+	globalUtils = reinterpret_cast<jclass>(env->NewGlobalRef(localClass));
+	env->DeleteLocalRef(localClass);
 
 	midDirectoryDelete	   = env->GetStaticMethodID(globalUtils, "DirectoryDelete", "(Ljava/lang/String;I)I");
 	midDirectoryExists	   = env->GetStaticMethodID(globalUtils, "DirectoryExists", "(Ljava/lang/String;)I");
