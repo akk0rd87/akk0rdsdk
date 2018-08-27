@@ -68,6 +68,7 @@ bool AndroidBillingManager::QueryProductDetails(const std::vector<std::string>& 
     jobjectArray Java_array = env->NewObjectArray(ProdList.size(), env->FindClass("java/lang/String"), env->NewStringUTF(""));
     
     //https://stackoverflow.com/questions/20819004/call-jar-file-from-c-how-to-get-and-send-args
+	// how to release https://stackoverflow.com/questions/12207941/proper-way-to-clean-up-new-object-array-in-jni
     int i = 0;
     for(auto v : ProdList)
     {
