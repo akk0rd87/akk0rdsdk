@@ -49,7 +49,12 @@ bool AndroidBillingManager::Init()
 	midQueryProductDetails = env->GetStaticMethodID(AndroidBillingClass, "QueryProductDetails", "([Ljava/lang/String;)V");
     midRestorePurchases    = env->GetStaticMethodID(AndroidBillingClass, "RestorePurchases", "()V");
 	midPurchaseProdItem    = env->GetStaticMethodID(AndroidBillingClass, "PurchaseProdItem", "(Ljava/lang/String;)V");
-	midConsumeProductItem  = env->GetStaticMethodID(AndroidBillingClass, "PurchaseProdItem", "(Ljava/lang/String;)V");
+	midConsumeProductItem  = env->GetStaticMethodID(AndroidBillingClass, "ConsumeProductItem", "(Ljava/lang/String;)V");
+	
+	if(midQueryProductDetails == nullptr) logError("Java midQueryProductDetails load error");
+	if(midRestorePurchases    == nullptr) logError("Java midRestorePurchases    load error");
+	if(midPurchaseProdItem    == nullptr) logError("Java midPurchaseProdItem    load error");
+	if(midConsumeProductItem  == nullptr) logError("Java midConsumeProductItem  load error");
 	
     return true;
 }
