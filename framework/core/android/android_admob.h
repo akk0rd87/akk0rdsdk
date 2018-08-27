@@ -39,6 +39,7 @@ bool AdMobAndroid::Init(const char* PublisherID, int Formats)
     JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
     jclass localClass = env->FindClass("org/akkord/lib/AdMobAdapter");
     AdMobClass = reinterpret_cast<jclass>(env->NewGlobalRef(localClass));	
+	env->DeleteLocalRef(localClass);
     
     jmethodID AdmobInit = env->GetStaticMethodID(AdMobClass, "Initialize", "(Ljava/lang/String;)V");
     if(!AdmobInit)

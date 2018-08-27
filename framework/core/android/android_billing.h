@@ -34,6 +34,7 @@ bool AndroidBillingManager::Init()
     JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
     jclass localClass =  env->FindClass("org/akkord/lib/BillingManager");
 	AndroidBillingClass = reinterpret_cast<jclass>(env->NewGlobalRef(localClass));
+	env->DeleteLocalRef(localClass);
     
     // Common Initialize method
     jmethodID BillingInit = env->GetStaticMethodID(AndroidBillingClass, "Initialize", "()V");
