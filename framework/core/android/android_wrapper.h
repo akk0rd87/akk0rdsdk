@@ -172,7 +172,8 @@ bool AndroidWrapper::DirRemoveRecursive(const char* Dir)
 
 bool AndroidWrapper::DirectoryExists(const char* Dir)
 {
-    JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();    	
+    /*
+	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();    	
     if(!midDirectoryExists)
     {        
         logError("AndroidWrapper: DirectoryExists Java method not Found");        
@@ -186,6 +187,14 @@ bool AndroidWrapper::DirectoryExists(const char* Dir)
     int v = value;
     if(v == 2) return true;
     else       return false;
+	*/
+	DIR* dir = opendir(Dir);
+	if(dir != nullptr)
+	{
+		closedir(dir);
+		return true;
+	}
+	return false;
 }
 
 bool AndroidWrapper::OpenURL(const char* url)
