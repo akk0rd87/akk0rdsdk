@@ -101,11 +101,11 @@ bool AndroidWrapper::Init()
 	if(GetInternalDir      == nullptr) logError("GetInternalDir      Java method not found");    
 	
 	// кешируем язык
-	jstring jstr_lang = (jstring)env->CallStaticObjectMethod(globalUtils, GetLanguage);
-	const char* LangStr = env->GetStringUTFChars(jstr_lang, 0);
+	jstring jstrLang = (jstring)env->CallStaticObjectMethod(globalUtils, GetLanguage);
+	const char* LangStr = env->GetStringUTFChars(jstrLang, 0);
 	// global variable
 	sLanguage = std::string(LangStr);
-	env->ReleaseStringUTFChars(jstr_lang, LangStr);
+	env->ReleaseStringUTFChars(jstrLang, LangStr);
 	
 	// кешируем директорию для записи
 	jstring jstrWriteDir = (jstring)env->CallStaticObjectMethod(globalUtils, GetInternalWriteDir);
