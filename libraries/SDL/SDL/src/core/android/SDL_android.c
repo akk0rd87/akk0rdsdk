@@ -293,7 +293,7 @@ void checkJNIReady()
 /* Activity initialization -- called before SDL_main() to initialize JNI bindings */
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv* mEnv, jclass cls)
 {
-    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeSetupJNI()");
+    // akk0rdComment __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeSetupJNI()");
 
     Android_JNI_SetupThread();
 
@@ -354,7 +354,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv* mEnv, jclass c
 /* Audio initialization -- called before SDL_main() to initialize JNI bindings */
 JNIEXPORT void JNICALL SDL_JAVA_AUDIO_INTERFACE(nativeSetupJNI)(JNIEnv* mEnv, jclass cls)
 {
-    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "AUDIO nativeSetupJNI()");
+    // akk0rdComment __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "AUDIO nativeSetupJNI()");
 
     Android_JNI_SetupThread();
 
@@ -388,7 +388,7 @@ JNIEXPORT void JNICALL SDL_JAVA_AUDIO_INTERFACE(nativeSetupJNI)(JNIEnv* mEnv, jc
 /* Controller initialization -- called before SDL_main() to initialize JNI bindings */
 JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(JNIEnv* mEnv, jclass cls)
 {
-    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "CONTROLLER nativeSetupJNI()");
+    // akk0rdComment __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "CONTROLLER nativeSetupJNI()");
 
     Android_JNI_SetupThread();
 
@@ -418,7 +418,7 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv* env, jclass cls,
     const char *library_file;
     void *library_handle;
 
-    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeRunMain()");
+    // akk0rdComment __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeRunMain()");
 
     library_file = (*env)->GetStringUTFChars(env, library, NULL);
     library_handle = dlopen(library_file, RTLD_GLOBAL);
@@ -725,7 +725,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeQuit)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePause)(
                                     JNIEnv* env, jclass cls)
 {
-    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativePause()");
+    // akk0rdComment __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativePause()");
 
     if (Android_Window) {
         SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_FOCUS_LOST, 0, 0);
@@ -743,7 +743,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePause)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeResume)(
                                     JNIEnv* env, jclass cls)
 {
-    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeResume()");
+    // akk0rdComment __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeResume()");
 
     if (Android_Window) {
         SDL_SendAppEvent(SDL_APP_WILLENTERFOREGROUND);
@@ -1018,7 +1018,7 @@ int Android_JNI_OpenAudioDevice(int iscapture, int sampleRate, int is16Bit, int 
     audioBufferStereo = channelCount > 1;
 
     if (iscapture) {
-        __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDL audio: opening device for capture");
+        // akk0rdComment __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDL audio: opening device for capture");
         captureBuffer16Bit = is16Bit;
         if ((*env)->CallStaticIntMethod(env, mAudioManagerClass, midCaptureOpen, sampleRate, audioBuffer16Bit, audioBufferStereo, desiredBufferFrames) != 0) {
             /* Error during audio initialization */
@@ -1026,7 +1026,7 @@ int Android_JNI_OpenAudioDevice(int iscapture, int sampleRate, int is16Bit, int 
             return 0;
         }
     } else {
-        __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDL audio: opening device for output");
+        // akk0rdComment __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDL audio: opening device for output");
         audioBuffer16Bit = is16Bit;
         if ((*env)->CallStaticIntMethod(env, mAudioManagerClass, midAudioOpen, sampleRate, audioBuffer16Bit, audioBufferStereo, desiredBufferFrames) != 0) {
             /* Error during audio initialization */
@@ -2089,7 +2089,7 @@ int SDL_AndroidGetExternalStorageState(void)
     state = (*env)->GetStringUTFChars(env, stateString, NULL);
 
     /* Print an info message so people debugging know the storage state */
-    __android_log_print(ANDROID_LOG_INFO, "SDL", "external storage state: %s", state);
+    // akk0rdComment __android_log_print(ANDROID_LOG_INFO, "SDL", "external storage state: %s", state);
 
     if (SDL_strcmp(state, "mounted") == 0) {
         stateFlags = SDL_ANDROID_EXTERNAL_STORAGE_READ |
