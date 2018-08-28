@@ -224,10 +224,14 @@ bool AndroidWrapper::GetDirContent(const char* Dir, DirContentElementArray& Arra
 	{
 		while ((entry = readdir(dir)) != nullptr)
 		{
-            std::unique_ptr<DirContentElement> dc (new DirContentElement());
-            dc->Name  = std::string(entry->d_name);
-            dc->isDir = (DT_DIR == entry->d_type ? 1 : 0);
-            ArrayList.push_back(std::move(dc));
+			auto Name = std::string(entry->d_name);
+			if((Name != "." && Name != "..") || (DT_DIR != entry->d_type))
+			{
+				std::unique_ptr<DirContentElement> dc (new DirContentElement());
+				dc->Name  = Name;
+				dc->isDir = (DT_DIR == entry->d_type ? 1 : 0);
+				ArrayList.push_back(std::move(dc));
+			}
 		}
 		closedir(dir);
 	}
