@@ -24,16 +24,14 @@ static jclass    globalUtils             = nullptr;
 static AAssetManager *AssetMgr           = nullptr;
 
 static jmethodID midDirectoryDelete      = nullptr;
-static jmethodID midDirectoryExists      = nullptr;
 static jmethodID midOpenURL              = nullptr;
 static jmethodID midShowToast            = nullptr;
-static jmethodID midGetApiLevel          = nullptr;
 static jmethodID midMkDir                = nullptr;
-static jmethodID midGetLanguage          = nullptr;
 static jmethodID midShowMessageBox       = nullptr;
 static jmethodID midGetAssetManager      = nullptr;
-static jmethodID midGetInternalWriteDir  = nullptr;
-static jmethodID midGetInternalDir       = nullptr;
+
+
+//static jmethodID midDirectoryExists      = nullptr;
 
 static std::string sLanguage;
 static std::string sInternalDir;
@@ -78,38 +76,39 @@ bool AndroidWrapper::Init()
 	env->DeleteLocalRef(localClass);
 
 	midDirectoryDelete	   = env->GetStaticMethodID(globalUtils, "DirectoryDelete", "(Ljava/lang/String;I)I");
-	midDirectoryExists	   = env->GetStaticMethodID(globalUtils, "DirectoryExists", "(Ljava/lang/String;)I");
 	midOpenURL	           = env->GetStaticMethodID(globalUtils, "openURL", "(Ljava/lang/String;)V");
 	midShowToast	       = env->GetStaticMethodID(globalUtils, "showToast", "(Ljava/lang/String;IIII)V");
-	midGetApiLevel	       = env->GetStaticMethodID(globalUtils, "GetApiLevel", "()I");
 	midMkDir	           = env->GetStaticMethodID(globalUtils, "MkDir", "(Ljava/lang/String;)I");
-	midGetLanguage	       = env->GetStaticMethodID(globalUtils, "getLanguage", "()Ljava/lang/String;");
 	midShowMessageBox      = env->GetStaticMethodID(globalUtils, "showMessageBox", "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
 	midGetAssetManager	   = env->GetStaticMethodID(globalUtils, "GetAssetManager", "()Landroid/content/res/AssetManager;");
-	midGetInternalWriteDir = env->GetStaticMethodID(globalUtils, "GetInternalWriteDir", "()Ljava/lang/String;");
-	midGetInternalDir      = env->GetStaticMethodID(globalUtils, "GetInternalDir", "()Ljava/lang/String;");	
-		
-	if(midDirectoryDelete	  == nullptr) logError("midDirectoryDelete	   Java method not found");
-	if(midDirectoryExists	  == nullptr) logError("midDirectoryExists	   Java method not found");
-	if(midOpenURL	          == nullptr) logError("midOpenURL	           Java method not found");
-	if(midShowToast	          == nullptr) logError("midShowToast	       Java method not found");  
-	if(midGetApiLevel	      == nullptr) logError("midGetApiLevel	       Java method not found");
-	if(midMkDir	              == nullptr) logError("midMkDir	           Java method not found");  
-	if(midGetLanguage	      == nullptr) logError("midGetLanguage	       Java method not found");
-	if(midShowMessageBox      == nullptr) logError("midShowMessageBox      Java method not found");
-	if(midGetAssetManager	  == nullptr) logError("midGetAssetManager	   Java method not found");
-	if(midGetInternalWriteDir == nullptr) logError("midGetInternalWriteDir Java method not found");
-	if(midGetInternalDir      == nullptr) logError("midGetInternalDir      Java method not found");
+
+    if(midDirectoryDelete	  == nullptr) logError("midDirectoryDelete	   Java method not found");
+    if(midOpenURL	          == nullptr) logError("midOpenURL	           Java method not found");
+    if(midShowToast	          == nullptr) logError("midShowToast	       Java method not found");
+    if(midMkDir	              == nullptr) logError("midMkDir	           Java method not found");
+    if(midShowMessageBox      == nullptr) logError("midShowMessageBox      Java method not found");
+    if(midGetAssetManager	  == nullptr) logError("midGetAssetManager	   Java method not found");
+
+    // One-time call functions
+    jmethodID GetLanguage	      = env->GetStaticMethodID(globalUtils, "getLanguage", "()Ljava/lang/String;");
+    jmethodID GetApiLevel	      = env->GetStaticMethodID(globalUtils, "GetApiLevel", "()I");
+    jmethodID GetInternalWriteDir = env->GetStaticMethodID(globalUtils, "GetInternalWriteDir", "()Ljava/lang/String;");
+    jmethodID GetInternalDir      = env->GetStaticMethodID(globalUtils, "GetInternalDir", "()Ljava/lang/String;");    
+
+    if(GetLanguage	       == nullptr) logError("GetLanguage	     Java method not found");
+    if(GetApiLevel	       == nullptr) logError("GetApiLevel	     Java method not found");
+    if(GetInternalWriteDir == nullptr) logError("GetInternalWriteDir Java method not found");
+	if(GetInternalDir      == nullptr) logError("GetInternalDir      Java method not found");    
 	
 	// кешируем язык
-	jstring jstr_lang = (jstring)env->CallStaticObjectMethod(globalUtils, midGetLanguage);
+	jstring jstr_lang = (jstring)env->CallStaticObjectMethod(globalUtils, GetLanguage);
 	const char* LangStr = env->GetStringUTFChars(jstr_lang, 0);
 	// global variable
 	sLanguage = std::string(LangStr);
 	env->ReleaseStringUTFChars(jstr_lang, LangStr);
 	
 	// кешируем директорию для записи
-	jstring jstrWriteDir = (jstring)env->CallStaticObjectMethod(globalUtils, midGetInternalWriteDir);
+	jstring jstrWriteDir = (jstring)env->CallStaticObjectMethod(globalUtils, GetInternalWriteDir);
 	const char* javaWriteDir = env->GetStringUTFChars(jstrWriteDir, 0);
 	sInternalWriteDir = std::string(javaWriteDir);
 	env->ReleaseStringUTFChars(jstrWriteDir, javaWriteDir);
@@ -117,14 +116,14 @@ bool AndroidWrapper::Init()
         sInternalWriteDir = sInternalWriteDir + "/";
 	
 	// кешируем внутреннюю директорию
-	jstring jstrDir = (jstring)env->CallStaticObjectMethod(globalUtils, midGetInternalDir);
+	jstring jstrDir = (jstring)env->CallStaticObjectMethod(globalUtils, GetInternalDir);
 	const char* javaDir = env->GetStringUTFChars(jstrDir, 0);
 	sInternalDir = std::string(javaDir);
 	env->ReleaseStringUTFChars(jstrDir, javaDir);
     if(sInternalDir[sInternalDir.length() - 1] != '/')
         sInternalDir = sInternalDir + "/";
 	
-    jint value = env->CallStaticIntMethod(globalUtils, midGetApiLevel);        
+    jint value = env->CallStaticIntMethod(globalUtils, GetApiLevel);
     sApiLevel = (int)value;    
 	
 	return true;
