@@ -2089,7 +2089,7 @@ int SDL_AndroidGetExternalStorageState(void)
     state = (*env)->GetStringUTFChars(env, stateString, NULL);
 
     /* Print an info message so people debugging know the storage state */
-    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "%s", "external storage state: %s", state);
+    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "external storage state: %s", state);
 
     if (SDL_strcmp(state, "mounted") == 0) {
         stateFlags = SDL_ANDROID_EXTERNAL_STORAGE_READ |
