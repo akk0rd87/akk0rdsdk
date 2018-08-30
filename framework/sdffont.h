@@ -388,7 +388,7 @@ public:
         return true;
     };
 
-	bool Draw(bool Outline, unsigned Count, AkkordColor& FontColor, AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLuint* Indices, GLfloat Scale, GLfloat Border)
+	bool Draw(bool Outline, GLsizei Count, AkkordColor& FontColor, AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLuint* Indices, GLfloat Scale, GLfloat Border)
     {
 #ifndef __CODEBLOCKS
         GLint oldProgramId;
@@ -436,7 +436,7 @@ public:
             }
         }
 		logDebug("Before glDrawElements");
-        Driver->glDrawElements(GL_TRIANGLES, Count, GL_UNSIGNED_INT, Indices); CheckGLESError();
+		Driver->glDrawElements((GLenum)GL_TRIANGLES, Count, (GLenum)GL_UNSIGNED_INT, Indices); CheckGLESError();
 		logDebug("After glDrawElements");
 
 		Driver->glDisableVertexAttribArray(SDFProgram::Attributes::SDF_ATTRIB_POSITION); CheckGLESError();
@@ -581,7 +581,7 @@ public:
     {        
         if (Indices.size() > 0)
         {
-			sdfFont->Draw(this->outline, Indices.size(), this->color, this->outlineColor, &UV.front(), &squareVertices.front(), &Indices.front(), (GLfloat)this->scaleX, (GLfloat)this->Border);
+			sdfFont->Draw(this->outline, (GLsizei)Indices.size(), this->color, this->outlineColor, &UV.front(), &squareVertices.front(), &Indices.front(), (GLfloat)this->scaleX, (GLfloat)this->Border);
         }
         Clear();
     };    
