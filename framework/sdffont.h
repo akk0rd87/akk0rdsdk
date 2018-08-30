@@ -413,7 +413,7 @@ public:
 
         //0.25f / (float)Spread / Scale*/*smoothfact*/1.5)*850.0f
 
-        Driver->glUniform1f(shaderProgram->smooth, smoothness);
+		Driver->glUniform1f(shaderProgram->smooth, smoothness); CheckGLESError();
 
         if (Outline)
         {
