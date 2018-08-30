@@ -383,7 +383,7 @@ public:
         return true;
     };
 
-    bool Draw(bool Outline, unsigned Count, AkkordColor& FontColor, AkkordColor& OutlineColor, float Offset, float Contrast, float OutlineOffset, float OutlineContrast, const float* UV, const float* squareVertices, unsigned short* Indices, float Scale, float Border)
+	bool Draw(bool Outline, unsigned Count, AkkordColor& FontColor, AkkordColor& OutlineColor, float Offset, float Contrast, float OutlineOffset, float OutlineContrast, const GLfloat* UV, const GLfloat* squareVertices, const GLuint* Indices, GLfloat Scale, GLfloat Border)
     {
 #ifndef __CODEBLOCKS
         GLint oldProgramId;
@@ -402,9 +402,9 @@ public:
         Driver->glEnableVertexAttribArray(SDF_ATTRIB_UV); CheckGLESError();
         Driver->glVertexAttribPointer(SDF_ATTRIB_UV, 2, GL_FLOAT, 0, 0, UV); CheckGLESError();
 
-        Driver->glUniform4f(shaderProgram->font_color, float(FontColor.GetR()) / 255, float(FontColor.GetG()) / 255, float(FontColor.GetB()) / 255, 1.0f); CheckGLESError();        
+		Driver->glUniform4f(shaderProgram->font_color, GLfloat(FontColor.GetR()) / 255, GLfloat(FontColor.GetG()) / 255, GLfloat(FontColor.GetB()) / 255, 1.0f); CheckGLESError();
         
-        float smoothness = std::min(0.3f, 0.25f / (float)Spread / Scale* 1.5f) * 850.0f / 255.f / 3.333f;
+		GLfloat smoothness = std::min(0.3f, 0.25f / (GLfloat)Spread / Scale* 1.5f) * 850.0f / 255.f / 3.333f;
 
         //0.25f / (float)Spread / Scale*/*smoothfact*/1.5)*850.0f
 
@@ -414,7 +414,7 @@ public:
         {
             if (shaderProgram->sdf_outline_color >= 0)
             {
-                Driver->glUniform4f(shaderProgram->sdf_outline_color, float(OutlineColor.GetR()) / 255, float(OutlineColor.GetG()) / 255, float(OutlineColor.GetB()) / 255, 1.0f); CheckGLESError();
+				Driver->glUniform4f(shaderProgram->sdf_outline_color, GLfloat(OutlineColor.GetR()) / 255, GLfloat(OutlineColor.GetG()) / 255, GLfloat(OutlineColor.GetB()) / 255, 1.0f); CheckGLESError();
             }
             else
             {
@@ -431,7 +431,7 @@ public:
             }
         }
 
-        Driver->glDrawElements(GL_TRIANGLES, Count, GL_UNSIGNED_SHORT, Indices); CheckGLESError();
+        Driver->glDrawElements(GL_TRIANGLES, Count, GL_UNSIGNED_INT, Indices); CheckGLESError();
 
         Driver->glDisableVertexAttribArray(SDF_ATTRIB_POSITION); CheckGLESError();
         Driver->glDisableVertexAttribArray(SDF_ATTRIB_UV); CheckGLESError();
@@ -474,9 +474,9 @@ class SDFFontBuffer
 
     AkkordColor color, outlineColor;
 
-    std::vector<float>UV;
-    std::vector<float>squareVertices;
-    std::vector<unsigned short>Indices;        
+	std::vector<GLfloat>UV;
+	std::vector<GLfloat>squareVertices;
+	std::vector<GLuint>Indices;
 
     float offset, contrast, outlineOffset, outlineContrast;
 
@@ -575,7 +575,7 @@ public:
     {        
         if (Indices.size() > 0)
         {
-            sdfFont->Draw(this->outline, Indices.size(), this->color, this->outlineColor, offset, contrast, outlineOffset, outlineContrast, &UV.front(), &squareVertices.front(), &Indices.front(), this->scaleX, this->Border);
+			sdfFont->Draw(this->outline, Indices.size(), this->color, this->outlineColor, offset, contrast, outlineOffset, outlineContrast, &UV.front(), &squareVertices.front(), &Indices.front(), (GLfloat)this->scaleX, (GLfloat)this->Border);
         }
         Clear();
     };    
