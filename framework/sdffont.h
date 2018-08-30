@@ -388,7 +388,7 @@ public:
         return true;
     };
 
-	bool Draw(bool Outline, GLsizei Count, AkkordColor& FontColor, AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLuint* Indices, GLfloat Scale, GLfloat Border)
+	bool Draw(bool Outline, GLsizei Count, AkkordColor& FontColor, AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border)
     {
 #ifndef __CODEBLOCKS
         GLint oldProgramId;
@@ -435,9 +435,10 @@ public:
                 logError("shaderProgram->border error %d", shaderProgram->border);
             }
         }
-		logDebug("Before glDrawElements");
-		Driver->glDrawElements((GLenum)GL_TRIANGLES, Count, (GLenum)GL_UNSIGNED_INT, Indices); CheckGLESError();
-		logDebug("After glDrawElements");
+		//logDebug("Before glDrawElements");
+		// Мой самсунг Galaxy S2 работает только с GL_UNSIGNED_SHORT
+		Driver->glDrawElements((GLenum)GL_TRIANGLES, Count, (GLenum)GL_UNSIGNED_SHORT, Indices); CheckGLESError();
+		//logDebug("After glDrawElements");
 
 		Driver->glDisableVertexAttribArray(SDFProgram::Attributes::SDF_ATTRIB_POSITION); CheckGLESError();
 		Driver->glDisableVertexAttribArray(SDFProgram::Attributes::SDF_ATTRIB_UV); CheckGLESError();
@@ -482,7 +483,7 @@ class SDFFontBuffer
 
 	std::vector<GLfloat>UV;
 	std::vector<GLfloat>squareVertices;
-	std::vector<GLuint>Indices;
+	std::vector<GLushort>Indices;
 
     //float offset, contrast, outlineOffset, outlineContrast;
 
