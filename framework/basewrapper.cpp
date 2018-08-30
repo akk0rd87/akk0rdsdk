@@ -1052,6 +1052,11 @@ void BWrapper::Sleep(unsigned MilliSeconds)
     SDL_Delay(MilliSeconds);
 }
 
+std::string BWrapper::GetAppBuildDateTimeString()
+{
+	return std::string(__DATE__) + " " + __TIME__;
+};  
+
 std::string BWrapper::GetSDKVersionInfo()
 {
     std::string VersionString;

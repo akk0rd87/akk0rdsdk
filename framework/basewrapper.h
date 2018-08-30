@@ -112,7 +112,7 @@ public:
         };
     };
 
-    
+	static std::string         GetAppBuildDateTimeString   ();    
     static std::string         GetSDKVersionInfo           ();
                                                            
     // System init-quit functions                          
