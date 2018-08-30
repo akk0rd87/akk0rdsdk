@@ -377,12 +377,12 @@ public:
             return false;
         }
 
-        Driver->glGenTextures(1, &texture); CheckGLESError();
-        Driver->glBindTexture(GL_TEXTURE_2D, texture); CheckGLESError();
-        Driver->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); CheckGLESError();
-        Driver->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); CheckGLESError();
+		Driver->glGenTextures((GLsizei)1, &texture); CheckGLESError();
+		Driver->glBindTexture((GLenum)GL_TEXTURE_2D, texture); CheckGLESError();
+		Driver->glTexParameteri((GLenum)GL_TEXTURE_2D, (GLenum)GL_TEXTURE_MIN_FILTER, (GLint)GL_LINEAR); CheckGLESError();
+		Driver->glTexParameteri((GLenum)GL_TEXTURE_2D, (GLenum)GL_TEXTURE_MAG_FILTER, (GLint)GL_LINEAR); CheckGLESError();
 
-        Driver->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fontAtlas->w, fontAtlas->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, fontAtlas->pixels); CheckGLESError();
+		Driver->glTexImage2D((GLenum)GL_TEXTURE_2D, (GLint)0, GL_RGBA, (GLsizei)fontAtlas->w, (GLsizei)fontAtlas->h, (GLint)0, (GLenum)GL_RGBA, (GLenum)GL_UNSIGNED_BYTE, fontAtlas->pixels); CheckGLESError();
 #endif
         ParseFNTFile(FileNameFNT, BWrapper::FileSearchPriority::Assets);
         return true;
