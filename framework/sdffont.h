@@ -388,7 +388,7 @@ public:
         return true;
     };
 
-	bool Draw(bool Outline, unsigned Count, AkkordColor& FontColor, AkkordColor& OutlineColor, float Offset, float Contrast, float OutlineOffset, float OutlineContrast, const GLfloat* UV, const GLfloat* squareVertices, const GLuint* Indices, GLfloat Scale, GLfloat Border)
+	bool Draw(bool Outline, unsigned Count, AkkordColor& FontColor, AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLuint* Indices, GLfloat Scale, GLfloat Border)
     {
 #ifndef __CODEBLOCKS
         GLint oldProgramId;
@@ -484,7 +484,7 @@ class SDFFontBuffer
 	std::vector<GLfloat>squareVertices;
 	std::vector<GLuint>Indices;
 
-    float offset, contrast, outlineOffset, outlineContrast;
+    //float offset, contrast, outlineOffset, outlineContrast;
 
     AkkordPoint GetTextSizeByLine(const char* Text, std::vector<unsigned>& VecSize)
     {
@@ -581,7 +581,7 @@ public:
     {        
         if (Indices.size() > 0)
         {
-			sdfFont->Draw(this->outline, Indices.size(), this->color, this->outlineColor, offset, contrast, outlineOffset, outlineContrast, &UV.front(), &squareVertices.front(), &Indices.front(), (GLfloat)this->scaleX, (GLfloat)this->Border);
+			sdfFont->Draw(this->outline, Indices.size(), this->color, this->outlineColor, &UV.front(), &squareVertices.front(), &Indices.front(), (GLfloat)this->scaleX, (GLfloat)this->Border);
         }
         Clear();
     };    
