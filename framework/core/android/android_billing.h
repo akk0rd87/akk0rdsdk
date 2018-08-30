@@ -31,7 +31,8 @@ public:
 
 bool AndroidBillingManager::Init()
 {
-    JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
+    bool Result = true;
+	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
     jclass localClass =  env->FindClass("org/akkord/lib/BillingManager");
 	AndroidBillingClass = reinterpret_cast<jclass>(env->NewGlobalRef(localClass));
 	env->DeleteLocalRef(localClass);
@@ -51,12 +52,12 @@ bool AndroidBillingManager::Init()
 	midPurchaseProdItem    = env->GetStaticMethodID(AndroidBillingClass, "PurchaseProdItem", "(Ljava/lang/String;)V");
 	midConsumeProductItem  = env->GetStaticMethodID(AndroidBillingClass, "ConsumeProductItem", "(Ljava/lang/String;)V");
 	
-	if(midQueryProductDetails == nullptr) logError("Java midQueryProductDetails load error");
-	if(midRestorePurchases    == nullptr) logError("Java midRestorePurchases    load error");
-	if(midPurchaseProdItem    == nullptr) logError("Java midPurchaseProdItem    load error");
-	if(midConsumeProductItem  == nullptr) logError("Java midConsumeProductItem  load error");
+	if(midQueryProductDetails == nullptr) { Result = false; logError("Java midQueryProductDetails load error"); }
+	if(midRestorePurchases    == nullptr) { Result = false; logError("Java midRestorePurchases    load error"); }
+	if(midPurchaseProdItem    == nullptr) { Result = false; logError("Java midPurchaseProdItem    load error"); }
+	if(midConsumeProductItem  == nullptr) { Result = false; logError("Java midConsumeProductItem  load error"); }
 	
-    return true;
+    return Result;
 }
 
 bool AndroidBillingManager::QueryProductDetails(const std::vector<std::string>& ProdList)

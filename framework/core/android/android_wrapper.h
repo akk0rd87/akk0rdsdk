@@ -70,6 +70,7 @@ public:
 
 bool AndroidWrapper::Init()
 {
+	bool Result = true;
 	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
 	jclass localClass = env->FindClass("org/akkord/lib/Utils");
 	globalUtils = reinterpret_cast<jclass>(env->NewGlobalRef(localClass));
@@ -82,12 +83,12 @@ bool AndroidWrapper::Init()
 	midShowMessageBox      = env->GetStaticMethodID(globalUtils, "showMessageBox", "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
 	midGetAssetManager	   = env->GetStaticMethodID(globalUtils, "GetAssetManager", "()Landroid/content/res/AssetManager;");
 
-    if(midDirectoryDelete	  == nullptr) logError("midDirectoryDelete	   Java method not found");
-    if(midOpenURL	          == nullptr) logError("midOpenURL	           Java method not found");
-    if(midShowToast	          == nullptr) logError("midShowToast	       Java method not found");
-    if(midMkDir	              == nullptr) logError("midMkDir	           Java method not found");
-    if(midShowMessageBox      == nullptr) logError("midShowMessageBox      Java method not found");
-    if(midGetAssetManager	  == nullptr) logError("midGetAssetManager	   Java method not found");
+    if(midDirectoryDelete	  == nullptr) { Result = false; logError("midDirectoryDelete	   Java method not found"); }
+    if(midOpenURL	          == nullptr) { Result = false; logError("midOpenURL	           Java method not found"); }
+    if(midShowToast	          == nullptr) { Result = false; logError("midShowToast	       Java method not found");     }
+    if(midMkDir	              == nullptr) { Result = false; logError("midMkDir	           Java method not found");     }
+    if(midShowMessageBox      == nullptr) { Result = false; logError("midShowMessageBox      Java method not found");   }
+    if(midGetAssetManager	  == nullptr) { Result = false; logError("midGetAssetManager	   Java method not found"); }
 
     // One-time call functions
     jmethodID GetLanguage	      = env->GetStaticMethodID(globalUtils, "getLanguage", "()Ljava/lang/String;");
@@ -95,10 +96,10 @@ bool AndroidWrapper::Init()
     jmethodID GetInternalWriteDir = env->GetStaticMethodID(globalUtils, "GetInternalWriteDir", "()Ljava/lang/String;");
     jmethodID GetInternalDir      = env->GetStaticMethodID(globalUtils, "GetInternalDir", "()Ljava/lang/String;");    
 
-    if(GetLanguage	       == nullptr) logError("GetLanguage	     Java method not found");
-    if(GetApiLevel	       == nullptr) logError("GetApiLevel	     Java method not found");
-    if(GetInternalWriteDir == nullptr) logError("GetInternalWriteDir Java method not found");
-	if(GetInternalDir      == nullptr) logError("GetInternalDir      Java method not found");    
+    if(GetLanguage	       == nullptr) { Result = false; logError("GetLanguage	     Java method not found");   }
+    if(GetApiLevel	       == nullptr) { Result = false; logError("GetApiLevel	     Java method not found");   }
+    if(GetInternalWriteDir == nullptr) { Result = false; logError("GetInternalWriteDir Java method not found"); }
+	if(GetInternalDir      == nullptr) { Result = false; logError("GetInternalDir      Java method not found"); }
 	
 	// кешируем язык
 	jstring jstrLang = (jstring)env->CallStaticObjectMethod(globalUtils, GetLanguage);
@@ -126,7 +127,7 @@ bool AndroidWrapper::Init()
     jint value = env->CallStaticIntMethod(globalUtils, GetApiLevel);
     sApiLevel = (int)value;    
 	
-	return true;
+	return Result;
 }
 
 //jclass AndroidWrapper::FindAkkordClassUtils(JNIEnv *env)

@@ -36,7 +36,8 @@ public:
 
 bool AdMobAndroid::Init(const char* PublisherID, int Formats)
 {    
-    JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
+    bool Result = true;
+	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
     jclass localClass = env->FindClass("org/akkord/lib/AdMobAdapter");
     AdMobClass = reinterpret_cast<jclass>(env->NewGlobalRef(localClass));	
 	env->DeleteLocalRef(localClass);
@@ -83,14 +84,14 @@ bool AdMobAndroid::Init(const char* PublisherID, int Formats)
     midRewardedVideoLoad       = env->GetStaticMethodID(AdMobClass, "RewardedVideoLoad", "()V");
     midRewardedVideoShow       = env->GetStaticMethodID(AdMobClass, "RewardedVideoShow", "()I");
 
-    if(nullptr == midInterstitialSetUnitId ) logError("midInterstitialSetUnitId  Java method not found");
-	if(nullptr == midInterstitialLoad      ) logError("midInterstitialLoad       Java method not found");
-	if(nullptr == midInterstitialShow      ) logError("midInterstitialShow       Java method not found");
-	if(nullptr == midRewardedVideoSetUnitId) logError("midRewardedVideoSetUnitId Java method not found");
-	if(nullptr == midRewardedVideoLoad     ) logError("midRewardedVideoLoad      Java method not found");
-	if(nullptr == midRewardedVideoShow     ) logError("midRewardedVideoShow      Java method not found");	
+    if(nullptr == midInterstitialSetUnitId ) { Result = false; logError("midInterstitialSetUnitId  Java method not found"); }
+	if(nullptr == midInterstitialLoad      ) { Result = false; logError("midInterstitialLoad       Java method not found"); }
+	if(nullptr == midInterstitialShow      ) { Result = false; logError("midInterstitialShow       Java method not found"); }
+	if(nullptr == midRewardedVideoSetUnitId) { Result = false; logError("midRewardedVideoSetUnitId Java method not found"); }
+	if(nullptr == midRewardedVideoLoad     ) { Result = false; logError("midRewardedVideoLoad      Java method not found"); }
+	if(nullptr == midRewardedVideoShow     ) { Result = false; logError("midRewardedVideoShow      Java method not found");	}
 	
-    return true;
+    return Result;
 };
 
 bool AdMobAndroid::InterstitialSetUnitId(const char* UnitId)
