@@ -402,10 +402,10 @@ public:
         Driver->glBindTexture(GL_TEXTURE_2D, texture); CheckGLESError();
 
 		Driver->glEnableVertexAttribArray(SDFProgram::Attributes::SDF_ATTRIB_POSITION); CheckGLESError();
-		Driver->glVertexAttribPointer(SDFProgram::Attributes::SDF_ATTRIB_POSITION, 2, GL_FLOAT, 0, 0, squareVertices); CheckGLESError();
+		Driver->glVertexAttribPointer(SDFProgram::Attributes::SDF_ATTRIB_POSITION, (GLint)2, (GLenum)GL_FLOAT, (GLboolean)0, (GLsizei)0, squareVertices); CheckGLESError();
 
 		Driver->glEnableVertexAttribArray(SDFProgram::Attributes::SDF_ATTRIB_UV); CheckGLESError();
-		Driver->glVertexAttribPointer(SDFProgram::Attributes::SDF_ATTRIB_UV, 2, GL_FLOAT, 0, 0, UV); CheckGLESError();
+		Driver->glVertexAttribPointer(SDFProgram::Attributes::SDF_ATTRIB_UV, (GLint)2, (GLenum)GL_FLOAT, (GLboolean)0, (GLsizei)0, UV); CheckGLESError();
 
 		Driver->glUniform4f(shaderProgram->font_color, GLfloat(FontColor.GetR()) / 255, GLfloat(FontColor.GetG()) / 255, GLfloat(FontColor.GetB()) / 255, 1.0f); CheckGLESError();
         
