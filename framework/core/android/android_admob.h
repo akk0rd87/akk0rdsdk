@@ -82,6 +82,13 @@ bool AdMobAndroid::Init(const char* PublisherID, int Formats)
     midRewardedVideoSetUnitId  = env->GetStaticMethodID(AdMobClass, "RewardedVideoSetUnitId", "(Ljava/lang/String;)V");
     midRewardedVideoLoad       = env->GetStaticMethodID(AdMobClass, "RewardedVideoLoad", "()V");
     midRewardedVideoShow       = env->GetStaticMethodID(AdMobClass, "RewardedVideoShow", "()I");
+
+    if(nullptr == midInterstitialSetUnitId ) logError("midInterstitialSetUnitId  Java method not found");
+	if(nullptr == midInterstitialLoad      ) logError("midInterstitialLoad       Java method not found");
+	if(nullptr == midInterstitialShow      ) logError("midInterstitialShow       Java method not found");
+	if(nullptr == midRewardedVideoSetUnitId) logError("midRewardedVideoSetUnitId Java method not found");
+	if(nullptr == midRewardedVideoLoad     ) logError("midRewardedVideoLoad      Java method not found");
+	if(nullptr == midRewardedVideoShow     ) logError("midRewardedVideoShow      Java method not found");	
 	
     return true;
 };
