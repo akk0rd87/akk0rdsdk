@@ -104,13 +104,6 @@ static const GLfloat SDF_Mat[] =
     0.0f, 0.0f, 0.0f, 1.0f,
 };
 
-enum {
-    SDF_ATTRIB_POSITION = 10, // Начинаем не с нуля, чтобы индексы не пересеклись с другими программами
-    //ATTRIB_COLOR,
-    SDF_ATTRIB_UV,
-    SDF_NUM_ATTRIBUTES
-};
-
 struct ShaderProgramStruct
 {
     GLuint shaderProgram;
@@ -143,8 +136,8 @@ class SDFProgram
         Driver->glAttachShader(Program->shaderProgram, vertexShader); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
         Driver->glAttachShader(Program->shaderProgram, fragmentShader); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
 
-        Driver->glBindAttribLocation(Program->shaderProgram, SDF_ATTRIB_POSITION, "position"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);        
-        Driver->glBindAttribLocation(Program->shaderProgram, SDF_ATTRIB_UV, "uv"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
+		Driver->glBindAttribLocation(Program->shaderProgram, SDFProgram::Attributes::SDF_ATTRIB_POSITION, "position"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
+		Driver->glBindAttribLocation(Program->shaderProgram, SDFProgram::Attributes::SDF_ATTRIB_UV, "uv"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
 
         Driver->glLinkProgram(Program->shaderProgram); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
 
@@ -173,6 +166,18 @@ class SDFProgram
     }
 
 public :
+	struct Attributes 
+	{
+		enum : GLuint 
+		{
+			SDF_ATTRIB_POSITION = 10, // Начинаем не с нуля, чтобы индексы не пересеклись с другими программами			
+			SDF_ATTRIB_UV = 11,
+			SDF_NUM_ATTRIBUTES = 12,
+			//ATTRIB_COLOR = 13
+		};
+	};
+
+
     bool Init()
     {        
         logDebug("Inited = %d", (Inited == true ? 1 : 0));
@@ -396,11 +401,11 @@ public:
 
         Driver->glBindTexture(GL_TEXTURE_2D, texture); CheckGLESError();
 
-        Driver->glEnableVertexAttribArray(SDF_ATTRIB_POSITION); CheckGLESError();
-        Driver->glVertexAttribPointer(SDF_ATTRIB_POSITION, 2, GL_FLOAT, 0, 0, squareVertices); CheckGLESError();
+		Driver->glEnableVertexAttribArray(SDFProgram::Attributes::SDF_ATTRIB_POSITION); CheckGLESError();
+		Driver->glVertexAttribPointer(SDFProgram::Attributes::SDF_ATTRIB_POSITION, 2, GL_FLOAT, 0, 0, squareVertices); CheckGLESError();
 
-        Driver->glEnableVertexAttribArray(SDF_ATTRIB_UV); CheckGLESError();
-        Driver->glVertexAttribPointer(SDF_ATTRIB_UV, 2, GL_FLOAT, 0, 0, UV); CheckGLESError();
+		Driver->glEnableVertexAttribArray(SDFProgram::Attributes::SDF_ATTRIB_UV); CheckGLESError();
+		Driver->glVertexAttribPointer(SDFProgram::Attributes::SDF_ATTRIB_UV, 2, GL_FLOAT, 0, 0, UV); CheckGLESError();
 
 		Driver->glUniform4f(shaderProgram->font_color, GLfloat(FontColor.GetR()) / 255, GLfloat(FontColor.GetG()) / 255, GLfloat(FontColor.GetB()) / 255, 1.0f); CheckGLESError();
         
@@ -430,11 +435,12 @@ public:
                 logError("shaderProgram->border error %d", shaderProgram->border);
             }
         }
-
+		logDebug("Before glDrawElements");
         Driver->glDrawElements(GL_TRIANGLES, Count, GL_UNSIGNED_INT, Indices); CheckGLESError();
+		logDebug("After glDrawElements");
 
-        Driver->glDisableVertexAttribArray(SDF_ATTRIB_POSITION); CheckGLESError();
-        Driver->glDisableVertexAttribArray(SDF_ATTRIB_UV); CheckGLESError();
+		Driver->glDisableVertexAttribArray(SDFProgram::Attributes::SDF_ATTRIB_POSITION); CheckGLESError();
+		Driver->glDisableVertexAttribArray(SDFProgram::Attributes::SDF_ATTRIB_UV); CheckGLESError();
 
         Driver->glUseProgram(oldProgramId); CheckGLESError(); CheckGLESError();
 #endif
