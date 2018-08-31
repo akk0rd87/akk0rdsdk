@@ -235,17 +235,9 @@ class BillingManager {
     {
         executeServiceRequest(new Runnable() {
             public void run() {
-				try
-				{
-                    Log.v(TAG, "PurchaseProdItem executeServiceRequest");
-					BillingFlowParams purchaseParams = BillingFlowParams.newBuilder().setSku(ProductSKU).setType(SkuType.INAPP)/*.setOldSkus(oldSkus))*/.build();
-                    mBillingClient.launchBillingFlow(Utils.GetContext(), purchaseParams);
-				}
-			    catch(Exception e)
-                {
-                    //System.err.println(e.getMessage());
-                    Log.v(TAG, e.getMessage());
-                }
+				Log.v(TAG, "PurchaseProdItem executeServiceRequest");
+				BillingFlowParams purchaseParams = BillingFlowParams.newBuilder().setSku(ProductSKU).setType(SkuType.INAPP)/*.setOldSkus(oldSkus))*/.build();
+				mBillingClient.launchBillingFlow(Utils.GetContext(), purchaseParams);
             }            
         });
     }
@@ -265,22 +257,14 @@ class BillingManager {
         */        
         
         executeServiceRequest(new Runnable() {
-            public void run() {        
-			    try
-				{
-					Log.v(TAG, "ConsumeProductItem executeServiceRequest");
-					mBillingClient.consumeAsync(PurchaseToken, new ConsumeResponseListener() {
-                        @Override
-                        public void onConsumeResponse(int responseCode, String purchaseToken) {
-                            Log.v(TAG, DecodeBillingResponse(responseCode) + " " + purchaseToken);
-                        }
-                    });
-				}
-				catch(Exception e)
-                {
-                    //System.err.println(e.getMessage());
-                    Log.v(TAG, e.getMessage());
-                }
+            public void run() {        			    
+				Log.v(TAG, "ConsumeProductItem executeServiceRequest");
+				mBillingClient.consumeAsync(PurchaseToken, new ConsumeResponseListener() {
+					@Override
+					public void onConsumeResponse(int responseCode, String purchaseToken) {
+						Log.v(TAG, DecodeBillingResponse(responseCode) + " " + purchaseToken);
+					}
+				});				
             }
         });
     }    
