@@ -32,19 +32,13 @@ class BillingManager {
 
     public static final int PURCHASE_RESTORED = 0;
     public static final int PURCHASE_BOUGHT   = 1;
-
-    public static final int BILLING_SERVICE_NOT_CONNECTED = 0;
-    public static final int BILLING_SERVICE_CONNECTING    = 1;
-    public static final int BILLING_SERVICE_CONNECTED     = 2;
-
-    public static int BillingServiceStatus = BILLING_SERVICE_NOT_CONNECTED;
-
+    
     private static BillingClient mBillingClient;
     private static int mBillingClientResponseCode = BILLING_MANAGER_NOT_INITIALIZED;
-    //private static boolean mIsServiceConnected = false;
+    private static boolean mIsServiceConnected = false;
     
     private static native void BillingSetupFinished(int ResponseCode);
-    //private static native void BillingDisconnected();
+    private static native void BillingDisconnected();
     private static native void PurchaseQueried(String PurchaseToken, String ProductSKU, int Type);
     
     private static String DecodeBillingResponse(int billingResponseCode)
@@ -70,31 +64,17 @@ class BillingManager {
     
     private static void startServiceConnection(final Runnable executeOnSuccess) {
         Log.v(TAG, "startServiceConnection");
-		
-		if(BILLING_SERVICE_CONNECTING == BillingServiceStatus)
-		{
-            Log.v(TAG, "Billing is connecting. Return.");
-		    return;
-		}
-		
-		BillingServiceStatus = BILLING_SERVICE_CONNECTING;
-		
         mBillingClient.startConnection(new BillingClientStateListener() {
             @Override
             public void onBillingSetupFinished(@BillingResponse int billingResponseCode) {
                 Log.v(TAG, "Setup finished. Response: " + DecodeBillingResponse(billingResponseCode));
 
-                if (billingResponseCode == BillingResponse.OK)
-				{
-                    BillingServiceStatus = BILLING_SERVICE_CONNECTED;
+                if (billingResponseCode == BillingResponse.OK) {
+                    mIsServiceConnected = true;
                     if (executeOnSuccess != null) {
                         executeOnSuccess.run();
                     }
                 }
-				else
-				{
-					BillingServiceStatus = BILLING_SERVICE_NOT_CONNECTED;
-				}
                 mBillingClientResponseCode = billingResponseCode;
                 BillingSetupFinished(billingResponseCode);
             }
@@ -102,8 +82,8 @@ class BillingManager {
             @Override
             public void onBillingServiceDisconnected() {
                 Log.v(TAG, "onBillingServiceDisconnected");
-                BillingServiceStatus = BILLING_SERVICE_NOT_CONNECTED;
-                //BillingDisconnected();
+                mIsServiceConnected = false;
+                BillingDisconnected();
             }
         });
     }
@@ -112,14 +92,11 @@ class BillingManager {
         Activity ctx = Utils.GetContext();
         ctx.runOnUiThread(new Runnable() {
             public void run() {
-                if (BillingServiceStatus == BILLING_SERVICE_CONNECTED)
-                {
+                if (mIsServiceConnected) {
                     runnable.run();
-                }
-				else if(BillingServiceStatus == BILLING_SERVICE_NOT_CONNECTED)
-				{
+                } else {
                     // If billing service was disconnected, we try to reconnect 1 time.
-                    // (feel free to introduce your retry policy here).					
+                    // (feel free to introduce your retry policy here).
                     startServiceConnection(runnable);
                 }
             }
@@ -177,7 +154,7 @@ class BillingManager {
         // https://stackoverflow.com/questions/19591873/get-an-array-of-strings-from-java-to-c-jni
         
         final List<String> skuList = Arrays.asList(ProdList);
-        //Log.v(TAG, "GetProductDetails " + skuList.get(1) + " as product");
+        Log.v(TAG, "GetProductDetails " + skuList.get(1) + " as product");
         
         //Activity ctx = Utils.GetContext();
         executeServiceRequest(new Runnable() {
@@ -234,11 +211,10 @@ class BillingManager {
     public static void PurchaseProdItem(final String ProductSKU)
     {
         executeServiceRequest(new Runnable() {
-            public void run() {
-				Log.v(TAG, "PurchaseProdItem executeServiceRequest");
-				BillingFlowParams purchaseParams = BillingFlowParams.newBuilder().setSku(ProductSKU).setType(SkuType.INAPP)/*.setOldSkus(oldSkus))*/.build();
-				mBillingClient.launchBillingFlow(Utils.GetContext(), purchaseParams);
-            }            
+            public void run() {        
+                BillingFlowParams purchaseParams = BillingFlowParams.newBuilder().setSku(ProductSKU).setType(SkuType.INAPP)/*.setOldSkus(oldSkus))*/.build();
+                mBillingClient.launchBillingFlow(Utils.GetContext(), purchaseParams);
+            }
         });
     }
     
@@ -257,14 +233,9 @@ class BillingManager {
         */        
         
         executeServiceRequest(new Runnable() {
-            public void run() {        			    
-				Log.v(TAG, "ConsumeProductItem executeServiceRequest");
-				mBillingClient.consumeAsync(PurchaseToken, new ConsumeResponseListener() {
-					@Override
-					public void onConsumeResponse(int responseCode, String purchaseToken) {
-						Log.v(TAG, DecodeBillingResponse(responseCode) + " " + purchaseToken);
-					}
-				});				
+            public void run() {        
+                Log.v(TAG, "ConsumeProductItem executeServiceRequest");
+                mBillingClient.consumeAsync(PurchaseToken, null);
             }
         });
     }    
