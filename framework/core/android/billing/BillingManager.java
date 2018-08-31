@@ -40,6 +40,7 @@ class BillingManager {
     private static native void BillingSetupFinished(int ResponseCode);
     private static native void BillingDisconnected();
     private static native void PurchaseQueried(String PurchaseToken, String ProductSKU, int Type);
+    private static native void PurchaseConsumed(String PurchaseToken);
     
     private static String DecodeBillingResponse(int billingResponseCode)
     {
@@ -243,7 +244,7 @@ class BillingManager {
                         Log.v(TAG, "onConsumeResponse Result: " + DecodeBillingResponse(responseCode) + " Token:" + PurchaseToken);
                         if(responseCode == BillingResponse.OK)
                         {
-
+                            PurchaseConsumed(purchaseToken);
                         }
                     }
                 });

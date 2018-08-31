@@ -10,6 +10,7 @@ public:
 	enum struct OperAction : int { Restored = 0, Bought = 1 };
 
 	typedef void (BillingPurchaseUpdatedCallback)(const char* PurchaseToken, const char* SKUid, BillingManager::OperAction Action);
+	typedef void (BillingPurchaseConsumedCallback)(const char* PurchaseToken);
 	
 
 	static bool                             Init();
@@ -19,7 +20,8 @@ public:
     static bool                             PurchaseProdItem(const char* ProductCode);
     static bool                             ConsumeProductItem(const char* PurchaseToken);
 	
-	static void                             SetPurchaseUpdatedCallback(BillingPurchaseUpdatedCallback* Callback);
+	static void                             SetPurchaseUpdatedCallback (BillingPurchaseUpdatedCallback * Callback);
+	static void                             SetPurchaseConsumedCallback(BillingPurchaseConsumedCallback* Callback);
 	
 	static decltype(SDL_RegisterEvents(1))  GetEventCode();
 	

@@ -3,7 +3,8 @@
 struct BillingContextStruct
 {
 	int BillingStatus = -1;
-	BillingManager::BillingPurchaseUpdatedCallback* AppPurchaseUpdated = nullptr;
+	BillingManager::BillingPurchaseUpdatedCallback*  AppPurchaseUpdated  = nullptr;
+	BillingManager::BillingPurchaseConsumedCallback* AppPurchaseConsumed = nullptr;
 	decltype(SDL_RegisterEvents(1)) BillingEventCode;
 };
 
@@ -20,6 +21,7 @@ extern "C" {
     JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_BillingSetupFinished(JNIEnv*, jclass, jint);
     JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_BillingDisconnected(JNIEnv*, jclass);
 	JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseQueried(JNIEnv*, jclass, jstring, jstring, jint);
+	JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseConsumed(JNIEnv*, jclass, jstring);
 }
 JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_BillingSetupFinished(JNIEnv*, jclass, jint ResponseCode)
 {
@@ -41,7 +43,7 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseQueried(JNIEnv
 
 	logDebug("PurchaseQueried %s %s %s", PToken, PCode, (ActionType == 0 ? "restored" : "bought"));
 	 
-	if(BillingContext.AppPurchaseUpdated)
+	if(BillingContext.AppPurchaseUpdated != nullptr)
 	{
 		BillingContext.AppPurchaseUpdated(PToken, PCode, (BillingManager::OperAction)ActionType);
 	}
@@ -52,6 +54,23 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseQueried(JNIEnv
 
     env->ReleaseStringUTFChars(PurchaseToken, PToken);
     env->ReleaseStringUTFChars(ProductCode, PCode);
+}
+
+JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseConsumed(JNIEnv* env, jclass, jstring PurchaseToken)
+{
+	const char* PToken = env->GetStringUTFChars(PurchaseToken, 0);
+
+	logDebug("Purchase consumed: %s", PToken);
+
+	if (BillingContext.AppPurchaseConsumed != nullptr)
+	{
+		BillingContext.AppPurchaseConsumed(PToken);
+	}
+	else
+	{
+		logError("AppPurchaseConsumed is not set");
+	}
+	env->ReleaseStringUTFChars(PurchaseToken, PToken);
 }
 #endif
 
@@ -122,6 +141,11 @@ bool BillingManager::ConsumeProductItem(const char* PurchaseToken)
 void BillingManager::SetPurchaseUpdatedCallback(BillingPurchaseUpdatedCallback* Callback)
 {
 	BillingContext.AppPurchaseUpdated = Callback;
+};
+
+void BillingManager::SetPurchaseConsumedCallback(BillingPurchaseConsumedCallback* Callback)
+{
+	BillingContext.AppPurchaseConsumed = Callback;
 };
 
 decltype(SDL_RegisterEvents(1)) BillingManager::GetEventCode()
