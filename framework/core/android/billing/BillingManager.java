@@ -70,6 +70,15 @@ class BillingManager {
     
     private static void startServiceConnection(final Runnable executeOnSuccess) {
         Log.v(TAG, "startServiceConnection");
+		
+		if(BILLING_SERVICE_CONNECTING == BillingServiceStatus)
+		{
+            Log.v(TAG, "Billing is connecting. Return.");
+		    return;
+		}
+		
+		BillingServiceStatus = BILLING_SERVICE_CONNECTING;
+		
         mBillingClient.startConnection(new BillingClientStateListener() {
             @Override
             public void onBillingSetupFinished(@BillingResponse int billingResponseCode) {
@@ -110,8 +119,7 @@ class BillingManager {
 				else if(BillingServiceStatus == BILLING_SERVICE_NOT_CONNECTED)
 				{
                     // If billing service was disconnected, we try to reconnect 1 time.
-                    // (feel free to introduce your retry policy here).
-					BillingServiceStatus = BILLING_SERVICE_CONNECTING;
+                    // (feel free to introduce your retry policy here).					
                     startServiceConnection(runnable);
                 }
             }
