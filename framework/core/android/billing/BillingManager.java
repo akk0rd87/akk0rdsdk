@@ -44,7 +44,7 @@ class BillingManager {
     //private static boolean mIsServiceConnected = false;
     
     private static native void BillingSetupFinished(int ResponseCode);
-    private static native void BillingDisconnected();
+    //private static native void BillingDisconnected();
     private static native void PurchaseQueried(String PurchaseToken, String ProductSKU, int Type);
     
     private static String DecodeBillingResponse(int billingResponseCode)
@@ -103,7 +103,7 @@ class BillingManager {
             public void onBillingServiceDisconnected() {
                 Log.v(TAG, "onBillingServiceDisconnected");
                 BillingServiceStatus = BILLING_SERVICE_NOT_CONNECTED;
-                BillingDisconnected();
+                //BillingDisconnected();
             }
         });
     }
