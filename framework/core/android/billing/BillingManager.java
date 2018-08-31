@@ -235,7 +235,15 @@ class BillingManager {
         executeServiceRequest(new Runnable() {
             public void run() {        
                 Log.v(TAG, "ConsumeProductItem executeServiceRequest");
-                mBillingClient.consumeAsync(PurchaseToken, null);
+                mBillingClient.consumeAsync(PurchaseToken, new ConsumeResponseListener() {
+                    @Override
+                    public void onConsumeResponse(int responseCode, String purchaseToken) {
+                        if(responseCode == BillingResponse.OK)
+                        {
+
+                        }
+                    }
+                });
             }
         });
     }    
