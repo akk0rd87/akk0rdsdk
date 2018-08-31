@@ -195,8 +195,9 @@ class BillingManager {
                 
                 if(BillingResponse.OK == purchasesResult.getResponseCode())
                 {            
-                    List<Purchase> purchases = purchasesResult.getPurchasesList();            
+                    List<Purchase> purchases = purchasesResult.getPurchasesList();
                     for (Purchase purchase : purchases) {
+
                         Log.v(TAG, "Purchase was Restored = " + purchase.getPurchaseToken() + " " + purchase.getSku() + "Order:" + purchase.getOrderId());
                         PurchaseQueried(purchase.getPurchaseToken(), purchase.getSku(), PURCHASE_RESTORED);
                     }
@@ -234,11 +235,12 @@ class BillingManager {
         */        
         
         executeServiceRequest(new Runnable() {
-            public void run() {        
-                Log.v(TAG, "ConsumeProductItem executeServiceRequest");
+            public void run() {
+                Log.v(TAG, "ConsumeResponse: " + PurchaseToken);
                 mBillingClient.consumeAsync(PurchaseToken, new ConsumeResponseListener() {
                     @Override
                     public void onConsumeResponse(int responseCode, String purchaseToken) {
+                        Log.v(TAG, "onConsumeResponse Result: " + DecodeBillingResponse(responseCode) + " Token:" + PurchaseToken);
                         if(responseCode == BillingResponse.OK)
                         {
 
