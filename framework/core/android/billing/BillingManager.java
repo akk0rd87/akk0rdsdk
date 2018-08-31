@@ -169,7 +169,7 @@ class BillingManager {
         // https://stackoverflow.com/questions/19591873/get-an-array-of-strings-from-java-to-c-jni
         
         final List<String> skuList = Arrays.asList(ProdList);
-        Log.v(TAG, "GetProductDetails " + skuList.get(1) + " as product");
+        //Log.v(TAG, "GetProductDetails " + skuList.get(1) + " as product");
         
         //Activity ctx = Utils.GetContext();
         executeServiceRequest(new Runnable() {
