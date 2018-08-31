@@ -121,8 +121,10 @@ class BillingManager {
                             if(BillingResponse.OK == responseCode)
                             {
                                 if(purchases != null)
-                                    for (Purchase purchase : purchases)
+                                    for (Purchase purchase : purchases) {
+                                        Log.v(TAG, "Purchase was Bought = " + purchase.getPurchaseToken() + " " + purchase.getSku() + "Order:" + purchase.getOrderId());
                                         PurchaseQueried(purchase.getPurchaseToken(), purchase.getSku(), PURCHASE_BOUGHT);
+                                    }
                             }
                             else
                             {
@@ -195,8 +197,7 @@ class BillingManager {
                 {            
                     List<Purchase> purchases = purchasesResult.getPurchasesList();            
                     for (Purchase purchase : purchases) {
-                        //handlePurchase(purchase);
-                        //Log.v(TAG, "QueryPurchases: " + purchase.getSku());
+                        Log.v(TAG, "Purchase was Restored = " + purchase.getPurchaseToken() + " " + purchase.getSku() + "Order:" + purchase.getOrderId());
                         PurchaseQueried(purchase.getPurchaseToken(), purchase.getSku(), PURCHASE_RESTORED);
                     }
                 }
