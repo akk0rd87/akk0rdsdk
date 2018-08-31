@@ -32,10 +32,16 @@ class BillingManager {
 
     public static final int PURCHASE_RESTORED = 0;
     public static final int PURCHASE_BOUGHT   = 1;
-    
+
+    public static final int BILLING_SERVICE_NOT_CONNECTED = 0;
+    public static final int BILLING_SERVICE_CONNECTING    = 1;
+    public static final int BILLING_SERVICE_CONNECTED     = 2;
+
+    public static int BillingServiceStatus = BILLING_SERVICE_NOT_CONNECTED;
+
     private static BillingClient mBillingClient;
     private static int mBillingClientResponseCode = BILLING_MANAGER_NOT_INITIALIZED;
-    private static boolean mIsServiceConnected = false;
+    //private static boolean mIsServiceConnected = false;
     
     private static native void BillingSetupFinished(int ResponseCode);
     private static native void BillingDisconnected();
@@ -69,12 +75,17 @@ class BillingManager {
             public void onBillingSetupFinished(@BillingResponse int billingResponseCode) {
                 Log.v(TAG, "Setup finished. Response: " + DecodeBillingResponse(billingResponseCode));
 
-                if (billingResponseCode == BillingResponse.OK) {
-                    mIsServiceConnected = true;
+                if (billingResponseCode == BillingResponse.OK)
+				{
+                    BillingServiceStatus = BILLING_SERVICE_CONNECTED;
                     if (executeOnSuccess != null) {
                         executeOnSuccess.run();
                     }
                 }
+				else
+				{
+					BillingServiceStatus = BILLING_SERVICE_NOT_CONNECTED;
+				}
                 mBillingClientResponseCode = billingResponseCode;
                 BillingSetupFinished(billingResponseCode);
             }
@@ -82,7 +93,7 @@ class BillingManager {
             @Override
             public void onBillingServiceDisconnected() {
                 Log.v(TAG, "onBillingServiceDisconnected");
-                mIsServiceConnected = false;
+                BillingServiceStatus = BILLING_SERVICE_NOT_CONNECTED;
                 BillingDisconnected();
             }
         });
@@ -92,11 +103,15 @@ class BillingManager {
         Activity ctx = Utils.GetContext();
         ctx.runOnUiThread(new Runnable() {
             public void run() {
-                if (mIsServiceConnected) {
+                if (BillingServiceStatus == BILLING_SERVICE_CONNECTED)
+                {
                     runnable.run();
-                } else {
+                }
+				else if(BillingServiceStatus == BILLING_SERVICE_NOT_CONNECTED)
+				{
                     // If billing service was disconnected, we try to reconnect 1 time.
                     // (feel free to introduce your retry policy here).
+					BillingServiceStatus = BILLING_SERVICE_CONNECTING;
                     startServiceConnection(runnable);
                 }
             }
