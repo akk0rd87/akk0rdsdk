@@ -411,6 +411,20 @@ AkkordTexture::~AkkordTexture()
     Destroy();
 }
 
+bool AkkordTexture::SetColorMod(Uint8 R, Uint8 G, Uint8 B)
+{
+	if (SDL_SetTextureColorMod(tex, R, G, B) == 0)
+	{
+		return true;
+	}
+	return false;
+}
+
+bool AkkordTexture::SetColorMod(AkkordColor ModColor)
+{
+	return SetColorMod(ModColor.GetR(), ModColor.GetG(), ModColor.GetB());
+};
+
 const bool AkkordTexture::Draw(AkkordRect Rect, const AkkordRect* RectFromAtlas, unsigned char Flip, double Angle, AkkordPoint* Point)
 {
     std::string Format;
@@ -512,102 +526,102 @@ bool BWrapper::IsPointInRect(AkkordPoint Point, AkkordRect Rect)
 
 void AkkordColor::SetInt32(unsigned int Color)
 {
-    color = Color;
+	color = Color;
 };
 
 AkkordColor::AkkordColor(unsigned int Color) // constructor
 {
-    color = Color;
+	color = Color;
 };
 
-AkkordColor::AkkordColor(unsigned char R, unsigned char G, unsigned char B) // constructor
+AkkordColor::AkkordColor(Uint8 R, Uint8 G, Uint8 B) // constructor
 {
-    SetRGB(R, G, B);
+	SetRGB(R, G, B);
 };
 
-AkkordColor::AkkordColor(unsigned char R, unsigned char G, unsigned char B, unsigned char A) // constructor
+AkkordColor::AkkordColor(Uint8 R, Uint8 G, Uint8 B, Uint8 A) // constructor
 {
-    SetRGBA(R, G, B, A);
+	SetRGBA(R, G, B, A);
 };
 
 AkkordColor::AkkordColor()
 {
-    SetRGB(255, 255, 255);
+	SetRGB(255, 255, 255);
 }
 
-void AkkordColor::SetRGB(unsigned char R, unsigned char G, unsigned char B)
+void AkkordColor::SetRGB(Uint8 R, Uint8 G, Uint8 B)
 {
-    SetRGBA(R, G, B, 255);
+	SetRGBA(R, G, B, 255);
 };
 
-void AkkordColor::SetRGBA(unsigned char R, unsigned char G, unsigned char B, unsigned char A)
+void AkkordColor::SetRGBA(Uint8 R, Uint8 G, Uint8 B, Uint8 A)
 {
-    color = AkkordColor::RGBA2Int32(R, G, B, A);
+	color = AkkordColor::RGBA2Int32(R, G, B, A);
 };
 
-unsigned char AkkordColor::GetRFromInt32(unsigned int ColorInt32)
+Uint8 AkkordColor::GetRFromInt32(unsigned int ColorInt32)
 {
-    return (ColorInt32 & 0x000000ff);
+	return (ColorInt32 & 0x000000ff);
 };
 
-unsigned char AkkordColor::GetGFromInt32(unsigned int ColorInt32)
+Uint8 AkkordColor::GetGFromInt32(unsigned int ColorInt32)
 {
-    return (ColorInt32 & 0x0000ff00) >> 8;
+	return (ColorInt32 & 0x0000ff00) >> 8;
 };
 
-unsigned char AkkordColor::GetBFromInt32(unsigned int ColorInt32)
+Uint8 AkkordColor::GetBFromInt32(unsigned int ColorInt32)
 {
-    return (ColorInt32 & 0x00ff0000) >> 16;
+	return (ColorInt32 & 0x00ff0000) >> 16;
 };
 
-unsigned char AkkordColor::GetAFromInt32(unsigned int ColorInt32)
+Uint8 AkkordColor::GetAFromInt32(unsigned int ColorInt32)
 {
-    return (ColorInt32 & 0xff000000) >> 24;
+	return (ColorInt32 & 0xff000000) >> 24;
 };
 
-const unsigned char AkkordColor::GetR()
+const Uint8 AkkordColor::GetR()
 {
-    return AkkordColor::GetRFromInt32(color);
+	return AkkordColor::GetRFromInt32(color);
 };
 
-const unsigned char AkkordColor::GetG()
+const Uint8 AkkordColor::GetG()
 {
-    return AkkordColor::GetGFromInt32(color);
+	return AkkordColor::GetGFromInt32(color);
 };
 
-const unsigned char AkkordColor::GetB()
+const Uint8 AkkordColor::GetB()
 {
-    return AkkordColor::GetBFromInt32(color);
+	return AkkordColor::GetBFromInt32(color);
 };
 
-const unsigned char AkkordColor::GetA()
+const Uint8 AkkordColor::GetA()
 {
-    return AkkordColor::GetAFromInt32(color);;
+	return AkkordColor::GetAFromInt32(color);;
 };
 
 const unsigned int AkkordColor::GetInt32()
 {
-    return color;
+	return color;
 };
 
-void AkkordColor::SetR(unsigned char R)
+void AkkordColor::SetR(Uint8 R)
 {
-    SetRGBA(R, GetG(), GetB(), GetA());
+	SetRGBA(R, GetG(), GetB(), GetA());
 };
 
-void AkkordColor::SetG(unsigned char G)
+void AkkordColor::SetG(Uint8 G)
 {
-    SetRGBA(GetR(), G, GetB(), GetA());
+	SetRGBA(GetR(), G, GetB(), GetA());
 };
 
-void AkkordColor::SetB(unsigned char B)
+void AkkordColor::SetB(Uint8 B)
 {
-    SetRGBA(GetR(), GetG(), B, GetA());
+	SetRGBA(GetR(), GetG(), B, GetA());
 };
 
-void AkkordColor::SetA(unsigned char A)
+void AkkordColor::SetA(Uint8 A)
 {
-    SetRGBA(GetR(), GetG(), GetB(), A);
+	SetRGBA(GetR(), GetG(), GetB(), A);
 };
 
 unsigned int AkkordColor::RGBA2Int32(int r, int g, int b, int a)

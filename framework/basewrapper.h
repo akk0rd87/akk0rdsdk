@@ -31,28 +31,28 @@ private :
 public:
     AkkordColor();
     AkkordColor(unsigned int Color);
-    AkkordColor(unsigned char R, unsigned char G, unsigned char B);
-    AkkordColor(unsigned char R, unsigned char G, unsigned char B, unsigned char A);
+    AkkordColor(Uint8 R, Uint8 G, Uint8 B);
+    AkkordColor(Uint8 R, Uint8 G, Uint8 B, Uint8 A);
 
     void                 SetInt32(unsigned int Color);
-    void                 SetRGB  (unsigned char R, unsigned char G, unsigned char B);
-    void                 SetRGBA (unsigned char R, unsigned char G, unsigned char B, unsigned char A);
+    void                 SetRGB  (Uint8 R, Uint8 G, Uint8 B);
+    void                 SetRGBA (Uint8 R, Uint8 G, Uint8 B, Uint8 A);
     
-    void                 SetR    (unsigned char R);
-    void                 SetG    (unsigned char G);
-    void                 SetB    (unsigned char B);
-    void                 SetA    (unsigned char A);
+    void                 SetR    (Uint8 R);
+    void                 SetG    (Uint8 G);
+    void                 SetB    (Uint8 B);
+    void                 SetA    (Uint8 A);
     
     const unsigned int   GetInt32();    
-    const unsigned char  GetR    ();
-    const unsigned char  GetG    ();
-    const unsigned char  GetB    ();
-    const unsigned char  GetA    ();
+    const Uint8  GetR    ();
+    const Uint8  GetG    ();
+    const Uint8  GetB    ();
+    const Uint8  GetA    ();
 
-    static unsigned char GetRFromInt32(unsigned int ColorInt32);
-    static unsigned char GetGFromInt32(unsigned int ColorInt32);
-    static unsigned char GetBFromInt32(unsigned int ColorInt32);
-    static unsigned char GetAFromInt32(unsigned int ColorInt32);
+    static Uint8 GetRFromInt32(unsigned int ColorInt32);
+    static Uint8 GetGFromInt32(unsigned int ColorInt32);
+    static Uint8 GetBFromInt32(unsigned int ColorInt32);
+    static Uint8 GetAFromInt32(unsigned int ColorInt32);
 
     static unsigned int RGBA2Int32(int r, int g, int b, int a);
 };
@@ -231,6 +231,9 @@ public:
     //int Draw(AkkordRect RectFromAtlas, AkkordRect Rect);
     const bool Draw(AkkordRect Rect, const AkkordRect* RectFromAtlas = nullptr, unsigned char Flip = AkkordTexture::Flip::None, double Angle = 0, AkkordPoint* Point = nullptr);
     const AkkordPoint GetSize();
+	bool SetColorMod(Uint8 R, Uint8 G, Uint8 B);
+	bool SetColorMod(AkkordColor ModColor);
+	
     AkkordTexture();
     ~AkkordTexture();
 };
