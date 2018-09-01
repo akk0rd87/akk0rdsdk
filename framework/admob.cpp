@@ -141,8 +141,8 @@ bool AdMob_ProcessAdEvent(AdEvent* Event)
 		SDL_Event sdl_Event;
 		sdl_Event.user.type = AdContext.GetAdMobEventCode();
 		sdl_Event.user.code = (Sint32)Event->AdFormat;
-		sdl_Event.user.data1 = (void*)Event->EventType;
-		sdl_Event.user.data2 = (void*)Event->Code;
+		sdl_Event.user.data1 = (void*)(uintptr_t)Event->EventType;
+		sdl_Event.user.data2 = (void*)(uintptr_t)Event->Code;
 		SDL_PushEvent(&sdl_Event);
 	}
 

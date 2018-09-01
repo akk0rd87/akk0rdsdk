@@ -79,7 +79,7 @@ public:
 		SDL_Event Event;
 		Event.user.type = msgBox::GetEventCode();
 		Event.user.code =  (Sint32)Code;
-		Event.user.data1 = (void*)Result;
+		Event.user.data1 = (void*)(uintptr_t)Result;
 		SDL_PushEvent(&Event);
 	};
 };

@@ -165,6 +165,6 @@ void BillingManager::PushEvent(int Code, int Result)
 	SDL_Event sdl_Event;
 	sdl_Event.user.type = BillingManager::GetEventCode();
 	sdl_Event.user.code = (Sint32)(Code);
-	sdl_Event.user.data1 = (void*)Result;
+	sdl_Event.user.data1 = (void*)(uintptr_t)Result;
 	SDL_PushEvent(&sdl_Event);
 };
