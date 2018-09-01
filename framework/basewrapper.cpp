@@ -425,6 +425,15 @@ bool AkkordTexture::SetColorMod(AkkordColor ModColor)
 	return SetColorMod(ModColor.GetR(), ModColor.GetG(), ModColor.GetB());
 };
 
+bool AkkordTexture::SetAlphaMod(Uint8 A)
+{
+	if (SDL_SetTextureAlphaMod(tex, A) == 0)
+		return true;
+
+	logError("SDL_SetTextureAlphaMod error: %s", SDL_GetError());
+	return false;
+};
+
 const bool AkkordTexture::Draw(AkkordRect Rect, const AkkordRect* RectFromAtlas, unsigned char Flip, double Angle, AkkordPoint* Point)
 {
     std::string Format;

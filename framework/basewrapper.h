@@ -233,6 +233,7 @@ public:
     const AkkordPoint GetSize();
 	bool SetColorMod(Uint8 R, Uint8 G, Uint8 B);
 	bool SetColorMod(AkkordColor ModColor);
+	bool SetAlphaMod(Uint8 A);
 	
     AkkordTexture();
     ~AkkordTexture();
