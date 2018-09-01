@@ -2,6 +2,24 @@
 #ifndef __AKK0RD_SDFFONT_H__
 #define __AKK0RD_SDFFONT_H__
 
+#ifdef __CODEBLOCKS
+typedef void             GLvoid;
+typedef char             GLchar;
+typedef unsigned int     GLenum;
+typedef unsigned char    GLboolean;
+typedef unsigned int     GLbitfield;
+//typedef khronos_int8_t   GLbyte;
+typedef short            GLshort;
+typedef int              GLint;
+typedef int              GLsizei;
+//typedef khronos_uint8_t  GLubyte;
+typedef unsigned short   GLushort;
+typedef unsigned int     GLuint;
+typedef /*khronos_float_t*/ float  GLfloat;
+//typedef khronos_float_t  GLclampf;
+//typedef khronos_int32_t  GLfixed;
+#endif
+
 #include <map>
 #include "basewrapper.h"
 #include "SDL_image.h"
