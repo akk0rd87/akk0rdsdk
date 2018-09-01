@@ -15,10 +15,6 @@
 		)
 	)
 	
-	if exist "%file%\" (
-		echo file "%~1" does not exist
-		exit /b 3
-	)
 	if not exist "%file%" (
 		echo file "%~1" does not exist
 		exit /b 4
