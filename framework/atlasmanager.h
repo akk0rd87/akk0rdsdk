@@ -28,6 +28,8 @@ public:
     AkkordRect  GetSpriteRect           (IndexType SpriteIndex);
     void        Clear();
 
+	AkkordTexture* GetAtlasBySprite(IndexType SpriteIndex);
+
     AtlasManager();
     ~AtlasManager();
 
@@ -152,6 +154,14 @@ AtlasManager::IndexType AtlasManager::GetIndexBySpriteName(IndexType AtlasIndex,
 
     return (std::numeric_limits<IndexType>::max)();
 }
+
+AkkordTexture* AtlasManager::GetAtlasBySprite(IndexType SpriteIndex)
+{
+	if (IsValidSpriteIndex(SpriteIndex))
+		return AtlasTextureList[Sprites[SpriteIndex].altasIndex].get();
+
+	return nullptr;
+};
 
 void AtlasManager::DrawSprite(IndexType SpriteIndex, AkkordRect Rect, unsigned char Flip, double Angle, AkkordPoint* Point)
 {
