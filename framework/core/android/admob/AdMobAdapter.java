@@ -91,7 +91,7 @@ public class AdMobAdapter {
             }
         });        
         
-        Log.v(TAG, "InterstitialInit finish");
+        //Log.v(TAG, "InterstitialInit finish");
     }
 
     public static void InterstitialInit()
@@ -155,10 +155,10 @@ public class AdMobAdapter {
     {
         try
 		{
-		    Log.v(TAG, "InterstitialSetUnitId start");
+		    //Log.v(TAG, "InterstitialSetUnitId start");
             InterstitialReCreate();
             mInterstitialAd.setAdUnitId(ID);
-            Log.v(TAG, "InterstitialSetUnitId finish");
+            //Log.v(TAG, "InterstitialSetUnitId finish");
 		}
 		
         catch(Exception e) 
@@ -190,7 +190,7 @@ public class AdMobAdapter {
     {
         try
         {
-            Log.v(TAG, "InterstitialLoad start");
+            //Log.v(TAG, "InterstitialLoad start");
             //mInterstitialAd.loadAd(new AdRequest.Builder().build());
             Activity ctx = Utils.GetContext();
             ctx.runOnUiThread(new Runnable() {
@@ -199,7 +199,7 @@ public class AdMobAdapter {
                 }
             });                    
             
-            Log.v(TAG, "InterstitialLoad end");
+            //Log.v(TAG, "InterstitialLoad end");
         
         } 
         catch(Exception e) 
@@ -213,7 +213,7 @@ public class AdMobAdapter {
     {
         try
         {
-            Log.v(TAG, "RewardedVideoLoad start");            
+            //Log.v(TAG, "RewardedVideoLoad start");
             Activity ctx = Utils.GetContext();
             ctx.runOnUiThread(new Runnable() {
                 public void run() {                
@@ -221,7 +221,7 @@ public class AdMobAdapter {
                 }
             });                    
             
-            Log.v(TAG, "RewardedVideoLoad end");
+            //Log.v(TAG, "RewardedVideoLoad end");
         
         } 
         catch(Exception e) 
@@ -235,17 +235,17 @@ public class AdMobAdapter {
     {
         try
         {       
-            Log.v(TAG, "InterstitialShow start");
+            //Log.v(TAG, "InterstitialShow start");
             Activity ctx = Utils.GetContext();
             ctx.runOnUiThread(new Runnable() {
                 public void run() {
                     if(mInterstitialAd.isLoaded())
                     {
-                        Log.v(TAG, "InterstitialShow before show");
+                        //Log.v(TAG, "InterstitialShow before show");
                         mInterstitialAd.show();
-                        Log.v(TAG, "InterstitialShow after show");                        
+                        //Log.v(TAG, "InterstitialShow after show");
                     }
-                    Log.v(TAG, "InterstitialShow return 0");
+                    //Log.v(TAG, "InterstitialShow return 0");
                    }
             });               
                         
@@ -263,17 +263,17 @@ public class AdMobAdapter {
     {
         try
         {       
-            Log.v(TAG, "RewardedVideoShow start");
+            //Log.v(TAG, "RewardedVideoShow start");
             Activity ctx = Utils.GetContext();
             ctx.runOnUiThread(new Runnable() {
                 public void run() {
                     if(mRewardedVideoAd.isLoaded())
                     {
-                        Log.v(TAG, "RewardedVideoShow before show");
+                        //Log.v(TAG, "RewardedVideoShow before show");
                         mRewardedVideoAd.show();
-                        Log.v(TAG, "RewardedVideoShow after show");                        
+                        //Log.v(TAG, "RewardedVideoShow after show");
                     }
-                    Log.v(TAG, "RewardedVideoShow return 0");
+                    //Log.v(TAG, "RewardedVideoShow return 0");
                    }
             });               
                         
