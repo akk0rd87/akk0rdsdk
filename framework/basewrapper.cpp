@@ -413,10 +413,10 @@ AkkordTexture::~AkkordTexture()
 
 bool AkkordTexture::SetColorMod(Uint8 R, Uint8 G, Uint8 B)
 {
-	if (SDL_SetTextureColorMod(tex, R, G, B) == 0)
-	{
+	if (SDL_SetTextureColorMod(tex, R, G, B) == 0)	
 		return true;
-	}
+	
+	logError("SDL_SetTextureColorMod error: %s", SDL_GetError());
 	return false;
 }
 
