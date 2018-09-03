@@ -371,6 +371,9 @@ bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const B
             case AkkordTexture::TextureType::JPEG:
                 image = IMG_LoadJPG_RW(io);
                 break;
+			case AkkordTexture::TextureType::SVG:
+				image = IMG_LoadSVG_RW(io);
+				break;
         }
 
         if (image)

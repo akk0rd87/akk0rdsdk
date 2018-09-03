@@ -222,7 +222,7 @@ class AkkordTexture
 private:   
     SDL_Texture *tex = nullptr;
 public:
-    enum struct TextureType : unsigned char { BMP, PNG, JPEG };
+    enum struct TextureType : unsigned char { BMP, PNG, JPEG, SVG };
     struct Flip { enum : unsigned char { None = SDL_FLIP_NONE, Horizontal = SDL_FLIP_HORIZONTAL, Vertical = SDL_FLIP_VERTICAL }; };  
     void Destroy();
     //bool LoadFromFile(const char* FileName);
