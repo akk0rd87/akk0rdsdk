@@ -530,7 +530,7 @@ class SDFFontBuffer
 
             if (a == 10) // Если это переход строки
             {
-                pt.y += scaleY * sdfFont->GetLineHeight(); // надо учесть общую высоту строки
+                pt.y += static_cast<decltype(pt.y)>(scaleY * sdfFont->GetLineHeight()); // надо учесть общую высоту строки
                 VecSize.push_back(localpoint.x);
                 pt.x = std::max(pt.x, localpoint.x);
                 localpoint.x = 0;
@@ -539,8 +539,8 @@ class SDFFontBuffer
             {
                 sdfFont->GetCharInfo(a, charParams);
 
-                localpoint.x += scaleX * charParams.xoffset;
-				localpoint.x += (float)scaleX * (a == 32 ? charParams.xadvance : charParams.w);
+                localpoint.x += static_cast<decltype(localpoint.x)>(scaleX * charParams.xoffset);
+				localpoint.x += static_cast<decltype(localpoint.x)>(scaleX * (a == 32 ? charParams.xadvance : charParams.w));
             }
         };
 
@@ -548,7 +548,7 @@ class SDFFontBuffer
         pt.x = std::max(pt.x, localpoint.x);
 
         //pt.y += localpoint.y; // надо учесть общую высоту строки
-        pt.y = scaleY * sdfFont->GetLineHeight() * VecSize.size();
+        pt.y = static_cast<decltype(pt.y)>(scaleY * sdfFont->GetLineHeight() * VecSize.size());
 
         return pt;
     }
@@ -638,13 +638,13 @@ public:
 
         auto ScreenSize = BWrapper::GetScreenSize();    
         
-        float ScrenW = ScreenSize.x;
-        float ScrenH = ScreenSize.y;
+        float ScrenW = static_cast<decltype(ScrenW)>(ScreenSize.x);
+        float ScrenH = static_cast<decltype(ScrenH)>(ScreenSize.y);
 
         SDFCharInfo charParams;
         
         unsigned line = 0;
-        auto PointsCnt = UV.size() / 2; // Разделив на 2, получаем количество вершин
+        decltype (Indices)::value_type PointsCnt = static_cast<decltype (Indices)::value_type>(UV.size() / 2); // Разделив на 2, получаем количество вершин
 
         switch (alignV)
         {
@@ -682,7 +682,7 @@ public:
             if (a == 10)
             {
                 ++line;
-                Y += scaleY * sdfFont->GetLineHeight();
+                Y += static_cast<decltype(Y)>(scaleY * sdfFont->GetLineHeight());
 
                 pt.x = std::max(pt.x, x_current - x_start + 1);
                 goto check_h_align;                                                        
@@ -692,7 +692,7 @@ public:
             {
                 sdfFont->GetCharInfo(a, charParams);
 
-                x_current = x_current + scaleX * charParams.xoffset;
+                x_current += static_cast<decltype(x_current)>(scaleX * charParams.xoffset);
 
                 UV.push_back(float(charParams.x) / atlasW);                    UV.push_back(float(charParams.y + charParams.h - 1) / atlasH);
                 UV.push_back(float(charParams.x + charParams.w - 1) / atlasW); UV.push_back(float(charParams.y + charParams.h - 1) / atlasH);
@@ -708,13 +708,13 @@ public:
                 Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2); Indices.push_back(PointsCnt + 3);
 
                 //x_current = x_current + (float)scaleX * (charParams.w /*+ charParams.xadvance*/);
-				x_current = x_current + (float)scaleX * (a == 32 ? charParams.xadvance : charParams.w);
+				x_current = x_current + static_cast<decltype(x_current)>(scaleX * (a == 32 ? charParams.xadvance : charParams.w));
                 PointsCnt += 4;
             }
         };        
 
         pt.x = std::max(pt.x, x_current - x_start + 1);
-        pt.y = scaleY * sdfFont->GetLineHeight() * VecSize.size();
+        pt.y = static_cast<decltype(pt.y)>(scaleY * sdfFont->GetLineHeight() * VecSize.size());
 
         //logDebug("[%d %d] [%d %d]", size.x, size.y, pt.x, pt.y);
 #endif
