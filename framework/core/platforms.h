@@ -36,30 +36,30 @@ class Platforms
 private:
     static bool InitInternalDirs();
 public:    
-	static bool                Init();
-	static Locale::Lang        GetDeviceLanguage();
-    static BWrapper::OS        GetDeviceOS();
-    static std::string         GetEnvVariable   (const char* Variable); // Only for windows
-    
-    static std::string         GetInternalDir();
-    static std::string         GetInternalWriteDir();
-    static std::string         GetInternalAssetsDir();
-
-    static bool                DirCreate(const char* Dir);
-    static bool                DirExists(const char* Dir);    
-    static bool                DirRemove(const char* Dir);
-    static bool                DirRemoveRecursive(const char* Dir);
-
-    // Activity functions
-    static bool                OpenURL(const char* url);
+	static bool                     Init();
+	static Locale::Lang             GetDeviceLanguage();
+    static constexpr BWrapper::OS   GetDeviceOS();
+    static std::string              GetEnvVariable   (const char* Variable); // Only for windows
+    						        
+    static std::string              GetInternalDir();
+    static std::string              GetInternalWriteDir();
+    static std::string              GetInternalAssetsDir();
+							        
+    static bool                     DirCreate(const char* Dir);
+    static bool                     DirExists(const char* Dir);    
+    static bool                     DirRemove(const char* Dir);
+    static bool                     DirRemoveRecursive(const char* Dir);
+							        
+    // Activity functions	        
+    static bool                     OpenURL(const char* url);
 
     // Android-specific functions
-    static int                 AndroidGetApiLevel();
-    static bool                AndroidShowToast(const char* Message, BWrapper::AndroidToastDuration Duration, int Gravity, int xOffset, int yOffset);
-
-    static bool                GetDirContent  (const char* Dir, DirContentElementArray& ArrayList);
-
-	static void                MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3);
+    static int                      AndroidGetApiLevel();
+    static bool                     AndroidShowToast(const char* Message, BWrapper::AndroidToastDuration Duration, int Gravity, int xOffset, int yOffset);
+							        
+    static bool                     GetDirContent  (const char* Dir, DirContentElementArray& ArrayList);
+							        
+	static void                     MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3);
 };
 
 /////////////////////////////////////////
@@ -180,18 +180,18 @@ bool Platforms::OpenURL(const char* url)
     return false;
 }
 
-BWrapper::OS Platforms::GetDeviceOS()
-{
+constexpr BWrapper::OS Platforms::GetDeviceOS()
+{	
 #ifdef __APPLE__
-    return BWrapper::OS::iOS;
+	return BWrapper::OS::iOS;
 #endif
 
 #ifdef __ANDROID__
-    return BWrapper::OS::AndroidOS;
+	return BWrapper::OS::AndroidOS;
 #endif
 
 #ifdef __WIN32__
-    return BWrapper::OS::Windows;
+	return  BWrapper::OS::Windows;
 #endif
 
     return BWrapper::OS::Unknown;
