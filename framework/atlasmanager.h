@@ -205,7 +205,8 @@ AtlasManager::~AtlasManager()
 
 void AtlasManager::AddTexture()
 {
-    AtlasTextureList.push_back(std::move(std::unique_ptr<AkkordTexture>(new AkkordTexture())));
+    //AtlasTextureList.push_back(std::move(std::unique_ptr<AkkordTexture>(new AkkordTexture())));
+    AtlasTextureList.push_back(std::unique_ptr<AkkordTexture>(new AkkordTexture()));
 }
 
 #endif // __AKK0RD_ATLAS_MANAGER_H__
