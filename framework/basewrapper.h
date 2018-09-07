@@ -204,7 +204,7 @@ public:
     static Locale::Lang        GetDeviceLanguage();    
     static std::string         GetEnvVariable(const char* Variable); // Only for windows
 
-    static constexpr BWrapper::OS        GetDeviceOS()
+    static constexpr BWrapper::OS GetDeviceOS()
     {
 #ifdef __APPLE__
         return BWrapper::OS::iOS;
