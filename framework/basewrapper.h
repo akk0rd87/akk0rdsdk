@@ -146,13 +146,6 @@ public:
     static bool                DrawLine                    (AkkordPoint Point1, AkkordPoint Point2);
     static bool                IsPointInRect               (AkkordPoint Point, AkkordRect Rect);    
                                                            
-                                                           
-    // Environment functions                               
-    static Locale::Lang        GetDeviceLanguage();        
-    static BWrapper::OS        GetDeviceOS                 ();
-    static std::string         GetEnvVariable              (const char* Variable); // Only for windows
-                                                           
-                                                           
     // Working with files                                  
     static char*               File2Buffer                 (const char* FileName, BWrapper::FileSearchPriority SearchPriority, unsigned& BufferSize);
     static FILE*               FileOpen                    (const char* FileName, BWrapper::FileSearchPriority SearchPriority, BWrapper::FileOpenMode OpenMode);
@@ -207,14 +200,26 @@ public:
     // Thread functions                                    
     static void                Sleep                       (unsigned MilliSeconds);
 
-	
-    // For test. Do not use this function in your projects
-    //static void                Test                ();
+    // Environment functions                               
+    static Locale::Lang        GetDeviceLanguage();    
+    static std::string         GetEnvVariable(const char* Variable); // Only for windows
 
+    static constexpr BWrapper::OS        GetDeviceOS()
+    {
+#ifdef __APPLE__
+        return BWrapper::OS::iOS;
+#endif
 
+#ifdef __ANDROID__
+        return BWrapper::OS::AndroidOS;
+#endif
 
-    // Not realized
-    //static int GetDisplayDPI(float* Ddpi, float* Hdpi, float* Vdpi);
+#ifdef __WIN32__
+        return  BWrapper::OS::Windows;
+#endif
+
+        return BWrapper::OS::Unknown;
+    };
 };
 
 class AkkordTexture

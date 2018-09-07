@@ -38,7 +38,7 @@ private:
 public:    
 	static bool                     Init();
 	static Locale::Lang             GetDeviceLanguage();
-    static constexpr BWrapper::OS   GetDeviceOS();
+    //static constexpr BWrapper::OS   GetDeviceOS();
     static std::string              GetEnvVariable   (const char* Variable); // Only for windows
     						        
     static std::string              GetInternalDir();
@@ -180,6 +180,7 @@ bool Platforms::OpenURL(const char* url)
     return false;
 }
 
+/*
 constexpr BWrapper::OS Platforms::GetDeviceOS()
 {	
 #ifdef __APPLE__
@@ -196,6 +197,7 @@ constexpr BWrapper::OS Platforms::GetDeviceOS()
 
     return BWrapper::OS::Unknown;
 };
+*/
 
 int Platforms::AndroidGetApiLevel()
 {

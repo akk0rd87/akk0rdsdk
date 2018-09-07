@@ -877,10 +877,10 @@ Locale::Lang BWrapper::GetDeviceLanguage()
 };
 
 
-BWrapper::OS BWrapper::GetDeviceOS()
-{
-    return Platforms::GetDeviceOS();
-};
+//BWrapper::OS BWrapper::GetDeviceOS()
+//{
+//    return Platforms::GetDeviceOS();
+//};
 
 int BWrapper::AndroidGetApiLevel()
 {
