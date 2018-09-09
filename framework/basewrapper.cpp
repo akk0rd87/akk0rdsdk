@@ -437,7 +437,7 @@ bool AkkordTexture::SetAlphaMod(Uint8 A)
 	return false;
 };
 
-const bool AkkordTexture::Draw(AkkordRect Rect, const AkkordRect* RectFromAtlas, unsigned char Flip, double Angle, AkkordPoint* Point)
+bool AkkordTexture::Draw(AkkordRect Rect, const AkkordRect* RectFromAtlas, unsigned char Flip, double Angle, AkkordPoint* Point) const
 {
     std::string Format;
     auto NativeDstRect = ConvertRect2Native(Rect); // Rect must be always set
@@ -484,7 +484,7 @@ AkkordTexture::AkkordTexture()
     tex = nullptr;
 }
 
-const AkkordPoint AkkordTexture::GetSize()
+AkkordPoint AkkordTexture::GetSize() const
 {
     AkkordPoint Point(-1, -1);
     if (tex)
@@ -611,7 +611,7 @@ Uint8 AkkordColor::GetA() const
 	return AkkordColor::GetAFromInt32(color);;
 };
 
-const unsigned int AkkordColor::GetInt32()
+unsigned int AkkordColor::GetInt32() const
 {
 	return color;
 };
@@ -1238,7 +1238,7 @@ FileReader::~FileReader()
     Close();
 };
 
-const bool FileReader::IsOpen()
+bool FileReader::IsOpen() const
 {
     return opened;
 }
