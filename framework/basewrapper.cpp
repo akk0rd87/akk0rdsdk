@@ -527,7 +527,7 @@ int BWrapper::GetScreenHeight()
     return GetScreenSize().y;
 };
 
-bool BWrapper::IsPointInRect(AkkordPoint Point, AkkordRect Rect)
+bool BWrapper::IsPointInRect(const AkkordPoint& Point, const AkkordRect& Rect)
 {
     if (Rect.x <= Point.x && Point.x <= Rect.x + Rect.w)
         if (Rect.y <= Point.y && Point.y <= Rect.y + Rect.h)
@@ -651,7 +651,7 @@ bool BWrapper::SetCurrentColor(AkkordColor Color)
     return false;
 }
 
-bool BWrapper::DrawRect(AkkordRect Rect)
+bool BWrapper::DrawRect(const AkkordRect& Rect)
 {
     auto NativeRect = ConvertRect2Native(Rect);
     if (SDL_RenderDrawRect(CurrentContext.CurrentRenderer, &NativeRect) == 0) return true;
@@ -664,7 +664,7 @@ bool BWrapper::DrawRect(int X, int Y, int W, int H)
     return DrawRect(AkkordRect(X, Y, W, H));
 }
 
-bool BWrapper::FillRect(AkkordRect Rect)
+bool BWrapper::FillRect(const AkkordRect& Rect)
 {
     auto NativeRect = ConvertRect2Native(Rect);
     if (SDL_RenderFillRect(CurrentContext.CurrentRenderer, &NativeRect) == 0) return true;
@@ -677,7 +677,7 @@ bool BWrapper::FillRect(int X, int Y, int W, int H)
     return BWrapper::FillRect(AkkordRect(X, Y, W, H));
 }
 
-bool BWrapper::DrawLine(AkkordPoint Point1, AkkordPoint Point2)
+bool BWrapper::DrawLine(const AkkordPoint& Point1, const AkkordPoint& Point2)
 {
     if (SDL_RenderDrawLine(CurrentContext.CurrentRenderer, Point1.x, Point1.y, Point2.x, Point2.y) == 0) return true;
     logError("Draw error %s", SDL_GetError());

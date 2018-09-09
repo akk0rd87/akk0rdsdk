@@ -139,12 +139,12 @@ public:
                                                            
     // Drawing functions                                      
     static bool                SetCurrentColor             (AkkordColor Color);
-    static bool                DrawRect                    (AkkordRect Rect);
+    static bool                DrawRect                    (const AkkordRect& Rect);
     static bool                DrawRect                    (int X, int Y, int W, int H);
-    static bool                FillRect                    (AkkordRect Rect);
+    static bool                FillRect                    (const AkkordRect& Rect);
     static bool                FillRect                    (int X, int Y, int W, int H);
-    static bool                DrawLine                    (AkkordPoint Point1, AkkordPoint Point2);
-    static bool                IsPointInRect               (AkkordPoint Point, AkkordRect Rect);    
+    static bool                DrawLine                    (const AkkordPoint& Point1, const AkkordPoint& Point2);
+    static bool                IsPointInRect               (const AkkordPoint& Point,  const AkkordRect& Rect);    
                                                            
     // Working with files                                  
     static char*               File2Buffer                 (const char* FileName, BWrapper::FileSearchPriority SearchPriority, unsigned& BufferSize);
