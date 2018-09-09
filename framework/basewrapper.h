@@ -44,10 +44,10 @@ public:
     void                 SetA    (Uint8 A);
     
     const unsigned int   GetInt32();    
-    const Uint8  GetR    ();
-    const Uint8  GetG    ();
-    const Uint8  GetB    ();
-    const Uint8  GetA    ();
+    Uint8  GetR    () const;
+    Uint8  GetG    () const;
+    Uint8  GetB    () const;
+    Uint8  GetA    () const;
 
     static Uint8 GetRFromInt32(unsigned int ColorInt32);
     static Uint8 GetGFromInt32(unsigned int ColorInt32);
@@ -138,7 +138,7 @@ public:
                                                            
                                                            
     // Drawing functions                                      
-    static bool                SetCurrentColor             (AkkordColor Color);
+    static bool                SetCurrentColor             (const AkkordColor& Color);
     static bool                DrawRect                    (const AkkordRect& Rect);
     static bool                DrawRect                    (int X, int Y, int W, int H);
     static bool                FillRect                    (const AkkordRect& Rect);

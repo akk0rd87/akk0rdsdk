@@ -591,22 +591,22 @@ Uint8 AkkordColor::GetAFromInt32(unsigned int ColorInt32)
 	return (ColorInt32 & 0xff000000) >> 24;
 };
 
-const Uint8 AkkordColor::GetR()
+Uint8 AkkordColor::GetR() const
 {
 	return AkkordColor::GetRFromInt32(color);
 };
 
-const Uint8 AkkordColor::GetG()
+Uint8 AkkordColor::GetG() const
 {
 	return AkkordColor::GetGFromInt32(color);
 };
 
-const Uint8 AkkordColor::GetB()
+Uint8 AkkordColor::GetB() const
 {
 	return AkkordColor::GetBFromInt32(color);
 };
 
-const Uint8 AkkordColor::GetA()
+Uint8 AkkordColor::GetA() const
 {
 	return AkkordColor::GetAFromInt32(color);;
 };
@@ -644,7 +644,7 @@ unsigned int AkkordColor::RGBA2Int32(int r, int g, int b, int a)
         + a * 256 * 256 * 256;
 }
 
-bool BWrapper::SetCurrentColor(AkkordColor Color)
+bool BWrapper::SetCurrentColor(const AkkordColor& Color)
 {
     if(SDL_SetRenderDrawColor(CurrentContext.CurrentRenderer, Color.GetR(), Color.GetG(), Color.GetB(), Color.GetA()) == 0) return true;
     logError("Draw error %s", SDL_GetError());
