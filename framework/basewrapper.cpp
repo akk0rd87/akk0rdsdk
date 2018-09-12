@@ -257,11 +257,9 @@ bool BWrapper::FileRename(const char* OldName, const char* NewName)
 /////////
 ////////////////////////////////
 
-SDL_Rect ConvertRect2Native(const AkkordRect &Rect)
-{
-    SDL_Rect r;
-    r.x = Rect.x; r.y = Rect.y; r.w = Rect.w; r.h = Rect.h;
-    return r;
+void ConvertRect2Native(const AkkordRect &Rect, SDL_Rect* sRect)
+{    
+    sRect->x = Rect.x; sRect->y = Rect.y; sRect->w = Rect.w; sRect->h = Rect.h;    
 }
 
 AkkordWindow* BWrapper::CreateRenderWindow(const char* Title, int X, int Y, int W, int H, Uint32 Flags)
@@ -440,16 +438,16 @@ bool AkkordTexture::SetAlphaMod(Uint8 A)
 bool AkkordTexture::Draw(AkkordRect Rect, const AkkordRect* RectFromAtlas, unsigned char Flip, double Angle, AkkordPoint* Point) const
 {
     std::string Format;
-    auto NativeDstRect = ConvertRect2Native(Rect); // Rect must be always set
+    SDL_Rect NativeDstRect;
+    ConvertRect2Native(Rect, &NativeDstRect); // Rect must be always set
 
     // Converting Source Rect if exists
     SDL_Rect  NativeSrcRect;
     SDL_Rect* NativeSrcRect_ptr = nullptr;
     if (RectFromAtlas)
     {
-        NativeSrcRect     = ConvertRect2Native(*RectFromAtlas);
+        ConvertRect2Native(*RectFromAtlas, &NativeSrcRect);
         NativeSrcRect_ptr = &NativeSrcRect;
-
     }
 
     // Converting Angle Point if exists
@@ -653,7 +651,8 @@ bool BWrapper::SetCurrentColor(const AkkordColor& Color)
 
 bool BWrapper::DrawRect(const AkkordRect& Rect)
 {
-    auto NativeRect = ConvertRect2Native(Rect);
+    SDL_Rect NativeRect;
+    ConvertRect2Native(Rect, &NativeRect);
     if (SDL_RenderDrawRect(CurrentContext.CurrentRenderer, &NativeRect) == 0) return true;
     logError("Draw error %s", SDL_GetError());
     return false;
@@ -666,7 +665,8 @@ bool BWrapper::DrawRect(int X, int Y, int W, int H)
 
 bool BWrapper::FillRect(const AkkordRect& Rect)
 {
-    auto NativeRect = ConvertRect2Native(Rect);
+    SDL_Rect NativeRect;
+    ConvertRect2Native(Rect, &NativeRect);
     if (SDL_RenderFillRect(CurrentContext.CurrentRenderer, &NativeRect) == 0) return true;
     logError("Draw error %s", SDL_GetError());
     return false;
