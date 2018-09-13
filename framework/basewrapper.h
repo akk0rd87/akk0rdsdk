@@ -21,7 +21,7 @@ public:
     int x, y, w, h;
     AkkordRect();    
     AkkordRect(int X, int Y, int W, int H);
-    AkkordRect(AkkordPoint Point1, AkkordPoint Point2);    
+    AkkordRect(const AkkordPoint& Point1, const AkkordPoint& Point2);    
 };
 
 class AkkordColor
@@ -234,10 +234,10 @@ public:
     bool LoadFromFile(const char* FileName, TextureType Type, const BWrapper::FileSearchPriority SearchPriority = BWrapper::FileSearchPriority::Assets);
     //int Draw(AkkordRect Rect);
     //int Draw(AkkordRect RectFromAtlas, AkkordRect Rect);
-    bool Draw(AkkordRect Rect, const AkkordRect* RectFromAtlas = nullptr, unsigned char Flip = AkkordTexture::Flip::None, double Angle = 0, AkkordPoint* Point = nullptr) const;
+    bool Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas = nullptr, unsigned char Flip = AkkordTexture::Flip::None, double Angle = 0, AkkordPoint* Point = nullptr) const;
     AkkordPoint GetSize() const;
 	bool SetColorMod(Uint8 R, Uint8 G, Uint8 B);
-	bool SetColorMod(AkkordColor ModColor);
+	bool SetColorMod(const AkkordColor& ModColor);
 	bool SetAlphaMod(Uint8 A);
 	
     AkkordTexture();

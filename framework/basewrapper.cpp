@@ -421,7 +421,7 @@ bool AkkordTexture::SetColorMod(Uint8 R, Uint8 G, Uint8 B)
 	return false;
 }
 
-bool AkkordTexture::SetColorMod(AkkordColor ModColor)
+bool AkkordTexture::SetColorMod(const AkkordColor& ModColor)
 {
 	return SetColorMod(ModColor.GetR(), ModColor.GetG(), ModColor.GetB());
 };
@@ -435,7 +435,7 @@ bool AkkordTexture::SetAlphaMod(Uint8 A)
 	return false;
 };
 
-bool AkkordTexture::Draw(AkkordRect Rect, const AkkordRect* RectFromAtlas, unsigned char Flip, double Angle, AkkordPoint* Point) const
+bool AkkordTexture::Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas, unsigned char Flip, double Angle, AkkordPoint* Point) const
 {
     std::string Format;
     SDL_Rect NativeDstRect;
@@ -471,8 +471,6 @@ bool AkkordTexture::Draw(AkkordRect Rect, const AkkordRect* RectFromAtlas, unsig
         logError(std::string(Format + "Error draw image %s").c_str(), SDL_GetError());
         return false;
     }
-
-    //SDL_BlendMode bmd;
 
     return true;
 };
@@ -1105,7 +1103,7 @@ AkkordRect::AkkordRect(int X, int Y, int W, int H)
     x = X; y = Y; w = W; h = H;
 };
 
-AkkordRect::AkkordRect(AkkordPoint Point1, AkkordPoint Point2)
+AkkordRect::AkkordRect(const AkkordPoint& Point1, const AkkordPoint& Point2)
 {
     x = Point1.x; y = Point1.y; w = Point2.x; h = Point2.y;
 }
