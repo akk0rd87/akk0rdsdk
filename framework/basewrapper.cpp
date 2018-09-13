@@ -174,7 +174,7 @@ bool BWrapper::FileExists(const char* FileName, BWrapper::FileSearchPriority Sea
     {
         unsigned BufferSize;
         auto buffer = AndroidWrapper::GetAsset2Buffer(FileName, BufferSize);
-        if (buffer)
+        if (buffer != nullptr)
         {
             CloseBuffer(buffer);
             return true;
@@ -185,7 +185,7 @@ bool BWrapper::FileExists(const char* FileName, BWrapper::FileSearchPriority Sea
 
     auto File = FileOpen_private(FileName, SearchPriority, BWrapper::FileOpenMode::ReadBinary);
 
-    if(File)
+    if(File != nullptr)
     {
         FileClose(File);
         return true;
@@ -196,7 +196,7 @@ bool BWrapper::FileExists(const char* FileName, BWrapper::FileSearchPriority Sea
 
 void BWrapper::CloseBuffer(char*& buffer)
 {
-    if (buffer)
+    if (buffer != nullptr)
     {
         delete [] buffer;
     }
@@ -205,7 +205,10 @@ void BWrapper::CloseBuffer(char*& buffer)
 
 void BWrapper::FileClose(FILE*& File)
 {
-    if (File) fclose(File);
+    if (File != nullptr)
+    {
+        fclose(File);
+    }
     File = nullptr;
 }
 
