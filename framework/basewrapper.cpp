@@ -1202,7 +1202,7 @@ bool FileReader::Open(const char *Fname, BWrapper::FileSearchPriority SearchPrio
 #endif
 
     Path = Path + Fname;
-    if (fb.open(Path.c_str(), std::ios::binary | std::ios::in))
+    if (fb.open(Path.c_str(), std::ios::binary | std::ios::in) != nullptr)
     {
         in = new std::istream(&fb);
         opened = true;
