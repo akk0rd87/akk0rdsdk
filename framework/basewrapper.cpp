@@ -341,10 +341,10 @@ bool BWrapper::SetWindowSize(int W, int H)
 
 bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const BWrapper::FileSearchPriority SearchPriority)
 {
-    std::string Format;
-
-    if (tex)
+    if (tex != nullptr)
+    {
         this->Destroy();
+    }
 
     bool result = false;
     unsigned Size;
@@ -352,7 +352,7 @@ bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const B
 
     if (nullptr == buffer)
     {
-        logError(std::string(Format + "Error load file image = %s, error=%s").c_str(), FileName, SDL_GetError());
+        logError("Error load file image = %s, error=%s", FileName, SDL_GetError());
         return result;
     }
 
@@ -387,12 +387,12 @@ bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const B
         }
         else
         {
-            logError(std::string(Format + "Error load Image SDL_RWFromMem = %s, error=%s").c_str(), FileName, SDL_GetError());
+            logError("Error load Image SDL_RWFromMem = %s, error=%s", FileName, SDL_GetError());
         }
     }
     else
     {
-        logError(std::string(Format + "Error load Image IMG_Load_RW = %s, error=%s").c_str(), FileName, SDL_GetError());
+        logError("Error load Image IMG_Load_RW = %s, error=%s", FileName, SDL_GetError());
     }
 
     BWrapper::CloseBuffer(buffer);
