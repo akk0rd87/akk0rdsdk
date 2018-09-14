@@ -135,8 +135,10 @@ public:
 
 	void ShowAdUnits()
 	{
-		for (auto &v : AdMobUnits)
-			logDebug("Ad Unit %s %u", v.Id.c_str(), v.TimePriority);
+#ifdef __AKK0RD_DEBUG_MACRO__ // пришлось поставить условную компиляцию, а то в release-сборке компилятор ругается на неиспользованную переменную v
+            for (auto &v : AdMobUnits)
+			    logDebug("Ad Unit %s %u", v.Id.c_str(), v.TimePriority);
+#endif
 	}
 	
 	void Clear()
