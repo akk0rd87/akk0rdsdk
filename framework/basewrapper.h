@@ -220,6 +220,14 @@ public:
 
         return BWrapper::OS::Unknown;
     };
+
+    static constexpr bool IsReleaseBuild()
+    {
+#ifdef __AKK0RD_DEBUG_MACRO__
+        return false;
+#endif
+        return true;
+    }
 };
 
 class AkkordTexture
