@@ -144,6 +144,7 @@ public:
     static bool                FillRect                    (const AkkordRect& Rect);
     static bool                FillRect                    (int X, int Y, int W, int H);
     static bool                DrawLine                    (const AkkordPoint& Point1, const AkkordPoint& Point2);
+    static bool                DrawLine                    (int P1X, int P1Y, int P2X, int P2Y);
     static bool                IsPointInRect               (const AkkordPoint& Point,  const AkkordRect& Rect);    
                                                            
     // Working with files                                  

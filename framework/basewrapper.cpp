@@ -685,6 +685,11 @@ bool BWrapper::DrawLine(const AkkordPoint& Point1, const AkkordPoint& Point2)
     return false;
 };
 
+bool BWrapper::DrawLine(int P1X, int P1Y, int P2X, int P2Y)
+{
+    return DrawLine(AkkordPoint(P1X, P1Y), AkkordPoint(P2X, P2Y));
+};
+
 std::string BWrapper::Int2Str(int Num)
 {
     return std::to_string(Num);
