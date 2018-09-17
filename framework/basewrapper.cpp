@@ -397,8 +397,8 @@ bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const B
                     auto rasterizer = nsvgCreateRasterizer();
                     if (rasterizer == nullptr)
                     {                        
-                        logError("Couldn't create SVG rasterizer %s %s", FileName, SDL_GetError());
                         nsvgDelete(svg_image);
+                        logError("Couldn't create SVG rasterizer %s %s", FileName, SDL_GetError());                        
                         return false;
                     }
 
@@ -416,6 +416,10 @@ bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const B
                         nsvgDelete(svg_image);
                         return false;
                     }
+
+                    nsvgRasterize(rasterizer, svg_image, 0.0f, 0.0f, Scale, (unsigned char *)image->pixels, image->w, image->h, image->pitch);
+                    nsvgDeleteRasterizer(rasterizer);
+                    nsvgDelete(svg_image);
                 }
 				break;
         }
