@@ -3,6 +3,11 @@
 #include "core/platforms.h"
 #include "core/core_defines.h"
 
+#define NANOSVG_IMPLEMENTATION
+#include "../libraries/nanosvg/nanosvg.h"
+#define NANOSVGRAST_IMPLEMENTATION
+#include "../libraries/nanosvg/nanosvgrast.h"
+
 //#include <stdio.h>
 //#include <stdlib.h>
 
@@ -339,7 +344,7 @@ bool BWrapper::SetWindowSize(int W, int H)
     return true;
 }
 
-bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const BWrapper::FileSearchPriority SearchPriority)
+bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const BWrapper::FileSearchPriority SearchPriority, float Scale)
 {
     if (tex != nullptr)
     {
@@ -372,8 +377,46 @@ bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const B
             case AkkordTexture::TextureType::JPEG:
                 image = IMG_LoadJPG_RW(io);
                 break;
-			case AkkordTexture::TextureType::SVG:
-				image = IMG_LoadSVG_RW(io);
+			case AkkordTexture::TextureType::SVG:				
+                {
+                    auto data = (char *)SDL_LoadFile_RW(io, nullptr, SDL_FALSE);
+                    if (data == nullptr) 
+                    {
+                        logError("Couldn't parse SVG image %s %s", FileName, SDL_GetError());
+                        return false;
+                    }
+                    auto svg_image = nsvgParse(data, "px", 96.0f);
+                    SDL_free(data);
+
+                    if (svg_image == nullptr)
+                    {
+                        logError("Couldn't parse SVG image %s %s", FileName, SDL_GetError());
+                        return false;
+                    }
+
+                    auto rasterizer = nsvgCreateRasterizer();
+                    if (rasterizer == nullptr)
+                    {                        
+                        logError("Couldn't create SVG rasterizer %s %s", FileName, SDL_GetError());
+                        nsvgDelete(svg_image);
+                        return false;
+                    }
+
+                    image = SDL_CreateRGBSurface(SDL_SWSURFACE,
+                        (int)(svg_image->width * Scale),
+                        (int)(svg_image->height * Scale),
+                        32,
+                        0x000000FF,
+                        0x0000FF00,
+                        0x00FF0000,
+                        0xFF000000);
+                    if (image == nullptr)
+                    {
+                        nsvgDeleteRasterizer(rasterizer);
+                        nsvgDelete(svg_image);
+                        return false;
+                    }
+                }
 				break;
         }
 
