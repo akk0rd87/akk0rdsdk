@@ -382,8 +382,8 @@ bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const B
                     auto data = (char *)SDL_LoadFile_RW(io, nullptr, SDL_FALSE);
                     if (data == nullptr) 
                     {
-                        logError("Couldn't parse SVG image %s %s", FileName, SDL_GetError());
-                        return false;
+                        logError("Couldn't parse SVG image %s %s", FileName, SDL_GetError());                        
+                        goto end;
                     }
                     auto svg_image = nsvgParse(data, "px", 96.0f);
                     SDL_free(data);
@@ -391,7 +391,7 @@ bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const B
                     if (svg_image == nullptr)
                     {
                         logError("Couldn't parse SVG image %s %s", FileName, SDL_GetError());
-                        return false;
+                        goto end;
                     }
 
                     auto rasterizer = nsvgCreateRasterizer();
@@ -399,7 +399,7 @@ bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const B
                     {                        
                         nsvgDelete(svg_image);
                         logError("Couldn't create SVG rasterizer %s %s", FileName, SDL_GetError());                        
-                        return false;
+                        goto end;
                     }
 
                     image = SDL_CreateRGBSurface(SDL_SWSURFACE,
@@ -414,12 +414,12 @@ bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const B
                     {
                         nsvgDeleteRasterizer(rasterizer);
                         nsvgDelete(svg_image);
-                        return false;
+                        goto end;
                     }
 
                     nsvgRasterize(rasterizer, svg_image, 0.0f, 0.0f, Scale, (unsigned char *)image->pixels, image->w, image->h, image->pitch);
                     nsvgDeleteRasterizer(rasterizer);
-                    nsvgDelete(svg_image);
+                    nsvgDelete(svg_image);                    
                 }
 				break;
         }
@@ -442,6 +442,7 @@ bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const B
         logError("Error load Image IMG_Load_RW = %s, error=%s", FileName, SDL_GetError());
     }
 
+    end:
     BWrapper::CloseBuffer(buffer);
     SDL_RWclose(io);
 
