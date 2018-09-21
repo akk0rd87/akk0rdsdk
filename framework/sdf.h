@@ -363,9 +363,11 @@ class SDFTexture
     std::vector<GLfloat>UV;
     std::vector<GLfloat>squareVertices;
     std::vector<GLushort>Indices;
+    int Spread;
 public:
     bool Load(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority);
     void SetColor(const AkkordColor& Color) { this->Color = Color; };
+    void SetSpread(int Spread) { this->Spread = Spread; };
     bool Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect = nullptr);
 };
 
@@ -404,6 +406,10 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
     decltype(Indices)::value_type PointsCnt = 0;
     Indices.push_back(PointsCnt + 0); Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2);
     Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2); Indices.push_back(PointsCnt + 3);
+
+    auto scale = std::max(static_cast<float>(DestRect.w) / Rect.w, static_cast<float>(DestRect.h) / Rect.h);
+
+    Texture.Draw(false, (GLsizei)Indices.size(), this->Color, this->Color, &UV.front(), &squareVertices.front(), &Indices.front(), scale, 0.0f, Spread);
 
     return true;
 }
