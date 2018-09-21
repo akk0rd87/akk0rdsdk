@@ -235,7 +235,7 @@ public :
 SDFProgram sdfProgram;
 #endif
 
-class SDFTexture
+class SDFGLTexture
 {
     SDL_Surface* sdfTexture = nullptr;
     GLuint GLTexture;
@@ -243,10 +243,10 @@ public:
     void Clear();
     bool Load(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority);
     bool Draw(bool Outline, GLsizei Count, AkkordColor& FontColor, AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border, int Spread);
-    ~SDFTexture();
+    ~SDFGLTexture();
 };
 
-void SDFTexture::Clear()
+void SDFGLTexture::Clear()
 {
     if (sdfTexture != nullptr)
     {
@@ -255,7 +255,7 @@ void SDFTexture::Clear()
     };
 }
 
-bool SDFTexture::Load(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority)
+bool SDFGLTexture::Load(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority)
 {
     this->Clear();
 #ifndef __CODEBLOCKS        
@@ -284,7 +284,7 @@ bool SDFTexture::Load(const char* FileNamePNG, BWrapper::FileSearchPriority Sear
     return true;
 }
 
-bool SDFTexture::Draw(bool Outline, GLsizei Count, AkkordColor& FontColor, AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border, int Spread)
+bool SDFGLTexture::Draw(bool Outline, GLsizei Count, AkkordColor& FontColor, AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border, int Spread)
 {
 #ifndef __CODEBLOCKS
     GLint oldProgramId;
@@ -344,7 +344,7 @@ bool SDFTexture::Draw(bool Outline, GLsizei Count, AkkordColor& FontColor, Akkor
     return true;
 };
 
-SDFTexture::~SDFTexture()
+SDFGLTexture::~SDFGLTexture()
 {
     Clear();
 }
@@ -357,7 +357,7 @@ struct SDFCharInfo
 
 class SDFFont
 {
-    SDFTexture FontAtlas;
+    SDFGLTexture FontAtlas;
     unsigned int ScaleW, ScaleH, LineHeight, Spread;   
     std::map<unsigned, SDFCharInfo> CharsMap;
 
