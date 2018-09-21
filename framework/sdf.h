@@ -396,21 +396,14 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
     UV.push_back(float(Rect.x) / atlasW);              UV.push_back(float(Rect.y) / atlasH);
     UV.push_back(float(Rect.x + Rect.w - 1) / atlasW); UV.push_back(float(Rect.y) / atlasH);
    
-<<<<<<< HEAD
-   squareVertices.push_back(2 * (float)(DestRect.x / ScrenW) - 1.0f);                           squareVertices.push_back(2 * (ScrenH - DestRect.y - (DestRect.h)) / ScrenH - 1.0f);
-   squareVertices.push_back(2 * (float)(DestRect.x + (float)(DestRect.w - 1)) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - DestRect.y - (DestRect.h)) / ScrenH - 1.0f);
-   squareVertices.push_back(2 * (float)(DestRect.x / ScrenW) - 1.0f);                           squareVertices.push_back(2 * (ScrenH - DestRect.y) / ScrenH - 1.0f);
-   squareVertices.push_back(2 * (float)(DestRect.x + (float)(DestRect.w - 1)) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - DestRect.y) / ScrenH - 1.0f);
-=======
-   //squareVertices.push_back(2 * (float)(DestRect.x / ScrenW) - 1.0f);                           squareVertices.push_back(2 * (ScrenH - Y - (DestRect.h)) / ScrenH - 1.0f);
-   //squareVertices.push_back(2 * (float)(DestRect.x + (float)(DestRect.w - 1)) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - Y - (DestRect.h)) / ScrenH - 1.0f);
-   //squareVertices.push_back(2 * (float)(DestRect.x / ScrenW) - 1.0f);                           squareVertices.push_back(2 * (ScrenH - Y) / ScrenH - 1.0f);
-   //squareVertices.push_back(2 * (float)(DestRect.x + (float)(DestRect.w - 1)) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - Y) / ScrenH - 1.0f);
->>>>>>> e0346f042d1ecbe14d8303ec1771ae272c11d193
-   
-   decltype(Indices)::value_type PointsCnt = 0;
-   Indices.push_back(PointsCnt + 0); Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2);
-   Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2); Indices.push_back(PointsCnt + 3);
+    squareVertices.push_back(2 * (float)(DestRect.x / ScrenW) - 1.0f);                           squareVertices.push_back(2 * (ScrenH - DestRect.y - (DestRect.h)) / ScrenH - 1.0f);
+    squareVertices.push_back(2 * (float)(DestRect.x + (float)(DestRect.w - 1)) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - DestRect.y - (DestRect.h)) / ScrenH - 1.0f);
+    squareVertices.push_back(2 * (float)(DestRect.x / ScrenW) - 1.0f);                           squareVertices.push_back(2 * (ScrenH - DestRect.y) / ScrenH - 1.0f);
+    squareVertices.push_back(2 * (float)(DestRect.x + (float)(DestRect.w - 1)) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - DestRect.y) / ScrenH - 1.0f);
+       
+    decltype(Indices)::value_type PointsCnt = 0;
+    Indices.push_back(PointsCnt + 0); Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2);
+    Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2); Indices.push_back(PointsCnt + 3);
 
     return true;
 }
