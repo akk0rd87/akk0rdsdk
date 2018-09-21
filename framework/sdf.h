@@ -381,6 +381,10 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
     float ScrenW = static_cast<decltype(ScrenW)>(ScreenSize.x);
     float ScrenH = static_cast<decltype(ScrenH)>(ScreenSize.y);
 
+    auto Size = Texture.GetSize();
+    auto atlasW = Size.x;
+    auto atlasH = Size.y;
+
    // UV.push_back(float(charParams.x) / atlasW);                    UV.push_back(float(charParams.y + charParams.h - 1) / atlasH);
    // UV.push_back(float(charParams.x + charParams.w - 1) / atlasW); UV.push_back(float(charParams.y + charParams.h - 1) / atlasH);
    // UV.push_back(float(charParams.x) / atlasW);                    UV.push_back(float(charParams.y) / atlasH);
