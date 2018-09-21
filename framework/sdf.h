@@ -365,14 +365,14 @@ class SDFTexture
     std::vector<GLushort>Indices;
     int Spread;
 public:
-    bool Load(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority);
+    bool Load(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority, int Spread);
     void SetColor(const AkkordColor& Color) { this->Color = Color; };
-    void SetSpread(int Spread) { this->Spread = Spread; };
     bool Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect = nullptr);
 };
 
-bool SDFTexture::Load(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority)
+bool SDFTexture::Load(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority, int Spread)
 {
+    this->Spread = Spread;
     Texture.Load(FileNamePNG, SearchPriority);
     return true;
 }
