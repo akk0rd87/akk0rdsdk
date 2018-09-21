@@ -243,6 +243,7 @@ public:
     void Clear();
     bool Load(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority);
     bool Draw(bool Outline, GLsizei Count, AkkordColor& FontColor, AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border, int Spread);
+    AkkordPoint GetSize();
     ~SDFGLTexture();
 };
 
@@ -344,9 +345,56 @@ bool SDFGLTexture::Draw(bool Outline, GLsizei Count, AkkordColor& FontColor, Akk
     return true;
 };
 
+AkkordPoint SDFGLTexture::GetSize()
+{
+    return AkkordPoint(sdfTexture->w, sdfTexture->h);
+};
+
 SDFGLTexture::~SDFGLTexture()
 {
     Clear();
+}
+
+class SDFTexture
+{
+    SDFGLTexture Texture;
+    AkkordColor Color;
+
+    std::vector<GLfloat>UV;
+    std::vector<GLfloat>squareVertices;
+    std::vector<GLushort>Indices;
+public:
+    bool Load(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority);
+    void SetColor(const AkkordColor& Color) { this->Color = Color; };
+    bool Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect = nullptr);
+};
+
+bool SDFTexture::Load(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority)
+{
+    Texture.Load(FileNamePNG, SearchPriority);
+    return true;
+}
+
+bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
+{
+    auto ScreenSize = BWrapper::GetScreenSize();
+    float ScrenW = static_cast<decltype(ScrenW)>(ScreenSize.x);
+    float ScrenH = static_cast<decltype(ScrenH)>(ScreenSize.y);
+
+   // UV.push_back(float(charParams.x) / atlasW);                    UV.push_back(float(charParams.y + charParams.h - 1) / atlasH);
+   // UV.push_back(float(charParams.x + charParams.w - 1) / atlasW); UV.push_back(float(charParams.y + charParams.h - 1) / atlasH);
+   // UV.push_back(float(charParams.x) / atlasW);                    UV.push_back(float(charParams.y) / atlasH);
+   // UV.push_back(float(charParams.x + charParams.w - 1) / atlasW); UV.push_back(float(charParams.y) / atlasH);
+   //
+   // squareVertices.push_back(2 * (float)(x_current / ScrenW) - 1.0f);                                      squareVertices.push_back(2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f);
+   // squareVertices.push_back(2 * (float)(x_current + (float)scaleX * (charParams.w - 1)) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f);
+   // squareVertices.push_back(2 * (float)(x_current / ScrenW) - 1.0f);                                      squareVertices.push_back(2 * (ScrenH - Y - scaleY * charParams.yoffset) / ScrenH - 1.0f);
+   // squareVertices.push_back(2 * (float)(x_current + (float)scaleX * (charParams.w - 1)) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - Y - scaleY * charParams.yoffset) / ScrenH - 1.0f);
+   //
+   // Indices.push_back(PointsCnt + 0); Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2);
+   // Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2); Indices.push_back(PointsCnt + 3);
+
+    return true;
 }
 
 struct SDFCharInfo
