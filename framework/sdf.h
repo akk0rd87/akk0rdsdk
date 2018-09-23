@@ -359,10 +359,6 @@ class SDFTexture
 {
     SDFGLTexture Texture;
     AkkordColor Color;
-
-    std::vector<GLfloat>UV;
-    std::vector<GLfloat>squareVertices;
-    std::vector<GLushort>Indices;
     int Spread;
 public:
     bool Load(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority, int Spread);
@@ -392,6 +388,10 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
     {
         Rect = AkkordRect(*SourceRect);
     }
+
+    std::vector<GLfloat>UV;
+    std::vector<GLfloat>squareVertices;
+    std::vector<GLushort>Indices;
 
     UV.push_back(float(Rect.x) / atlasW);              UV.push_back(float(Rect.y + Rect.h - 1) / atlasH);
     UV.push_back(float(Rect.x + Rect.w - 1) / atlasW); UV.push_back(float(Rect.y + Rect.h - 1) / atlasH);
