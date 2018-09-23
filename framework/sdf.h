@@ -360,10 +360,34 @@ class SDFTexture
     SDFGLTexture Texture;
     AkkordColor Color;
     int Spread;
+
+    std::vector<GLfloat>UV;
+    std::vector<GLfloat>squareVertices;
+    std::vector<GLushort>Indices;
+
+    float Scale;
+    bool AutoFlush = false;
+
 public:
     bool Load(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority, int Spread);
     void SetColor(const AkkordColor& Color) { this->Color = Color; };
     bool Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect = nullptr);
+    void Clear();
+    bool Flush();
+    void SetAutoFlush(bool AutoFlush) { this->AutoFlush = AutoFlush; };
+    ~SDFTexture();
+};
+
+void SDFTexture::Clear()
+{
+    UV.clear();
+    squareVertices.clear();
+    Indices.clear();
+}
+
+SDFTexture::~SDFTexture()
+{
+    Clear();
 };
 
 bool SDFTexture::Load(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority, int Spread)
@@ -389,10 +413,6 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
         Rect = AkkordRect(*SourceRect);
     }
 
-    std::vector<GLfloat>UV;
-    std::vector<GLfloat>squareVertices;
-    std::vector<GLushort>Indices;
-
     UV.push_back(float(Rect.x) / atlasW);              UV.push_back(float(Rect.y + Rect.h - 1) / atlasH);
     UV.push_back(float(Rect.x + Rect.w - 1) / atlasW); UV.push_back(float(Rect.y + Rect.h - 1) / atlasH);
     UV.push_back(float(Rect.x) / atlasW);              UV.push_back(float(Rect.y) / atlasH);
@@ -403,16 +423,27 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
     squareVertices.push_back(2 * (float)(DestRect.x / ScrenW) - 1.0f);                           squareVertices.push_back(2 * (ScrenH - DestRect.y) / ScrenH - 1.0f);
     squareVertices.push_back(2 * (float)(DestRect.x + (float)(DestRect.w - 1)) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - DestRect.y) / ScrenH - 1.0f);
        
-    decltype(Indices)::value_type PointsCnt = 0;
+    decltype(Indices)::value_type PointsCnt = Indices.size() / 6 * 4;
     Indices.push_back(PointsCnt + 0); Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2);
     Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2); Indices.push_back(PointsCnt + 3);
 
-    auto scale = std::max(static_cast<float>(DestRect.w) / Rect.w, static_cast<float>(DestRect.h) / Rect.h);
+    Scale = std::max(static_cast<float>(DestRect.w) / Rect.w, static_cast<float>(DestRect.h) / Rect.h);
 
-    Texture.Draw(false, (GLsizei)Indices.size(), this->Color, this->Color, &UV.front(), &squareVertices.front(), &Indices.front(), scale, 0.0f, Spread);
+    if (this->AutoFlush)
+        Flush();
 
     return true;
 }
+
+bool SDFTexture::Flush()
+{
+    if (Indices.size() > 0)
+    {
+        Texture.Draw(false, (GLsizei)Indices.size(), this->Color, this->Color, &UV.front(), &squareVertices.front(), &Indices.front(), Scale, 0.0f, Spread);
+    }
+    Clear();
+    return true;
+};
 
 struct SDFCharInfo
 {
