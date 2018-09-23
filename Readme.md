@@ -140,6 +140,11 @@ sdkmanager.bat extras;google;google_play_services
     - Auth with app store error: https://forums.developer.apple.com/thread/76803
 ***
 
+### **LibGDX SDF Generator**
+
+Download last LibGDX build from https://libgdx.badlogicgames.com/ci/nightlies/ and set *LIBGDX_HOME* env variable for extracted path
+***
+
 https://stackoverflow.com/questions/8980284/android-mk-include-all-cpp-files
 
 https://stackoverflow.com/questions/34732/how-do-i-list-the-symbols-in-a-so-file
