@@ -73,9 +73,9 @@ attribute vec2 uv; \n\
 varying highp float SmoothDistance; \n\
 varying highp float center; \n\
 #ifdef SDF_OUTLINE \n\
-    uniform highp vec4 sdf_outline_color; \n\
-    uniform highp float border;\n\
-    varying highp    vec4    outBorderCol; \n\
+    uniform highp vec4  sdf_outline_color; \n\
+    uniform highp float border; \n\
+    varying highp vec4  outBorderCol; \n\
     varying highp float	outlineMaxValue0; \n\
     varying highp float	outlineMaxValue1; \n\
 #endif \n\
