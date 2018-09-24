@@ -388,6 +388,7 @@ void SDFTexture::Clear()
 SDFTexture::~SDFTexture()
 {
     Clear();
+    Texture.Clear();
 };
 
 bool SDFTexture::Load(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority, int Spread)
