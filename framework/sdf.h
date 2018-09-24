@@ -116,7 +116,7 @@ void main() \n\
     highp float distAlpha = texture2D(base_texture, result_uv).a; \n\
     highp vec4 rgba = result_color; \n\
 #ifdef SDF_OUTLINE \n\
-    rgba.xyz = mix(rgba.xyz, outBorderCol.xyz, my_smoothstep(outlineMaxValue1, outlineMaxValue0, distAlpha)); \n\
+    rgba.xyzw = mix(rgba.xyzw, outBorderCol.xyzw, my_smoothstep(outlineMaxValue1, outlineMaxValue0, distAlpha)); \n\
 #endif \n\
     rgba.a *= my_smoothstep(center - SmoothDistance, center + SmoothDistance, distAlpha); \n\
     gl_FragColor = rgba; \n\
