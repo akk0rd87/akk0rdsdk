@@ -242,7 +242,7 @@ class SDFGLTexture
 public:
     void Clear();
     bool Load(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority);
-    bool Draw(bool Outline, GLsizei Count, AkkordColor& FontColor, AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border, int Spread);
+    bool Draw(bool Outline, GLsizei Count, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border, int Spread);
     AkkordPoint GetSize();
     ~SDFGLTexture();
 };
@@ -285,7 +285,7 @@ bool SDFGLTexture::Load(const char* FileNamePNG, BWrapper::FileSearchPriority Se
     return true;
 }
 
-bool SDFGLTexture::Draw(bool Outline, GLsizei Count, AkkordColor& FontColor, AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border, int Spread)
+bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border, int Spread)
 {
 #ifndef __CODEBLOCKS
     GLint oldProgramId;
@@ -591,7 +591,7 @@ public:
         return true;
     };
 
-	bool Draw(bool Outline, GLsizei Count, AkkordColor& FontColor, AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border)
+	bool Draw(bool Outline, GLsizei Count, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border)
     {
         FontAtlas.Draw(Outline, Count, FontColor, OutlineColor, UV, squareVertices, Indices, Scale, Border, Spread);
         return true;
@@ -686,7 +686,7 @@ class SDFFontBuffer
         return pt;
     }
 public:
-    SDFFontBuffer(SDFFont* Font, unsigned int DigitsCount, AkkordColor Color)
+    SDFFontBuffer(SDFFont* Font, unsigned int DigitsCount, const AkkordColor& Color)
     {
         this->Clear();
         sdfFont = Font;        
@@ -698,9 +698,9 @@ public:
     void SetScale(float Scale){ scaleX = scaleY = Scale; }
     void SetScale(float ScaleX, float ScaleY){ scaleX = ScaleX; scaleY = ScaleY; }
 
-    void SetColor(const AkkordColor Color) { color = Color; };
+    void SetColor(const AkkordColor& Color) { color = Color; };
     void SetOutline(bool Outline){ outline = Outline; }
-    void SetOutlineColor(const AkkordColor OutlineColor) { outlineColor = OutlineColor; };
+    void SetOutlineColor(const AkkordColor& OutlineColor) { outlineColor = OutlineColor; };
     void SetBorder(float BorderWidth){ this->Border = BorderWidth; }
 
     float GetScaleX(){ return scaleX; }
