@@ -316,7 +316,7 @@ bool SDFGLTexture::Draw(bool Outline, GLsizei Count, AkkordColor& FontColor, Akk
     {
         if (shaderProgram->sdf_outline_color >= 0)
         {
-            Driver->glUniform4f(shaderProgram->sdf_outline_color, GLfloat(OutlineColor.GetR()) / 255, GLfloat(OutlineColor.GetG()) / 255, GLfloat(OutlineColor.GetB()) / 255, 1.0f); CheckGLESError();
+            Driver->glUniform4f(shaderProgram->sdf_outline_color, GLfloat(OutlineColor.GetR()) / 255, GLfloat(OutlineColor.GetG()) / 255, GLfloat(OutlineColor.GetB()) / 255, GLfloat(OutlineColor.GetA()) / 255); CheckGLESError();
         }
         else
         {
