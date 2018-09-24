@@ -358,23 +358,27 @@ SDFGLTexture::~SDFGLTexture()
 class SDFTexture
 {
     SDFGLTexture Texture;
-    AkkordColor Color;
+    AkkordColor Color, OutlineColor;
     int Spread;
 
     std::vector<GLfloat>UV;
     std::vector<GLfloat>squareVertices;
     std::vector<GLushort>Indices;
 
-    float Scale;
+    float Scale, Border;
     bool AutoFlush = false;
+    bool Outline = false;
 
 public:
     bool Load(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority, int Spread);
     void SetColor(const AkkordColor& Color) { this->Color = Color; };
-    bool Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect = nullptr);
+    void SetOutlineColor(const AkkordColor& OutlineColor) { this->OutlineColor = OutlineColor; };
+    bool Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect = nullptr);    
     void Clear();
     bool Flush();
     void SetAutoFlush(bool AutoFlush) { this->AutoFlush = AutoFlush; };
+    void SetOutline(bool Outline) { this->Outline = Outline; };
+    void SetBorder(float Border) { this->Border = Border; };
     ~SDFTexture();
 };
 
@@ -440,7 +444,7 @@ bool SDFTexture::Flush()
 {
     if (Indices.size() > 0)
     {
-        Texture.Draw(false, (GLsizei)Indices.size(), this->Color, this->Color, &UV.front(), &squareVertices.front(), &Indices.front(), Scale, 0.0f, Spread);
+        Texture.Draw(Outline, (GLsizei)Indices.size(), this->Color, this->OutlineColor, &UV.front(), &squareVertices.front(), &Indices.front(), Scale, (GLfloat)Border, Spread);
     }
     Clear();
     return true;
