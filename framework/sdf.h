@@ -701,7 +701,7 @@ public:
     void SetColor(const AkkordColor Color) { color = Color; };
     void SetOutline(bool Outline){ outline = Outline; }
     void SetOutlineColor(const AkkordColor OutlineColor) { outlineColor = OutlineColor; };
-    void SetBorder(float BordeWidth){ this->Border = BordeWidth; }
+    void SetBorder(float BorderWidth){ this->Border = BorderWidth; }
 
     float GetScaleX(){ return scaleX; }
     float GetScaleY(){ return scaleY; }    
