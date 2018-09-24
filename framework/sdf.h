@@ -634,6 +634,8 @@ class SDFFontBuffer
 
     AkkordPoint GetTextSizeByLine(const char* Text, std::vector<unsigned>& VecSize)
     {
+        // VecSize - вектор строк (в надписи может быть несколько строк, нужно считать длину каждой строки отдельно - для выравнивания)
+        
         AkkordPoint pt, localpoint;
 
         unsigned int i = 0;
