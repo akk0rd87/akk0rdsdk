@@ -232,7 +232,7 @@ public :
     }
 };
 
-SDFProgram sdfProgram;
+static SDFProgram sdfProgram;
 #endif
 
 class SDFGLTexture
