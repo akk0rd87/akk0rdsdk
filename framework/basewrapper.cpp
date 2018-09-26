@@ -463,6 +463,12 @@ AkkordTexture::~AkkordTexture()
     Destroy();
 }
 
+AkkordTexture::AkkordTexture(AkkordTexture&& tmp)
+{
+    this->tex = tmp.tex;
+    tmp.tex = nullptr;    
+};
+
 bool AkkordTexture::SetColorMod(Uint8 R, Uint8 G, Uint8 B)
 {
 	if (SDL_SetTextureColorMod(tex, R, G, B) == 0)	
