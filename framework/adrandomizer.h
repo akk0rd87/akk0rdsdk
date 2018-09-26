@@ -10,6 +10,7 @@ public:
     static const int ImageWidth  = 100;
     static const int ImageHeight = 100;
 
+    bool           Init();
     void           ExcludeApp(Apps AppId);
     unsigned       Randomize(unsigned Count);
     int            DrawImageByIndex(unsigned Index, const AkkordRect &Rect);
@@ -77,9 +78,15 @@ void AdRandomizer::Clear()
 AdRandomizer::AdRandomizer()
 {
     Clear();
+}
+
+bool AdRandomizer::Init()
+{
+    Clear();
     InitRootPath();
     InitApps();
-}
+    return true;
+};
 
 AdRandomizer::~AdRandomizer()
 {
