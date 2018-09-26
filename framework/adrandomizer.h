@@ -174,7 +174,7 @@ void AdRandomizer::OpenURL_private(BWrapper::OS OSCode, Apps AppId)
         {
             case BWrapper::OS::iOS:
                 if (Language == Locale::Lang::Russian) BWrapper::OpenURL("https://itunes.apple.com/ru/app/id1091290034");
-                else                                        BWrapper::OpenURL("https://itunes.apple.com/en/app/id1091290034");
+                else                                        BWrapper::OpenURL("https://itunes.apple.com/app/id1091290034");
                 break;
 
             case BWrapper::OS::AndroidOS:
@@ -192,7 +192,7 @@ void AdRandomizer::OpenURL_private(BWrapper::OS OSCode, Apps AppId)
         {
             case BWrapper::OS::iOS:
                 if (Language == Locale::Lang::Russian) BWrapper::OpenURL("https://itunes.apple.com/ru/app/id1113501306");
-                else                                        BWrapper::OpenURL("https://itunes.apple.com/en/app/id1113501306");
+                else                                        BWrapper::OpenURL("https://itunes.apple.com/app/id1113501306");
                 break;
 
             case BWrapper::OS::AndroidOS:
@@ -208,7 +208,7 @@ void AdRandomizer::OpenURL_private(BWrapper::OS OSCode, Apps AppId)
         switch (OSCode)
         {
             case BWrapper::OS::iOS:
-                if (Language == Locale::Lang::Russian) BWrapper::OpenURL("https://itunes.apple.com/app/id1013587052");
+                if (Language == Locale::Lang::Russian) BWrapper::OpenURL("https://itunes.apple.com/ru/app/id1013587052");
                 else                                        BWrapper::OpenURL("https://itunes.apple.com/app/id1013587052");
                 break;
 
