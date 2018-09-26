@@ -250,7 +250,7 @@ public:
 	bool SetAlphaMod(Uint8 A);
 	
     AkkordTexture();
-    ~AkkordTexture();
+    ~AkkordTexture();    
 };
 
 class DirContentReader

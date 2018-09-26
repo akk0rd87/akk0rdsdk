@@ -47,7 +47,7 @@ private:
     std::string RootPath = std::string(AdRandomizerDir);
     void InitApps();
     bool LoadApp(AppInfoStruct& App, unsigned ImageIndex);
-    std::vector<AppInfoStruct> CurApps;
+    std::vector<std::unique_ptr<AppInfoStruct>> CurApps;
 };
 
 /////////////////////////////////////////////////
@@ -121,7 +121,7 @@ void AdRandomizer::ExcludeApp(Apps AppId)
 {
     // Erase element from Vector
     for (decltype(CurApps.size()) i = 0; i < CurApps.size(); ++i)
-        if (AppId == CurApps[i].AppCode)
+        if (AppId == CurApps[i]->AppCode)
         {
             CurApps.erase(CurApps.begin() + i);
             break;
@@ -140,21 +140,21 @@ unsigned AdRandomizer::Randomize(unsigned Count)
 
     // грузим по ним картинки
     for (auto &v : CurApps)    
-        LoadApp(v, BWrapper::Random() % v.ImageFiles.size());    
+        LoadApp(*v, BWrapper::Random() % v->ImageFiles.size());    
 
     return CurApps.size();
 }
 
 int AdRandomizer::DrawImageByIndex(unsigned Index, const AkkordRect &Rect)
 {
-    if (IsValidIndex(Index)) return CurApps[Index].AdTexture.Draw(Rect);
+    if (IsValidIndex(Index)) return CurApps[Index]->AdTexture.Draw(Rect);
     return 1;
 }
 
 void AdRandomizer::OpenURLByIndex(unsigned Index)
 {
     if (!IsValidIndex(Index)) return;
-	AdRandomizer::OpenURL(CurApps[Index].AppCode);
+	AdRandomizer::OpenURL(CurApps[Index]->AppCode);
 }
 
 ///////////////////////////////
@@ -323,55 +323,51 @@ void AdRandomizer::OpenURL(Apps AppId)
 
 void AdRandomizer::InitApps()
 {
-    AppInfoStruct str;
-    
-    CurApps.reserve(20);
+    CurApps.push_back(std::make_unique<AppInfoStruct>());
+    CurApps.back()->AppCode = AdRandomizer::Apps::CFCross;
+    CurApps.back()->Path = "cfcross";
+    CurApps.back()->ImageFiles = { "ad_cfcross_1.png", "ad_cfcross_2.png", "ad_cfcross_3.png", "ad_cfcross_4.png", "ad_cfcross_5.png", "ad_cfcross_6.png" };
 
-    CurApps.push_back(str);    
-    CurApps.back().AppCode = AdRandomizer::Apps::CFCross;
-    CurApps.back().Path = "cfcross";
-    CurApps.back().ImageFiles = { "ad_cfcross_1.png", "ad_cfcross_2.png", "ad_cfcross_3.png", "ad_cfcross_4.png", "ad_cfcross_5.png", "ad_cfcross_6.png" };
+    CurApps.push_back(std::make_unique<AppInfoStruct>());
+    CurApps.back()->AppCode = AdRandomizer::Apps::FCross;
+    CurApps.back()->Path = "fcross";
+    CurApps.back()->ImageFiles = { "ad_fcross_1.png", "ad_fcross_2.png", "ad_fcross_3.png" };
 
-    CurApps.push_back(str);    
-    CurApps.back().AppCode = AdRandomizer::Apps::FCross;
-    CurApps.back().Path = "fcross";
-    CurApps.back().ImageFiles = { "ad_fcross_1.png", "ad_fcross_2.png", "ad_fcross_3.png" };
+    CurApps.push_back(std::make_unique<AppInfoStruct>());
+    CurApps.back()->AppCode = AdRandomizer::Apps::JCross;
+    CurApps.back()->Path = "jcross";
+    CurApps.back()->ImageFiles = { "ad_jcross_1.png", "ad_jcross_2.png", "ad_jcross_3.png" };
 
-    CurApps.push_back(str);    
-    CurApps.back().AppCode = AdRandomizer::Apps::JCross;
-    CurApps.back().Path = "jcross";
-    CurApps.back().ImageFiles = { "ad_jcross_1.png", "ad_jcross_2.png", "ad_jcross_3.png" };
+    CurApps.push_back(std::make_unique<AppInfoStruct>());
+    CurApps.back()->AppCode = AdRandomizer::Apps::JDraw;
+    CurApps.back()->Path = "jdraw";
+    CurApps.back()->ImageFiles = { "ad_jdraw_1.png", "ad_jdraw_2.png" };
 
-    CurApps.push_back(str);    
-    CurApps.back().AppCode = AdRandomizer::Apps::JDraw;
-    CurApps.back().Path = "jdraw";
-    CurApps.back().ImageFiles = { "ad_jdraw_1.png", "ad_jdraw_2.png" };
+    CurApps.push_back(std::make_unique<AppInfoStruct>());
+    CurApps.back()->AppCode = AdRandomizer::Apps::WordsRu1;
+    CurApps.back()->Path = "wordsru1";
+    CurApps.back()->ImageFiles = { "ad_words1_ru_1.png" };
 
-    CurApps.push_back(str);    
-    CurApps.back().AppCode = AdRandomizer::Apps::WordsRu1;
-    CurApps.back().Path = "wordsru1";
-    CurApps.back().ImageFiles = { "ad_words1_ru_1.png" };
+    CurApps.push_back(std::make_unique<AppInfoStruct>());
+    CurApps.back()->AppCode = AdRandomizer::Apps::WordsRu2;
+    CurApps.back()->Path = "wordsru2";
+    CurApps.back()->ImageFiles = { "ad_words2_ru_1.png" };
 
-    CurApps.push_back(str);    
-    CurApps.back().AppCode = AdRandomizer::Apps::WordsRu2;
-    CurApps.back().Path = "wordsru2";
-    CurApps.back().ImageFiles = { "ad_words2_ru_1.png" };
+    CurApps.push_back(std::make_unique<AppInfoStruct>());
+    CurApps.back()->AppCode = AdRandomizer::Apps::WordsRu8;
+    CurApps.back()->Path = "wordsru8";
+    CurApps.back()->ImageFiles = { "ad_words8_ru_1.png" };
 
-    CurApps.push_back(str);    
-    CurApps.back().AppCode = AdRandomizer::Apps::WordsRu8;
-    CurApps.back().Path = "wordsru8";
-    CurApps.back().ImageFiles = { "ad_words8_ru_1.png" };
-
-    CurApps.push_back(str);    
-    CurApps.back().AppCode = AdRandomizer::Apps::WordsUs;
-    CurApps.back().Path = "wordsus";
-    CurApps.back().ImageFiles = { "words_us_100.png" };
+    CurApps.push_back(std::make_unique<AppInfoStruct>());
+    CurApps.back()->AppCode = AdRandomizer::Apps::WordsUs;
+    CurApps.back()->Path = "wordsus";
+    CurApps.back()->ImageFiles = { "words_us_100.png" };
 
 
 #if defined(_DEBUG) && defined(__WIN32__) // На винде в дебаге всегда проверяем, не протерялись ли ad-картинки
     for (auto &v : CurApps)            
-        for (decltype(v.ImageFiles.size()) j = 0; j < v.ImageFiles.size(); j++)
-            LoadApp(v, j);    
+        for (decltype(v->ImageFiles.size()) j = 0; j < v->ImageFiles.size(); j++)
+            LoadApp(*v, j);    
 #endif
 }
 
