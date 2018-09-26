@@ -66,10 +66,10 @@ static const GLchar* SDF_vertexSource =
 "varying highp vec4 result_color; \n\
 varying highp vec2 result_uv; \n\
 uniform highp mat4 mat; \n\
-uniform vec4 font_color; \n\
+uniform highp vec4 font_color; \n\
 uniform highp float smooth_param; \n\
-attribute vec2 position; \n\
-attribute vec2 uv; \n\
+attribute highp vec2 position; \n\
+attribute highp vec2 uv; \n\
 varying highp float SmoothDistance; \n\
 varying highp float center; \n\
 #ifdef SDF_OUTLINE \n\
