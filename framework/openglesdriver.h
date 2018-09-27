@@ -85,6 +85,8 @@ public:
 
     void PrintProgamLog(GLuint Program, const char* File, const char* Function, unsigned Line)
     {
+        // пока оставляем эту процедуру без тела - бажит при закрытии приложения
+        /*
         GLint logLength;
         glGetProgramiv(Program, GL_INFO_LOG_LENGTH, &logLength);
         if (logLength > 0)
@@ -95,10 +97,12 @@ public:
                 BWrapper::Log(BWrapper::LogPriority::Debug, File, Function, Line, "Program log [Program=%u]: %s", Program, log);
             free(log);
         }
+        */
     }    
 
     void PrintShaderLog(GLuint Shader, const char* File, const char* Function, unsigned Line)
     {
+        /*
         GLint logLength;
         glGetShaderiv (Shader, GL_INFO_LOG_LENGTH, &logLength);
         if (logLength > 0)
@@ -109,10 +113,12 @@ public:
                 BWrapper::Log(BWrapper::LogPriority::Debug, File, Function, Line, "Shader log [Shader=%u]: %s", Shader, log);
             free(log);
         }
+        */
     };
 
     void PrintShaderSource(GLuint Shader)
     {
+        /*
         GLint logLength;
         glGetShaderiv(Shader, GL_SHADER_SOURCE_LENGTH, &logLength);
         if (logLength > 0)
@@ -123,6 +129,7 @@ public:
                 logDebug("Shader Source:\n %s\n\n", log);
             free(log);
         }
+        */
     }
 };
 
