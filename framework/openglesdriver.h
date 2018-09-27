@@ -77,7 +77,7 @@ public:
                 case GL_INVALID_VALUE:                 ErrorMsg =  "GL_INVALID_VALUE"; break;                
                 default:                               ErrorMsg =  "UNKNOWN ERROR"; break;
             }
-            BWrapper::Log(BWrapper::LogPriority::Error, File, Function, Line, "glGetError() = %u, Msg = %s", glErr, ErrorMsg.c_str());
+            logError("glGetError() = %u, Msg = %s", glErr, ErrorMsg.c_str());
             return true;
         }
         return false;        
@@ -92,7 +92,7 @@ public:
             GLchar *log = (GLchar *)malloc(logLength);
             glGetProgramInfoLog(Program, logLength, &logLength, log);
             if (std::string(log).size() > 0)                
-                BWrapper::Log(BWrapper::LogPriority::Debug, File, Function, Line, "Program log [Program=%u]: %s", Program, log);
+                logDebug("Program log [Program=%u]: %s", Program, log);
             free(log);
         }     
     }    
@@ -106,7 +106,7 @@ public:
             GLchar *log = (GLchar *)malloc(logLength);
             glGetShaderInfoLog(Shader, logLength, &logLength, log);
             if (std::string(log).size() > 0)                
-                BWrapper::Log(BWrapper::LogPriority::Debug, File, Function, Line, "Shader log [Shader=%u]: %s", Shader, log);
+                logDebug("Shader log [Shader=%u]: %s", Shader, log);
             free(log);
         }        
     };
