@@ -41,7 +41,8 @@ SDL_PROC(GLenum, glGetError, (void)) \
 SDL_PROC(void, glGetProgramInfoLog, (GLuint, GLsizei, GLsizei*, GLchar*)) \
 SDL_PROC(void, glGetProgramiv, (GLuint, GLenum, GLint *)) \
 SDL_PROC(void, glGetShaderInfoLog, (GLuint, GLsizei, GLsizei *, char *)) \
-SDL_PROC(void, glGetShaderiv, (GLuint, GLenum, GLint *))
+SDL_PROC(void, glGetShaderiv, (GLuint, GLenum, GLint *)) \
+SDL_PROC(void, glGetVertexAttribiv, (GLuint, GLenum, GLint *))
 
 #define CheckGLESError()            GLESDriver::GetInstance()->CheckError    (         __FILE__, __FUNCTION__, __LINE__)
 #define PrintGLESProgamLog(Program) GLESDriver::GetInstance()->PrintProgamLog(Program, __FILE__, __FUNCTION__, __LINE__)
