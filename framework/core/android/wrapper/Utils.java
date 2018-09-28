@@ -101,9 +101,16 @@ public class Utils {
 //    }
 
     public static void openURL(String url) {
-        Intent browseIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        _context.startActivity(browseIntent);
-        //showMessageBox(10, "My Lovely Title", "My Custom Message", "OK. That's right", "Maybe Cancel", "Hello world");
+        try 
+        {
+            Intent browseIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            _context.startActivity(browseIntent);
+            //showMessageBox(10, "My Lovely Title", "My Custom Message", "OK. That's right", "Maybe Cancel", "Hello world");
+        }
+        catch(Exception e)
+        {            
+            Log.e(TAG, e.getMessage());
+        }
     }
 
     public static void showMessageBox(int Code, String Title, String Message, String Button1, String Button2, String Button3)
@@ -192,11 +199,10 @@ public class Utils {
                     */
 
                     builder.show();
-            }
-            catch(Exception e)
-                {
-                    System.err.println(e.getMessage());
-                    Log.v(TAG, e.getMessage());
+                }
+                catch(Exception e)
+                {                    
+                    Log.e(TAG, e.getMessage());
                 }
             }
         }
@@ -239,17 +245,15 @@ public class Utils {
                     }
                     catch(Exception e)
                     {
-                        System.err.println(e.getMessage());
-                        Log.v(TAG, e.getMessage());
+                        Log.e(TAG, e.getMessage());
                     }
                 }
             }
             _context.runOnUiThread(new OneShotTask(Msg, Duration, Gravity, xOffset, yOffset));
         }
         catch(Exception e)
-        {
-            System.err.println(e.getMessage());
-            Log.v(TAG, e.getMessage());
+        {            
+            Log.e(TAG, e.getMessage());
         }
     }
     
@@ -270,75 +274,106 @@ public class Utils {
     
     public static int DirectoryExists(String Dir)
     {
-        File file = new File(Dir);        
-        if(file.exists()) 
+        try
         {
-            if(file.isDirectory()) return 2;
-            return 3;
+            File file = new File(Dir);        
+            if(file.exists()) 
+            {
+                if(file.isDirectory()) return 2;
+                return 3;
+            }
+            return 0;
         }
-        return 0;
+        catch(Exception e)
+        {
+            Log.e(TAG, e.getMessage());
+            return 0;
+        }
     }
     
     public static void deleteRecursive(File fileOrDirectory) 
     {
-        if (fileOrDirectory.isDirectory())
-            for (File child : fileOrDirectory.listFiles())
-                deleteRecursive(child);
+        try
+        {
+            if (fileOrDirectory.isDirectory())
+                for (File child : fileOrDirectory.listFiles())
+                    deleteRecursive(child);
 
-        fileOrDirectory.delete();
+            fileOrDirectory.delete();
+        }
+        catch(Exception e)
+        {
+            Log.e(TAG, e.getMessage());         
+        }
     }    
     
     public static int DirectoryDelete(String Dir, int Recursive)
     {
-        File file = new File(Dir);
-        
-        if(file.exists())
+        try
         {
-            if(file.isDirectory())
+            File file = new File(Dir);
+            
+            if(file.exists())
             {
-                if(Recursive == 1)                
+                if(file.isDirectory())
                 {
-                    deleteRecursive(file);
-                    return 0;
+                    if(Recursive == 1)                
+                    {
+                        deleteRecursive(file);
+                        return 0;
+                    }
+                    else
+                    {
+                        if(file.delete()) return 0;
+                        else              return 2; // delete error
+                    }
                 }
                 else
                 {
-                    if(file.delete()) return 0;
-                    else              return 2; // delete error
+                    // is's file
+                    return 1;
                 }
-            }
-            else
-            {
-                // is's file
-                return 1;
-            }
-        }        
-        return 0;
+            }        
+            return 0;
+        }
+        catch(Exception e)
+        {
+            Log.e(TAG, e.getMessage());
+            return 2; // delete error            
+        }
     }
     
     public static int MkDir(String path)
     {        
-        File file = new File(path);
-        
-        if(file.exists())
+        try
         {
-            if(file.isDirectory())
+            File file = new File(path);
+            
+            if(file.exists())
             {
-                return 0;
+                if(file.isDirectory())
+                {
+                    return 0;
+                }
+                else
+                {
+                    return 2; // It' a file and it's exists
+                }
+            }
+            
+            if(file.mkdirs()) 
+            {
+                return 0; // Success
             }
             else
             {
-                return 2; // It' a file and it's exists
+                return 1; // Error
             }
         }
-        
-        if(file.mkdirs()) 
+        catch(Exception e)
         {
-            return 0; // Success
-        }
-        else
-        {
-            return 1; // Error
+            Log.e(TAG, e.getMessage());
+            return 1; // Error  
         }
     }
     
