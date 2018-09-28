@@ -49,49 +49,62 @@ public class AdMobAdapter {
     }
     
     private static void InterstitialReCreate()
-    {                
-        mInterstitialAd = new InterstitialAd(Utils.GetContext());        
-        mInterstitialAd.setAdListener(new AdListener() {
-            @Override
-            public void onAdLoaded() {                
-                AdCallback(AD_INTERSTITIAL, EVENT_INTERSTITIAL_LOADED, 0);
-            }
-
-            @Override
-            public void onAdFailedToLoad(int errorCode) {
-                String error;
-                switch(errorCode)
-                {                    
-                    case AdRequest.ERROR_CODE_INTERNAL_ERROR  : error = "ERROR_CODE_INTERNAL_ERROR"; break;
-                    case AdRequest.ERROR_CODE_INVALID_REQUEST : error = "ERROR_CODE_INVALID_REQUEST"; break;
-                    case AdRequest.ERROR_CODE_NETWORK_ERROR   : error = "ERROR_CODE_NETWORK_ERROR"; break;
-                    case AdRequest.ERROR_CODE_NO_FILL         : error = "ERROR_CODE_NO_FILL"; break;
-                    default: error = "Unknown";
+    {
+        try {
+            mInterstitialAd = new InterstitialAd(Utils.GetContext());
+            mInterstitialAd.setAdListener(new AdListener() {
+                @Override
+                public void onAdLoaded() {
+                    AdCallback(AD_INTERSTITIAL, EVENT_INTERSTITIAL_LOADED, 0);
                 }
-                //Log.v(TAG, "Interstitial FailedToLoad!!! [" + errorCode + ": " + error);
-                AdCallback(AD_INTERSTITIAL, EVENT_INTERSTITIAL_FAILED, errorCode);
-            }
 
-            @Override
-            public void onAdOpened() {
-                //Log.v(TAG, "Interstitial Opened!!!");
-                AdCallback(AD_INTERSTITIAL, EVENT_INTERSTITIAL_OPENED, 0);
-            }
+                @Override
+                public void onAdFailedToLoad(int errorCode) {
+                    String error;
+                    switch (errorCode) {
+                        case AdRequest.ERROR_CODE_INTERNAL_ERROR:
+                            error = "ERROR_CODE_INTERNAL_ERROR";
+                            break;
+                        case AdRequest.ERROR_CODE_INVALID_REQUEST:
+                            error = "ERROR_CODE_INVALID_REQUEST";
+                            break;
+                        case AdRequest.ERROR_CODE_NETWORK_ERROR:
+                            error = "ERROR_CODE_NETWORK_ERROR";
+                            break;
+                        case AdRequest.ERROR_CODE_NO_FILL:
+                            error = "ERROR_CODE_NO_FILL";
+                            break;
+                        default:
+                            error = "Unknown";
+                    }
+                    //Log.v(TAG, "Interstitial FailedToLoad!!! [" + errorCode + ": " + error);
+                    AdCallback(AD_INTERSTITIAL, EVENT_INTERSTITIAL_FAILED, errorCode);
+                }
 
-            @Override
-            public void onAdLeftApplication() {
-                //Log.v(TAG, "Interstitial onAdLeftApplication!!!");
-                AdCallback(AD_INTERSTITIAL, 4, EVENT_INTERSTITIAL_LEFTAPPLICATION);
-            }
+                @Override
+                public void onAdOpened() {
+                    //Log.v(TAG, "Interstitial Opened!!!");
+                    AdCallback(AD_INTERSTITIAL, EVENT_INTERSTITIAL_OPENED, 0);
+                }
 
-            @Override
-            public void onAdClosed() {
-                //Log.v(TAG, "Interstitial Closed!!!");
-                AdCallback(AD_INTERSTITIAL, EVENT_INTERSTITIAL_CLOSED, 0);
-            }
-        });        
-        
-        //Log.v(TAG, "InterstitialInit finish");
+                @Override
+                public void onAdLeftApplication() {
+                    //Log.v(TAG, "Interstitial onAdLeftApplication!!!");
+                    AdCallback(AD_INTERSTITIAL, 4, EVENT_INTERSTITIAL_LEFTAPPLICATION);
+                }
+
+                @Override
+                public void onAdClosed() {
+                    //Log.v(TAG, "Interstitial Closed!!!");
+                    AdCallback(AD_INTERSTITIAL, EVENT_INTERSTITIAL_CLOSED, 0);
+                }
+            });
+
+        }
+        catch(Exception e)
+        {
+            Log.e(TAG, e.getMessage());
+        }
     }
 
     public static void InterstitialInit()
@@ -101,54 +114,60 @@ public class AdMobAdapter {
 
     public static void RewardedVideoInit()
     {   
-        Activity ctx = Utils.GetContext();
-        ctx.runOnUiThread(new Runnable() {
-            public void run() {                
-        
+        try {
+            Activity ctx = Utils.GetContext();
+            ctx.runOnUiThread(new Runnable() {
+                public void run() {
+
                     mRewardedVideoAd = MobileAds.getRewardedVideoAdInstance(Utils.GetContext());
                     mRewardedVideoAd.setRewardedVideoAdListener(new RewardedVideoAdListener() {
-                    @Override
-                    public void onRewardedVideoAdLoaded() {            
-                        AdCallback(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_LOADED, 0);
-                    }
+                        @Override
+                        public void onRewardedVideoAdLoaded() {
+                            AdCallback(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_LOADED, 0);
+                        }
 
-                    @Override
-                    public void onRewardedVideoAdOpened() {            
-                        AdCallback(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_OPENED, 0);
-                    }
+                        @Override
+                        public void onRewardedVideoAdOpened() {
+                            AdCallback(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_OPENED, 0);
+                        }
 
-                    @Override
-                    public void onRewardedVideoStarted() {            
-                        AdCallback(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_STARTED, 0);
-                    }
+                        @Override
+                        public void onRewardedVideoStarted() {
+                            AdCallback(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_STARTED, 0);
+                        }
 
-                    @Override
-                    public void onRewardedVideoAdClosed() {            
-                        AdCallback(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_CLOSED, 0);
-                    }
+                        @Override
+                        public void onRewardedVideoAdClosed() {
+                            AdCallback(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_CLOSED, 0);
+                        }
 
-                    @Override
-                    public void onRewarded(RewardItem rewardItem) {            
-                        AdCallback(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_REWARDED, 0);
-                    }
+                        @Override
+                        public void onRewarded(RewardItem rewardItem) {
+                            AdCallback(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_REWARDED, 0);
+                        }
 
-                    @Override
-                    public void onRewardedVideoAdLeftApplication() {            
-                        AdCallback(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_LEFTAPPLICATION, 0);
-                    }
-                    
-                    @Override
-                    public void onRewardedVideoAdFailedToLoad(int errorCode) {
-                        AdCallback(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_FAILED, errorCode);
-                    }
+                        @Override
+                        public void onRewardedVideoAdLeftApplication() {
+                            AdCallback(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_LEFTAPPLICATION, 0);
+                        }
 
-                    @Override
-                    public void onRewardedVideoCompleted() {
-                        AdCallback(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_COMPLETED, 0);
-                    }
-                });
-           }
-        });       
+                        @Override
+                        public void onRewardedVideoAdFailedToLoad(int errorCode) {
+                            AdCallback(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_FAILED, errorCode);
+                        }
+
+                        @Override
+                        public void onRewardedVideoCompleted() {
+                            AdCallback(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_COMPLETED, 0);
+                        }
+                    });
+                }
+            });
+        }
+        catch(Exception e)
+        {
+            Log.e(TAG, e.getMessage());
+        }
     }
     
     public static void InterstitialSetUnitId(String ID)
@@ -160,51 +179,64 @@ public class AdMobAdapter {
             mInterstitialAd.setAdUnitId(ID);
             //Log.v(TAG, "InterstitialSetUnitId finish");
 		}
-		
         catch(Exception e) 
         {
-            System.err.println(e.getMessage());  
             Log.v(TAG, e.getMessage());            
         }
     }
     
     public static String InterstitialGetUnitId()
     {
-        //Log.v(TAG, "InterstitialGetAdUnitId start");
-        String id = mInterstitialAd.getAdUnitId();
-        //Log.v(TAG, "InterstitialGetAdUnitId finish");
-        return id;
+        try {
+
+            //Log.v(TAG, "InterstitialGetAdUnitId start");
+            String id = mInterstitialAd.getAdUnitId();
+            //Log.v(TAG, "InterstitialGetAdUnitId finish");
+            return id;
+        }
+        catch(Exception e)
+        {
+            Log.e(TAG, e.getMessage());
+            return null;
+        }
     }
     
     public static void RewardedVideoSetUnitId(String ID)
     {
-        RewardedVideoUnitID = ID;     
+        try {
+            RewardedVideoUnitID = ID;
+        }
+        catch(Exception e)
+        {
+            Log.e(TAG, e.getMessage());
+        }
     }
     
     public static String RewardedVideoGetUnitId()
     {
-        return RewardedVideoUnitID;
+        try{
+            return RewardedVideoUnitID;
+        }
+        catch(Exception e)
+        {
+            Log.e(TAG, e.getMessage());
+            return null;
+        }
     }    
     
     public static void InterstitialLoad()
     {
         try
         {
-            //Log.v(TAG, "InterstitialLoad start");
-            //mInterstitialAd.loadAd(new AdRequest.Builder().build());
             Activity ctx = Utils.GetContext();
             ctx.runOnUiThread(new Runnable() {
                 public void run() {                
                     mInterstitialAd.loadAd(new AdRequest.Builder().build());
                 }
-            });                    
-            
-            //Log.v(TAG, "InterstitialLoad end");
-        
+            });
         } 
         catch(Exception e) 
         {
-            System.err.println(e.getMessage());  
             Log.v(TAG, e.getMessage());            
         }
     }
@@ -213,20 +245,15 @@ public class AdMobAdapter {
     {
         try
         {
-            //Log.v(TAG, "RewardedVideoLoad start");
             Activity ctx = Utils.GetContext();
             ctx.runOnUiThread(new Runnable() {
                 public void run() {                
                     mRewardedVideoAd.loadAd(/*"ca-app-pub-3940256099942544/5224354917"*/ RewardedVideoUnitID, new AdRequest.Builder().build());
                 }
-            });                    
-            
-            //Log.v(TAG, "RewardedVideoLoad end");
-        
+            });
         } 
         catch(Exception e) 
         {
-            System.err.println(e.getMessage());  
             Log.v(TAG, e.getMessage());            
         }
     } 
@@ -234,26 +261,21 @@ public class AdMobAdapter {
     public static int InterstitialShow()
     {
         try
-        {       
-            //Log.v(TAG, "InterstitialShow start");
+        {
             Activity ctx = Utils.GetContext();
             ctx.runOnUiThread(new Runnable() {
                 public void run() {
-                    if(mInterstitialAd.isLoaded())
-                    {
-                        //Log.v(TAG, "InterstitialShow before show");
-                        mInterstitialAd.show();
-                        //Log.v(TAG, "InterstitialShow after show");
-                    }
-                    //Log.v(TAG, "InterstitialShow return 0");
+                        if(mInterstitialAd.isLoaded())
+                        {
+                            mInterstitialAd.show();
+                        }
                    }
-            });               
-                        
+            });
+
             return 0;
         } 
         catch(Exception e) 
         {
-            System.err.println(e.getMessage());  
             Log.v(TAG, e.getMessage());            
             return -1;
         }            
@@ -262,18 +284,14 @@ public class AdMobAdapter {
     public static int RewardedVideoShow()
     {
         try
-        {       
-            //Log.v(TAG, "RewardedVideoShow start");
+        {
             Activity ctx = Utils.GetContext();
             ctx.runOnUiThread(new Runnable() {
                 public void run() {
                     if(mRewardedVideoAd.isLoaded())
                     {
-                        //Log.v(TAG, "RewardedVideoShow before show");
                         mRewardedVideoAd.show();
-                        //Log.v(TAG, "RewardedVideoShow after show");
                     }
-                    //Log.v(TAG, "RewardedVideoShow return 0");
                    }
             });               
                         
