@@ -1,7 +1,7 @@
 #include <atomic>
 #include "admob.h"
 
-static const decltype(BWrapper::GetTicks()) LoadDelay = 3; // 3 секунды
+static const decltype(BWrapper::GetTicks()) LoadDelay = 5; // 5 секунд
 
 // Класс, в котором хранится состояние статусов рекламных блоков
 class AdContextClass
