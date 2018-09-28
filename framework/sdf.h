@@ -196,8 +196,8 @@ public :
 		enum : GLuint 
 		{
 			SDF_ATTRIB_POSITION = 5, // Начинаем не с нуля, чтобы индексы не пересеклись с другими программами			
-			SDF_ATTRIB_UV = 6,
-			SDF_NUM_ATTRIBUTES = 7,
+			SDF_ATTRIB_UV = 6
+			//SDF_NUM_ATTRIBUTES = 7,
 			//ATTRIB_COLOR = 8
 		};
 	};
