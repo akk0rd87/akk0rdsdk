@@ -304,7 +304,7 @@ bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColo
     Driver->glEnableVertexAttribArray(SDFProgram::Attributes::SDF_ATTRIB_UV); CheckGLESError();
     Driver->glVertexAttribPointer(SDFProgram::Attributes::SDF_ATTRIB_UV, (GLint)2, (GLenum)GL_FLOAT, (GLboolean)GL_FALSE, (GLsizei)0, UV); CheckGLESError();
 
-    Driver->glUniform4f(shaderProgram->font_color, GLfloat(FontColor.GetR()) / 255, GLfloat(FontColor.GetG()) / 255, GLfloat(FontColor.GetB()) / 255, GLfloat(FontColor.GetA()) / 255); CheckGLESError();
+    Driver->glUniform4f(shaderProgram->font_color, GLfloat(FontColor.GetR()) / 255.0f, GLfloat(FontColor.GetG()) / 255.0f, GLfloat(FontColor.GetB()) / 255.0f, GLfloat(FontColor.GetA()) / 255.0f); CheckGLESError();
 
     GLfloat smoothness = std::min(0.3f, 0.25f / (GLfloat)Spread / Scale * 1.5f) * 850.0f / 255.f / 3.333f;
 
@@ -316,7 +316,7 @@ bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColo
     {
         if (shaderProgram->sdf_outline_color >= 0)
         {
-            Driver->glUniform4f(shaderProgram->sdf_outline_color, GLfloat(OutlineColor.GetR()) / 255, GLfloat(OutlineColor.GetG()) / 255, GLfloat(OutlineColor.GetB()) / 255, GLfloat(OutlineColor.GetA()) / 255); CheckGLESError();
+            Driver->glUniform4f(shaderProgram->sdf_outline_color, GLfloat(OutlineColor.GetR()) / 255.0f, GLfloat(OutlineColor.GetG()) / 255.0f, GLfloat(OutlineColor.GetB()) / 255.0f, GLfloat(OutlineColor.GetA()) / 255.0f); CheckGLESError();
         }
         else
         {
@@ -335,6 +335,7 @@ bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColo
         
     Driver->glDrawElements((GLenum)GL_TRIANGLES, Count, (GLenum)GL_UNSIGNED_SHORT, Indices); CheckGLESError();    
 
+    // unbind texture
     Driver->glBindTexture(GL_TEXTURE_2D, (GLuint)0); CheckGLESError();
 
     Driver->glDisableVertexAttribArray(SDFProgram::Attributes::SDF_ATTRIB_POSITION); CheckGLESError();
