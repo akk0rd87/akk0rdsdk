@@ -1,14 +1,20 @@
 #include <atomic>
 #include "admob.h"
 
+static const decltype(BWrapper::GetTicks()) LoadDelay = 3; // 3 секунды
+
 // Класс, в котором хранится состояние статусов рекламных блоков
 class AdContextClass
 {
 private:
     std::atomic<int> InterstitialStatus;
-    std::atomic<int> RewardedVideoStatus;
+    std::atomic<int> RewardedVideoStatus;    
+
 	Uint32           AdMobEventCode;
 public:    
+
+    decltype(BWrapper::GetTicks()) InterstitialLastLoadRequestTime, RewardedLastLoadRequestTime; // время последних запросов на загрузку в секундах [чтобы джаву не дергать часто]
+
     AdMob::InterstitialStatus InterstitialGetStatus()
     {
         return (AdMob::InterstitialStatus)(InterstitialStatus.load());
@@ -33,6 +39,9 @@ public:
     {        
         InterstitialSetStatus(AdMob::InterstitialStatus::NotInited);
         RewardedVideoSetStatus(AdMob::RewardedVideoStatus::NotInited);
+
+        InterstitialLastLoadRequestTime = 0;
+        RewardedLastLoadRequestTime = 0;
     }
 
 	Uint32 GetAdMobEventCode(){ return AdMobEventCode; }
@@ -208,6 +217,11 @@ bool AdMob::Init(const char* PublisherID, int Formats)
 	AdContext.SetAdMobEventCode();
 	bool inited = false;
 
+    AdContext.InterstitialLastLoadRequestTime = 0;
+    AdContext.RewardedLastLoadRequestTime     = 0;
+    AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::NotInited);
+    AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::NotInited);
+
 #ifdef __WIN32__
 	inited = true; // inited безусловно ставим Inited
 #endif
@@ -251,11 +265,20 @@ bool AdMob::InterstitialLoad()
 {   
     if (AdContext.InterstitialGetStatus() != AdMob::InterstitialStatus::Inited)
     {
-        logError("Load should be requested on only in Inited status");
+        logWarning("Load should be requested on only in Inited status");
         return false;
-    }    
-    
+    }
+
+    auto newTime = BWrapper::GetTicks() / 1000;
+    if (newTime - AdContext.InterstitialLastLoadRequestTime < LoadDelay)
+    {
+        logDebug("Interstitial load acquired too early");
+        return false;
+    }
+
+    AdContext.InterstitialLastLoadRequestTime = newTime;
     AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::TryingToLoad);
+
 #ifdef __ANDROID__    
     return AdMobAndroid::InterstitialLoad();
 #endif
@@ -267,11 +290,12 @@ bool AdMob::InterstitialShow()
 {
     if (AdContext.InterstitialGetStatus() != AdMob::InterstitialStatus::Loaded)
     {
-        logError("Show should be requested on only in Loaded status");
+        logWarning("Show should be requested on only in Loaded status");
         return false;
     }
-
+    
     AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::TryingToShow);
+
 #ifdef __ANDROID__    
     return AdMobAndroid::InterstitialShow();    
 #endif
@@ -292,11 +316,20 @@ bool AdMob::RewardedVideoLoad()
 {    
     if (AdContext.RewardedVideoGetStatus() != AdMob::RewardedVideoStatus::Inited)
     {
-        logError("Load should be requested on only in Inited status");
+        logWarning("Load should be requested on only in Inited status");
         return false;
     }
     
+    auto newTime = BWrapper::GetTicks() / 1000;    
+    if (newTime - AdContext.RewardedLastLoadRequestTime < LoadDelay)
+    {
+        logDebug("Rewarded load acquired too early");
+        return false;
+    }
+
+    AdContext.RewardedLastLoadRequestTime = newTime;
     AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::TryingToLoad);
+
 #ifdef __ANDROID__    
     return AdMobAndroid::RewardedVideoLoad();
 #endif
@@ -308,7 +341,7 @@ bool AdMob::RewardedVideoShow()
 {
     if (AdContext.RewardedVideoGetStatus() != AdMob::RewardedVideoStatus::Loaded)
     {
-        logError("Show should be requested on only in Loaded status");
+        logWarning("Show should be requested on only in Loaded status");
         return false;
     }
 
