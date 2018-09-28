@@ -1,0 +1,2 @@
+call adb logcat -c
+FOR /F "skip=1" %%x IN ('adb devices') DO call adb -s %%x logcat | "%ANDROID_NDK_HOME%/ndk-stack.cmd" -sym app/build/intermediates/transforms/stripDebugSymbol/debug/0/lib/x86/libmain.so

@@ -1,0 +1,1 @@
+FOR /F "skip=1" %%x IN ('adb devices') DO call adb -s %%x logcat | findstr /i sdl
