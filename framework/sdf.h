@@ -293,10 +293,10 @@ bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColo
 
     auto Driver = GLESDriver::GetInstance();
 
-    Driver->glGetIntegerv(GL_CURRENT_PROGRAM, &oldProgramId);
+    Driver->glGetIntegerv((GLenum)GL_CURRENT_PROGRAM, &oldProgramId);
     Driver->glUseProgram(shaderProgram->shaderProgram); CheckGLESError(); PrintGLESProgamLog(shaderProgram->shaderProgram);
 
-    Driver->glBindTexture(GL_TEXTURE_2D, GLTexture); CheckGLESError();
+    Driver->glBindTexture((GLenum)GL_TEXTURE_2D, GLTexture); CheckGLESError();
 
     Driver->glEnableVertexAttribArray(SDFProgram::Attributes::SDF_ATTRIB_POSITION); CheckGLESError();
     Driver->glVertexAttribPointer(SDFProgram::Attributes::SDF_ATTRIB_POSITION, (GLint)2, (GLenum)GL_FLOAT, (GLboolean)GL_FALSE, (GLsizei)0, squareVertices); CheckGLESError();
@@ -332,15 +332,18 @@ bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColo
             logError("shaderProgram->border error %d", shaderProgram->border);
         }
     }
-    //logDebug("Before glDrawElements");
-    // Мой самсунг Galaxy S2 работает только с GL_UNSIGNED_SHORT
-    Driver->glDrawElements((GLenum)GL_TRIANGLES, Count, (GLenum)GL_UNSIGNED_SHORT, Indices); CheckGLESError();
-    //logDebug("After glDrawElements");
+        
+    Driver->glDrawElements((GLenum)GL_TRIANGLES, Count, (GLenum)GL_UNSIGNED_SHORT, Indices); CheckGLESError();    
+
+    Driver->glBindTexture(GL_TEXTURE_2D, (GLuint)0); CheckGLESError();
 
     Driver->glDisableVertexAttribArray(SDFProgram::Attributes::SDF_ATTRIB_POSITION); CheckGLESError();
     Driver->glDisableVertexAttribArray(SDFProgram::Attributes::SDF_ATTRIB_UV); CheckGLESError();
 
-    Driver->glUseProgram(oldProgramId); CheckGLESError(); CheckGLESError();
+    if (oldProgramId != 0)
+    {
+        Driver->glUseProgram(oldProgramId); CheckGLESError();
+    }
 #endif
     return true;
 };
