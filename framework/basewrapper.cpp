@@ -793,6 +793,8 @@ BWrapper::KeyCodes BWrapper::DecodeKey(const SDL_Keysym& SDL_Key)
         case SDLK_MINUS: return KeyCodes::Minus;
         case SDLK_PLUS: return KeyCodes::Plus;
         case SDLK_EQUALS: return KeyCodes::Equals;
+        case SDLK_KP_MINUS: return KeyCodes::NumpadMinus;
+        case SDLK_KP_PLUS: return KeyCodes::NumpadPlus;
         
         case SDLK_LEFTBRACKET:  return KeyCodes::LeftBraket;
         case SDLK_RIGHTBRACKET: return KeyCodes::RightBraket;
