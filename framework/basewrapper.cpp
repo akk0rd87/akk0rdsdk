@@ -1119,7 +1119,7 @@ bool BWrapper::PrintDirContent(const char* Path, BWrapper::LogPriority Priority,
 
 bool BWrapper::RandomInit()
 {
-    srand((unsigned)time(NULL));
+    srand((unsigned)time(nullptr));
     return true;
 };
 
