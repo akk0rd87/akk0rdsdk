@@ -65,7 +65,7 @@ public:
     
     //enum struct Lang                 : unsigned      { Russian, Ukrainian, Armenian, Belarussian, Uzbek, Kazakh, Azerbaijani, English, Chinese, French, Japanese, Bulgarian, Unknown };
     
-    enum struct KeyCodes             : unsigned      { Esc, BackSpace, Back, Enter, Tab, Delete, F1, Help, Home, End, Insert, Find, Copy, PageDown, PageUp, Paste, Pause, PrintScreen, Return, Return2, Space, Left, Right, Up, Down, Uknown, Minus, Plus, Equals,
+    enum struct KeyCodes             : unsigned      { Esc, BackSpace, Back, Enter, Tab, Delete, F1, Help, Home, End, Insert, Find, Copy, PageDown, PageUp, Paste, Pause, PrintScreen, Return, Return2, Space, Left, Right, Up, Down, Uknown, Minus, Plus, Equals, LeftBraket, RightBraket, Comma, Period, Quote,
 													  N0, N1, N2, N3, N4, N5, N6, N7, N8, N9, // main numbers
 													  Numpad0, Numpad1, Numpad2, Numpad3, Numpad4, Numpad5, Numpad6, Numpad7, Numpad8, Numpad9,// numpad
 													  Q,W,E,R,T,Y,U,I,O,P,A,S,D,F,G,H,J,K,L,Z,X,C,V,B,N,M}; 
