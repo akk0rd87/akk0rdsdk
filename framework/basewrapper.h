@@ -171,7 +171,7 @@ public:
     static unsigned            Str2Num                     (const char* Str);
                                                            
     // Event-handling functions                            
-    static BWrapper::KeyCodes  DecodeKey                   (SDL_Keysym SDL_Key);    
+    static BWrapper::KeyCodes  DecodeKey                   (const SDL_Keysym& SDL_Key);    
                                                            
     // Logging and debugging functions                     
     static void                Log                         (BWrapper::LogPriority Priority, const char* File, const char* Function, unsigned Line, SDL_PRINTF_FORMAT_STRING const char *Fmt, ...); 

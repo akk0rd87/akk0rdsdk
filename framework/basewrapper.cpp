@@ -758,7 +758,7 @@ unsigned BWrapper::Str2Num(const char* Str)
     return num;
 }
 
-BWrapper::KeyCodes BWrapper::DecodeKey(SDL_Keysym SDL_Key)
+BWrapper::KeyCodes BWrapper::DecodeKey(const SDL_Keysym& SDL_Key)
 {
     //enum struct KeyCodes { Esc, BackSpace, Back, Enter, Tab, Delete, F1,
     // Help, Home, Insert, Find, Copy, PageDown, PageUp, Paste, Pause, PrintScreen, Return, Space, Uknown };
