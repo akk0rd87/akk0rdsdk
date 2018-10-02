@@ -65,6 +65,7 @@ public:
 
     bool CheckError(const char* File, const char* Function, unsigned Line)
     {                 
+#ifdef __AKK0RD_DEBUG_MACRO__
         auto glErr = this->glGetError();
         if (glErr != GL_NO_ERROR)
         {                        
@@ -81,6 +82,7 @@ public:
             logError("glGetError() = %u, Msg = %s", glErr, ErrorMsg.c_str());
             return true;
         }
+#endif
         return false;        
     };
 
