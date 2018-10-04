@@ -120,7 +120,7 @@ class BillingManager {
     {
         try {
             Log.v(TAG, "BillingManager Initialize start");
-
+            mIsServiceConnected = false;
             final Activity ctx = Utils.GetContext();
             ctx.runOnUiThread(new Runnable() {
                 public void run() {
