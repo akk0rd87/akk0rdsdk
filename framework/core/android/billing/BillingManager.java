@@ -137,7 +137,7 @@ class BillingManager {
                                                                                                    PurchaseQueried(purchase.getPurchaseToken(), purchase.getSku(), PURCHASE_BOUGHT);
                                                                                                }
                                                                                        } else {
-                                                                                           Log.v(TAG, "QueryPurchases error, responseCode = " + responseCode);
+                                                                                           Log.v(TAG, "QueryPurchases error, response = " + DecodeBillingResponse(responseCode));
                                                                                        }
 
                                                                                    }
@@ -209,7 +209,7 @@ class BillingManager {
                 public void run() {
                     Log.v(TAG, "QueryPurchases get purchasesResult before");
                     PurchasesResult purchasesResult = mBillingClient.queryPurchases(SkuType.INAPP);
-                    Log.v(TAG, "QueryPurchases ResponseCode = " + purchasesResult.getResponseCode());
+                    Log.v(TAG, "QueryPurchases Response = " + DecodeBillingResponse(purchasesResult.getResponseCode()));
 
                     //https://developer.android.com/reference/com/android/billingclient/api/Purchase.html
 
@@ -221,7 +221,7 @@ class BillingManager {
                             PurchaseQueried(purchase.getPurchaseToken(), purchase.getSku(), PURCHASE_RESTORED);
                         }
                     } else {
-                        Log.v(TAG, "QueryPurchases error, responseCode = " + purchasesResult.getResponseCode());
+                        Log.v(TAG, "QueryPurchases error, response = " + DecodeBillingResponse(purchasesResult.getResponseCode()));
                     }
                 }
             });
