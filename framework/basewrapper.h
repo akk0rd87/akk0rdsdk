@@ -19,9 +19,15 @@ class AkkordRect
 {
 public:
     int x, y, w, h;
-    AkkordRect();    
+    AkkordRect();
+    AkkordRect(const AkkordRect& Rect) { this->x = Rect.x; this->y = Rect.y; this->w = Rect.w; this->h = Rect.h; };
     AkkordRect(int X, int Y, int W, int H);
-    AkkordRect(const AkkordPoint& Point1, const AkkordPoint& Point2);    
+    AkkordRect(const AkkordPoint& Point1, const AkkordPoint& Point2);
+
+    void SetW(int W) { w = W; };
+    void SetH(int H) { h = H; };
+    void SetX(int X) { x = X; };
+    void SetY(int Y) { y = Y; };
 };
 
 class AkkordColor
