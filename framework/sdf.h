@@ -856,10 +856,12 @@ public:
 
                 x_current += static_cast<decltype(x_current)>(scaleX * charParams.xoffset);
 
-                UV.push_back(float(charParams.x) / atlasW);                    UV.push_back(float(charParams.y + charParams.h - 1) / atlasH);
-                UV.push_back(float(charParams.x + charParams.w - 1) / atlasW); UV.push_back(float(charParams.y + charParams.h - 1) / atlasH);
-                UV.push_back(float(charParams.x) / atlasW);                    UV.push_back(float(charParams.y) / atlasH);
-                UV.push_back(float(charParams.x + charParams.w - 1) / atlasW); UV.push_back(float(charParams.y) / atlasH);
+                const decltype(charParams.w) minus = 0;
+                
+                UV.push_back(float(charParams.x) / atlasW);                        UV.push_back(float(charParams.y + charParams.h - minus) / atlasH);
+                UV.push_back(float(charParams.x + charParams.w - minus) / atlasW); UV.push_back(float(charParams.y + charParams.h - minus) / atlasH);
+                UV.push_back(float(charParams.x) / atlasW);                        UV.push_back(float(charParams.y) / atlasH);
+                UV.push_back(float(charParams.x + charParams.w - minus) / atlasW); UV.push_back(float(charParams.y) / atlasH);
 
                 squareVertices.push_back(2 * (float)(x_current / ScrenW) - 1.0f);                                      squareVertices.push_back(2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f);
                 squareVertices.push_back(2 * (float)(x_current + (float)scaleX * (charParams.w - 1)) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f);
