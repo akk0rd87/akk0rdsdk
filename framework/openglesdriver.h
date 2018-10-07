@@ -78,8 +78,9 @@ public:
                 case GL_OUT_OF_MEMORY:                 ErrorMsg =  "GL_OUT_OF_MEMORY"; break;
                 case GL_INVALID_VALUE:                 ErrorMsg =  "GL_INVALID_VALUE"; break;                
                 default:                               ErrorMsg =  "UNKNOWN ERROR"; break;
-            }
-            logError("glGetError() = %u, Msg = %s", glErr, ErrorMsg.c_str());
+            }            
+            // тут именно вызов функции напрямую, а не через макрос, чтбоы не терять информацию о месте возникнования события
+            BWrapper::Log(BWrapper::LogPriority::Error, File, Function, Line, "glGetError() = %u, Msg = %s", glErr, ErrorMsg.c_str());
             return true;
         }
 #endif
@@ -95,8 +96,11 @@ public:
         {
             GLchar *log = (GLchar *)malloc(logLength);
             glGetProgramInfoLog(Program, logLength, &logLength, log);
-            if (std::string(log).size() > 0)                
-                logDebug("Program log [Program=%u]: %s", Program, log);
+            if (std::string(log).size() > 0)
+            {
+                // тут именно вызов функции напрямую, а не через макрос, чтбоы не терять информацию о месте возникнования события
+                BWrapper::Log(BWrapper::LogPriority::Debug, File, Function, Line, "Program log [Program=%u]: %s", Program, log);
+            }
             free(log);
         }
 #endif
@@ -111,8 +115,11 @@ public:
         {
             GLchar *log = (GLchar *)malloc(logLength);
             glGetShaderInfoLog(Shader, logLength, &logLength, log);
-            if (std::string(log).size() > 0)                
-                logDebug("Shader log [Shader=%u]: %s", Shader, log);
+            if (std::string(log).size() > 0)
+            {
+                // тут именно вызов функции напрямую, а не через макрос, чтбоы не терять информацию о месте возникнования события
+                BWrapper::Log(BWrapper::LogPriority::Debug, File, Function, Line, "Shader log [Shader=%u]: %s", Shader, log);
+            }
             free(log);
         }
 #endif
@@ -128,7 +135,9 @@ public:
             GLchar *log = (GLchar *)malloc(logLength);
             glGetShaderSource(Shader, logLength, &logLength, log);
             if (std::string(log).size() > 0)
+            {
                 logDebug("Shader Source:\n %s\n\n", log);
+            }
             free(log);
         }     
 #endif
