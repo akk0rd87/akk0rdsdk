@@ -365,10 +365,10 @@ bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColo
         Driver->glUseProgram(oldProgramId); CheckGLESError();
     }
 
-    if (VertexParams.attr_0_enabled) Driver->glEnableVertexAttribArray((GLuint)0);
-    if (VertexParams.attr_1_enabled) Driver->glEnableVertexAttribArray((GLuint)1);
-    if (VertexParams.attr_2_enabled) Driver->glEnableVertexAttribArray((GLuint)2);
-    if (VertexParams.attr_3_enabled) Driver->glEnableVertexAttribArray((GLuint)3);
+    if (VertexParams.attr_0_enabled) {Driver->glEnableVertexAttribArray((GLuint)0); CheckGLESError();}
+    if (VertexParams.attr_1_enabled) {Driver->glEnableVertexAttribArray((GLuint)1); CheckGLESError();}
+    if (VertexParams.attr_2_enabled) {Driver->glEnableVertexAttribArray((GLuint)2); CheckGLESError();}
+    if (VertexParams.attr_3_enabled) {Driver->glEnableVertexAttribArray((GLuint)3); CheckGLESError();}
 
 #endif
     return true;
