@@ -301,17 +301,17 @@ bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColo
 
     auto Driver = GLESDriver::GetInstance();
 
-    Driver->glGetIntegerv((GLenum)GL_CURRENT_PROGRAM, &oldProgramId);
+    Driver->glGetIntegerv((GLenum)GL_CURRENT_PROGRAM, &oldProgramId); CheckGLESError();
 
-    Driver->glGetVertexAttribiv((GLuint)0, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_0_enabled); CheckGLESError();
-    Driver->glGetVertexAttribiv((GLuint)1, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_1_enabled); CheckGLESError();
-    Driver->glGetVertexAttribiv((GLuint)2, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_2_enabled); CheckGLESError();
-    Driver->glGetVertexAttribiv((GLuint)3, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_3_enabled); CheckGLESError();
+    Driver->glGetVertexAttribiv((GLuint)0, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_0_enabled); CheckGLESError();
+    Driver->glGetVertexAttribiv((GLuint)1, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_1_enabled); CheckGLESError();
+    Driver->glGetVertexAttribiv((GLuint)2, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_2_enabled); CheckGLESError();
+    Driver->glGetVertexAttribiv((GLuint)3, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_3_enabled); CheckGLESError();
 
-    if (VertexParams.attr_0_enabled) Driver->glDisableVertexAttribArray((GLuint)0); CheckGLESError();
-    if (VertexParams.attr_1_enabled) Driver->glDisableVertexAttribArray((GLuint)1); CheckGLESError();
-    if (VertexParams.attr_2_enabled) Driver->glDisableVertexAttribArray((GLuint)2); CheckGLESError();
-    if (VertexParams.attr_3_enabled) Driver->glDisableVertexAttribArray((GLuint)3); CheckGLESError();
+    if (VertexParams.attr_0_enabled) {Driver->glDisableVertexAttribArray((GLuint)0); CheckGLESError();}
+    if (VertexParams.attr_1_enabled) {Driver->glDisableVertexAttribArray((GLuint)1); CheckGLESError();}
+    if (VertexParams.attr_2_enabled) {Driver->glDisableVertexAttribArray((GLuint)2); CheckGLESError();}
+    if (VertexParams.attr_3_enabled) {Driver->glDisableVertexAttribArray((GLuint)3); CheckGLESError();}
 
     Driver->glUseProgram(shaderProgram->shaderProgram); CheckGLESError(); PrintGLESProgamLog(shaderProgram->shaderProgram);
 
