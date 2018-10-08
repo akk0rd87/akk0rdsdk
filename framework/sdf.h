@@ -303,10 +303,10 @@ bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColo
 
     Driver->glGetIntegerv((GLenum)GL_CURRENT_PROGRAM, &oldProgramId);
 
-    Driver->glGetVertexAttribiv(0, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_0_enabled); CheckGLESError();
-    Driver->glGetVertexAttribiv(1, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_1_enabled); CheckGLESError();
-    Driver->glGetVertexAttribiv(2, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_2_enabled); CheckGLESError();
-    Driver->glGetVertexAttribiv(3, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_3_enabled); CheckGLESError();
+    Driver->glGetVertexAttribiv((GLuint)0, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_0_enabled); CheckGLESError();
+    Driver->glGetVertexAttribiv((GLuint)1, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_1_enabled); CheckGLESError();
+    Driver->glGetVertexAttribiv((GLuint)2, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_2_enabled); CheckGLESError();
+    Driver->glGetVertexAttribiv((GLuint)3, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_3_enabled); CheckGLESError();
 
     if (VertexParams.attr_0_enabled) Driver->glDisableVertexAttribArray((GLuint)0); CheckGLESError();
     if (VertexParams.attr_1_enabled) Driver->glDisableVertexAttribArray((GLuint)1); CheckGLESError();
