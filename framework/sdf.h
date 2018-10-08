@@ -434,6 +434,13 @@ bool SDFTexture::Load(const char* FileNamePNG, BWrapper::FileSearchPriority Sear
 bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
 {
     auto ScreenSize = BWrapper::GetScreenSize();
+
+    // если целевое размещение не попадает на экран, не рисуем его
+    if (DestRect.x > ScreenSize.x || DestRect.x + DestRect.w < 0 || DestRect.y > ScreenSize.y || DestRect.y + DestRect.h < 0)
+    {
+        return false;
+    }
+
     float ScrenW = static_cast<decltype(ScrenW)>(ScreenSize.x);
     float ScrenH = static_cast<decltype(ScrenH)>(ScreenSize.y);
 
