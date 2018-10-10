@@ -2,6 +2,7 @@
 #include "SDL_image.h"
 #include "core/platforms.h"
 #include "core/core_defines.h"
+#include <ctime>
 
 #define NANOSVG_IMPLEMENTATION
 #include "../libraries/nanosvg/nanosvg.h"
@@ -1146,13 +1147,14 @@ bool BWrapper::PrintDirContent(const char* Path, BWrapper::LogPriority Priority,
 
 bool BWrapper::RandomInit()
 {
-    srand((unsigned)time(nullptr));
+    // https://ru.cppreference.com/w/cpp/numeric/random/rand
+    std::srand(unsigned(std::time(0)));
     return true;
 };
 
 int BWrapper::Random()
 {
-    return rand();
+    return std::rand();
 };
 
 

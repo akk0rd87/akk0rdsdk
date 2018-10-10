@@ -4,7 +4,6 @@
 
 #include "SDL.h"
 #include <limits>
-#include <time.h>
 #include <string>
 #include <vector>
 #include <iostream>
