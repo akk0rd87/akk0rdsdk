@@ -11,11 +11,36 @@
 //#include <stdio.h>
 //#include <stdlib.h>
 
-struct CurrentContextStruct
+class CurrentContextStruct
 {
+public:
     AkkordRenderer*           CurrentRenderer = nullptr;
     AkkordWindow*             CurrentWindow = nullptr;
-	Uint32                    MessageBoxEvent;
+    Uint32                    MessageBoxEvent;
+
+    void DestroyRenderer()
+    {
+        if (this->CurrentRenderer != nullptr)
+        {
+            SDL_DestroyRenderer(this->CurrentRenderer);
+            this->CurrentRenderer = nullptr;
+        }
+    };
+
+    void DestroyWindow()
+    {
+        if (this->CurrentWindow != nullptr)
+        {
+            SDL_DestroyWindow(this->CurrentWindow);
+            this->CurrentWindow = nullptr;
+        }
+    };
+
+    ~CurrentContextStruct()
+    {
+        DestroyRenderer();
+        DestroyWindow();
+    }
 };
 
 static CurrentContextStruct CurrentContext;
@@ -321,8 +346,8 @@ bool BWrapper::SetWindowResizable(bool Resizable)
 }
 
 bool BWrapper::DestroyRenderer()
-{
-    SDL_DestroyRenderer(CurrentContext.CurrentRenderer);
+{    
+    CurrentContext.DestroyRenderer();
     return true;
 };
 
@@ -333,8 +358,8 @@ bool BWrapper::RefreshRenderer()
 };
 
 bool BWrapper::DestroyWindow()
-{
-    SDL_DestroyWindow(CurrentContext.CurrentWindow);
+{    
+    CurrentContext.DestroyWindow();
     return true;
 };
 
