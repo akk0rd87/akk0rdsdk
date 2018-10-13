@@ -65,11 +65,11 @@ static inline unsigned int UTF2Unicode(const /*unsigned*/ char *txt, unsigned in
 static const GLchar* SDF_vertexSource =
 "varying highp vec4 result_color; \n\
 varying highp vec2 result_uv; \n\
-uniform highp mat4 mat; \n\
+uniform highp mat4 u_projection; \n\
 uniform highp vec4 font_color; \n\
 uniform highp float smooth_param; \n\
-attribute highp vec2 position; \n\
-attribute highp vec2 uv; \n\
+attribute highp vec2 a_position; \n\
+attribute highp vec2 a_texCoord; \n\
 varying highp float SmoothDistance; \n\
 varying highp float center; \n\
 #ifdef SDF_OUTLINE \n\
@@ -81,9 +81,9 @@ varying highp float center; \n\
 #endif \n\
 void main()  \n\
 {\n\
-    gl_Position = mat * vec4(position, 0.0, 1.0);  \n\
+    gl_Position = u_projection * vec4(a_position, 0.0, 1.0);  \n\
     result_color = font_color; \n\
-    result_uv = uv; \n\
+    result_uv = a_texCoord; \n\
     SmoothDistance = smooth_param; \n\
 #ifdef SDF_OUTLINE \n\
     outBorderCol = sdf_outline_color; \n\
@@ -161,15 +161,15 @@ class SDFProgram
         Driver->glAttachShader(Program->shaderProgram, vertexShader); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
         Driver->glAttachShader(Program->shaderProgram, fragmentShader); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
 
-		Driver->glBindAttribLocation(Program->shaderProgram, SDFProgram::Attributes::SDF_ATTRIB_POSITION, "position"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
-		Driver->glBindAttribLocation(Program->shaderProgram, SDFProgram::Attributes::SDF_ATTRIB_UV, "uv"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
+		Driver->glBindAttribLocation(Program->shaderProgram, SDFProgram::Attributes::SDF_ATTRIB_POSITION, "a_position"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
+		Driver->glBindAttribLocation(Program->shaderProgram, SDFProgram::Attributes::SDF_ATTRIB_UV, "a_texCoord"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
 
         Driver->glLinkProgram(Program->shaderProgram); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
 
         Driver->glGetIntegerv(GL_CURRENT_PROGRAM, &oldProgramId);
         Driver->glUseProgram(Program->shaderProgram); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
 
-        auto mat = Driver->glGetUniformLocation(Program->shaderProgram, "mat"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
+        auto mat = Driver->glGetUniformLocation(Program->shaderProgram, "u_projection"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
         auto base_texture = Driver->glGetUniformLocation(Program->shaderProgram, "base_texture"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
         Program->sdf_outline_color = Driver->glGetUniformLocation(Program->shaderProgram, "sdf_outline_color"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);                
         Program->font_color = Driver->glGetUniformLocation(Program->shaderProgram, "font_color"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
@@ -195,8 +195,8 @@ public :
 	{
 		enum : GLuint 
 		{
-			SDF_ATTRIB_POSITION = 5, // Начинаем не с нуля, чтобы индексы не пересеклись с другими программами			
-			SDF_ATTRIB_UV = 6
+			SDF_ATTRIB_POSITION = 0, // Начинаем не с нуля, чтобы индексы не пересеклись с другими программами			
+			SDF_ATTRIB_UV = 1
 			//SDF_NUM_ATTRIBUTES = 7,
 			//ATTRIB_COLOR = 8
 		};
@@ -290,11 +290,11 @@ bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColo
 #ifndef __CODEBLOCKS
     GLint oldProgramId;
 
-    //struct VertextAttrParamsStruct
-    //{
-    //    GLint attr_0_enabled, attr_1_enabled, attr_2_enabled, attr_3_enabled;
-    //} VertexParams;
-    //VertexParams.attr_0_enabled = VertexParams.attr_1_enabled = VertexParams.attr_2_enabled = VertexParams.attr_3_enabled = GL_FALSE;
+    struct VertextAttrParamsStruct
+    {
+        GLint attr_0_enabled, attr_1_enabled, attr_2_enabled, attr_3_enabled;
+    } VertexParams;
+    VertexParams.attr_0_enabled = VertexParams.attr_1_enabled = VertexParams.attr_2_enabled = VertexParams.attr_3_enabled = GL_FALSE;
 
     auto shaderProgram = sdfProgram.GetShaderProgram(Outline);
 
@@ -304,15 +304,15 @@ bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColo
 
     if (oldProgramId != shaderProgram->shaderProgram && oldProgramId > 0)
     {
-        //Driver->glGetVertexAttribiv((GLuint)0, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_0_enabled); CheckGLESError();
-        //Driver->glGetVertexAttribiv((GLuint)1, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_1_enabled); CheckGLESError();
-        //Driver->glGetVertexAttribiv((GLuint)2, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_2_enabled); CheckGLESError();
-        //Driver->glGetVertexAttribiv((GLuint)3, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_3_enabled); CheckGLESError();
+        Driver->glGetVertexAttribiv((GLuint)0, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_0_enabled); CheckGLESError();
+        Driver->glGetVertexAttribiv((GLuint)1, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_1_enabled); CheckGLESError();
+        Driver->glGetVertexAttribiv((GLuint)2, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_2_enabled); CheckGLESError();
+        Driver->glGetVertexAttribiv((GLuint)3, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_3_enabled); CheckGLESError();
         
-        //if (VertexParams.attr_0_enabled != GL_FALSE) {Driver->glDisableVertexAttribArray((GLuint)0); CheckGLESError();}
-        //if (VertexParams.attr_1_enabled != GL_FALSE) {Driver->glDisableVertexAttribArray((GLuint)1); CheckGLESError();}
-        //if (VertexParams.attr_2_enabled != GL_FALSE) {Driver->glDisableVertexAttribArray((GLuint)2); CheckGLESError();}
-        //if (VertexParams.attr_3_enabled != GL_FALSE) {Driver->glDisableVertexAttribArray((GLuint)3); CheckGLESError();}
+        if (VertexParams.attr_0_enabled != GL_FALSE) {Driver->glDisableVertexAttribArray((GLuint)0); CheckGLESError();}
+        if (VertexParams.attr_1_enabled != GL_FALSE) {Driver->glDisableVertexAttribArray((GLuint)1); CheckGLESError();}
+        if (VertexParams.attr_2_enabled != GL_FALSE) {Driver->glDisableVertexAttribArray((GLuint)2); CheckGLESError();}
+        if (VertexParams.attr_3_enabled != GL_FALSE) {Driver->glDisableVertexAttribArray((GLuint)3); CheckGLESError();}
     }
 
     if (oldProgramId != shaderProgram->shaderProgram)
@@ -362,8 +362,8 @@ bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColo
     // unbind texture
     Driver->glBindTexture(GL_TEXTURE_2D, (GLuint)0); CheckGLESError();
 
-    Driver->glDisableVertexAttribArray(SDFProgram::Attributes::SDF_ATTRIB_POSITION); CheckGLESError();
-    Driver->glDisableVertexAttribArray(SDFProgram::Attributes::SDF_ATTRIB_UV); CheckGLESError();
+    //Driver->glDisableVertexAttribArray(SDFProgram::Attributes::SDF_ATTRIB_POSITION); CheckGLESError();
+    //Driver->glDisableVertexAttribArray(SDFProgram::Attributes::SDF_ATTRIB_UV); CheckGLESError();
 
     if (shaderProgram->shaderProgram != oldProgramId)
     {
@@ -372,10 +372,10 @@ bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColo
 
     if (oldProgramId != shaderProgram->shaderProgram && oldProgramId > 0)
     {
-        //if (VertexParams.attr_0_enabled != GL_FALSE) {Driver->glEnableVertexAttribArray((GLuint)0); CheckGLESError();}
-        //if (VertexParams.attr_1_enabled != GL_FALSE) {Driver->glEnableVertexAttribArray((GLuint)1); CheckGLESError();}
-        //if (VertexParams.attr_2_enabled != GL_FALSE) {Driver->glEnableVertexAttribArray((GLuint)2); CheckGLESError();}
-        //if (VertexParams.attr_3_enabled != GL_FALSE) {Driver->glEnableVertexAttribArray((GLuint)3); CheckGLESError();}
+        if (VertexParams.attr_0_enabled != GL_FALSE) {Driver->glEnableVertexAttribArray((GLuint)0); CheckGLESError();}
+        if (VertexParams.attr_1_enabled != GL_FALSE) {Driver->glEnableVertexAttribArray((GLuint)1); CheckGLESError();}
+        if (VertexParams.attr_2_enabled != GL_FALSE) {Driver->glEnableVertexAttribArray((GLuint)2); CheckGLESError();}
+        if (VertexParams.attr_3_enabled != GL_FALSE) {Driver->glEnableVertexAttribArray((GLuint)3); CheckGLESError();}
     }
 
 #endif
