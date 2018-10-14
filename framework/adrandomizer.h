@@ -323,42 +323,42 @@ void AdRandomizer::OpenURL(Apps AppId)
 
 void AdRandomizer::InitApps()
 {
-    CurApps.push_back(std::make_unique<AppInfoStruct>());
+    //CurApps.push_back(std::make_unique<AppInfoStruct>());
     CurApps.back()->AppCode = AdRandomizer::Apps::CFCross;
     CurApps.back()->Path = "cfcross";
     CurApps.back()->ImageFiles = { "ad_cfcross_1.png", "ad_cfcross_2.png", "ad_cfcross_3.png", "ad_cfcross_4.png", "ad_cfcross_5.png", "ad_cfcross_6.png" };
 
-    CurApps.push_back(std::make_unique<AppInfoStruct>());
+    //CurApps.push_back(std::make_unique<AppInfoStruct>());
     CurApps.back()->AppCode = AdRandomizer::Apps::FCross;
     CurApps.back()->Path = "fcross";
     CurApps.back()->ImageFiles = { "ad_fcross_1.png", "ad_fcross_2.png", "ad_fcross_3.png" };
 
-    CurApps.push_back(std::make_unique<AppInfoStruct>());
+    //CurApps.push_back(std::make_unique<AppInfoStruct>());
     CurApps.back()->AppCode = AdRandomizer::Apps::JCross;
     CurApps.back()->Path = "jcross";
     CurApps.back()->ImageFiles = { "ad_jcross_1.png", "ad_jcross_2.png", "ad_jcross_3.png" };
 
-    CurApps.push_back(std::make_unique<AppInfoStruct>());
+    //CurApps.push_back(std::make_unique<AppInfoStruct>());
     CurApps.back()->AppCode = AdRandomizer::Apps::JDraw;
     CurApps.back()->Path = "jdraw";
     CurApps.back()->ImageFiles = { "ad_jdraw_1.png", "ad_jdraw_2.png" };
 
-    CurApps.push_back(std::make_unique<AppInfoStruct>());
+    //CurApps.push_back(std::make_unique<AppInfoStruct>());
     CurApps.back()->AppCode = AdRandomizer::Apps::WordsRu1;
     CurApps.back()->Path = "wordsru1";
     CurApps.back()->ImageFiles = { "ad_words1_ru_1.png" };
 
-    CurApps.push_back(std::make_unique<AppInfoStruct>());
+    //CurApps.push_back(std::make_unique<AppInfoStruct>());
     CurApps.back()->AppCode = AdRandomizer::Apps::WordsRu2;
     CurApps.back()->Path = "wordsru2";
     CurApps.back()->ImageFiles = { "ad_words2_ru_1.png" };
 
-    CurApps.push_back(std::make_unique<AppInfoStruct>());
+    //CurApps.push_back(std::make_unique<AppInfoStruct>());
     CurApps.back()->AppCode = AdRandomizer::Apps::WordsRu8;
     CurApps.back()->Path = "wordsru8";
     CurApps.back()->ImageFiles = { "ad_words8_ru_1.png" };
 
-    CurApps.push_back(std::make_unique<AppInfoStruct>());
+    //CurApps.push_back(std::make_unique<AppInfoStruct>());
     CurApps.back()->AppCode = AdRandomizer::Apps::WordsUs;
     CurApps.back()->Path = "wordsus";
     CurApps.back()->ImageFiles = { "words_us_100.png" };
