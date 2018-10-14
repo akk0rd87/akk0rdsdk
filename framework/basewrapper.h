@@ -258,6 +258,8 @@ public:
     AkkordTexture();
     ~AkkordTexture();
     AkkordTexture(AkkordTexture&& tmp);
+
+    SDL_Texture * GetTexture() { return tex;  };
 };
 
 class DirContentReader

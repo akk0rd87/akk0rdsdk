@@ -237,8 +237,7 @@ static SDFProgram sdfProgram;
 
 class SDFGLTexture
 {
-    SDL_Surface* sdfTexture = nullptr;
-    GLuint GLTexture;
+    AkkordTexture akkordTexture;
 public:
     void Clear();
     bool Load(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority);
@@ -249,39 +248,13 @@ public:
 
 void SDFGLTexture::Clear()
 {
-    if (sdfTexture != nullptr)
-    {
-        SDL_FreeSurface(sdfTexture);
-        sdfTexture = nullptr;
-    };
+
 }
 
 bool SDFGLTexture::Load(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority)
 {
     this->Clear();
-#ifndef __CODEBLOCKS        
-    auto Driver = GLESDriver::GetInstance();
-
-    unsigned Size;
-    auto buffer = BWrapper::File2Buffer(FileNamePNG, SearchPriority, Size);
-    auto io = SDL_RWFromMem(buffer, Size);
-    sdfTexture = IMG_LoadPNG_RW(io);
-    BWrapper::CloseBuffer(buffer);
-    SDL_RWclose(io);
-
-    if (nullptr == sdfTexture)
-    {
-        logError("fontAtlas create error %s", SDL_GetError());
-        return false;
-    }
-
-    Driver->glGenTextures((GLsizei)1, &GLTexture); CheckGLESError();
-    Driver->glBindTexture((GLenum)GL_TEXTURE_2D, GLTexture); CheckGLESError();
-    Driver->glTexParameteri((GLenum)GL_TEXTURE_2D, (GLenum)GL_TEXTURE_MIN_FILTER, (GLint)GL_LINEAR); CheckGLESError();
-    Driver->glTexParameteri((GLenum)GL_TEXTURE_2D, (GLenum)GL_TEXTURE_MAG_FILTER, (GLint)GL_LINEAR); CheckGLESError();
-
-    Driver->glTexImage2D((GLenum)GL_TEXTURE_2D, (GLint)0, GL_RGBA, (GLsizei)sdfTexture->w, (GLsizei)sdfTexture->h, (GLint)0, (GLenum)GL_RGBA, (GLenum)GL_UNSIGNED_BYTE, sdfTexture->pixels); CheckGLESError();
-#endif
+    akkordTexture.LoadFromFile(FileNamePNG, AkkordTexture::TextureType::PNG, SearchPriority);
     return true;
 }
 
@@ -301,26 +274,24 @@ bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColo
     auto Driver = GLESDriver::GetInstance();
 
     Driver->glGetIntegerv((GLenum)GL_CURRENT_PROGRAM, &oldProgramId); CheckGLESError();
-
-    if (oldProgramId != shaderProgram->shaderProgram && oldProgramId > 0)
-    {
-        Driver->glGetVertexAttribiv((GLuint)0, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_0_enabled); CheckGLESError();
-        Driver->glGetVertexAttribiv((GLuint)1, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_1_enabled); CheckGLESError();
-        Driver->glGetVertexAttribiv((GLuint)2, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_2_enabled); CheckGLESError();
-        Driver->glGetVertexAttribiv((GLuint)3, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_3_enabled); CheckGLESError();
         
-        if (VertexParams.attr_0_enabled != GL_FALSE) {Driver->glDisableVertexAttribArray((GLuint)0); CheckGLESError();}
-        if (VertexParams.attr_1_enabled != GL_FALSE) {Driver->glDisableVertexAttribArray((GLuint)1); CheckGLESError();}
-        if (VertexParams.attr_2_enabled != GL_FALSE) {Driver->glDisableVertexAttribArray((GLuint)2); CheckGLESError();}
-        if (VertexParams.attr_3_enabled != GL_FALSE) {Driver->glDisableVertexAttribArray((GLuint)3); CheckGLESError();}
-    }
-
+    Driver->glGetVertexAttribiv((GLuint)0, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_0_enabled); CheckGLESError();
+    Driver->glGetVertexAttribiv((GLuint)1, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_1_enabled); CheckGLESError();
+    Driver->glGetVertexAttribiv((GLuint)2, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_2_enabled); CheckGLESError();
+    Driver->glGetVertexAttribiv((GLuint)3, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_3_enabled); CheckGLESError();
+        
+    if (VertexParams.attr_0_enabled != GL_FALSE) {Driver->glDisableVertexAttribArray((GLuint)0); CheckGLESError();}
+    if (VertexParams.attr_1_enabled != GL_FALSE) {Driver->glDisableVertexAttribArray((GLuint)1); CheckGLESError();}
+    if (VertexParams.attr_2_enabled != GL_FALSE) {Driver->glDisableVertexAttribArray((GLuint)2); CheckGLESError();}
+    if (VertexParams.attr_3_enabled != GL_FALSE) {Driver->glDisableVertexAttribArray((GLuint)3); CheckGLESError();}
+    
     if (oldProgramId != shaderProgram->shaderProgram)
     {
         Driver->glUseProgram(shaderProgram->shaderProgram); CheckGLESError(); PrintGLESProgamLog(shaderProgram->shaderProgram);
     }
 
-    Driver->glBindTexture((GLenum)GL_TEXTURE_2D, GLTexture); CheckGLESError();
+    //Driver->glBindTexture((GLenum)GL_TEXTURE_2D, GLTexture); CheckGLESError();
+    SDL_GL_BindTexture(akkordTexture.GetTexture(), nullptr, nullptr);
 
     Driver->glEnableVertexAttribArray(SDFProgram::Attributes::SDF_ATTRIB_POSITION); CheckGLESError();
     Driver->glEnableVertexAttribArray(SDFProgram::Attributes::SDF_ATTRIB_UV); CheckGLESError();
@@ -360,7 +331,7 @@ bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColo
     Driver->glDrawElements((GLenum)GL_TRIANGLES, Count, (GLenum)GL_UNSIGNED_SHORT, Indices); CheckGLESError();    
 
     // unbind texture
-    Driver->glBindTexture(GL_TEXTURE_2D, (GLuint)0); CheckGLESError();
+    SDL_GL_UnbindTexture(akkordTexture.GetTexture());
 
     //Driver->glDisableVertexAttribArray(SDFProgram::Attributes::SDF_ATTRIB_POSITION); CheckGLESError();
     //Driver->glDisableVertexAttribArray(SDFProgram::Attributes::SDF_ATTRIB_UV); CheckGLESError();
@@ -369,14 +340,12 @@ bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColo
     {
         Driver->glUseProgram(oldProgramId); CheckGLESError();
     }
-
-    if (oldProgramId != shaderProgram->shaderProgram && oldProgramId > 0)
-    {
-        if (VertexParams.attr_0_enabled != GL_FALSE) {Driver->glEnableVertexAttribArray((GLuint)0); CheckGLESError();}
-        if (VertexParams.attr_1_enabled != GL_FALSE) {Driver->glEnableVertexAttribArray((GLuint)1); CheckGLESError();}
-        if (VertexParams.attr_2_enabled != GL_FALSE) {Driver->glEnableVertexAttribArray((GLuint)2); CheckGLESError();}
-        if (VertexParams.attr_3_enabled != GL_FALSE) {Driver->glEnableVertexAttribArray((GLuint)3); CheckGLESError();}
-    }
+    
+    if (VertexParams.attr_0_enabled != GL_FALSE) {Driver->glEnableVertexAttribArray((GLuint)0); CheckGLESError();}
+    if (VertexParams.attr_1_enabled != GL_FALSE) {Driver->glEnableVertexAttribArray((GLuint)1); CheckGLESError();}
+    if (VertexParams.attr_2_enabled != GL_FALSE) {Driver->glEnableVertexAttribArray((GLuint)2); CheckGLESError();}
+    if (VertexParams.attr_3_enabled != GL_FALSE) {Driver->glEnableVertexAttribArray((GLuint)3); CheckGLESError();}
+    
 
 #endif
     return true;
@@ -384,7 +353,8 @@ bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColo
 
 AkkordPoint SDFGLTexture::GetSize()
 {
-    return AkkordPoint(sdfTexture->w, sdfTexture->h);
+    //return AkkordPoint(sdfTexture->w, sdfTexture->h);
+    return akkordTexture.GetSize();
 };
 
 SDFGLTexture::~SDFGLTexture()
