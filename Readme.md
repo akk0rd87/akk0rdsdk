@@ -84,7 +84,7 @@ ANDROID_KEYSTORE_HOME
 
 Reference: https://developer.android.com/studio/command-line/adb.html
 
-Set path to adb utility to PATH env variable. It located on ANDROID_HOME/platform-tools/
+Set path to adb utility to PATH env variable. It located on %ANDROID_HOME%/platform-tools/
 
 **Hints**
 
