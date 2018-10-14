@@ -134,6 +134,8 @@ sdkmanager.bat extras;google;google_play_services
     - Выставить BitCode = NO (пункт Build Options -> Enable Bitcode https://i.stack.imgur.com/VkI72.png)
     
     - Char type as unsigned
+    
+    - В build settings проекта в code signing identity везде поставить ios Developer, а в таргете выбрать automatic signing
 
     - Видимо после каждого добавления файла во фреймворк нужно пересоздавать group-ссылки на framework
     
