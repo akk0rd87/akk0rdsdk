@@ -294,6 +294,10 @@ void Platforms::MessageBoxShow(int Code, const char* Title, const char* Message,
 #ifdef __ANDROID__
 	return AndroidWrapper::MessageBoxShow(Code, Title, Message, Button1, Button2, Button3);
 #endif
+
+#ifdef __APPLE__
+    iOSWrapper::MessageBoxShow(Code, Title, Message, Button1, Button2, Button3);
+#endif
 }
 
 bool Platforms::Init()

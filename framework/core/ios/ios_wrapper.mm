@@ -162,3 +162,8 @@ std::string iOSWrapper::GetLanguage()
     NSString * language = [[NSLocale preferredLanguages] firstObject];
     return std::string([language UTF8String]);
 }
+
+void iOSWrapper::MessageBoxShow (int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3)
+{
+    
+};
