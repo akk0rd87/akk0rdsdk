@@ -355,8 +355,7 @@ bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColo
 };
 
 AkkordPoint SDFGLTexture::GetSize()
-{
-    //return AkkordPoint(sdfTexture->w, sdfTexture->h);
+{    
     return akkordTexture.GetSize();
 };
 
