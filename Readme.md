@@ -119,7 +119,7 @@ sdkmanager.bat extras;google;google_play_services
     
     - Добавить фреймворки CoreAudio (CoreAudio.framework), AudioToolBox.Frameworks, AVFoundation.Frameworks
     
-    - Добавить фреймворки ImageIo Framework, MobileCoreServices framework, Foundation, UIKit.    
+    - Добавить фреймворки ImageIo Framework, MobileCoreServices framework, Foundation, UIKit, Metal.framework.    
     
     - Свои файлы исходного references, а потом еще раз эти же файлы из референсов
     
