@@ -7,7 +7,7 @@
 class AdMobiOS
 {
 public:
-static bool                       Init(const char* PublisherID, int Formats);
+static bool                       Init(const char* AdMobAppID, int Formats);
 };
 
 #endif // __AKK0RD_IOS_ADMOB_H__

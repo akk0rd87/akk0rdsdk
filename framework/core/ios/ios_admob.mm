@@ -2,10 +2,10 @@
 #include "ios_admob.h"
 #import <GoogleMobileAds/GoogleMobileAds.h>
 
-bool AdMobiOS::Init(const char* PublisherID, int Formats)
+bool AdMobiOS::Init(const char* AdMobAppID, int Formats)
 {
-    NSString *PubID = [[NSString alloc] initWithUTF8String:PublisherID];
-    [GADMobileAds configureWithApplicationID:PubID];
-    [PubID release];    
+    NSString *AppID = [[NSString alloc] initWithUTF8String:AdMobAppID];
+    [GADMobileAds configureWithApplicationID:AppID];
+    [AppID release];    
     return true;
 }
