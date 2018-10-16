@@ -105,6 +105,10 @@ sdkmanager.bat extras;google;google_play_services
 
 ### **iOS**
     
+    - Use lipo for building Universal SDL and SDL_image lib for ios device and simulator
+lipo -create iosDevice/libSDL2.a simulator/libSDL2.a -output libSDL2.a
+lipo -create iosDevice/libSDL2_image.a simulator/libSDL2_image.a -output libSDL2_image.a
+    
     - Set AKKORD_SDK_HOME path in Xcode: Xcode->Preferences->Locations->Custom Paths
     
     - Открыть проект SDL CodeProj и собрать библиотеку (только первый раз, сборка делается только один раз, для других проектов повторять не надо).
