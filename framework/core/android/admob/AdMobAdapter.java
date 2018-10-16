@@ -43,9 +43,9 @@ public class AdMobAdapter {
     
     public static native void AdCallback(int AdType, int EventType, int Code);
     
-    public static void Initialize(String PublisherID)
+    public static void Initialize(String AdMobAppID)
     {
-        MobileAds.initialize(Utils.GetContext(), PublisherID);
+        MobileAds.initialize(Utils.GetContext(), AdMobAppID);
     }
     
     private static void InterstitialReCreate()

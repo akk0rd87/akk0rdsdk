@@ -212,7 +212,7 @@ Uint32 AdMob::GetEventCode()
 	return AdContext.GetAdMobEventCode();
 }
 
-bool AdMob::Init(const char* PublisherID, int Formats)
+bool AdMob::Init(const char* AdMobAppID, int Formats)
 {
 	AdContext.SetAdMobEventCode();
 	bool inited = false;
@@ -227,14 +227,14 @@ bool AdMob::Init(const char* PublisherID, int Formats)
 #endif
 
 #ifdef __ANDROID__
-    if (AdMobAndroid::Init(PublisherID, Formats))
+    if (AdMobAndroid::Init(AdMobAppID, Formats))
     {
 		inited = true;
     };
 #endif
 
 #ifdef __APPLE__
-    if (AdMobiOS::Init(PublisherID, Formats))
+    if (AdMobiOS::Init(AdMobAppID, Formats))
     {
 		inited = true;
     };

@@ -22,7 +22,7 @@ class AdMobAndroid
 private:    
 
 public:    
-    static bool Init(const char* PublisherID, int Formats);
+    static bool Init(const char* AdMobAppID, int Formats);
     
     static bool InterstitialSetUnitId(const char* UnitId);
     static bool InterstitialLoad();
@@ -34,7 +34,7 @@ public:
 };
 
 
-bool AdMobAndroid::Init(const char* PublisherID, int Formats)
+bool AdMobAndroid::Init(const char* AdMobAppID, int Formats)
 {    
     bool Result = true;
 	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
@@ -49,7 +49,7 @@ bool AdMobAndroid::Init(const char* PublisherID, int Formats)
         return false;        
     }
     
-    jstring url_jstring = (jstring)env->NewStringUTF(PublisherID);
+    jstring url_jstring = (jstring)env->NewStringUTF(AdMobAppID);
     env->CallStaticVoidMethod(AdMobClass, AdmobInit, url_jstring);
     env->DeleteLocalRef(url_jstring);     
     
