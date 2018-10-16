@@ -1,6 +1,8 @@
 #include "SDL.h"
 #include "ios_wrapper.h"
 
+#include "customevents.h"
+
 #import <CoreFoundation/CFBundle.h>
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
