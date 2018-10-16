@@ -165,14 +165,75 @@ std::string iOSWrapper::GetLanguage()
 
 void iOSWrapper::MessageBoxShow (int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3)
 {
+	SDL_MessageBoxButtonData buttons[3];
+	int buttonCnt = 1;
 
-    UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"My Alert"
-                                                                   message:@"This is an alert."
-                                                            preferredStyle:UIAlertControllerStyleAlert];
-    
-    UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
-                                                          handler:^(UIAlertAction * action) {}];
-    
-    [alert addAction:defaultAction];
-    [alert presentViewController:alert animated:YES completion:nil];
+	buttons[0].buttonid = 0;
+	buttons[0].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
+	buttons[0].text = Button1;
+
+	// Если есть вторая кнопка
+	if (Button2 != nullptr && Button2[0] != '\0')
+	{
+		++buttonCnt;
+		buttons[1].buttonid = 1;
+		buttons[1].flags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
+		buttons[1].text = Button2;
+	}
+
+	// Если есть третья кнопка
+	if (Button3 != nullptr && Button3[0] != '\0')
+	{
+		++buttonCnt;
+		buttons[2].buttonid = 2;
+		buttons[2].flags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
+		buttons[2].text = Button3;
+
+		buttons[1].flags = 0;
+	}
+
+    const SDL_MessageBoxColorScheme colorScheme = {
+        { /* .colors (.r, .g, .b) */
+            /* [SDL_MESSAGEBOX_COLOR_BACKGROUND] */
+            { 88, 135, 63 },
+            /* [SDL_MESSAGEBOX_COLOR_TEXT] */
+            { 250, 250, 250 },
+            /* [SDL_MESSAGEBOX_COLOR_BUTTON_BORDER] */
+            { 255, 255, 0 },
+            /* [SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND] */
+            { 0, 0, 255 },
+            /* [SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED] */
+            { 255, 0, 255 }
+        }
+    };
+
+    const SDL_MessageBoxData messageboxdata = {
+        SDL_MESSAGEBOX_INFORMATION, /* .flags */
+        //NULL, /* .window */
+        //CurrentContext.CurrentWindow,
+		BWrapper::GetActiveWindow(),
+        //NULL,
+		Title, /* .title */
+        Message, /* .message */
+		buttonCnt, /* .numbuttons */
+        buttons, /* .buttons */
+        &colorScheme /* .colorScheme */
+    };
+
+    int buttonid;
+
+    if (SDL_ShowMessageBox(&messageboxdata, &buttonid) < 0) {        
+		logError("error displaying message box");
+		return;
+    }
+
+    if (buttonid == -1)
+	{
+        logDebug("no selection");
+		CustomEvents::MessageBoxCallback(Code, 0); // 0 - Cancel
+    }
+    else 
+	{        
+		CustomEvents::MessageBoxCallback(Code, buttonid + 1); // msgBox::Action Button[n]
+    }
 };
