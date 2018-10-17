@@ -104,6 +104,7 @@ sdkmanager.bat extras;google;google_play_services
 ***
 
 ### **iOS**
+    - https://o7planning.org/en/11555/how-to-use-windows-like-shortcuts-in-mac-os-virtual-machine
     
     - Use lipo for building Universal SDL and SDL_image lib for ios device and simulator:
 - lipo -create iosDevice/libSDL2.a simulator/libSDL2.a -output libSDL2.a
