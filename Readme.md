@@ -92,9 +92,7 @@ Ensure you have download android SDK platforms version specified in your build.g
 
 Do not forget change android app name in these files:
 
-    - package attribute in AndroidManifest.xml
-
-    - proj.android\debug.bat
+    - package attribute in AndroidManifest.xml    
 
     - package name in proj.android\app\src\main\java\MainActivity.java
     
