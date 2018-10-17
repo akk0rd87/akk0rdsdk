@@ -146,6 +146,9 @@ sdkmanager.bat extras;google;google_play_services
     - Имя executable должен содержать валидные символы (без $)
     
     - Auth with app store error: https://forums.developer.apple.com/thread/76803
+    
+    - AppName has conflicting provisioning settings. AppName is automatically signed for development, but a conflicting code signing identity iPhone Distribution has been manually specified
+     Нужно выставить automatic sign убрать signing-настройках явное указание профайлов ios Developer/ios Distrib
 ***
 
 ### **LibGDX SDF Generator**
