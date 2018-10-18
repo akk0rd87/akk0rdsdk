@@ -286,32 +286,8 @@ bool iOSBillingManager::RestorePurchases()
 
 bool iOSBillingManager::PurchaseProdItem(const char* ProductCode)
 {
-    /*
-    if(IosBillingState.products != nullptr)
-    {
-        if(IosBillingState.products.count > 0)
-        {
-            for(decltype(IosBillingState.products.count) i = 0; i < IosBillingState.products.count; ++i)
-            {
-                if([IosBillingState.products[i].productIdentifier isEqualToString: @"product_id"])
-                {
-                    return true;
-                }
-            }
-            
-            logError("Product %s not found", ProductCode);
-        }
-        else
-        {
-            logError("Products collection is empty");
-        }
-    }
-    else
-    {
-        logError("Products collection is null");
-    }
-     */
-    return false;
+    [[FSProductStore defaultStore] purshaseProdItem:ProductCode];
+    return true;
 };
 
 bool iOSBillingManager::ConsumeProductItem(const char* PurchaseToken)

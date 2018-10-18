@@ -130,6 +130,10 @@ bool BillingManager::PurchaseProdItem(const char* ProductCode)
 #ifdef __ANDROID__    
     return AndroidBillingManager::PurchaseProdItem(ProductCode);
 #endif
+    
+#ifdef __APPLE__
+    return iOSBillingManager::PurchaseProdItem(ProductCode);
+#endif
 
     return false;
 }
