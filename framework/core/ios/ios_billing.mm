@@ -10,6 +10,7 @@
 - (void)registerObserver;
 // handling product requests ...
 - (void)startProductRequestWithIdentifier:(const std::vector<std::string>&)productIdentifiers /*completionHandler:(void (^)(BOOL success, NSError *error))completionHandler*/;
+- (void)purshaseProdItem:(const char*) ProdItem;
 - (void)cancelProductRequest;
 @end
 
@@ -61,23 +62,47 @@
         logDebug("Products requested %d", response.products.count);
         self.products = response.products;
     }
-        /*
-        // rewrite for multiple products
-        SKProduct *product = response.products[0];
-        SKPayment *payment = [SKPayment paymentWithProduct:product];
+}
+
+- (void)purshaseProdItem:(const char*) ProdItem
+{
+    NSString *ProdID = [[NSString alloc] initWithUTF8String:ProdItem];
+    
+    if(self.products != nullptr)
+    {
+        for(decltype(self.products.count) i = 0; i < self.products.count; ++ i)
+        {
+            if(self.products[i] != nullptr)
+            {
+                if([self.products[i].productIdentifier isEqualToString:ProdID])
+                {
+                    SKPayment *payment = [SKPayment paymentWithProduct:self.products[i]];
+                    if ([SKPaymentQueue canMakePayments])
+                    {
+                        [[SKPaymentQueue defaultQueue] addPayment:payment];
+                    }
+                    else
+                    {
+                        logError("Payment add error");
+                    }
+                    // go to [ProdID release];
+                    break;
+                }
+            }
+            else
+            {
+                logError((std::string("Product ") + std::to_string(i) + " is empty").c_str());
+            }
+        }
         
-        // do not understand what is it?
-        if ([SKPaymentQueue canMakePayments])
-        {
-            [[SKPaymentQueue defaultQueue] addPayment:payment];
-        }
-        else
-        {
-            //NSError *error = [NSError errorWithDomain:FSNewsHackErrorDomain code:FSInAppPurchaseDisabledError];
-            //[self purchaseFailedWithError:error];
-        }
-        //DLog(@"%@", response.products);
-         */
+        logError("Prod ID %s not found", ProdItem);
+    }
+    else
+    {
+        logError("Prod list is empty");
+    }
+
+    [ProdID release];
 }
 
 #pragma mark - Payment transaction observer
