@@ -47,7 +47,7 @@ bool iOSBillingManager::PurchaseProdItem(const char* ProductCode)
         {
             for(decltype(IosBillingState.products.count) i = 0; i < IosBillingState.products.count; ++i)
             {
-                if([IosBillingState.products[i].productIdentifier isEqualToString: @"Response"])
+                if([IosBillingState.products[i].productIdentifier isEqualToString: @"product_id"])
                 {
                     return true;
                 }
