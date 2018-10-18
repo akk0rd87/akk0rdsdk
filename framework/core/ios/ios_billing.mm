@@ -6,8 +6,8 @@
 class IosBillingStateClass
 {
 public:
-    NSArray<SKProduct *> *products;
-    SKProductsRequest *productsRequest;
+    NSArray<SKProduct *> *products = nullptr;
+    SKProductsRequest *productsRequest = nullptr;
 };
 IosBillingStateClass IosBillingState;
 
@@ -41,8 +41,28 @@ bool iOSBillingManager::RestorePurchases()
 
 bool iOSBillingManager::PurchaseProdItem(const char* ProductCode)
 {
-
-    return true;
+    if(IosBillingState.products != nullptr)
+    {
+        if(IosBillingState.products.count > 0)
+        {
+            for(decltype(IosBillingState.products.count) i = 0; i < IosBillingState.products.count; ++i)
+            {
+                if([IosBillingState.products[i].productIdentifier isEqualToString: @"Response"])
+                {
+                    return true;
+                }
+            }
+        }
+        else
+        {
+            logError("Products collection is null");
+        }
+    }
+    else
+    {
+        logError("Products collection is null");
+    }
+    return false;
 };
 
 bool iOSBillingManager::ConsumeProductItem(const char* PurchaseToken)
