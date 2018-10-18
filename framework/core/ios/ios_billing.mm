@@ -134,6 +134,9 @@
 
     _currentProductRequest.delegate = self;
     [_currentProductRequest start];
+    
+    for(decltype(productIdentifiers.size()) i = 0; i < productIdentifiers.size(); ++i)
+        [values[i] release];
 }
 
 - (void)cancelProductRequest
