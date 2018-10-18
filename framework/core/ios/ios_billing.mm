@@ -52,10 +52,12 @@ bool iOSBillingManager::PurchaseProdItem(const char* ProductCode)
                     return true;
                 }
             }
+            
+            logError("Product %s not found", ProductCode);
         }
         else
         {
-            logError("Products collection is null");
+            logError("Products collection is empty");
         }
     }
     else
