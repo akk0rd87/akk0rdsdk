@@ -9,7 +9,7 @@
 // AppDelegate will call this on app start ...
 - (void)registerObserver;
 // handling product requests ...
-- (void)startProductRequestWithIdentifier:(NSString *)productIdentifier /*completionHandler:(void (^)(BOOL success, NSError *error))completionHandler*/;
+- (void)startProductRequestWithIdentifier:(const std::vector<std::string>&)productIdentifiers /*completionHandler:(void (^)(BOOL success, NSError *error))completionHandler*/;
 - (void)cancelProductRequest;
 @end
 
@@ -116,7 +116,7 @@
     //DLog(@"%@", downloads);
 }
 
-- (void)startProductRequestWithIdentifier:(NSString *)productIdentifier
+- (void)startProductRequestWithIdentifier:(const std::vector<std::string>&)productIdentifiers
                         /*completionHandler:(void (^)(BOOL success, NSError *error))completionHandler*/
 {
     // cancel any existing product request (if exists) ...
@@ -124,9 +124,14 @@
     
     // start new  request ...
     //self.completionHandler = completionHandler;
+    NSString *values[productIdentifiers.size()];
     
-    NSSet *productIdentifiers = [NSSet setWithObject:productIdentifier];
-    self.currentProductRequest = [[SKProductsRequest alloc] initWithProductIdentifiers:productIdentifiers];
+    for(decltype(productIdentifiers.size()) i = 0; i < productIdentifiers.size(); ++i)
+        values[i] = [[NSString alloc] initWithUTF8String:productIdentifiers[i].c_str()];
+    
+    NSArray *ProdsSet = [NSArray arrayWithObjects:values count:productIdentifiers.size()];
+    self.currentProductRequest  = [[SKProductsRequest alloc] initWithProductIdentifiers:[NSSet setWithArray:ProdsSet]];
+
     _currentProductRequest.delegate = self;
     [_currentProductRequest start];
 }
@@ -243,8 +248,6 @@ bool iOSBillingManager::Init()
    // _IosBillingProdRequestDelegate = [[IosBillingProdRequestDelegate alloc] init];
     [[FSProductStore defaultStore] registerObserver];
     
-    [[FSProductStore defaultStore] startProductRequestWithIdentifier:@"words_turn_off_ads"];
-    
     return true;
 };
 
@@ -290,20 +293,7 @@ bool iOSBillingManager::ConsumeProductItem(const char* PurchaseToken)
 
 bool iOSBillingManager::QueryProductDetails(const std::vector<std::string>& ProdList)
 {
-    /*
-    // https://eezytutorials.com/ios/nsset-by-example.php#.W8ibzWgzaHs
-    NSString *values[ProdList.size()];
-    for(decltype(ProdList.size()) i = 0; i < ProdList.size(); ++i)
-        values[i] = [[NSString alloc] initWithUTF8String:ProdList[i].c_str()];
-    
-    //https://developer.apple.com/documentation/foundation/nsarray?language=objc
-    NSArray *ProdsSet = [NSArray arrayWithObjects:values count:ProdList.size()];
-    IosBillingState.productsRequest = [[SKProductsRequest alloc] initWithProductIdentifiers:[NSSet setWithArray:ProdsSet]];
-    IosBillingState.productsRequest.delegate = _IosBillingProdRequestDelegate;
-    [IosBillingState.productsRequest start];
-    
-    // release ProdsSet and values array
-     */
+    [[FSProductStore defaultStore] startProductRequestWithIdentifier:ProdList];
     
     return true;
 };
