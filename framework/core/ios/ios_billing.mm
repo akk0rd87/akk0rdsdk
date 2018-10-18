@@ -5,10 +5,11 @@
 
 @interface FSProductStore : NSObject
 + (FSProductStore *)defaultStore;
+
 // AppDelegate will call this on app start ...
 - (void)registerObserver;
 // handling product requests ...
-- (void)startProductRequestWithIdentifier:(NSString *)productIdentifier completionHandler:(void (^)(BOOL success, NSError *error))completionHandler;
+- (void)startProductRequestWithIdentifier:(NSString *)productIdentifier /*completionHandler:(void (^)(BOOL success, NSError *error))completionHandler*/;
 - (void)cancelProductRequest;
 @end
 
@@ -22,6 +23,7 @@
 - (void)purchaseFailedWithError:(NSError *)error;
 @property (nonatomic, strong) SKProductsRequest *currentProductRequest;
 @property (nonatomic, copy) void (^completionHandler)(BOOL success, NSError *error);
+@property (nonatomic, strong) NSArray<SKProduct *> *products;
 @end
 
 @implementation FSProductStore
@@ -51,12 +53,15 @@
 {
     if (!response.products || response.products.count == 0)
     {
-        //NSError *error = [NSError errorWithDomain:FSNewsHackErrorDomain code:FSNoProductsAvailableError];
-        //[self purchaseFailedWithError:error];
-        logError("Serp products received");
+        self.products = nullptr;
+        logError("Zero products received");
     }
     else
     {
+        logDebug("Products requested %d", response.products.count);
+        self.products = response.products;
+    }
+        /*
         // rewrite for multiple products
         SKProduct *product = response.products[0];
         SKPayment *payment = [SKPayment paymentWithProduct:product];
@@ -72,7 +77,7 @@
             //[self purchaseFailedWithError:error];
         }
         //DLog(@"%@", response.products);
-    }
+         */
 }
 
 #pragma mark - Payment transaction observer
@@ -112,13 +117,13 @@
 }
 
 - (void)startProductRequestWithIdentifier:(NSString *)productIdentifier
-                        completionHandler:(void (^)(BOOL success, NSError *error))completionHandler
+                        /*completionHandler:(void (^)(BOOL success, NSError *error))completionHandler*/
 {
     // cancel any existing product request (if exists) ...
     [self cancelProductRequest];
     
     // start new  request ...
-    self.completionHandler = completionHandler;
+    //self.completionHandler = completionHandler;
     
     NSSet *productIdentifiers = [NSSet setWithObject:productIdentifier];
     self.currentProductRequest = [[SKProductsRequest alloc] initWithProductIdentifiers:productIdentifiers];
@@ -236,6 +241,10 @@
 bool iOSBillingManager::Init()
 {
    // _IosBillingProdRequestDelegate = [[IosBillingProdRequestDelegate alloc] init];
+    [[FSProductStore defaultStore] registerObserver];
+    
+    [[FSProductStore defaultStore] startProductRequestWithIdentifier:@"words_turn_off_ads"];
+    
     return true;
 };
 
