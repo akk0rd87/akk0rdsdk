@@ -50,14 +50,8 @@ public:
 
 static AdContextClass AdContext;
 
-struct AdEvent
-{    
-    int AdFormat;
-    int EventType, Code;
-};
-
 // Разбор Interstitial Event-а
-bool AdMob_ProcessInterstitialAdEvent(const AdEvent* Event)
+bool AdMob_ProcessInterstitialAdEvent(const AdMob::AdEvent* Event)
 {
     auto EventType = (AdMob::InterstitialEvent)Event->EventType;
     switch (EventType)
@@ -90,7 +84,7 @@ bool AdMob_ProcessInterstitialAdEvent(const AdEvent* Event)
 }
 
 // Разбор Interstitial Event-а
-bool AdMob_ProcessRewardedVideoAdEvent(const AdEvent* Event)
+bool AdMob_ProcessRewardedVideoAdEvent(const AdMob::AdEvent* Event)
 {
     auto EventType = (AdMob::RewardedVideoEvent)Event->EventType;
     
@@ -128,7 +122,7 @@ bool AdMob_ProcessRewardedVideoAdEvent(const AdEvent* Event)
 }
 
 // Разбор Общего Event-а
-bool AdMob_ProcessAdEvent(AdEvent* Event)
+bool AdMob_ProcessAdEvent(const AdMob::AdEvent* Event)
 {    
 	switch (Event->AdFormat)
     {
@@ -237,7 +231,7 @@ bool AdMob::Init(const char* AdMobAppID, int Formats)
     if (AdMobiOS::Init(AdMobAppID, Formats))
     {		
         // нужно проставить Callback для отлова событий
-        AdMobiOS::SetAdEventCallback(&AdMob_ProcessInterstitialAdEvent);
+        AdMobiOS::SetAdEventCallback(AdMob_ProcessInterstitialAdEvent);
         inited = true;
     };
 #endif
