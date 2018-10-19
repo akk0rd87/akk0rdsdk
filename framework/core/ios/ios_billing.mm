@@ -180,74 +180,22 @@
     //DLog(@"starting transaction: %@", transaction);
 }
 
-- (void)completeTransaction: (SKPaymentTransaction *)transaction
-{
-    [self validateReceipt:transaction.transactionReceipt withCompletionHandler:^ (BOOL success, NSError *error) {
-        if (success)
-        {
-            //[self recordTransaction:transaction];
-            //[self purchaseSuccess:transaction.payment.productIdentifier];
-            
-            //[self onPurchaseCompleted:transaction];
-        }
-        else
-        {
-            // deal with error ...
-            //[self purchaseFailedWithError:error];
-        }
-        
-        [[SKPaymentQueue defaultQueue] finishTransaction: transaction];
-    }];
-}
-
 - (void)failedTransaction: (SKPaymentTransaction *)transaction
 {
     [[SKPaymentQueue defaultQueue] finishTransaction:transaction];
-    
-    if (transaction.error.code != SKErrorPaymentCancelled) {
-        [self purchaseFailedWithError:transaction.error];
-    }
-    else
-    {
-        [self purchaseFailedWithError:nil];
-    }
+}
+
+- (void)completeTransaction: (SKPaymentTransaction *)transaction
+{
+    [[SKPaymentQueue defaultQueue] finishTransaction: transaction];
 }
 
 - (void)restoreTransaction: (SKPaymentTransaction *)transaction
 {
-    [self recordTransaction:transaction];
-    [self purchaseSuccess:transaction.originalTransaction.payment.productIdentifier];
+    //[self recordTransaction:transaction];
+    //[self purchaseSuccess:transaction.originalTransaction.payment.productIdentifier];
     
     [[SKPaymentQueue defaultQueue] finishTransaction:transaction];
-}
-
-- (void)recordTransaction:(SKPaymentTransaction *)transaction
-{
-    // TODO: store for audit trail - perhaps on remote server?
-    //FSTransaction *transactionToRecord = [FSTransaction transactionWithIdentifier:transaction.transactionIdentifier receipt:transaction.transactionReceipt];
-    //[transactionToRecord store];
-}
-
-- (void)purchaseSuccess:(NSString *)productIdentifier
-{
-    // TODO: make purchase available to user - perhaps call completion block?
-    
-    self.currentProductRequest = nil;
-    
-    if (_completionHandler)
-    {
-        _completionHandler(YES, nil);
-    }
-}
-
-- (void)purchaseFailedWithError:(NSError *)error
-{
-    self.currentProductRequest = nil;
-    
-    if (_completionHandler)
-    {
-        _completionHandler(NO, error);
-    }
 }
 
 - (void)validateReceipt:(NSData *)receiptData withCompletionHandler:(void (^)(BOOL success, NSError *error))completionHandler
