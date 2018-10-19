@@ -133,7 +133,7 @@ IosBillingStateClass IosBillingState;
 - (void)paymentQueue:(SKPaymentQueue *)queue restoreCompletedTransactionsFailedWithError:(NSError *)error
 {
     //DLog(@"%@", error);
-    [self purchaseFailedWithError:error];
+    //[self purchaseFailedWithError:error];
 }
 
 // Sent when all transactions from the user's purchase history have successfully been added back to the queue.
@@ -194,7 +194,19 @@ IosBillingStateClass IosBillingState;
 
 - (void)completeTransaction: (SKPaymentTransaction *)transaction
 {
-    [[SKPaymentQueue defaultQueue] finishTransaction: transaction];
+    if(IosBillingState.Callback != nullptr)
+    {
+        std::string TransactionID = std::string([transaction.transactionIdentifier UTF8String]);
+        std::string ProdID = std::string([transaction.payment.productIdentifier UTF8String]);
+        
+        IosBillingState.Callback(TransactionID.c_str(), ProdID.c_str(), BillingManager::OperAction::Bought);
+        
+        [[SKPaymentQueue defaultQueue] finishTransaction: transaction];
+    }
+    else
+    {
+        logError("Callback for transaction update is not set");
+    }
 }
 
 - (void)restoreTransaction: (SKPaymentTransaction *)transaction
@@ -202,7 +214,19 @@ IosBillingStateClass IosBillingState;
     //[self recordTransaction:transaction];
     //[self purchaseSuccess:transaction.originalTransaction.payment.productIdentifier];
     
-    [[SKPaymentQueue defaultQueue] finishTransaction:transaction];
+    if(IosBillingState.Callback != nullptr)
+    {
+        std::string TransactionID = std::string([transaction.originalTransaction.transactionIdentifier UTF8String]);
+        std::string ProdID = std::string([transaction.originalTransaction.payment.productIdentifier UTF8String]);
+        
+        IosBillingState.Callback(TransactionID.c_str(), ProdID.c_str(), BillingManager::OperAction::Restored);
+        
+        [[SKPaymentQueue defaultQueue] finishTransaction: transaction];
+    }
+    else
+    {
+        logError("Callback for transaction update is not set");
+    }
 }
 
 - (void)validateReceipt:(NSData *)receiptData withCompletionHandler:(void (^)(BOOL success, NSError *error))completionHandler

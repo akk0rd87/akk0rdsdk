@@ -150,6 +150,10 @@ bool BillingManager::ConsumeProductItem(const char* PurchaseToken)
 void BillingManager::SetPurchaseUpdatedCallback(BillingPurchaseUpdatedCallback* Callback)
 {
 	BillingContext.AppPurchaseUpdated = Callback;
+    
+#ifdef __APPLE__
+    iOSBillingManager::SetPurchaseUpdatedCallback(Callback);
+#endif
 };
 
 void BillingManager::SetPurchaseConsumedCallback(BillingPurchaseConsumedCallback* Callback)
