@@ -231,7 +231,7 @@ bool AdMob::Init(const char* AdMobAppID, int Formats)
     if (AdMobiOS::Init(AdMobAppID, Formats))
     {		
         // нужно проставить Callback для отлова событий
-        AdMobiOS::SetAdEventCallback(AdMob_ProcessInterstitialAdEvent);
+        AdMobiOS::SetAdEventCallback(AdMob_ProcessAdEvent);
         inited = true;
     };
 #endif
