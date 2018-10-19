@@ -42,7 +42,7 @@ public:
         int AdFormat;
         int EventType, Code;
     };    
-    typedef bool (AdEventCallback)(const AdEvent* Event);
+    typedef bool (AdEventCallback)(const AdMob::AdEvent* Event);
 };
 
 #endif // __AKK0RD_ADMOBWRAPPER_H__
