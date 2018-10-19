@@ -21,6 +21,7 @@ IosBillingStateClass IosBillingState;
 // handling product requests ...
 - (void)startProductRequestWithIdentifier:(const std::vector<std::string>&)productIdentifiers /*completionHandler:(void (^)(BOOL success, NSError *error))completionHandler*/;
 - (void)purshaseProdItem:(const char*) ProdItem;
+- (void)restoreTransactions;
 - (void)cancelProductRequest;
 @end
 
@@ -182,6 +183,12 @@ IosBillingStateClass IosBillingState;
     }
 }
 
+- (void)restoreTransactions
+{
+    [[SKPaymentQueue defaultQueue] restoreCompletedTransactions];
+}
+
+
 - (void)startTransaction:(SKPaymentTransaction *)transaction
 {
     //DLog(@"starting transaction: %@", transaction);
@@ -260,6 +267,7 @@ bool iOSBillingManager::Init()
 
 bool iOSBillingManager::RestorePurchases()
 {
+    [[FSProductStore defaultStore] restoreTransactions];
     return true;
 };
 
