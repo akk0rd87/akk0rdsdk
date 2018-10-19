@@ -9,13 +9,14 @@
 -(void)InterstitialSetUnitID:(const char*) UnitID;
 -(void)InterstitialLoad;
 -(void)InterstitialShow;
--(AdMob::InterstitialStatus) InterstitialGetStatus;
+-(void)SetEventCallback:(AdMob::AdEventCallback*) EventCallback;
 @end
 
 @interface iAdMob() <GADInterstitialDelegate>
 -(void)InterstitialDestroy;
+-(void)SendCallback:(const AdMob::AdEvent*) Event;
 @property (atomic, strong) GADInterstitial          *interstitial;
-@property (atomic)         AdMob::InterstitialStatus interstitialStatus;
+@property (nonatomic)      AdMob::AdEventCallback   *Callback;
 @end
 
 @implementation iAdMob
@@ -32,14 +33,33 @@
     return adMob;
 }
 
+-(void)SendCallback:(const AdMob::AdEvent*) Event
+{
+    if(self.Callback != nullptr)
+    {
+        self.Callback(Event);
+    }
+    else
+    {
+        logError("Ad Event Callback is empty");
+    }
+};
+
 - (void)interstitialDidReceiveAd:(nonnull GADInterstitial *)ad
 {
-    self.interstitialStatus = AdMob::InterstitialStatus::Loaded;
+    AdMob::AdEvent Ad;
+    Ad.AdFormat = (int)AdMob::Format::Interstitial;
+    Ad.EventType = (int)AdMob::InterstitialEvent::Loaded;
+    //self.SendCallback(&Ad);
+    [self Callback: &Ad];
 };
 
 - (void)interstitial:(nonnull GADInterstitial *)ad didFailToReceiveAdWithError:(nonnull GADRequestError *)error
 {
-    self.interstitialStatus = AdMob::InterstitialStatus::Inited;
+    AdMob::AdEvent Ad;
+    Ad.AdFormat = (int)AdMob::Format::Interstitial;
+    Ad.EventType = (int)AdMob::InterstitialEvent::Failed;
+    [self Callback: &Ad];
 };
 
 - (void)interstitialWillPresentScreen:(nonnull GADInterstitial *)ad
@@ -49,7 +69,10 @@
 
 - (void)interstitialDidFailToPresentScreen:(nonnull GADInterstitial *)ad
 {
-    self.interstitialStatus = AdMob::InterstitialStatus::Inited;
+    AdMob::AdEvent Ad;
+    Ad.AdFormat = (int)AdMob::Format::Interstitial;
+    Ad.EventType = (int)AdMob::InterstitialEvent::Failed;
+    [self Callback: &Ad];
 };
 
 - (void)interstitialWillDismissScreen:(nonnull GADInterstitial *)ad
@@ -59,12 +82,15 @@
 
 - (void)interstitialDidDismissScreen:(nonnull GADInterstitial *)ad
 {
-    self.interstitialStatus = AdMob::InterstitialStatus::Inited;
+    // Do nothing
 };
 
 - (void)interstitialWillLeaveApplication:(nonnull GADInterstitial *)ad
 {
-    self.interstitialStatus = AdMob::InterstitialStatus::Inited;
+    AdMob::AdEvent Ad;
+    Ad.AdFormat = (int)AdMob::Format::Interstitial;
+    Ad.EventType = (int)AdMob::InterstitialEvent::LeftApplication;
+    [self Callback: &Ad];
 };
 
 // interface API
@@ -72,7 +98,7 @@
 -(void)Init
 {
     self.interstitial = nullptr;
-    self.interstitialStatus = AdMob::InterstitialStatus::NotInited;
+    self.Callback = nullptr;
 };
 
 -(void)InterstitialDestroy
@@ -84,12 +110,16 @@
     }
 };
 
+-(void)SetEventCallback:(AdMob::AdEventCallback*) EventCallback
+{
+    self.Callback = EventCallback;
+};
+
 -(void)InterstitialSetUnitID:(const char*) UnitID
 {
     [self InterstitialDestroy];
     NSString *ID = [[NSString alloc] initWithUTF8String:UnitID];
     self.interstitial = [[GADInterstitial alloc] initWithAdUnitID:ID];
-    self.interstitialStatus = AdMob::InterstitialStatus::Inited;
     [ID release];
 };
 
@@ -97,16 +127,8 @@
 {
     if(self.interstitial != nullptr)
     {
-       if(self.interstitialStatus == AdMob::InterstitialStatus::Inited)
-       {
-           self.interstitialStatus = AdMob::InterstitialStatus::TryingToLoad;
-           GADRequest *request = [GADRequest request];
-           [self.interstitial loadRequest:request];
-       }
-       else
-       {
-           logWarning("Wrong status to load interstitial ad");
-       }
+       GADRequest *request = [GADRequest request];
+       [self.interstitial loadRequest:request];
     }
     else
     {
@@ -120,8 +142,6 @@
     {
         if([self.interstitial isReady])
         {
-            self.interstitialStatus = AdMob::InterstitialStatus::TryingToShow;
-           // [self.interstitial presentFromRootViewController:self];
             [self.interstitial presentFromRootViewController:nullptr];
         }
     }
@@ -129,11 +149,6 @@
     {
         logError("Interstitial is empty");
     }
-};
-
--(AdMob::InterstitialStatus) InterstitialGetStatus
-{
-    return AdMob::InterstitialStatus::NotInited;
 };
 
 @end
