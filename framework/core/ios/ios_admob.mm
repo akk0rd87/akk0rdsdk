@@ -144,6 +144,10 @@
         {
             [self.interstitial presentFromRootViewController:nullptr];
         }
+        else
+        {
+            logWarning("Interstitial is not ready for present");
+        }
     }
     else
     {
@@ -159,6 +163,7 @@ bool AdMobiOS::Init(const char* AdMobAppID, int Formats)
     NSString *AppID = [[NSString alloc] initWithUTF8String:AdMobAppID];
     [GADMobileAds configureWithApplicationID:AppID];
     [AppID release];
+    [[iAdMob defaultAdMob] Init];
     return true;
 }
 
