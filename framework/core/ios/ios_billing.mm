@@ -70,7 +70,7 @@
     
     if(self.products != nullptr)
     {
-        for(decltype(self.products.count) i = 0; i < self.products.count; ++ i)
+        for(decltype(self.products.count) i = 0; i < self.products.count; ++i)
         {
             if(self.products[i] != nullptr)
             {
