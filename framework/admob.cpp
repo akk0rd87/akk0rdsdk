@@ -188,7 +188,7 @@ extern "C" {
 JNIEXPORT void JNICALL Java_org_akkord_lib_AdMobAdapter_AdCallback(JNIEnv*, jclass, jint AdType, jint EventType, jint Code)
 {
     //int AdFormat = (int)AdType;
-    AdEvent Event;
+    AdMob::AdEvent Event;
     Event.AdFormat = (int)AdType;
     Event.EventType = (int)EventType;
     Event.Code = (int)Code;
