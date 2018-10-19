@@ -3,9 +3,12 @@
 struct BillingContextStruct
 {
 	int BillingStatus = -1;
+    decltype(SDL_RegisterEvents(1)) BillingEventCode;
+
+#ifdef __ANDROID__
 	BillingManager::BillingPurchaseUpdatedCallback*  AppPurchaseUpdated  = nullptr;
 	BillingManager::BillingPurchaseConsumedCallback* AppPurchaseConsumed = nullptr;
-	decltype(SDL_RegisterEvents(1)) BillingEventCode;
+#endif
 };
 
 static BillingContextStruct BillingContext;
@@ -130,13 +133,17 @@ bool BillingManager::PurchaseProdItem(const char* ProductCode)
 #ifdef __ANDROID__    
     return AndroidBillingManager::PurchaseProdItem(ProductCode);
 #endif
+    
+#ifdef __APPLE__
+    return iOSBillingManager::PurchaseProdItem(ProductCode);
+#endif
 
     return false;
 }
 
 bool BillingManager::ConsumeProductItem(const char* PurchaseToken)
 {
-#ifdef __ANDROID__    
+#ifdef __ANDROID__
     return AndroidBillingManager::ConsumeProductItem(PurchaseToken);
 #endif
 
@@ -145,12 +152,20 @@ bool BillingManager::ConsumeProductItem(const char* PurchaseToken)
 
 void BillingManager::SetPurchaseUpdatedCallback(BillingPurchaseUpdatedCallback* Callback)
 {
+#ifdef __ANDROID__
 	BillingContext.AppPurchaseUpdated = Callback;
+#endif
+    
+#ifdef __APPLE__
+    iOSBillingManager::SetPurchaseUpdatedCallback(Callback);
+#endif
 };
 
 void BillingManager::SetPurchaseConsumedCallback(BillingPurchaseConsumedCallback* Callback)
 {
-	BillingContext.AppPurchaseConsumed = Callback;
+#ifdef __ANDROID__
+    BillingContext.AppPurchaseConsumed = Callback;
+#endif
 };
 
 decltype(SDL_RegisterEvents(1)) BillingManager::GetEventCode()

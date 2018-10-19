@@ -3,6 +3,7 @@
 #define __AKK0RD_IOS_INAPP_BILLING_H__
 
 #include "basewrapper.h"
+#include "billing.h"
 #include "core/core_defines.h"
 
 class iOSBillingManager
@@ -13,6 +14,7 @@ public:
     static bool RestorePurchases();
     static bool PurchaseProdItem(const char* ProductCode);
     static bool ConsumeProductItem(const char* PurchaseToken);
+    static void SetPurchaseUpdatedCallback (BillingManager::BillingPurchaseUpdatedCallback * Callback);
 };
 
 #endif // __AKK0RD_IOS_INAPP_BILLING_H__
