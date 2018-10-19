@@ -57,7 +57,7 @@ struct AdEvent
 };
 
 // Разбор Interstitial Event-а
-bool AdMob_ProcessInterstitialAdEvent(AdEvent* Event)
+bool AdMob_ProcessInterstitialAdEvent(const AdEvent* Event)
 {
     auto EventType = (AdMob::InterstitialEvent)Event->EventType;
     switch (EventType)
@@ -90,7 +90,7 @@ bool AdMob_ProcessInterstitialAdEvent(AdEvent* Event)
 }
 
 // Разбор Interstitial Event-а
-bool AdMob_ProcessRewardedVideoAdEvent(AdEvent* Event)
+bool AdMob_ProcessRewardedVideoAdEvent(const AdEvent* Event)
 {
     auto EventType = (AdMob::RewardedVideoEvent)Event->EventType;
     
@@ -235,8 +235,10 @@ bool AdMob::Init(const char* AdMobAppID, int Formats)
 
 #ifdef __APPLE__
     if (AdMobiOS::Init(AdMobAppID, Formats))
-    {
-		inited = true;
+    {		
+        // нужно проставить Callback для отлова событий
+        AdMobiOS::SetAdEventCallback(&AdMob_ProcessInterstitialAdEvent);
+        inited = true;
     };
 #endif
 
@@ -257,6 +259,10 @@ bool AdMob::InterstitialSetUnitId(const char* UnitId)
 #ifdef __ANDROID__    
     return AdMobAndroid::InterstitialSetUnitId(UnitId);
 #endif    
+
+#ifdef __APPLE__
+    return AdMobiOS::InterstitialSetUnitId(UnitId);
+#endif
 
     return false;
 };
@@ -283,6 +289,10 @@ bool AdMob::InterstitialLoad()
     return AdMobAndroid::InterstitialLoad();
 #endif
 
+#ifdef __APPLE__
+    return AdMobiOS::InterstitialLoad();
+#endif
+
     return false;
 };
 
@@ -298,6 +308,10 @@ bool AdMob::InterstitialShow()
 
 #ifdef __ANDROID__    
     return AdMobAndroid::InterstitialShow();    
+#endif
+
+#ifdef __APPLE__
+    return AdMobiOS::InterstitialShow();    
 #endif
 
     return false;

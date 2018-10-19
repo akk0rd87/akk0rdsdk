@@ -18,7 +18,7 @@ public:
     static bool RewardedVideoLoad();
     static bool RewardedVideoShow();
     
-    static AdMob::InterstitialStatus   InterstitialGetStatus();
+    static void SetAdEventCallback (AdMob::AdEventCallback * Callback);
 };
 
 #endif // __AKK0RD_IOS_ADMOB_H__

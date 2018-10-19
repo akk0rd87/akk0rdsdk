@@ -165,7 +165,7 @@ bool AdMobiOS::InterstitialShow()
     return true;
 };
 
-AdMob::InterstitialStatus  AdMobiOS::InterstitialGetStatus()
+void AdMobiOS::SetAdEventCallback (AdMob::AdEventCallback * Callback)
 {
-    return [[iAdMob defaultAdMob] InterstitialGetStatus];
+    
 };

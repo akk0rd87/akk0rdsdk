@@ -35,6 +35,14 @@ public:
 	static void                        InterstitialDecodeEvent(const SDL_Event& Event, AdMob::InterstitialEvent& EventType);
 	static void                        RewarededDecodeEvent   (const SDL_Event& Event, AdMob::RewardedVideoEvent& EventType, int& Result);
 	
+    
+    // FOR FRAMEWORK INTERNAL USE
+    struct AdEvent
+    {    
+        int AdFormat;
+        int EventType, Code;
+    };    
+    typedef bool (AdEventCallback)(const AdEvent* Event);
 };
 
 #endif // __AKK0RD_ADMOBWRAPPER_H__
