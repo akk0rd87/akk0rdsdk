@@ -3,6 +3,16 @@
 #import <Foundation/Foundation.h>
 #import <StoreKit/StoreKit.h>
 
+//static BillingManager::BillingPurchaseUpdatedCallback _BillingPurchaseUpdatedCallback;
+
+class IosBillingStateClass
+{
+public:
+    BillingManager::BillingPurchaseUpdatedCallback* Callback;
+    IosBillingStateClass(){Callback = nullptr;};
+};
+IosBillingStateClass IosBillingState;
+
 @interface FSProductStore : NSObject
 + (FSProductStore *)defaultStore;
 
@@ -17,11 +27,8 @@
 @interface FSProductStore () <SKProductsRequestDelegate, SKPaymentTransactionObserver>
 - (void)startTransaction:(SKPaymentTransaction *)transaction;
 - (void)completeTransaction:(SKPaymentTransaction *)transaction;
-- (void)failedTransaction:(SKPaymentTransaction *)transaction;
 - (void)restoreTransaction:(SKPaymentTransaction *)transaction;
 - (void)validateReceipt:(NSData *)receiptData withCompletionHandler:(void (^)(BOOL success, NSError *error))completionHandler;
-- (void)purchaseSuccess:(NSString *)productIdentifier;
-- (void)purchaseFailedWithError:(NSError *)error;
 @property (nonatomic, strong) SKProductsRequest *currentProductRequest;
 @property (nonatomic, copy) void (^completionHandler)(BOOL success, NSError *error);
 @property (nonatomic, strong) NSArray<SKProduct *> *products;
@@ -248,4 +255,9 @@ bool iOSBillingManager::QueryProductDetails(const std::vector<std::string>& Prod
     [[FSProductStore defaultStore] startProductRequestWithIdentifier:ProdList];
     
     return true;
+};
+
+void iOSBillingManager::SetPurchaseUpdatedCallback (BillingManager::BillingPurchaseUpdatedCallback * Callback)
+{
+    IosBillingState.Callback = Callback;
 };
