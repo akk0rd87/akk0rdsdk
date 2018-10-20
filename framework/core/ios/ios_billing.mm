@@ -32,7 +32,7 @@ IosBillingStateClass IosBillingState;
 - (void)validateReceipt:(NSData *)receiptData withCompletionHandler:(void (^)(BOOL success, NSError *error))completionHandler;
 @property (nonatomic, strong) SKProductsRequest *currentProductRequest;
 @property (nonatomic, copy) void (^completionHandler)(BOOL success, NSError *error);
-@property (nonatomic, copy) NSArray<SKProduct *> *products;
+@property (nonatomic, retain) NSArray<SKProduct *> *products;
 @end
 
 @implementation FSProductStore
