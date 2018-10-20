@@ -200,5 +200,5 @@ bool AdMobiOS::InterstitialShow()
 
 void AdMobiOS::SetAdEventCallback (AdMob::AdEventCallback * Callback)
 {
-    
+    [[iAdMob defaultAdMob] SetEventCallback: Callback];
 };
