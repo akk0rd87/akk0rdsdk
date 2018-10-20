@@ -47,6 +47,7 @@
 
 - (void)interstitialDidReceiveAd:(nonnull GADInterstitial *)ad
 {
+    logDebug("interstitialDidReceiveAd");
     AdMob::AdEvent Ad;
     Ad.AdFormat = (int)AdMob::Format::Interstitial;
     Ad.EventType = (int)AdMob::InterstitialEvent::Loaded;
@@ -56,6 +57,7 @@
 
 - (void)interstitial:(nonnull GADInterstitial *)ad didFailToReceiveAdWithError:(nonnull GADRequestError *)error
 {
+    logDebug("didFailToReceiveAdWithError");
     AdMob::AdEvent Ad;
     Ad.AdFormat = (int)AdMob::Format::Interstitial;
     Ad.EventType = (int)AdMob::InterstitialEvent::Failed;
@@ -65,10 +67,12 @@
 - (void)interstitialWillPresentScreen:(nonnull GADInterstitial *)ad
 {
     // Do nothing
+    logDebug("interstitialWillPresentScreen");
 };
 
 - (void)interstitialDidFailToPresentScreen:(nonnull GADInterstitial *)ad
 {
+    logDebug("interstitialDidFailToPresentScreen");
     AdMob::AdEvent Ad;
     Ad.AdFormat = (int)AdMob::Format::Interstitial;
     Ad.EventType = (int)AdMob::InterstitialEvent::Failed;
@@ -78,15 +82,18 @@
 - (void)interstitialWillDismissScreen:(nonnull GADInterstitial *)ad
 {
     // Do nothing
+    logDebug("interstitialWillDismissScreen");
 };
 
 - (void)interstitialDidDismissScreen:(nonnull GADInterstitial *)ad
 {
     // Do nothing
+    logDebug("interstitialDidDismissScreen");
 };
 
 - (void)interstitialWillLeaveApplication:(nonnull GADInterstitial *)ad
 {
+    logDebug("interstitialWillLeaveApplication");
     AdMob::AdEvent Ad;
     Ad.AdFormat = (int)AdMob::Format::Interstitial;
     Ad.EventType = (int)AdMob::InterstitialEvent::LeftApplication;
@@ -117,6 +124,7 @@
 
 -(void)InterstitialSetUnitID:(const char*) UnitID
 {
+    logDebug((std::string("InterstitialSetUnitID":) + UnitID).c_str());
     [self InterstitialDestroy];
     NSString *ID = [[NSString alloc] initWithUTF8String:UnitID];
     self.interstitial = [[GADInterstitial alloc] initWithAdUnitID:ID];
@@ -126,8 +134,10 @@
 
 -(void)InterstitialLoad
 {
+    logDebug("InterstitialLoad 1");
     if(self.interstitial != nullptr)
     {
+       logDebug("InterstitialLoad 2");
        GADRequest *request = [GADRequest request];
        [self.interstitial loadRequest:request];
     }
@@ -139,10 +149,13 @@
 
 -(void)InterstitialShow
 {
+    logDebug("InterstitialShow 1");
     if(self.interstitial != nullptr)
     {
+        logDebug("InterstitialShow 2");
         if([self.interstitial isReady])
         {
+            logDebug("InterstitialShow 3");
             [self.interstitial presentFromRootViewController:nullptr];
         }
         else
