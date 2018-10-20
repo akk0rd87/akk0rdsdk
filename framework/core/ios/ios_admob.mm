@@ -120,6 +120,7 @@
     [self InterstitialDestroy];
     NSString *ID = [[NSString alloc] initWithUTF8String:UnitID];
     self.interstitial = [[GADInterstitial alloc] initWithAdUnitID:ID];
+    self.interstitial.delegate = self;
     [ID release];
 };
 
