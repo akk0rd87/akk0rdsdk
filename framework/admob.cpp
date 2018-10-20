@@ -124,7 +124,8 @@ bool AdMob_ProcessRewardedVideoAdEvent(const AdMob::AdEvent* Event)
 // Разбор Общего Event-а
 bool AdMob_ProcessAdEvent(const AdMob::AdEvent* Event)
 {    
-	switch (Event->AdFormat)
+	logDebug("AdMob_ProcessAdEvent");
+    switch (Event->AdFormat)
     {
         case AdMob::Format::Interstitial:
             AdMob_ProcessInterstitialAdEvent(Event);

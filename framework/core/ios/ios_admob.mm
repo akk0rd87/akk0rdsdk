@@ -127,6 +127,7 @@
     [self InterstitialDestroy];
     NSString *ID = [[NSString alloc] initWithUTF8String:UnitID];
     self.interstitial = [[GADInterstitial alloc] initWithAdUnitID:ID];
+    //self.interstitial = [[GADInterstitial alloc] initWithAdUnitID:@"ca-app-pub-3940256099942544/4411468910"];
     self.interstitial.delegate = self;
     [ID release];
 };
@@ -138,6 +139,7 @@
     {
        logDebug("InterstitialLoad 2");
        GADRequest *request = [GADRequest request];
+       //request.testDevices = @[ kGADSimulatorID ];
        [self.interstitial loadRequest:request];
     }
     else
@@ -175,6 +177,7 @@ bool AdMobiOS::Init(const char* AdMobAppID, int Formats)
 {
     NSString *AppID = [[NSString alloc] initWithUTF8String:AdMobAppID];
     [GADMobileAds configureWithApplicationID:AppID];
+    //[[iAdMob defaultAdMob] SetEventCallback: Callback];
     [AppID release];
     [[iAdMob defaultAdMob] Init];
     return true;
