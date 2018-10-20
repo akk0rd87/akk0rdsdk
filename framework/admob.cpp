@@ -124,7 +124,8 @@ bool AdMob_ProcessRewardedVideoAdEvent(const AdMob::AdEvent* Event)
 // Разбор Общего Event-а
 bool AdMob_ProcessAdEvent(const AdMob::AdEvent* Event)
 {    
-	switch (Event->AdFormat)
+	logDebug("AdMob_ProcessAdEvent");
+    switch (Event->AdFormat)
     {
         case AdMob::Format::Interstitial:
             AdMob_ProcessInterstitialAdEvent(Event);
@@ -231,7 +232,7 @@ bool AdMob::Init(const char* AdMobAppID, int Formats)
     if (AdMobiOS::Init(AdMobAppID, Formats))
     {		
         // нужно проставить Callback для отлова событий
-        AdMobiOS::SetAdEventCallback(AdMob_ProcessAdEvent);
+        AdMobiOS::SetAdEventCallback(&AdMob_ProcessAdEvent);
         inited = true;
     };
 #endif

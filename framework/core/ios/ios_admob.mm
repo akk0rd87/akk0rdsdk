@@ -47,50 +47,56 @@
 
 - (void)interstitialDidReceiveAd:(nonnull GADInterstitial *)ad
 {
+    logDebug("interstitialDidReceiveAd");
     AdMob::AdEvent Ad;
     Ad.AdFormat = (int)AdMob::Format::Interstitial;
-    Ad.EventType = (int)AdMob::InterstitialEvent::Loaded;
-    //self.SendCallback(&Ad);
-    [self Callback: &Ad];
+    Ad.EventType = (int)AdMob::InterstitialEvent::Loaded;    
+    [self SendCallback: &Ad];
 };
 
 - (void)interstitial:(nonnull GADInterstitial *)ad didFailToReceiveAdWithError:(nonnull GADRequestError *)error
 {
+    logDebug("didFailToReceiveAdWithError");
     AdMob::AdEvent Ad;
     Ad.AdFormat = (int)AdMob::Format::Interstitial;
     Ad.EventType = (int)AdMob::InterstitialEvent::Failed;
-    [self Callback: &Ad];
+    [self SendCallback: &Ad];
 };
 
 - (void)interstitialWillPresentScreen:(nonnull GADInterstitial *)ad
 {
     // Do nothing
+    logDebug("interstitialWillPresentScreen");
 };
 
 - (void)interstitialDidFailToPresentScreen:(nonnull GADInterstitial *)ad
 {
+    logDebug("interstitialDidFailToPresentScreen");
     AdMob::AdEvent Ad;
     Ad.AdFormat = (int)AdMob::Format::Interstitial;
     Ad.EventType = (int)AdMob::InterstitialEvent::Failed;
-    [self Callback: &Ad];
+    [self SendCallback: &Ad];
 };
 
 - (void)interstitialWillDismissScreen:(nonnull GADInterstitial *)ad
 {
     // Do nothing
+    logDebug("interstitialWillDismissScreen");
 };
 
 - (void)interstitialDidDismissScreen:(nonnull GADInterstitial *)ad
 {
     // Do nothing
+    logDebug("interstitialDidDismissScreen");
 };
 
 - (void)interstitialWillLeaveApplication:(nonnull GADInterstitial *)ad
 {
+    logDebug("interstitialWillLeaveApplication");
     AdMob::AdEvent Ad;
     Ad.AdFormat = (int)AdMob::Format::Interstitial;
     Ad.EventType = (int)AdMob::InterstitialEvent::LeftApplication;
-    [self Callback: &Ad];
+    [self SendCallback: &Ad];
 };
 
 // interface API
@@ -117,17 +123,23 @@
 
 -(void)InterstitialSetUnitID:(const char*) UnitID
 {
+    logDebug((std::string("InterstitialSetUnitID: ") + UnitID).c_str());
     [self InterstitialDestroy];
     NSString *ID = [[NSString alloc] initWithUTF8String:UnitID];
     self.interstitial = [[GADInterstitial alloc] initWithAdUnitID:ID];
+    //self.interstitial = [[GADInterstitial alloc] initWithAdUnitID:@"ca-app-pub-3940256099942544/4411468910"];
+    self.interstitial.delegate = self;
     [ID release];
 };
 
 -(void)InterstitialLoad
 {
+    logDebug("InterstitialLoad 1");
     if(self.interstitial != nullptr)
     {
+       logDebug("InterstitialLoad 2");
        GADRequest *request = [GADRequest request];
+       //request.testDevices = @[ kGADSimulatorID ];
        [self.interstitial loadRequest:request];
     }
     else
@@ -138,10 +150,13 @@
 
 -(void)InterstitialShow
 {
+    logDebug("InterstitialShow 1");
     if(self.interstitial != nullptr)
     {
+        logDebug("InterstitialShow 2");
         if([self.interstitial isReady])
         {
+            logDebug("InterstitialShow 3");
             [self.interstitial presentFromRootViewController:nullptr];
         }
         else
@@ -162,6 +177,7 @@ bool AdMobiOS::Init(const char* AdMobAppID, int Formats)
 {
     NSString *AppID = [[NSString alloc] initWithUTF8String:AdMobAppID];
     [GADMobileAds configureWithApplicationID:AppID];
+    //[[iAdMob defaultAdMob] SetEventCallback: Callback];
     [AppID release];
     [[iAdMob defaultAdMob] Init];
     return true;
@@ -187,5 +203,5 @@ bool AdMobiOS::InterstitialShow()
 
 void AdMobiOS::SetAdEventCallback (AdMob::AdEventCallback * Callback)
 {
-    
+    [[iAdMob defaultAdMob] SetEventCallback: Callback];
 };
