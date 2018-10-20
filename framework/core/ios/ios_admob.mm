@@ -50,9 +50,8 @@
     logDebug("interstitialDidReceiveAd");
     AdMob::AdEvent Ad;
     Ad.AdFormat = (int)AdMob::Format::Interstitial;
-    Ad.EventType = (int)AdMob::InterstitialEvent::Loaded;
-    //self.SendCallback(&Ad);
-    [self Callback: &Ad];
+    Ad.EventType = (int)AdMob::InterstitialEvent::Loaded;    
+    [self SendCallback: &Ad];
 };
 
 - (void)interstitial:(nonnull GADInterstitial *)ad didFailToReceiveAdWithError:(nonnull GADRequestError *)error
@@ -61,7 +60,7 @@
     AdMob::AdEvent Ad;
     Ad.AdFormat = (int)AdMob::Format::Interstitial;
     Ad.EventType = (int)AdMob::InterstitialEvent::Failed;
-    [self Callback: &Ad];
+    [self SendCallback: &Ad];
 };
 
 - (void)interstitialWillPresentScreen:(nonnull GADInterstitial *)ad
@@ -76,7 +75,7 @@
     AdMob::AdEvent Ad;
     Ad.AdFormat = (int)AdMob::Format::Interstitial;
     Ad.EventType = (int)AdMob::InterstitialEvent::Failed;
-    [self Callback: &Ad];
+    [self SendCallback: &Ad];
 };
 
 - (void)interstitialWillDismissScreen:(nonnull GADInterstitial *)ad
@@ -97,7 +96,7 @@
     AdMob::AdEvent Ad;
     Ad.AdFormat = (int)AdMob::Format::Interstitial;
     Ad.EventType = (int)AdMob::InterstitialEvent::LeftApplication;
-    [self Callback: &Ad];
+    [self SendCallback: &Ad];
 };
 
 // interface API
@@ -124,7 +123,7 @@
 
 -(void)InterstitialSetUnitID:(const char*) UnitID
 {
-    logDebug((std::string("InterstitialSetUnitID":) + UnitID).c_str());
+    logDebug((std::string("InterstitialSetUnitID: ") + UnitID).c_str());
     [self InterstitialDestroy];
     NSString *ID = [[NSString alloc] initWithUTF8String:UnitID];
     self.interstitial = [[GADInterstitial alloc] initWithAdUnitID:ID];
