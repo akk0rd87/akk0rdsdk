@@ -88,8 +88,11 @@
 
 - (void)interstitialDidDismissScreen:(nonnull GADInterstitial *)ad
 {
-    // Do nothing
     logDebug("interstitialDidDismissScreen");
+    AdMob::AdEvent Ad;
+    Ad.AdFormat = (int)AdMob::Format::Interstitial;
+    Ad.EventType = (int)AdMob::InterstitialEvent::Closed;
+    [self SendCallback: &Ad];
 };
 
 - (void)interstitialWillLeaveApplication:(nonnull GADInterstitial *)ad
