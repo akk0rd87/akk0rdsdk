@@ -157,6 +157,7 @@
         if([self.interstitial isReady])
         {
             logDebug("InterstitialShow 3");
+            //https://stackoverflow.com/questions/12418177/how-to-get-root-view-controller
             UIViewController *controller = [UIApplication sharedApplication].keyWindow.rootViewController;
             [self.interstitial presentFromRootViewController:controller];
         }
