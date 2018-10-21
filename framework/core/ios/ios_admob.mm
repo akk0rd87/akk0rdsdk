@@ -157,7 +157,8 @@
         if([self.interstitial isReady])
         {
             logDebug("InterstitialShow 3");
-            [self.interstitial presentFromRootViewController:nullptr];
+            UIViewController *controller = [UIApplication sharedApplication].keyWindow.rootViewController;
+            [self.interstitial presentFromRootViewController:controller];
         }
         else
         {
