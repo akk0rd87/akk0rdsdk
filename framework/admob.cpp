@@ -316,7 +316,11 @@ bool AdMob::RewardedVideoSetUnitId(const char* UnitId)
 {
 #ifdef __ANDROID__    
     return AdMobAndroid::RewardedVideoSetUnitId(UnitId);
-#endif       
+#endif
+
+#ifdef __APPLE__    
+    return AdMobiOS::RewardedVideoSetUnitId(UnitId);
+#endif
     
     return false;
 };
@@ -339,8 +343,12 @@ bool AdMob::RewardedVideoLoad()
     AdContext.RewardedLastLoadRequestTime = newTime;
     AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::TryingToLoad);
 
-#ifdef __ANDROID__    
+#ifdef __ANDROID__
     return AdMobAndroid::RewardedVideoLoad();
+#endif
+
+#ifdef __APPLE__
+    return AdMobiOS::RewardedVideoLoad();
 #endif
 
     return false;
@@ -357,6 +365,10 @@ bool AdMob::RewardedVideoShow()
     AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::TryingToShow);
 #ifdef __ANDROID__    
     return AdMobAndroid::RewardedVideoShow();
+#endif
+
+#ifdef __APPLE__    
+    return AdMobiOS::RewardedVideoShow();
 #endif
 
     return false;
