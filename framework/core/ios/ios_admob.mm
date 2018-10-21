@@ -14,9 +14,11 @@
 
 @interface iAdMob() <GADInterstitialDelegate>
 -(void)InterstitialDestroy;
--(void)SendCallback:(const AdMob::AdEvent*) Event;
-@property (atomic, strong) GADInterstitial          *interstitial;
-@property (nonatomic)      AdMob::AdEventCallback   *Callback;
+-(void)InterstitialReset;
+-(void)SendCallback:(const    AdMob::AdEvent*) Event;
+@property (atomic, strong)    GADInterstitial          *interstitial;
+@property (nonatomic)         AdMob::AdEventCallback   *Callback;
+@property (nonatomic)         std::string               InterstitialUnitID;
 @end
 
 @implementation iAdMob
@@ -116,6 +118,15 @@
     }
 };
 
+-(void)InterstitialReset
+{
+    [self InterstitialDestroy];
+    NSString *ID = [[NSString alloc] initWithUTF8String:self.InterstitialUnitID.c_str()];
+    self.interstitial = [[GADInterstitial alloc] initWithAdUnitID:ID];
+    self.interstitial.delegate = self;
+    [ID release];
+}
+
 -(void)SetEventCallback:(AdMob::AdEventCallback*) EventCallback
 {
     self.Callback = EventCallback;
@@ -124,12 +135,8 @@
 -(void)InterstitialSetUnitID:(const char*) UnitID
 {
     logDebug((std::string("InterstitialSetUnitID: ") + UnitID).c_str());
-    [self InterstitialDestroy];
-    NSString *ID = [[NSString alloc] initWithUTF8String:UnitID];
-    self.interstitial = [[GADInterstitial alloc] initWithAdUnitID:ID];
-    //self.interstitial = [[GADInterstitial alloc] initWithAdUnitID:@"ca-app-pub-3940256099942544/4411468910"];
-    self.interstitial.delegate = self;
-    [ID release];
+    self.InterstitialUnitID = std::string(UnitID);
+    [self InterstitialReset];
 };
 
 -(void)InterstitialLoad
@@ -138,6 +145,12 @@
     if(self.interstitial != nullptr)
     {
        logDebug("InterstitialLoad 2");
+        
+       if(self.interstitial.hasBeenUsed)
+       {
+           [self InterstitialReset];
+       }
+        
        GADRequest *request = [GADRequest request];
        //request.testDevices = @[ kGADSimulatorID ];
        [self.interstitial loadRequest:request];
