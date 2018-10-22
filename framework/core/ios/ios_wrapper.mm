@@ -167,75 +167,67 @@ std::string iOSWrapper::GetLanguage()
 
 void iOSWrapper::MessageBoxShow (int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3)
 {
-	SDL_MessageBoxButtonData buttons[3];
-	int buttonCnt = 1;
+    NSString *sTitle = [[NSString alloc] initWithUTF8String:Title];
+    NSString *sMessage = [[NSString alloc] initWithUTF8String:Message];
 
-	buttons[0].buttonid = 0;
-	buttons[0].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
-	buttons[0].text = Button1;
-
-	// Если есть вторая кнопка
-	if (Button2 != nullptr && Button2[0] != '\0')
-	{
-		++buttonCnt;
-		buttons[1].buttonid = 1;
-		buttons[1].flags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
-		buttons[1].text = Button2;
-	}
-
-	// Если есть третья кнопка
-	if (Button3 != nullptr && Button3[0] != '\0')
-	{
-		++buttonCnt;
-		buttons[2].buttonid = 2;
-		buttons[2].flags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
-		buttons[2].text = Button3;
-
-		buttons[1].flags = 0;
-	}
-
-    const SDL_MessageBoxColorScheme colorScheme = {
-        { /* .colors (.r, .g, .b) */
-            /* [SDL_MESSAGEBOX_COLOR_BACKGROUND] */
-            { 88, 135, 63 },
-            /* [SDL_MESSAGEBOX_COLOR_TEXT] */
-            { 250, 250, 250 },
-            /* [SDL_MESSAGEBOX_COLOR_BUTTON_BORDER] */
-            { 255, 255, 0 },
-            /* [SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND] */
-            { 0, 0, 255 },
-            /* [SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED] */
-            { 255, 0, 255 }
+    
+    UIAlertController* alert = [UIAlertController alertControllerWithTitle:sTitle
+                                                                   message:sMessage
+                                                            preferredStyle:UIAlertControllerStyleAlert];
+    
+    [sTitle release];
+    [sMessage release];
+    
+    bool button2, button3;
+    button2 = button3 = false;
+   
+    { // Button 1
+        NSString *sButton1 = [[NSString alloc] initWithUTF8String:Button1];
+        UIAlertAction *defaultAction = [UIAlertAction actionWithTitle:sButton1 style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            logDebug("Action 1");
+            CustomEvents::MessageBoxCallback(Code, 1);
+        }];
+        [alert addAction:defaultAction];
+        [sButton1 release];
+    }
+    
+    if(Button2 != nullptr && Button2[0] != '\0')
+        button2 = true;
+    
+    if(Button3 != nullptr && Button3[0] != '\0')
+        button3 = true;
+    
+    if(button2)
+    {
+        auto button2Style = UIAlertActionStyleCancel;
+        
+        if(button3)
+            button2Style = UIAlertActionStyleDefault;
+        
+        {
+            // Button 2
+            NSString *sButton2 = [[NSString alloc] initWithUTF8String:Button2];
+            UIAlertAction *button2Action = [UIAlertAction actionWithTitle:sButton2 style:button2Style handler:^(UIAlertAction * _Nonnull action) {
+                logDebug("Action 2");
+                CustomEvents::MessageBoxCallback(Code, 2);
+            }];
+            [alert addAction:button2Action];
+            [sButton2 release];
         }
-    };
-
-    const SDL_MessageBoxData messageboxdata = {
-        SDL_MESSAGEBOX_INFORMATION, /* .flags */
-        //NULL, /* .window */
-        //CurrentContext.CurrentWindow,
-		BWrapper::GetActiveWindow(),
-        //NULL,
-		Title, /* .title */
-        Message, /* .message */
-		buttonCnt, /* .numbuttons */
-        buttons, /* .buttons */
-        &colorScheme /* .colorScheme */
-    };
-
-    int buttonid;
-
-    if (SDL_ShowMessageBox(&messageboxdata, &buttonid) < 0) {        
-		logError("error displaying message box");
-		return;
+        
+        if(button3)
+        {
+            // Button 3
+            NSString *sButton3 = [[NSString alloc] initWithUTF8String:Button3];
+            UIAlertAction *button3Action = [UIAlertAction actionWithTitle:sButton3 style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+                logDebug("Action 3");
+                CustomEvents::MessageBoxCallback(Code, 3);
+            }];
+            [alert addAction:button3Action];
+            [sButton3 release];
+        }
     }
-
-    if (buttonid == -1)
-	{
-        logDebug("no selection");
-		CustomEvents::MessageBoxCallback(Code, 0); // 0 - Cancel
-    }
-    else 
-	{        
-		CustomEvents::MessageBoxCallback(Code, buttonid + 1); // msgBox::Action Button[n]
-    }
+    
+    UIViewController *controller = [UIApplication sharedApplication].keyWindow.rootViewController;
+    [controller presentViewController:alert animated:YES completion:nil];
 };
