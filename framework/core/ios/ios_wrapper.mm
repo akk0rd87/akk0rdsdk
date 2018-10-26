@@ -170,7 +170,7 @@ std::string iOSWrapper::GetLanguage()
     NSString * language = [[NSLocale preferredLanguages] firstObject];
     NSDictionary *languageDic = [NSLocale componentsFromLocaleIdentifier:language];
     NSString *languageCode = [languageDic objectForKey:@"kCFLocaleLanguageCodeKey"];
-    MessageBoxShow(10000, "Language", std::string([languageCode UTF8String]).c_str(), "Ok", nullptr, nullptr);
+    //MessageBoxShow(10000, "Language", std::string([languageCode UTF8String]).c_str(), "Ok", nullptr, nullptr);
     return std::string([languageCode UTF8String]);
 }
 
