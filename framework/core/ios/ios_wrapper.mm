@@ -168,7 +168,10 @@ bool iOSWrapper::DirRemoveRecursive (const char* Dir)
 std::string iOSWrapper::GetLanguage()
 {
     NSString * language = [[NSLocale preferredLanguages] firstObject];
-    return std::string([language UTF8String]);
+    NSDictionary *languageDic = [NSLocale componentsFromLocaleIdentifier:language];
+    NSString *languageCode = [languageDic objectForKey:@"kCFLocaleLanguageCodeKey"];
+    MessageBoxShow(10000, "Language", std::string([languageCode UTF8String]).c_str(), "Ok", nullptr, nullptr);
+    return std::string([languageCode UTF8String]);
 }
 
 void iOSWrapper::MessageBoxShow (int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3)
