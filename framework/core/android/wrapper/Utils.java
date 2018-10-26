@@ -27,8 +27,8 @@ import android.content.res.AssetManager;
 
 public class Utils {
     private static  final String TAG = "SDL";
-    private static  Activity _context;
-    private static  AssetManager AssetMgr;
+    private static  Activity _context = null;
+    private static  AssetManager AssetMgr = null;
     //private static Context context;
 
     public static native void AkkordCallback(String str);
