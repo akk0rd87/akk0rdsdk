@@ -103,7 +103,24 @@ bool GPG_Manager::Init()
                         })
                         .SetOnLog([](gpg::LogLevel logLevel, const std::string & msg)
                                   {
-                                      //__android_log_print(ANDROID_LOG_ERROR, "SDL", "%s", msg.c_str());
+                                      // https://developers.google.com/games/services/cpp/api/namespace/gpg#namespacegpg_1a4301d118877862d8a7d23745a56c430f
+                                      switch(logLevel)
+                                      {
+                                          case gpg::LogLevel::VERBOSE:
+                                          case gpg::LogLevel::INFO:
+                                              logDebug("%s", msg.c_str());
+                                            break;
+
+                                          case gpg::LogLevel::WARNING:
+                                              logWarning("%s", msg.c_str());
+                                              break;
+
+                                          case gpg::LogLevel::ERROR:
+                                          default:
+                                              logError("%s", msg.c_str());
+                                              break;
+                                      }
+
                                   })
                         .Create(platform_configuration);
 
