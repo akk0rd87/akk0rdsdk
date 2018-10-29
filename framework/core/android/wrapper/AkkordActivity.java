@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import org.libsdl.app.SDLActivity;
 import android.content.pm.ActivityInfo;
+import android.app.Activity;
+
 
 public class AkkordActivity extends SDLActivity {
     
