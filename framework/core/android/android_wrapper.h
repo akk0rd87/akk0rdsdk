@@ -441,4 +441,9 @@ void AndroidWrapper::MessageBoxShow(int Code, const char* Title, const char* Mes
 	env->DeleteLocalRef(jstring_Button3);	
 };
 
+JNIEXPORT void JNICALL Java_org_akkord_lib_AkkordActivity_nativeOnActivityResult(JNIEnv*, jclass, jint ResponseCode)
+{
+    logDebug("Java_org_akkord_lib_AkkordActivity_nativeOnActivityResult");
+}
+
 #endif // __AKK0RD_ANDROID_BASEWRAPPER_H__

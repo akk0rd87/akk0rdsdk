@@ -30,21 +30,17 @@ public class AkkordActivity extends SDLActivity {
             // "SDL2_ttf",
             "main"
         };
-    }    
-    
-    /*
-    @Override
-    public static void setOrientation(int w, int h, boolean resizable, String hint){
-        mSingleton.setRequestedOrientation(-1);
     }
-    */
     
-    /*
-    @Override
-    public void setOrientationBis(int w, int h, boolean resizable, String hint) {
-        // https://developer.android.com/guide/topics/manifest/activity-element.html#screen
-        // https://developer.android.com/reference/android/content/pm/ActivityInfo.html#SCREEN_ORIENTATION_FULL_SENSOR
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
-    } 
-    */    
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) 
+    {
+        super.onActivityResult(requestCode, resultCode, data);
+        nativeOnActivityResult(this, requestCode, resultCode, data);
+    }
+    
+    
+    
+    
+    // NATIVE
+    private static native void nativeOnActivityResult(Activity activity, int requestCode, int resultCode, Intent data);
 }
