@@ -3,6 +3,7 @@
 #define __AKK0RD_CustomEvents_H__
 
 #include "core/core_defines.h"
+#include "basewrapper.h"
 
 /*
 class BaseCustomEvent // абстрактный базовый класс пользовательского события
