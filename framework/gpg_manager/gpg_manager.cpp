@@ -3,6 +3,7 @@
 
 #ifdef __ANDROID__
 #include "gpg/gpg.h"
+#include "core/android/android_wrapper.h"
 #endif
 
 struct GPG_ManagerContextStruct
