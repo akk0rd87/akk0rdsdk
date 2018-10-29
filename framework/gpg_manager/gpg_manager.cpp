@@ -41,7 +41,7 @@ bool GPG_Manager::Init()
         GPG_ManagerContext.game_services_ =
                 gpg::GameServices::Builder()
                         .SetDefaultOnLog(gpg::LogLevel::VERBOSE)
-                        .SetOnAuthActionStarted([this](gpg::AuthOperation op) {
+                        .SetOnAuthActionStarted([](gpg::AuthOperation op) {
                             logDebug("0");
 
                             if(op == gpg::AuthOperation::SIGN_IN)
@@ -49,7 +49,7 @@ bool GPG_Manager::Init()
                             else
                                 logDebug("0 SIGN_OUT");
                         })
-                        .SetOnAuthActionFinished([this](gpg::AuthOperation op,
+                        .SetOnAuthActionFinished([](gpg::AuthOperation op,
                                                         gpg::AuthStatus status) {
                             logDebug("1");
                             if (op == gpg::AuthOperation::SIGN_IN) {
