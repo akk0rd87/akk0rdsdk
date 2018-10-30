@@ -8,7 +8,7 @@ public:
 
     static void StartSelection(int MinPlayers, int MaxPlayers, bool UI);
 
-    enum struct GPG_State : unsigned char { notInited, Initialized, NotAuthorized, Authorized };
+    //enum struct GPG_State : unsigned char { notInited, Initialized, NotAuthorized, Authorized };
 
 
 };
