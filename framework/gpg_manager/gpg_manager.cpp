@@ -33,7 +33,7 @@ public:
 
 static GPG_ManagerContextStruct GPG_ManagerContext;
 
-bool GPG_Manager::Init()
+bool GPG_Manager::Init(bool autoLogin)
 {
     if(!GPG_ManagerContext.Inited)
     {
@@ -63,8 +63,11 @@ bool GPG_Manager::Init()
                             else
                                 logDebug("0 SIGN_OUT");
                         })
-                        .SetOnAuthActionFinished([](gpg::AuthOperation op,
-                                                        gpg::AuthStatus status) {
+                        .SetOnAuthActionFinished([autoLogin]
+                                                 (gpg::AuthOperation op,
+                                                  gpg::AuthStatus status
+                                                 )
+                         {
                             logDebug("1");
                             if (op == gpg::AuthOperation::SIGN_IN) {
                                 logDebug("1 SIGN_IN");
@@ -94,8 +97,11 @@ bool GPG_Manager::Init()
                                     logError("ERROR_NETWORK_OPERATION_FAILED");
                                     break;
                                 case gpg::AuthStatus::ERROR_NOT_AUTHORIZED:
-                                    logError("ERROR_NOT_AUTHORIZED");
-                                    GPG_ManagerContext.game_services_->StartAuthorizationUI();
+                                    logWarning("ERROR_NOT_AUTHORIZED");
+                                    if(autoLogin)
+                                    {
+                                        GPG_ManagerContext.game_services_->StartAuthorizationUI();
+                                    }
                                     break;
                                 case gpg::AuthStatus::ERROR_NO_DATA:
                                     logError("ERROR_NO_DATA");
@@ -108,43 +114,7 @@ bool GPG_Manager::Init()
                                     break;
                                 case gpg::AuthStatus::VALID:
                                     logDebug("VALID");
-                                    {
-                                        GPG_ManagerContext.game_services_->TurnBasedMultiplayer().ShowPlayerSelectUI(
-                                                1, 1, true,
-                                                [](gpg::TurnBasedMultiplayerManager::PlayerSelectUIResponse const &
-                                                response) {
-                                                    logDebug("selected match %d", response.status);
-
-                                                    if (response.status == gpg::UIStatus::VALID) {
-                                                        logDebug(
-                                                                "TurnBasedMatchResponse gpg::UIStatus::VALID");
-                                                        gpg::TurnBasedMatchConfig config = gpg::TurnBasedMatchConfig::Builder()
-                                                                .SetMinimumAutomatchingPlayers(
-                                                                        response.minimum_automatching_players)
-                                                                .SetMaximumAutomatchingPlayers(
-                                                                        response.maximum_automatching_players)
-                                                                .AddAllPlayersToInvite(
-                                                                        response.player_ids).Create();
-                                                        GPG_ManagerContext.game_services_->TurnBasedMultiplayer().CreateTurnBasedMatch(
-                                                                config,
-                                                                [](
-                                                                        gpg::TurnBasedMultiplayerManager::TurnBasedMatchResponse const &
-                                                                        matchResponse
-                                                                ) {
-                                                                    //EnableUI(true);
-                                                                    if (matchResponse.status ==
-                                                                        gpg::MultiplayerStatus::VALID) {
-                                                                        //PlayGame(matchResponse.match);
-                                                                        logDebug("TurnBasedMatchResponse");
-                                                                    }
-
-                                                                });
-                                                    }
-                                                }
-                                        );
-                                    }
                                     break;
-
                                 default:
                                     logError("Another status");
                                     break;
@@ -185,4 +155,56 @@ bool GPG_Manager::Init()
 #endif
     }
     return true;
+}
+
+void GPG_Manager::StartSelection(int MinPlayers, int MaxPlayers, bool UI)
+{
+#ifdef __ANDROID__
+    if (GPG_ManagerContext.game_services_)
+    {
+        if(UI)
+        {
+            GPG_ManagerContext.game_services_->TurnBasedMultiplayer().ShowPlayerSelectUI(
+                    MinPlayers, MaxPlayers, true,
+                    [](gpg::TurnBasedMultiplayerManager::PlayerSelectUIResponse const &
+                    response) {
+                        //////
+                        logDebug("PlayerSelectUIResponse");
+                        if (response.status == gpg::UIStatus::VALID) {
+                            gpg::TurnBasedMatchConfig config = gpg::TurnBasedMatchConfig::Builder()
+                                    .SetMinimumAutomatchingPlayers(
+                                            response.minimum_automatching_players)
+                                    .SetMaximumAutomatchingPlayers(
+                                            response.maximum_automatching_players)
+                                    .AddAllPlayersToInvite(response.player_ids).Create();
+
+                            GPG_ManagerContext.game_services_->TurnBasedMultiplayer().CreateTurnBasedMatch(
+                                    config,
+                                    [](gpg::TurnBasedMultiplayerManager::TurnBasedMatchResponse const &matchResponse) {
+                                        if (matchResponse.status == gpg::MultiplayerStatus::VALID) {
+                                            //PlayGame(matchResponse.match);
+                                            logDebug("Ready to play 1");
+                                        }
+                                    });
+                        }
+                        //////
+                    });
+        }
+        else
+        {
+            gpg::TurnBasedMatchConfig config = gpg::TurnBasedMatchConfig::Builder()
+                    .SetMinimumAutomatchingPlayers(MinPlayers)
+                    .SetMaximumAutomatchingPlayers(MaxPlayers).Create();
+
+            GPG_ManagerContext.game_services_->TurnBasedMultiplayer().CreateTurnBasedMatch(
+                    config,
+                    [](gpg::TurnBasedMultiplayerManager::TurnBasedMatchResponse const &matchResponse) {
+                        if (matchResponse.status == gpg::MultiplayerStatus::VALID) {
+                            //PlayGame(matchResponse.match);
+                            logDebug("Ready to play 2");
+                        }
+                    });
+        }
+    }
+#endif
 }
