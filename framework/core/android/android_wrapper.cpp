@@ -407,6 +407,7 @@ void AndroidWrapper::SetOnActivityResultCallback(AndroidWrapper::onActivityResul
 
 extern "C" {
 JNIEXPORT void JNICALL Java_org_akkord_lib_AkkordActivity_nativeOnActivityResult(JNIEnv *, jobject, jobject, jint, jint, jobject);
+JNIEXPORT void JNICALL Java_org_akkord_lib_Utils_MessageBoxCallback(JNIEnv*, jclass, jint, jint);
 }
 
 JNIEXPORT void JNICALL Java_org_akkord_lib_AkkordActivity_nativeOnActivityResult(JNIEnv *env, jobject thiz, jobject activity, jint request_code, jint result_code, jobject data)
@@ -417,20 +418,6 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_AkkordActivity_nativeOnActivityResult
         logDebug("Callback...");
         AndroidWrapperState.ActivityResultCallback(env, thiz, activity, request_code, result_code, data);
     }
-}
-
-
-extern "C" {
-JNIEXPORT void JNICALL Java_org_akkord_lib_Utils_AkkordCallback(JNIEnv*, jclass, jstring);
-}
-
-JNIEXPORT void JNICALL Java_org_akkord_lib_Utils_AkkordCallback(JNIEnv* mEnv, jclass cls, jstring data)
-{
-
-};
-
-extern "C" {
-JNIEXPORT void JNICALL Java_org_akkord_lib_Utils_MessageBoxCallback(JNIEnv*, jclass, jint, jint);
 }
 
 JNIEXPORT void JNICALL Java_org_akkord_lib_Utils_MessageBoxCallback(JNIEnv* mEnv, jclass cls, jint Code, jint Result)
