@@ -95,7 +95,7 @@ bool GPG_Manager::Init()
                                     break;
                                 case gpg::AuthStatus::ERROR_NOT_AUTHORIZED:
                                     logError("ERROR_NOT_AUTHORIZED");
-                                    //GPG_ManagerContext.game_services_->StartAuthorizationUI();
+                                    GPG_ManagerContext.game_services_->StartAuthorizationUI();
                                     break;
                                 case gpg::AuthStatus::ERROR_NO_DATA:
                                     logError("ERROR_NO_DATA");
@@ -107,7 +107,42 @@ bool GPG_Manager::Init()
                                     logError("ERROR_VERSION_UPDATE_REQUIRED");
                                     break;
                                 case gpg::AuthStatus::VALID:
-                                    logError("VALID");
+                                    logDebug("VALID");
+                                    {
+                                        GPG_ManagerContext.game_services_->TurnBasedMultiplayer().ShowPlayerSelectUI(
+                                                1, 1, true,
+                                                [](gpg::TurnBasedMultiplayerManager::PlayerSelectUIResponse const &
+                                                response) {
+                                                    logDebug("selected match %d", response.status);
+
+                                                    if (response.status == gpg::UIStatus::VALID) {
+                                                        logDebug(
+                                                                "TurnBasedMatchResponse gpg::UIStatus::VALID");
+                                                        gpg::TurnBasedMatchConfig config = gpg::TurnBasedMatchConfig::Builder()
+                                                                .SetMinimumAutomatchingPlayers(
+                                                                        response.minimum_automatching_players)
+                                                                .SetMaximumAutomatchingPlayers(
+                                                                        response.maximum_automatching_players)
+                                                                .AddAllPlayersToInvite(
+                                                                        response.player_ids).Create();
+                                                        GPG_ManagerContext.game_services_->TurnBasedMultiplayer().CreateTurnBasedMatch(
+                                                                config,
+                                                                [](
+                                                                        gpg::TurnBasedMultiplayerManager::TurnBasedMatchResponse const &
+                                                                        matchResponse
+                                                                ) {
+                                                                    //EnableUI(true);
+                                                                    if (matchResponse.status ==
+                                                                        gpg::MultiplayerStatus::VALID) {
+                                                                        //PlayGame(matchResponse.match);
+                                                                        logDebug("TurnBasedMatchResponse");
+                                                                    }
+
+                                                                });
+                                                    }
+                                                }
+                                        );
+                                    }
                                     break;
 
                                 default:
