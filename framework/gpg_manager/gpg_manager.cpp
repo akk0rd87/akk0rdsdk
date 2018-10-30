@@ -10,6 +10,11 @@ void GPGonActivityResultCallback(JNIEnv *env, jobject thiz, jobject activity, ji
     logDebug("GPGonActivityResultCallback");
     gpg::AndroidSupport::OnActivityResult(env, activity, request_code, result_code, data);
 };
+
+extern "C" JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
+    gpg::AndroidInitialization::JNI_OnLoad(vm);
+    return JNI_VERSION_1_4;
+}
 #endif
 
 struct GPG_ManagerContextStruct
@@ -146,11 +151,3 @@ bool GPG_Manager::Init()
     }
     return true;
 }
-
-#ifdef __ANDROID__
-extern "C" JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
-    gpg::AndroidInitialization::JNI_OnLoad(vm);
-
-    return JNI_VERSION_1_4;
-}
-#endif
