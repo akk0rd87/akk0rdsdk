@@ -689,7 +689,7 @@ class SDFFontBuffer
                 sdfFont->GetCharInfo(a, charParams);
 
                 localpoint.x += static_cast<decltype(localpoint.x)>(scaleX * charParams.xoffset);
-				localpoint.x += static_cast<decltype(localpoint.x)>(scaleX * (a == 32 ? charParams.xadvance : charParams.w));
+				localpoint.x += static_cast<decltype(localpoint.x)>(scaleX * charParams.xadvance);
             }
         };
 
@@ -859,7 +859,7 @@ public:
                 Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2); Indices.push_back(PointsCnt + 3);
 
                 //x_current = x_current + (float)scaleX * (charParams.w /*+ charParams.xadvance*/);
-				x_current = x_current + static_cast<decltype(x_current)>(scaleX * (a == 32 ? charParams.xadvance : charParams.w));
+				x_current = x_current + static_cast<decltype(x_current)>(scaleX * charParams.xadvance);
                 PointsCnt += 4;
             }
         };        
