@@ -4,6 +4,12 @@
 #ifdef __ANDROID__
 #include "gpg/gpg.h"
 #include "core/android/android_wrapper.h"
+
+void GPGonActivityResultCallback(JNIEnv *env, jobject thiz, jobject activity, jint request_code, jint result_code, jobject data)
+{
+    logDebug("GPGonActivityResultCallback");
+    gpg::AndroidSupport::OnActivityResult(env, activity, request_code, result_code, data);
+};
 #endif
 
 struct GPG_ManagerContextStruct
@@ -27,6 +33,8 @@ bool GPG_Manager::Init()
     if(!GPG_ManagerContext.Inited)
     {
 #ifdef __ANDROID__
+        AndroidWrapper::SetOnActivityResultCallback(GPGonActivityResultCallback);
+
         gpg::AndroidPlatformConfiguration platform_configuration;
         {
             jobject act = reinterpret_cast<jobject>(SDL_AndroidGetActivity());
@@ -82,7 +90,7 @@ bool GPG_Manager::Init()
                                     break;
                                 case gpg::AuthStatus::ERROR_NOT_AUTHORIZED:
                                     logError("ERROR_NOT_AUTHORIZED");
-                                    GPG_ManagerContext.game_services_->StartAuthorizationUI();
+                                    //GPG_ManagerContext.game_services_->StartAuthorizationUI();
                                     break;
                                 case gpg::AuthStatus::ERROR_NO_DATA:
                                     logError("ERROR_NO_DATA");
@@ -138,3 +146,11 @@ bool GPG_Manager::Init()
     }
     return true;
 }
+
+#ifdef __ANDROID__
+extern "C" JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
+    gpg::AndroidInitialization::JNI_OnLoad(vm);
+
+    return JNI_VERSION_1_4;
+}
+#endif

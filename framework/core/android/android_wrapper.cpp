@@ -1,6 +1,5 @@
 #include "customevents.h"
 #include "core/android/android_wrapper.h"
-#include <jni.h>
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
 #include "core/core_defines.h"
@@ -23,6 +22,8 @@ std::string sLanguage;
 std::string sInternalDir;
 std::string sInternalWriteDir;
 int         sApiLevel;
+
+AndroidWrapper::onActivityResultCallback* ActivityResultCallback = nullptr;
 };
 static AndroidWrapperStateStruct AndroidWrapperState;
 
@@ -399,12 +400,25 @@ void AndroidWrapper::MessageBoxShow(int Code, const char* Title, const char* Mes
     env->DeleteLocalRef(jstring_Button3);    
 };
 
+void AndroidWrapper::SetOnActivityResultCallback(AndroidWrapper::onActivityResultCallback* Callback)
+{
+    AndroidWrapperState.ActivityResultCallback = Callback;
+};
+
 extern "C" {
-JNIEXPORT void JNICALL Java_org_akkord_lib_AkkordActivity_nativeOnActivityResult(JNIEnv*, jclass, jint ResponseCode)
+JNIEXPORT void JNICALL Java_org_akkord_lib_AkkordActivity_nativeOnActivityResult(JNIEnv *, jobject, jobject, jint, jint, jobject);
+}
+
+JNIEXPORT void JNICALL Java_org_akkord_lib_AkkordActivity_nativeOnActivityResult(JNIEnv *env, jobject thiz, jobject activity, jint request_code, jint result_code, jobject data)
 {
     logDebug("Java_org_akkord_lib_AkkordActivity_nativeOnActivityResult");
+    if(AndroidWrapperState.ActivityResultCallback != nullptr)
+    {
+        logDebug("Callback...");
+        AndroidWrapperState.ActivityResultCallback(env, thiz, activity, request_code, result_code, data);
+    }
 }
-}
+
 
 extern "C" {
 JNIEXPORT void JNICALL Java_org_akkord_lib_Utils_AkkordCallback(JNIEnv*, jclass, jstring);
