@@ -122,9 +122,29 @@ bool GPG_Manager::Init(bool autoLogin)
                                     break;
                             }
                         })
+                        .SetOnMultiplayerInvitationEvent(
+                                [](gpg::MultiplayerEvent event, std::string match_id,
+                                       gpg::MultiplayerInvitation invitation) {
+                                    logDebug("MultiplayerInvitationEvent callback");
+
+                                    switch(event) {
+                                        case gpg::MultiplayerEvent::REMOVED: logDebug("REMOVED"); break;
+                                        case gpg::MultiplayerEvent::UPDATED: logDebug("UPDATED"); break;
+                                        case gpg::MultiplayerEvent::UPDATED_FROM_APP_LAUNCH: logDebug("UPDATED_FROM_APP_LAUNCH"); break;
+                                    }
+                                    //Show default inbox
+                                    //ShowMatchInbox();
+                                })
                         .SetOnTurnBasedMatchEvent([] (const gpg::MultiplayerEvent& event, const std::string& str, const gpg::TurnBasedMatch& Match)
                                                   {
                                                       logDebug("SetOnTurnBasedMatchEvent");
+
+                                                      switch(event) {
+                                                          case gpg::MultiplayerEvent::REMOVED: logDebug("REMOVED"); break;
+                                                          case gpg::MultiplayerEvent::UPDATED: logDebug("UPDATED"); break;
+                                                          case gpg::MultiplayerEvent::UPDATED_FROM_APP_LAUNCH: logDebug("UPDATED_FROM_APP_LAUNCH"); break;
+                                                      }
+
                                                       if (gpg::MatchStatus::MY_TURN == Match.Status())
                                                       {
                                                           std::this_thread::sleep_for(std::chrono::seconds(5));
@@ -153,13 +173,6 @@ bool GPG_Manager::Init(bool autoLogin)
                                                       }
                                                   }
                         )
-                        /*
-                        .SetOnMultiplayerInvitationEvent([] (gpg::MultiplayerEvent Event, std::string str, gpg::MultiplayerInvitation Invitation)
-                            {
-                                logDebug("MultiplayerInvitationEvent");
-                            }
-                        )
-                        */
                         .SetOnLog([](gpg::LogLevel logLevel, const std::string & msg)
                                   {
                                       // https://developers.google.com/games/services/cpp/api/namespace/gpg#namespacegpg_1a4301d118877862d8a7d23745a56c430f
@@ -325,6 +338,33 @@ void GPG_Manager::StartSelection(int MinPlayers, int MaxPlayers, bool UI)
                                     default: logDebug("Other state"); break;
                                 }
 
+                                if(gpg::MatchStatus::MY_TURN == matchResponse.match.Status())
+                                {
+                                    logDebug("My turn2");
+                                    std::vector<uint8_t> match_data;
+                                    match_data.push_back(100);
+                                    match_data.push_back(200);
+                                    match_data.push_back(100);
+
+                                    gpg::ParticipantResults results = matchResponse.match.ParticipantResults();
+                                    gpg::MultiplayerParticipant nextParticipant = matchResponse.match.SuggestedNextParticipant();
+
+                                    if (!nextParticipant.Valid()) {//Error case
+                                        logDebug("dismiss");
+                                        GPG_ManagerContext.game_services_->TurnBasedMultiplayer().DismissMatch(matchResponse.match);
+                                        return;
+                                    }
+
+                                    GPG_ManagerContext.game_services_->TurnBasedMultiplayer().TakeMyTurn(matchResponse.match,
+                                                                                                         match_data,
+                                                                                                         results, nextParticipant,
+                                                                                                         [](gpg::TurnBasedMultiplayerManager::TurnBasedMatchResponse const &
+                                                                                                         response) {
+                                                                                                             logDebug("Took turn");
+                                                                                                         });
+                                }
+
+
                             } else
                                 logDebug("matchResponse.status != gpg::MultiplayerStatus::VALID");
                         });
@@ -342,7 +382,7 @@ void GPG_Manager::ShowMatchBoxUI()
             //showMatchInboxUI
             GPG_ManagerContext.game_services_->TurnBasedMultiplayer().ShowMatchInboxUI([](const gpg::TurnBasedMultiplayerManager::MatchInboxUIResponse& rsp)
                                                                                        {
-
+                                                                                           logDebug("MatchInboxUIResponse");
                                                                                        }
 
                     );
