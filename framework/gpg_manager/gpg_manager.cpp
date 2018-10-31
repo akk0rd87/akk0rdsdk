@@ -185,6 +185,23 @@ void GPG_Manager::StartSelection(int MinPlayers, int MaxPlayers, bool UI)
                                             if (matchResponse.status == gpg::MultiplayerStatus::VALID) {
                                                 //PlayGame(matchResponse.match);
                                                 logDebug("Ready to play 1");
+
+                                                if(matchResponse.match.HasData())
+                                                    logDebug("Has Data");
+                                                else
+                                                    logDebug("Has no");
+
+                                                switch(matchResponse.match.Status())
+                                                {
+                                                    case gpg::MatchStatus::CANCELED: logDebug("CANCELED"); break;
+                                                    case gpg::MatchStatus::COMPLETED: logDebug("COMPLETED"); break;
+                                                    case gpg::MatchStatus::EXPIRED: logDebug("EXPIRED"); break;
+                                                    case gpg::MatchStatus::INVITED: logDebug("INVITED"); break;
+                                                    case gpg::MatchStatus::MY_TURN: logDebug("MY_TURN"); break;
+                                                    case gpg::MatchStatus::PENDING_COMPLETION: logDebug("PENDING_COMPLETION"); break;
+                                                    case gpg::MatchStatus::THEIR_TURN: logDebug("THEIR_TURN"); break;
+                                                    default: logDebug("Other state"); break;
+                                                }
                                             } else
                                                 logDebug("matchResponse.status != gpg::MultiplayerStatus::VALID");
                                         });
@@ -204,6 +221,24 @@ void GPG_Manager::StartSelection(int MinPlayers, int MaxPlayers, bool UI)
                             if (matchResponse.status == gpg::MultiplayerStatus::VALID) {
                                 //PlayGame(matchResponse.match);
                                 logDebug("Ready to play 2");
+
+                                if(matchResponse.match.HasData())
+                                    logDebug("Has Data");
+                                else
+                                    logDebug("Has no");
+
+                                switch(matchResponse.match.Status())
+                                {
+                                    case gpg::MatchStatus::CANCELED: logDebug("CANCELED"); break;
+                                    case gpg::MatchStatus::COMPLETED: logDebug("COMPLETED"); break;
+                                    case gpg::MatchStatus::EXPIRED: logDebug("EXPIRED"); break;
+                                    case gpg::MatchStatus::INVITED: logDebug("INVITED"); break;
+                                    case gpg::MatchStatus::MY_TURN: logDebug("MY_TURN"); break;
+                                    case gpg::MatchStatus::PENDING_COMPLETION: logDebug("PENDING_COMPLETION"); break;
+                                    case gpg::MatchStatus::THEIR_TURN: logDebug("THEIR_TURN"); break;
+                                    default: logDebug("Other state"); break;
+                                }
+
                             } else
                                 logDebug("matchResponse.status != gpg::MultiplayerStatus::VALID");
                         });
