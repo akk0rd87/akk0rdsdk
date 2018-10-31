@@ -7,6 +7,7 @@ public:
     static bool Init(bool autoLogin);
 
     static void StartSelection(int MinPlayers, int MaxPlayers, bool UI);
+    static void ShowMatchBoxUI();
 
     //enum struct GPG_State : unsigned char { notInited, Initialized, NotAuthorized, Authorized };
 

@@ -120,6 +120,13 @@ bool GPG_Manager::Init(bool autoLogin)
                                     break;
                             }
                         })
+                        /*
+                        .SetOnMultiplayerInvitationEvent([] (gpg::MultiplayerEvent Event, std::string str, gpg::MultiplayerInvitation Invitation)
+                            {
+                                logDebug("MultiplayerInvitationEvent");
+                            }
+                        )
+                        */
                         .SetOnLog([](gpg::LogLevel logLevel, const std::string & msg)
                                   {
                                       // https://developers.google.com/games/services/cpp/api/namespace/gpg#namespacegpg_1a4301d118877862d8a7d23745a56c430f
@@ -246,3 +253,20 @@ void GPG_Manager::StartSelection(int MinPlayers, int MaxPlayers, bool UI)
         }
 #endif
 }
+
+void GPG_Manager::ShowMatchBoxUI()
+{
+#ifdef __ANDROID__
+    if (GPG_ManagerContext.game_services_)
+        if(GPG_ManagerContext.game_services_->IsAuthorized())
+        {
+            //showMatchInboxUI
+            GPG_ManagerContext.game_services_->TurnBasedMultiplayer().ShowMatchInboxUI([](const gpg::TurnBasedMultiplayerManager::MatchInboxUIResponse& rsp)
+                                                                                       {
+
+                                                                                       }
+
+                    );
+        }
+#endif
+};
