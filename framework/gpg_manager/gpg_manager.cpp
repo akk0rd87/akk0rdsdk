@@ -4,6 +4,8 @@
 #ifdef __ANDROID__
 #include "gpg/gpg.h"
 #include "core/android/android_wrapper.h"
+#include <thread>
+#include <chrono>
 
 void GPGonActivityResultCallback(JNIEnv *env, jobject thiz, jobject activity, jint request_code, jint result_code, jobject data)
 {
@@ -120,6 +122,37 @@ bool GPG_Manager::Init(bool autoLogin)
                                     break;
                             }
                         })
+                        .SetOnTurnBasedMatchEvent([] (const gpg::MultiplayerEvent& event, const std::string& str, const gpg::TurnBasedMatch& Match)
+                                                  {
+                                                      logDebug("SetOnTurnBasedMatchEvent");
+                                                      if (gpg::MatchStatus::MY_TURN == Match.Status())
+                                                      {
+                                                          std::this_thread::sleep_for(std::chrono::seconds(5));
+
+                                                          gpg::ParticipantResults results = Match.ParticipantResults();
+
+                                                          gpg::MultiplayerParticipant nextParticipant = Match.SuggestedNextParticipant();
+
+                                                          if (!nextParticipant.Valid()) {
+                                                              //Error case
+                                                              logDebug("dismiss");
+                                                              GPG_ManagerContext.game_services_->TurnBasedMultiplayer().DismissMatch(Match);
+                                                              return;
+                                                          }
+
+                                                          std::vector<uint8_t> match_data;
+                                                          match_data.push_back(100);
+                                                          match_data.push_back(200);
+                                                          match_data.push_back(100);
+
+                                                          GPG_ManagerContext.game_services_->TurnBasedMultiplayer().TakeMyTurn(Match, match_data, results, nextParticipant,
+                                                                                                                               [](gpg::TurnBasedMultiplayerManager::TurnBasedMatchResponse const &
+                                                                                                                               response) {
+                                                                                                                                   logDebug("Took turn");
+                                                                                                                               });
+                                                      }
+                                                  }
+                        )
                         /*
                         .SetOnMultiplayerInvitationEvent([] (gpg::MultiplayerEvent Event, std::string str, gpg::MultiplayerInvitation Invitation)
                             {
@@ -189,28 +222,74 @@ void GPG_Manager::StartSelection(int MinPlayers, int MaxPlayers, bool UI)
                                 GPG_ManagerContext.game_services_->TurnBasedMultiplayer().CreateTurnBasedMatch(
                                         config,
                                         [](gpg::TurnBasedMultiplayerManager::TurnBasedMatchResponse const &matchResponse) {
-                                            if (matchResponse.status == gpg::MultiplayerStatus::VALID) {
-                                                //PlayGame(matchResponse.match);
-                                                logDebug("Ready to play 1");
-
-                                                if(matchResponse.match.HasData())
-                                                    logDebug("Has Data");
-                                                else
-                                                    logDebug("Has no");
-
-                                                switch(matchResponse.match.Status())
+                                            if (matchResponse.status == gpg::MultiplayerStatus::VALID)
+                                            {
                                                 {
-                                                    case gpg::MatchStatus::CANCELED: logDebug("CANCELED"); break;
-                                                    case gpg::MatchStatus::COMPLETED: logDebug("COMPLETED"); break;
-                                                    case gpg::MatchStatus::EXPIRED: logDebug("EXPIRED"); break;
-                                                    case gpg::MatchStatus::INVITED: logDebug("INVITED"); break;
-                                                    case gpg::MatchStatus::MY_TURN: logDebug("MY_TURN"); break;
-                                                    case gpg::MatchStatus::PENDING_COMPLETION: logDebug("PENDING_COMPLETION"); break;
-                                                    case gpg::MatchStatus::THEIR_TURN: logDebug("THEIR_TURN"); break;
-                                                    default: logDebug("Other state"); break;
+                                                    //PlayGame(matchResponse.match);
+                                                    logDebug("Ready to play 1");
+
+                                                    if (matchResponse.match.HasData())
+                                                        logDebug("Has Data");
+                                                    else
+                                                        logDebug("Has no");
+
+                                                    switch (matchResponse.match.Status()) {
+                                                        case gpg::MatchStatus::CANCELED:
+                                                            logDebug("CANCELED");
+                                                            break;
+                                                        case gpg::MatchStatus::COMPLETED:
+                                                            logDebug("COMPLETED");
+                                                            break;
+                                                        case gpg::MatchStatus::EXPIRED:
+                                                            logDebug("EXPIRED");
+                                                            break;
+                                                        case gpg::MatchStatus::INVITED:
+                                                            logDebug("INVITED");
+                                                            break;
+                                                        case gpg::MatchStatus::MY_TURN:
+                                                            logDebug("MY_TURN");
+                                                            break;
+                                                        case gpg::MatchStatus::PENDING_COMPLETION:
+                                                            logDebug("PENDING_COMPLETION");
+                                                            break;
+                                                        case gpg::MatchStatus::THEIR_TURN:
+                                                            logDebug("THEIR_TURN");
+                                                            break;
+                                                        default:
+                                                            logDebug("Other state");
+                                                            break;
+                                                    }
                                                 }
-                                            } else
-                                                logDebug("matchResponse.status != gpg::MultiplayerStatus::VALID");
+
+                                                    if(gpg::MatchStatus::MY_TURN == matchResponse.match.Status())
+                                                    {
+                                                        logDebug("My turn2");
+                                                        std::vector<uint8_t> match_data;
+                                                        match_data.push_back(100);
+                                                        match_data.push_back(200);
+                                                        match_data.push_back(100);
+
+                                                        gpg::ParticipantResults results = matchResponse.match.ParticipantResults();
+                                                        gpg::MultiplayerParticipant nextParticipant = matchResponse.match.SuggestedNextParticipant();
+
+                                                        if (!nextParticipant.Valid()) {//Error case
+                                                            logDebug("dismiss");
+                                                            GPG_ManagerContext.game_services_->TurnBasedMultiplayer().DismissMatch(matchResponse.match);
+                                                            return;
+                                                        }
+
+                                                        GPG_ManagerContext.game_services_->TurnBasedMultiplayer().TakeMyTurn(matchResponse.match,
+                                                                                                                             match_data,
+                                                                                                                             results, nextParticipant,
+                                                                                                                             [](gpg::TurnBasedMultiplayerManager::TurnBasedMatchResponse const &
+                                                                                                                             response) {
+                                                                                                                                 logDebug("Took turn");
+                                                                                                                             });
+                                                    }
+
+                                                } else
+                                                logDebug(
+                                                        "matchResponse.status != gpg::MultiplayerStatus::VALID");
                                         });
                             }
                             //////
