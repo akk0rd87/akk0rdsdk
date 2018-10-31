@@ -35,6 +35,65 @@ public:
 
 static GPG_ManagerContextStruct GPG_ManagerContext;
 
+void private_CreateTurnBasedMatch(const gpg::TurnBasedMatchConfig& config)
+{
+    GPG_ManagerContext.game_services_->TurnBasedMultiplayer().CreateTurnBasedMatch(
+            config,
+            [](gpg::TurnBasedMultiplayerManager::TurnBasedMatchResponse const &matchResponse) {
+                if (matchResponse.status == gpg::MultiplayerStatus::VALID) {
+                    //PlayGame(matchResponse.match);
+                    logDebug("Ready to play 2");
+
+                    if(matchResponse.match.HasData())
+                        logDebug("Has Data");
+                    else
+                        logDebug("Has no");
+
+                    switch(matchResponse.match.Status())
+                    {
+                        case gpg::MatchStatus::CANCELED: logDebug("CANCELED"); break;
+                        case gpg::MatchStatus::COMPLETED: logDebug("COMPLETED"); break;
+                        case gpg::MatchStatus::EXPIRED: logDebug("EXPIRED"); break;
+                        case gpg::MatchStatus::INVITED: logDebug("INVITED"); break;
+                        case gpg::MatchStatus::MY_TURN: logDebug("MY_TURN"); break;
+                        case gpg::MatchStatus::PENDING_COMPLETION: logDebug("PENDING_COMPLETION"); break;
+                        case gpg::MatchStatus::THEIR_TURN: logDebug("THEIR_TURN"); break;
+                        default: logDebug("Other state"); break;
+                    }
+
+                    if(gpg::MatchStatus::MY_TURN == matchResponse.match.Status())
+                    {
+                        logDebug("My turn2");
+                        std::vector<uint8_t> match_data;
+                        match_data.push_back(100);
+                        match_data.push_back(200);
+                        match_data.push_back(100);
+
+                        gpg::ParticipantResults results = matchResponse.match.ParticipantResults();
+                        gpg::MultiplayerParticipant nextParticipant = matchResponse.match.SuggestedNextParticipant();
+
+                        if (!nextParticipant.Valid()) {//Error case
+                            logDebug("dismiss");
+                            GPG_ManagerContext.game_services_->TurnBasedMultiplayer().DismissMatch(matchResponse.match);
+                            return;
+                        }
+
+                        logDebug("nextParticipant name = %s", nextParticipant.DisplayName().c_str());
+
+                        GPG_ManagerContext.game_services_->TurnBasedMultiplayer().TakeMyTurn(matchResponse.match,
+                                                                                             match_data,
+                                                                                             results, nextParticipant,
+                                                                                             [](gpg::TurnBasedMultiplayerManager::TurnBasedMatchResponse const &
+                                                                                             response) {
+                                                                                                 logDebug("Took turn");
+                                                                                             });
+                    }
+
+
+                } else
+                    logDebug("matchResponse.status != gpg::MultiplayerStatus::VALID");
+            });
+}
 bool GPG_Manager::Init(bool autoLogin)
 {
     if(!GPG_ManagerContext.Inited)
@@ -134,11 +193,15 @@ bool GPG_Manager::Init(bool autoLogin)
                                     }
                                     //Show default inbox
                                     //ShowMatchInbox();
+                                    GPG_Manager::ShowMatchBoxUI();
                                 })
                         .SetOnTurnBasedMatchEvent([] (const gpg::MultiplayerEvent& event, const std::string& str, const gpg::TurnBasedMatch& Match)
                                                   {
                                                       logDebug("SetOnTurnBasedMatchEvent");
 
+                                                      GPG_Manager::ShowMatchBoxUI();
+
+                                                      /*
                                                       switch(event) {
                                                           case gpg::MultiplayerEvent::REMOVED: logDebug("REMOVED"); break;
                                                           case gpg::MultiplayerEvent::UPDATED: logDebug("UPDATED"); break;
@@ -171,6 +234,9 @@ bool GPG_Manager::Init(bool autoLogin)
                                                                                                                                    logDebug("Took turn");
                                                                                                                                });
                                                       }
+                                                      */
+
+
                                                   }
                         )
                         .SetOnLog([](gpg::LogLevel logLevel, const std::string & msg)
@@ -224,7 +290,7 @@ void GPG_Manager::StartSelection(int MinPlayers, int MaxPlayers, bool UI)
                         response) {
                             //////
                             logDebug("PlayerSelectUIResponse");
-                            if (response.status == gpg::UIStatus::VALID) {
+                            if (gpg::IsSuccess(response.status)) {
                                 gpg::TurnBasedMatchConfig config = gpg::TurnBasedMatchConfig::Builder()
                                         .SetMinimumAutomatchingPlayers(
                                                 response.minimum_automatching_players)
@@ -232,80 +298,8 @@ void GPG_Manager::StartSelection(int MinPlayers, int MaxPlayers, bool UI)
                                                 response.maximum_automatching_players)
                                         .AddAllPlayersToInvite(response.player_ids).Create();
 
-                                GPG_ManagerContext.game_services_->TurnBasedMultiplayer().CreateTurnBasedMatch(
-                                        config,
-                                        [](gpg::TurnBasedMultiplayerManager::TurnBasedMatchResponse const &matchResponse) {
-                                            if (matchResponse.status == gpg::MultiplayerStatus::VALID)
-                                            {
-                                                {
-                                                    //PlayGame(matchResponse.match);
-                                                    logDebug("Ready to play 1");
-
-                                                    if (matchResponse.match.HasData())
-                                                        logDebug("Has Data");
-                                                    else
-                                                        logDebug("Has no");
-
-                                                    switch (matchResponse.match.Status()) {
-                                                        case gpg::MatchStatus::CANCELED:
-                                                            logDebug("CANCELED");
-                                                            break;
-                                                        case gpg::MatchStatus::COMPLETED:
-                                                            logDebug("COMPLETED");
-                                                            break;
-                                                        case gpg::MatchStatus::EXPIRED:
-                                                            logDebug("EXPIRED");
-                                                            break;
-                                                        case gpg::MatchStatus::INVITED:
-                                                            logDebug("INVITED");
-                                                            break;
-                                                        case gpg::MatchStatus::MY_TURN:
-                                                            logDebug("MY_TURN");
-                                                            break;
-                                                        case gpg::MatchStatus::PENDING_COMPLETION:
-                                                            logDebug("PENDING_COMPLETION");
-                                                            break;
-                                                        case gpg::MatchStatus::THEIR_TURN:
-                                                            logDebug("THEIR_TURN");
-                                                            break;
-                                                        default:
-                                                            logDebug("Other state");
-                                                            break;
-                                                    }
-                                                }
-
-                                                    if(gpg::MatchStatus::MY_TURN == matchResponse.match.Status())
-                                                    {
-                                                        logDebug("My turn2");
-                                                        std::vector<uint8_t> match_data;
-                                                        match_data.push_back(100);
-                                                        match_data.push_back(200);
-                                                        match_data.push_back(100);
-
-                                                        gpg::ParticipantResults results = matchResponse.match.ParticipantResults();
-                                                        gpg::MultiplayerParticipant nextParticipant = matchResponse.match.SuggestedNextParticipant();
-
-                                                        if (!nextParticipant.Valid()) {//Error case
-                                                            logDebug("dismiss");
-                                                            GPG_ManagerContext.game_services_->TurnBasedMultiplayer().DismissMatch(matchResponse.match);
-                                                            return;
-                                                        }
-
-                                                        GPG_ManagerContext.game_services_->TurnBasedMultiplayer().TakeMyTurn(matchResponse.match,
-                                                                                                                             match_data,
-                                                                                                                             results, nextParticipant,
-                                                                                                                             [](gpg::TurnBasedMultiplayerManager::TurnBasedMatchResponse const &
-                                                                                                                             response) {
-                                                                                                                                 logDebug("Took turn");
-                                                                                                                             });
-                                                    }
-
-                                                } else
-                                                logDebug(
-                                                        "matchResponse.status != gpg::MultiplayerStatus::VALID");
-                                        });
+                                private_CreateTurnBasedMatch(config);
                             }
-                            //////
                         });
             }
             else
@@ -314,60 +308,7 @@ void GPG_Manager::StartSelection(int MinPlayers, int MaxPlayers, bool UI)
                         .SetMinimumAutomatchingPlayers(MinPlayers)
                         .SetMaximumAutomatchingPlayers(MaxPlayers).Create();
 
-                GPG_ManagerContext.game_services_->TurnBasedMultiplayer().CreateTurnBasedMatch(
-                        config,
-                        [](gpg::TurnBasedMultiplayerManager::TurnBasedMatchResponse const &matchResponse) {
-                            if (matchResponse.status == gpg::MultiplayerStatus::VALID) {
-                                //PlayGame(matchResponse.match);
-                                logDebug("Ready to play 2");
-
-                                if(matchResponse.match.HasData())
-                                    logDebug("Has Data");
-                                else
-                                    logDebug("Has no");
-
-                                switch(matchResponse.match.Status())
-                                {
-                                    case gpg::MatchStatus::CANCELED: logDebug("CANCELED"); break;
-                                    case gpg::MatchStatus::COMPLETED: logDebug("COMPLETED"); break;
-                                    case gpg::MatchStatus::EXPIRED: logDebug("EXPIRED"); break;
-                                    case gpg::MatchStatus::INVITED: logDebug("INVITED"); break;
-                                    case gpg::MatchStatus::MY_TURN: logDebug("MY_TURN"); break;
-                                    case gpg::MatchStatus::PENDING_COMPLETION: logDebug("PENDING_COMPLETION"); break;
-                                    case gpg::MatchStatus::THEIR_TURN: logDebug("THEIR_TURN"); break;
-                                    default: logDebug("Other state"); break;
-                                }
-
-                                if(gpg::MatchStatus::MY_TURN == matchResponse.match.Status())
-                                {
-                                    logDebug("My turn2");
-                                    std::vector<uint8_t> match_data;
-                                    match_data.push_back(100);
-                                    match_data.push_back(200);
-                                    match_data.push_back(100);
-
-                                    gpg::ParticipantResults results = matchResponse.match.ParticipantResults();
-                                    gpg::MultiplayerParticipant nextParticipant = matchResponse.match.SuggestedNextParticipant();
-
-                                    if (!nextParticipant.Valid()) {//Error case
-                                        logDebug("dismiss");
-                                        GPG_ManagerContext.game_services_->TurnBasedMultiplayer().DismissMatch(matchResponse.match);
-                                        return;
-                                    }
-
-                                    GPG_ManagerContext.game_services_->TurnBasedMultiplayer().TakeMyTurn(matchResponse.match,
-                                                                                                         match_data,
-                                                                                                         results, nextParticipant,
-                                                                                                         [](gpg::TurnBasedMultiplayerManager::TurnBasedMatchResponse const &
-                                                                                                         response) {
-                                                                                                             logDebug("Took turn");
-                                                                                                         });
-                                }
-
-
-                            } else
-                                logDebug("matchResponse.status != gpg::MultiplayerStatus::VALID");
-                        });
+                private_CreateTurnBasedMatch(config);
             }
         }
 #endif

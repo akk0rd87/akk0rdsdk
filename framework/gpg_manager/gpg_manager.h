@@ -3,6 +3,7 @@
 
 class GPG_Manager
 {
+
 public:
     static bool Init(bool autoLogin);
 
