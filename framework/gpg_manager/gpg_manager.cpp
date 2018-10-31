@@ -37,10 +37,19 @@ static GPG_ManagerContextStruct GPG_ManagerContext;
 
 void private_MyTurn(const gpg::TurnBasedMatch& Match)
 {
+    // When it is MY_TURN, localParticipant is always PendingParticipant().
+    gpg::MultiplayerParticipant localParticipant =
+            Match.PendingParticipant();
+
+    logDebug("Taking my turn. local participant id:%s", localParticipant.Id().c_str());
+
     std::vector<uint8_t> match_data;
     match_data.push_back(100);
     match_data.push_back(200);
     match_data.push_back(100);
+    match_data.push_back(10);
+    match_data.push_back(111);
+    match_data.push_back(1);
 
     gpg::ParticipantResults results = Match.ParticipantResults();
     gpg::MultiplayerParticipant nextParticipant = Match.SuggestedNextParticipant();
