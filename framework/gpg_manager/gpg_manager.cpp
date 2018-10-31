@@ -197,7 +197,6 @@ bool GPG_Manager::Init(bool autoLogin)
                                     break;
                             }
                         })
-                        /*
                         .SetOnMultiplayerInvitationEvent(
                                 [](gpg::MultiplayerEvent event, std::string match_id,
                                        gpg::MultiplayerInvitation invitation) {
@@ -211,7 +210,6 @@ bool GPG_Manager::Init(bool autoLogin)
 
                                     GPG_Manager::ShowMatchBoxUI();
                                 })
-                                */
                         .SetOnTurnBasedMatchEvent([] (const gpg::MultiplayerEvent& event, const std::string& str, const gpg::TurnBasedMatch& Match)
                                                   {
                                                       logDebug("SetOnTurnBasedMatchEvent callback");
