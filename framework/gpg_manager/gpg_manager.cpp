@@ -80,12 +80,19 @@ void private_CreateTurnBasedMatch(const gpg::TurnBasedMatchConfig& config)
 
                         logDebug("nextParticipant name = %s", nextParticipant.DisplayName().c_str());
 
+                        std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+
                         GPG_ManagerContext.game_services_->TurnBasedMultiplayer().TakeMyTurn(matchResponse.match,
                                                                                              match_data,
                                                                                              results, nextParticipant,
                                                                                              [](gpg::TurnBasedMultiplayerManager::TurnBasedMatchResponse const &
                                                                                              response) {
                                                                                                  logDebug("Took turn");
+
+                                                                                                 if(gpg::IsSuccess(response.status))
+                                                                                                     logDebug("success");
+                                                                                                 else
+                                                                                                     logError("error");
                                                                                              });
                     }
 
@@ -282,9 +289,76 @@ void GPG_Manager::ShowMatchBoxUI()
         if(GPG_ManagerContext.game_services_->IsAuthorized())
         {
             //showMatchInboxUI
-            GPG_ManagerContext.game_services_->TurnBasedMultiplayer().ShowMatchInboxUI([](const gpg::TurnBasedMultiplayerManager::MatchInboxUIResponse& rsp)
+            GPG_ManagerContext.game_services_->TurnBasedMultiplayer().ShowMatchInboxUI([](const gpg::TurnBasedMultiplayerManager::MatchInboxUIResponse& response)
                                                                                        {
                                                                                            logDebug("MatchInboxUIResponse");
+
+                                                                                           if (gpg::IsSuccess(response.status)) {
+                                                                                               switch (response.match.Status()) {
+                                                                                                   case gpg::MatchStatus::THEIR_TURN:
+                                                                                                       logDebug("THEIR_TURN");
+                                                                                                       //Manage match with dismiss, leave and cancel options
+                                                                                                       //ManageGame(response.match, true, true, false);
+                                                                                                       break;
+                                                                                                   case gpg::MatchStatus::MY_TURN:
+                                                                                                       logDebug("MY_TURN");
+
+                                                                                                       {
+                                                                                                           {
+                                                                                                               logDebug("My turn2");
+                                                                                                               std::vector<uint8_t> match_data;
+                                                                                                               match_data.push_back(100);
+                                                                                                               match_data.push_back(200);
+                                                                                                               match_data.push_back(100);
+
+                                                                                                               gpg::ParticipantResults results = response.match.ParticipantResults();
+                                                                                                               gpg::MultiplayerParticipant nextParticipant = response.match.SuggestedNextParticipant();
+
+                                                                                                               if (!nextParticipant.Valid()) {//Error case
+                                                                                                                   logDebug("dismiss");
+                                                                                                                   GPG_ManagerContext.game_services_->TurnBasedMultiplayer().DismissMatch(response.match);
+                                                                                                                   return;
+                                                                                                               }
+
+                                                                                                               logDebug("nextParticipant name = %s", nextParticipant.DisplayName().c_str());
+
+                                                                                                               std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+
+                                                                                                               GPG_ManagerContext.game_services_->TurnBasedMultiplayer().TakeMyTurn(response.match,
+                                                                                                                                                                                    match_data,
+                                                                                                                                                                                    results, nextParticipant,
+                                                                                                                                                                                    [](gpg::TurnBasedMultiplayerManager::TurnBasedMatchResponse const &
+                                                                                                                                                                                    response) {
+                                                                                                                                                                                        logDebug("Took turn 2");
+                                                                                                                                                                                        if(gpg::IsSuccess(response.status))
+                                                                                                                                                                                            logDebug("success");
+                                                                                                                                                                                        else
+                                                                                                                                                                                            logError("error");
+                                                                                                                                                                                    });
+                                                                                                           }
+                                                                                                       }
+
+                                                                                                       //Play selected game
+                                                                                                       //PlayGame(response.match);
+                                                                                                       break;
+                                                                                                   case gpg::MatchStatus::COMPLETED:
+                                                                                                       logDebug("COMPLETED");
+                                                                                                       //Manage match with dismiss, rematch options
+                                                                                                       //ManageGame(response.match, false, false, true);
+                                                                                                       break;
+                                                                                                   case gpg::MatchStatus::EXPIRED:
+                                                                                                       logDebug("EXPIRED");
+                                                                                                       break;
+                                                                                                   default:
+                                                                                                       logDebug("DEFAULT");
+                                                                                                       //Manage match with dismiss option
+                                                                                                       //ManageGame(response.match, false, false, false);
+                                                                                                       break;
+                                                                                               }
+                                                                                           } else
+                                                                                           {
+                                                                                               logError("Invalid response status");
+                                                                                           }
                                                                                        }
 
                     );
