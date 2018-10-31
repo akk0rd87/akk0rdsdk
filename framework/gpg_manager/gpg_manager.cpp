@@ -53,7 +53,7 @@ void private_MyTurn(const gpg::TurnBasedMatch& Match)
 
     logDebug("nextParticipant name = %s", nextParticipant.DisplayName().c_str());
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+    //std::this_thread::sleep_for(std::chrono::milliseconds(3000));
 
     GPG_ManagerContext.game_services_->TurnBasedMultiplayer().TakeMyTurn(Match,
                                                                          match_data,
