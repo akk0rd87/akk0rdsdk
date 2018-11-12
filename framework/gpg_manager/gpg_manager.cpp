@@ -35,6 +35,7 @@ public:
 
 static GPG_ManagerContextStruct GPG_ManagerContext;
 
+#ifdef __ANDROID__
 void private_MyTurn(const gpg::TurnBasedMatch& Match)
 {
     // When it is MY_TURN, localParticipant is always PendingParticipant().
@@ -108,7 +109,7 @@ void private_CreateTurnBasedMatch(const gpg::TurnBasedMatchConfig& config)
                     logDebug("matchResponse.status != gpg::MultiplayerStatus::VALID");
             });
 }
-
+#endif
 
 bool GPG_Manager::Init(bool autoLogin)
 {
