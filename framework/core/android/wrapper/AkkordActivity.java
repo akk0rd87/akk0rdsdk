@@ -1,11 +1,8 @@
 package org.akkord.lib;
 
-import android.content.Intent;
-import android.os.Bundle;
 import org.libsdl.app.SDLActivity;
-import android.content.pm.ActivityInfo;
+import android.os.Bundle;
 import android.app.Activity;
-
 
 public class AkkordActivity extends SDLActivity {
     
@@ -13,9 +10,7 @@ public class AkkordActivity extends SDLActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        //instance = this;
-        //Utils._context = this;
+        super.onCreate(savedInstanceState);        
         Utils.Init(this);
     }
 
@@ -33,16 +28,4 @@ public class AkkordActivity extends SDLActivity {
             "main"
         };
     }
-    
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) 
-    {
-        super.onActivityResult(requestCode, resultCode, data);
-        nativeOnActivityResult(this, requestCode, resultCode, data);
-    }
-    
-    
-    
-    
-    // NATIVE
-    private static native void nativeOnActivityResult(Activity activity, int requestCode, int resultCode, Intent data);
 }
