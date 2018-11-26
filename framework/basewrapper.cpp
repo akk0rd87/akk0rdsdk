@@ -1371,3 +1371,65 @@ bool FileReader::Read(char* Buffer, unsigned Size, unsigned& Readed)
     Readed = (unsigned)in->gcount();
     return (Readed > 0);
 }
+
+void WAVPlayer::Clear()
+{
+    this->wav_length = 0;
+
+    if (this->deviceId)
+    {
+        SDL_CloseAudioDevice(this->deviceId);
+        this->deviceId = 0;
+    }    
+
+    if (this->wav_buffer)
+    {
+        SDL_FreeWAV(this->wav_buffer);
+        this->wav_buffer = nullptr;
+    }
+};
+
+bool WAVPlayer::LoadFromFile(const char* FileName, const BWrapper::FileSearchPriority SearchPriority)
+{
+    this->Clear();
+    unsigned Size;
+    auto buffer = BWrapper::File2Buffer(FileName, BWrapper::FileSearchPriority::Assets, Size);
+
+    if (nullptr == buffer)
+    {
+        logError("Error load file = %s, error=%s", FileName, SDL_GetError());
+        return false;
+    }
+
+    auto io = SDL_RWFromMem(buffer, Size);
+    SDL_zero(this->wav_spec);
+
+    if (SDL_LoadWAV_RW(io, 1, &this->wav_spec, &this->wav_buffer, &this->wav_length) == nullptr) {
+        logError("error SDL_LoadWAV_RW %s %s", FileName, SDL_GetError());
+        delete[] buffer;
+        return false;
+    }
+
+    delete[] buffer;
+    this->deviceId = SDL_OpenAudioDevice(nullptr, 0, &this->wav_spec, nullptr, 0);
+    return true;
+};
+
+bool WAVPlayer::Play()
+{
+    if (this->wav_length)
+    {
+        SDL_QueueAudio(this->deviceId, this->wav_buffer, this->wav_length);
+        SDL_PauseAudioDevice(this->deviceId, 0);
+        return true;
+    }
+    logError("Error play wav: wav_length = 0");
+    return false;
+};
+
+bool WAVPlayer::Destroy()
+{
+    Clear();
+    return true;
+};
+
