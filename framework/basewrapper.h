@@ -312,12 +312,12 @@ class WAVPlayer
     Uint8 *wav_buffer = nullptr;      // buffer containing our audio file
     SDL_AudioSpec wav_spec; // the specs of our piece of music
     SDL_AudioDeviceID deviceId = 0;
-
-    void Clear();
+    
 public:
     bool LoadFromFile(const char* FileName, const BWrapper::FileSearchPriority SearchPriority = BWrapper::FileSearchPriority::Assets);
     bool Play();
-    bool Destroy();
+    void Clear();
+    ~WAVPlayer();
 };
 
 #endif // __AKK0RD_BASE_BASEWRAPPER_H__

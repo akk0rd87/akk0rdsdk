@@ -1427,9 +1427,8 @@ bool WAVPlayer::Play()
     return false;
 };
 
-bool WAVPlayer::Destroy()
+WAVPlayer::~WAVPlayer()
 {
-    Clear();
-    return true;
+    Clear();    
 };
 
