@@ -185,14 +185,15 @@ public class Utils {
                         }
                     });
 
-                    /* OnDismissListener не нужен. Он вызывается всегда при закрытии мессаджбокса
-                    builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                        @Override
-                        public void onDismiss(DialogInterface dialog) {
-                            Log.v(TAG, "setOnCancelListener: onDismiss");
-                            MessageBoxCallback(msgCode, 550);
-                        }
-                    });
+                    /*
+                    if (android.os.Build.VERSION.SDK_INT >= 17)
+                        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                            @Override
+                            public void onDismiss(DialogInterface dialog) {
+                                Log.v(TAG, "setOnCancelListener: onDismiss");
+                                MessageBoxCallback(msgCode, 550);
+                            }
+                        });
                     */
 
                     builder.show();
