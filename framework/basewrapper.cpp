@@ -1410,8 +1410,9 @@ bool WAVPlayer::LoadFromFile(const char* FileName, const BWrapper::FileSearchPri
         return false;
     }
 
-    delete[] buffer;
+    delete[] buffer;    
     this->deviceId = SDL_OpenAudioDevice(nullptr, 0, &this->wav_spec, nullptr, 0);
+    logDebug("deviceId = %d", deviceId);
     return true;
 };
 
@@ -1419,6 +1420,7 @@ bool WAVPlayer::Play()
 {
     if (this->wav_length)
     {
+        logDebug("Play audio");
         SDL_QueueAudio(this->deviceId, this->wav_buffer, this->wav_length);
         SDL_PauseAudioDevice(this->deviceId, 0);
         return true;
