@@ -1421,6 +1421,7 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
     // Sensor events
     public void enableSensor(int sensortype, boolean enabled) {
         // TODO: This uses getDefaultSensor - what if we have >1 accels?
+        /*
         if (enabled) {
             mSensorManager.registerListener(this,
                             mSensorManager.getDefaultSensor(sensortype),
@@ -1429,6 +1430,7 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
             mSensorManager.unregisterListener(this,
                             mSensorManager.getDefaultSensor(sensortype));
         }
+        */
     }
 
     @Override
