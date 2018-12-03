@@ -37,17 +37,17 @@ struct DirContentElement
 typedef std::vector<std::unique_ptr<DirContentElement>> DirContentElementArray;
 
 #ifdef __AKK0RD_DEBUG_MACRO__
-	#define log(LogPriority, fmt, ...)  BWrapper::Log(LogPriority, __FILE__, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
+	#define logVA(LogPriority, fmt, ...)  BWrapper::Log(LogPriority, __FILE__, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
 #else
-	#define log(LogPriority, fmt, ...)
+	#define logVA(LogPriority, fmt, ...)
 #endif
 
-#define logVerbose(fmt, ...)        log(BWrapper::LogPriority::Verbose , fmt, ##__VA_ARGS__)
-#define logDebug(fmt, ...)          log(BWrapper::LogPriority::Debug   , fmt, ##__VA_ARGS__)
-#define logInfo(fmt, ...)           log(BWrapper::LogPriority::Info    , fmt, ##__VA_ARGS__)
-#define logWarning(fmt, ...)        log(BWrapper::LogPriority::Warning , fmt, ##__VA_ARGS__)
-#define logError(fmt, ...)          log(BWrapper::LogPriority::Error   , fmt, ##__VA_ARGS__)
-#define logCritical(fmt, ...)       log(BWrapper::LogPriority::Critical, fmt, ##__VA_ARGS__)
+#define logVerbose(fmt, ...)  logVA(BWrapper::LogPriority::Verbose , fmt, ##__VA_ARGS__)
+#define logDebug(fmt, ...)    logVA(BWrapper::LogPriority::Debug   , fmt, ##__VA_ARGS__)
+#define logInfo(fmt, ...)     logVA(BWrapper::LogPriority::Info    , fmt, ##__VA_ARGS__)
+#define logWarning(fmt, ...)  logVA(BWrapper::LogPriority::Warning , fmt, ##__VA_ARGS__)
+#define logError(fmt, ...)    logVA(BWrapper::LogPriority::Error   , fmt, ##__VA_ARGS__)
+#define logCritical(fmt, ...) logVA(BWrapper::LogPriority::Critical, fmt, ##__VA_ARGS__)
 
 struct LogParamsStruct
 {

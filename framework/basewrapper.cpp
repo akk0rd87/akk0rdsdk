@@ -1131,8 +1131,8 @@ bool BWrapper::PrintDirContent(const char* Path, BWrapper::LogPriority Priority,
         {
             if (Dc->isDir) ptype = dir;
             else           ptype = file;
-
-            log(Priority, "%s %s/%s", ptype, Path, Dc->Name.c_str());
+                        
+            logVA(Priority, "%s %s/%s", ptype, Path, Dc->Name.c_str());
 
             if (Recursive && Dc->isDir)
             {
