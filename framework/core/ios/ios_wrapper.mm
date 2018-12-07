@@ -237,6 +237,10 @@ void iOSWrapper::MessageBoxShow (int Code, const char* Title, const char* Messag
         }
     }
     
-    UIViewController *controller = [UIApplication sharedApplication].keyWindow.rootViewController;
-    [controller presentViewController:alert animated:YES completion:nil];
+    //UIViewController *controller = [UIApplication sharedApplication].keyWindow.rootViewController;
+    //[controller presentViewController:alert animated:YES completion:nil];
+    
+    auto appDelegate = [[UIApplication sharedApplication] delegate];
+    [appDelegate.window.rootViewController dismissViewControllerAnimated:YES completion:nil];
+    [appDelegate.window.rootViewController presentViewController:alert animated:YES completion:nil];
 };
