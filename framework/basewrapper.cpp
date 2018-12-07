@@ -1102,9 +1102,9 @@ Uint32 msgBox::GetEventCode()
 	return CurrentContext.MessageBoxEvent;
 }
 
-void msgBox::Show(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3)
+void msgBox::Show(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS)
 {
-	Platforms::MessageBoxShow(Code, Title, Message, Button1, Button2, Button3);
+	Platforms::MessageBoxShow(Code, Title, Message, Button1, Button2, Button3, TimeOutMS);
 }
 
 void msgBox::DecodeEvent(const SDL_Event& Event, int& Code, msgBox::Action& Action)

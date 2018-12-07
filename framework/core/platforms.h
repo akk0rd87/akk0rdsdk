@@ -59,7 +59,7 @@ public:
 							        
     static bool                     GetDirContent  (const char* Dir, DirContentElementArray& ArrayList);
 							        
-	static void                     MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3);
+	static void                     MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS);
 };
 
 /////////////////////////////////////////
@@ -285,14 +285,14 @@ std::string Platforms::GetEnvVariable(const char* Variable)
 }
 
 
-void Platforms::MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3)
+void Platforms::MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS)
 {
 #ifdef __WIN32__
 	return WindowsWrapper::MessageBoxShow(Code, Title, Message, Button1, Button2, Button3);
 #endif
 
 #ifdef __ANDROID__
-	return AndroidWrapper::MessageBoxShow(Code, Title, Message, Button1, Button2, Button3);
+	return AndroidWrapper::MessageBoxShow(Code, Title, Message, Button1, Button2, Button3, TimeOutMS);
 #endif
 
 #ifdef __APPLE__

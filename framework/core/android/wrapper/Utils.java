@@ -110,18 +110,35 @@ public class Utils {
         }
     }
 
-    public static void showMessageBox(int Code, String Title, String Message, String Button1, String Button2, String Button3)
+    public static void showMessageBox(int Code, String Title, String Message, String Button1, String Button2, String Button3, long TimeOut)
     {
         class OneShotTask implements Runnable {
-            int    msgCode;
-            String msgTitle;
-            String msgMessage;
-            String msgButton1;
-            String msgButton2;
-            String msgButton3;
+            private int    msgCode;
+            private String msgTitle;
+            private String msgMessage;
+            private String msgButton1;
+            private String msgButton2;
+            private String msgButton3;
+            private long   msgTimeOut;
+
+            private AlertDialog mAlertDialog;
+
+            class TimeOutRunnable implements Runnable {
+                public void run() {
+                    try {
+                        Thread.sleep(msgTimeOut);
+                        if(mAlertDialog != null)
+                            if(mAlertDialog.isShowing())
+                                mAlertDialog.dismiss();
+                    } catch (InterruptedException e) {
+                        Log.e(TAG, "InterruptedException from a ping check thread!");
+                    }
+                }
+            }
+            private Thread mTimeOutRunnable = null;
 
             // https://stackoverflow.com/questions/5853167/runnable-with-a-parameter
-            OneShotTask(int Code, String Title, String Message, String Button1, String Button2, String Button3)
+            OneShotTask(int Code, String Title, String Message, String Button1, String Button2, String Button3, long TimeOut)
             {
                 msgCode    = Code;
                 msgTitle   = Title;
@@ -129,6 +146,7 @@ public class Utils {
                 msgButton1 = Button1;
                 msgButton2 = Button2;
                 msgButton3 = Button3;
+                msgTimeOut = TimeOut;
             }
             public void run() {
                 try
@@ -195,8 +213,13 @@ public class Utils {
                             }
                         });
                     */
-
-                    builder.show();
+                    mAlertDialog = builder.create();
+                    mAlertDialog.show();
+                    if(msgTimeOut > 0)
+                    {
+                        mTimeOutRunnable = new Thread(new TimeOutRunnable());
+                        mTimeOutRunnable.start();
+                    }
                 }
                 catch(Exception e)
                 {                    
@@ -205,7 +228,7 @@ public class Utils {
             }
         }
         Log.v(TAG, "before runOnUiThread");
-        _context.runOnUiThread(new OneShotTask(Code, Title, Message, Button1, Button2, Button3));
+        _context.runOnUiThread(new OneShotTask(Code, Title, Message, Button1, Button2, Button3, TimeOut));
         Log.v(TAG, "after runOnUiThread");
     }
     

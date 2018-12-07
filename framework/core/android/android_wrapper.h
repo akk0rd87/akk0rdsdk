@@ -33,7 +33,7 @@ public:
     static bool              ShowToast            (const char* Message, BWrapper::AndroidToastDuration Duration, int Gravity, int xOffset, int yOffset);
     static bool              GetDirContent        (const char* Dir, DirContentElementArray& ArrayList);
 	
-	static void              MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3);
+	static void              MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS);
 };
 
 #endif // __AKK0RD_ANDROID_BASEWRAPPER_H__

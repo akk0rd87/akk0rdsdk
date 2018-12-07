@@ -37,7 +37,7 @@ bool AndroidWrapper::Init()
     AndroidWrapperState.midOpenURL         = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "openURL", "(Ljava/lang/String;)V");
     AndroidWrapperState.midShowToast       = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "showToast", "(Ljava/lang/String;IIII)V");
     AndroidWrapperState.midMkDir           = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "MkDir", "(Ljava/lang/String;)I");
-    AndroidWrapperState.midShowMessageBox  = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "showMessageBox", "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
+    AndroidWrapperState.midShowMessageBox  = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "showMessageBox", "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)V");
     AndroidWrapperState.midGetAssetManager = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "GetAssetManager", "()Landroid/content/res/AssetManager;");
 
     if(AndroidWrapperState.midDirectoryDelete  == nullptr) { Result = false; logError("midDirectoryDelete Java method not found");}
@@ -373,7 +373,7 @@ void AndroidWrapper::GetInternalDirs(std::string& InternalDir, std::string& Inte
     InternalWriteDir = AndroidWrapperState.sInternalWriteDir;
 }
 
-void AndroidWrapper::MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3)
+void AndroidWrapper::MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS)
 {
     JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
     if(!AndroidWrapperState.midShowMessageBox)
@@ -388,8 +388,10 @@ void AndroidWrapper::MessageBoxShow(int Code, const char* Title, const char* Mes
     jstring jstring_Button2 = (jstring)env->NewStringUTF(Button2);
     jstring jstring_Button3 = (jstring)env->NewStringUTF(Button3);
     
+    Uint64 tm = static_cast<Uint64>(TimeOutMS);
+    
     logDebug("Call Method");
-    env->CallStaticVoidMethod(AndroidWrapperState.globalUtils, AndroidWrapperState.midShowMessageBox, Code, jstring_Title, jstring_Message, jstring_Button1, jstring_Button2, jstring_Button3);
+    env->CallStaticVoidMethod(AndroidWrapperState.globalUtils, AndroidWrapperState.midShowMessageBox, Code, jstring_Title, jstring_Message, jstring_Button1, jstring_Button2, jstring_Button3, tm);
     
     env->DeleteLocalRef(jstring_Title  );
     env->DeleteLocalRef(jstring_Message);
