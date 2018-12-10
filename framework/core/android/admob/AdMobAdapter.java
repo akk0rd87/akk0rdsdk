@@ -230,8 +230,14 @@ public class AdMobAdapter {
         {
             Activity ctx = Utils.GetContext();
             ctx.runOnUiThread(new Runnable() {
-                public void run() {                
-                    mInterstitialAd.loadAd(new AdRequest.Builder().build());
+                public void run() {
+                    try{
+                          mInterstitialAd.loadAd(new AdRequest.Builder().build());
+                        }
+                    catch(Exception e)
+                    {
+
+                    }
                 }
             });
         } 
@@ -247,8 +253,14 @@ public class AdMobAdapter {
         {
             Activity ctx = Utils.GetContext();
             ctx.runOnUiThread(new Runnable() {
-                public void run() {                
-                    mRewardedVideoAd.loadAd(/*"ca-app-pub-3940256099942544/5224354917"*/ RewardedVideoUnitID, new AdRequest.Builder().build());
+                public void run() {
+                    try {
+                        mRewardedVideoAd.loadAd(/*"ca-app-pub-3940256099942544/5224354917"*/ RewardedVideoUnitID, new AdRequest.Builder().build());
+                    }
+                    catch(Exception e)
+                    {
+
+                    }
                 }
             });
         } 
@@ -265,10 +277,15 @@ public class AdMobAdapter {
             Activity ctx = Utils.GetContext();
             ctx.runOnUiThread(new Runnable() {
                 public void run() {
-                        if(mInterstitialAd.isLoaded())
-                        {
+                    try {
+                        if (mInterstitialAd.isLoaded()) {
                             mInterstitialAd.show();
                         }
+                    }
+                    catch(Exception e)
+                    {
+
+                    }
                    }
             });
 
@@ -288,9 +305,14 @@ public class AdMobAdapter {
             Activity ctx = Utils.GetContext();
             ctx.runOnUiThread(new Runnable() {
                 public void run() {
-                    if(mRewardedVideoAd.isLoaded())
+                    try {
+                        if (mRewardedVideoAd.isLoaded()) {
+                            mRewardedVideoAd.show();
+                        }
+                    }
+                    catch(Exception e)
                     {
-                        mRewardedVideoAd.show();
+
                     }
                    }
             });               
