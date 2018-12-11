@@ -17,6 +17,8 @@ public:
     void           OpenURLByIndex(unsigned Index);
     static void    OpenURL(Apps AppId);
 	void           Clear();
+    
+    static void    OpenPublisherAppstorePage();
 
     AdRandomizer();
     ~AdRandomizer();
@@ -370,5 +372,13 @@ void AdRandomizer::InitApps()
             LoadApp(*v, j);    
 #endif
 }
+
+void AdRandomizer::OpenPublisherAppstorePage()
+{
+    if(BWrapper::GetDeviceOS() == BWrapper::OS::iOS)
+        BWrapper::OpenURL("https://itunes.apple.com/developer/id945326562");
+    else
+        BWrapper::OpenURL("https://play.google.com/store/apps/developer?id=popapp.org");
+};
 
 #endif // __AKK0RD_ADRANDOMIZER_H__
