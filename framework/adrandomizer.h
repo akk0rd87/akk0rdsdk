@@ -7,26 +7,29 @@ class AdRandomizer
 {
 public:
     enum struct Apps : unsigned { CFCross, FCross, JCross, JDraw, WordsRu1, WordsRu2, WordsRu8, WordsUs/*, CJCross*/};
-    static const int ImageWidth  = 100;
-    static const int ImageHeight = 100;
+    //static const int ImageWidth  = 100;
+    //static const int ImageHeight = 100;
 
+    /*
     bool           Init();
     void           ExcludeApp(Apps AppId);
     unsigned       Randomize(unsigned Count);
     int            DrawImageByIndex(unsigned Index, const AkkordRect &Rect);
     void           OpenURLByIndex(unsigned Index);
-    static void    OpenURL(Apps AppId);
-	void           Clear();
+    void           Clear();
+    */
     
+    static void    OpenURL(Apps AppId);    
     static void    OpenPublisherAppstorePage();
 
-    AdRandomizer();
-    ~AdRandomizer();
+    //AdRandomizer();
+    //~AdRandomizer();
 
 private:
-    const char* AdRandomizerDir = "adrandomizer";
+    //const char* AdRandomizerDir = "adrandomizer";
 	static void OpenURL_private(BWrapper::OS OSCode, Apps AppId);
 
+   /*
     class AppInfoStruct
     {
     public:
@@ -50,6 +53,7 @@ private:
     void InitApps();
     bool LoadApp(AppInfoStruct& App, unsigned ImageIndex);
     std::vector<std::unique_ptr<AppInfoStruct>> CurApps;
+    */
 };
 
 /////////////////////////////////////////////////
@@ -62,6 +66,7 @@ private:
 На ios ищем в локальной папке adrandomizer
 */
 
+/*
 // Для винды устанавливаем корневой путь
 void AdRandomizer::InitRootPath()
 {
@@ -95,6 +100,7 @@ AdRandomizer::~AdRandomizer()
     Clear();
 }
 
+
 // Загрузка изображения для приложения
 bool AdRandomizer::LoadApp(AppInfoStruct& App, unsigned ImageIndex)
 {
@@ -110,7 +116,6 @@ bool AdRandomizer::LoadApp(AppInfoStruct& App, unsigned ImageIndex)
     return res;
 }
 
-
 bool AdRandomizer::IsValidIndex(unsigned Index)
 {
     if (Index < CurApps.size()) return true;
@@ -118,6 +123,8 @@ bool AdRandomizer::IsValidIndex(unsigned Index)
     logError("AdRandomizer::IsValidIndex: Index %d does not exist CurApps with size %d", Index, CurApps.size());
     return false;
 }
+
+
 
 void AdRandomizer::ExcludeApp(Apps AppId)
 {
@@ -158,6 +165,7 @@ void AdRandomizer::OpenURLByIndex(unsigned Index)
     if (!IsValidIndex(Index)) return;
 	AdRandomizer::OpenURL(CurApps[Index]->AppCode);
 }
+*/
 
 ///////////////////////////////
 ///////////////////////////////
@@ -323,6 +331,7 @@ void AdRandomizer::OpenURL(Apps AppId)
 	}
 }
 
+/*
 void AdRandomizer::InitApps()
 {
     //CurApps.push_back(std::make_unique<AppInfoStruct>());
@@ -372,6 +381,7 @@ void AdRandomizer::InitApps()
             LoadApp(*v, j);    
 #endif
 }
+*/
 
 void AdRandomizer::OpenPublisherAppstorePage()
 {
