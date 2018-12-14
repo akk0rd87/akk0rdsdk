@@ -104,6 +104,8 @@ sdkmanager.bat extras;google;google_play_services
 ### **iOS**
     - https://o7planning.org/en/11555/how-to-use-windows-like-shortcuts-in-mac-os-virtual-machine
     
+    - resolving Signing Issues https://stackoverflow.com/questions/37806538/code-signing-is-required-for-product-type-application-in-sdk-ios-10-0-stic
+    
     - Use lipo for building Universal SDL and SDL_image lib for ios device and simulator:
 - lipo -create iosDevice/libSDL2.a simulator/libSDL2.a -output libSDL2.a
 - lipo -create iosDevice/libSDL2_image.a simulator/libSDL2_image.a -output libSDL2_image.a
