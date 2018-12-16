@@ -174,6 +174,11 @@ std::string iOSWrapper::GetLanguage()
     return std::string([languageCode UTF8String]);
 }
 
+void iOSWrapper::ShareText(const char* Title, const char* Message)
+{
+    
+};
+
 void iOSWrapper::MessageBoxShow (int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3)
 {
     NSString *sTitle = [[NSString alloc] initWithUTF8String:Title];

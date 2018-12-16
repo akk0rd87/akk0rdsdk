@@ -306,6 +306,10 @@ void Platforms::ShareText(const char* Title, const char* Message)
 #ifdef __ANDROID__
 	return AndroidWrapper::ShareText(Title, Message);
 #endif
+
+#ifdef __APPLE__
+	return iOSWrapper::ShareText(Title, Message);
+#endif
 };
 
 bool Platforms::Init()
