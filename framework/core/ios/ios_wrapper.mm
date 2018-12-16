@@ -176,7 +176,29 @@ std::string iOSWrapper::GetLanguage()
 
 void iOSWrapper::ShareText(const char* Title, const char* Message)
 {
+   //NSString *textToShare = @"Look at this awesome website for aspiring iOS Developers!";
+//    NSString *sTitle = [[NSString alloc] initWithUTF8String:Title];
+    NSString *sMessage = [[NSString alloc] initWithUTF8String:Message];
     
+    NSArray *objectsToShare = @[sMessage];
+    
+    UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:objectsToShare applicationActivities:nil];
+    
+
+    NSArray *excludeActivities = @[UIActivityTypeAirDrop,
+                                   UIActivityTypePrint,
+                                   UIActivityTypeAssignToContact,
+                                   UIActivityTypeSaveToCameraRoll,
+                                   UIActivityTypeAddToReadingList,
+                                   UIActivityTypePostToFlickr,
+                                   UIActivityTypePostToVimeo];
+    activityVC.excludedActivityTypes = excludeActivities;
+    
+    auto appDelegate = [[UIApplication sharedApplication] delegate];
+    [appDelegate.window.rootViewController presentViewController:activityVC animated:YES completion:nil];
+    
+//    [sTitle release];
+    [sMessage release];
 };
 
 void iOSWrapper::MessageBoxShow (int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3)
