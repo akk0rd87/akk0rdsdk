@@ -17,6 +17,7 @@ jmethodID midShowToast            = nullptr;
 jmethodID midMkDir                = nullptr;
 jmethodID midShowMessageBox       = nullptr;
 jmethodID midGetAssetManager      = nullptr;
+jmethodID midShareText            = nullptr;
 
 std::string sLanguage;
 std::string sInternalDir;
@@ -39,6 +40,7 @@ bool AndroidWrapper::Init()
     AndroidWrapperState.midMkDir           = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "MkDir", "(Ljava/lang/String;)I");
     AndroidWrapperState.midShowMessageBox  = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "showMessageBox", "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)V");
     AndroidWrapperState.midGetAssetManager = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "GetAssetManager", "()Landroid/content/res/AssetManager;");
+    AndroidWrapperState.midShareText       = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "shareText", "(Ljava/lang/String;Ljava/lang/String;)V");
 
     if(AndroidWrapperState.midDirectoryDelete  == nullptr) { Result = false; logError("midDirectoryDelete Java method not found");}
     if(AndroidWrapperState.midOpenURL          == nullptr) { Result = false; logError("midOpenURL         Java method not found");}
@@ -46,6 +48,7 @@ bool AndroidWrapper::Init()
     if(AndroidWrapperState.midMkDir            == nullptr) { Result = false; logError("midMkDir           Java method not found");}
     if(AndroidWrapperState.midShowMessageBox   == nullptr) { Result = false; logError("midShowMessageBox  Java method not found");}
     if(AndroidWrapperState.midGetAssetManager  == nullptr) { Result = false; logError("midGetAssetManager Java method not found");}
+    if(AndroidWrapperState.midShareText        == nullptr) { Result = false; logError("midShareText       Java method not found");}
 
     // One-time call functions
     jmethodID GetLanguage         = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "getLanguage", "()Ljava/lang/String;");
@@ -398,6 +401,23 @@ void AndroidWrapper::MessageBoxShow(int Code, const char* Title, const char* Mes
     env->DeleteLocalRef(jstring_Button1);
     env->DeleteLocalRef(jstring_Button2);
     env->DeleteLocalRef(jstring_Button3);    
+};
+
+void AndroidWrapper::ShareText(const char* Title, const char* Message)
+{
+    JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
+    if(!AndroidWrapperState.midShareText)
+    {
+        logError("AndroidWrapper midShareText Java method not Found");
+        return;
+    }
+    
+    jstring jstring_Title   = (jstring)env->NewStringUTF(Title);
+    jstring jstring_Message = (jstring)env->NewStringUTF(Message);
+    env->CallStaticVoidMethod(AndroidWrapperState.globalUtils, AndroidWrapperState.midShareText, jstring_Title, jstring_Message);
+    
+    env->DeleteLocalRef(jstring_Title  );
+    env->DeleteLocalRef(jstring_Message);
 };
 
 extern "C" {

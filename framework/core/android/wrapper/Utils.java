@@ -231,6 +231,41 @@ public class Utils {
         _context.runOnUiThread(new OneShotTask(Code, Title, Message, Button1, Button2, Button3, TimeOut));
         Log.v(TAG, "after runOnUiThread");
     }
+
+    public static void shareText(String Title, String Message)
+    {
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= 14)
+            {
+                class OneShotTask implements Runnable {
+                    String shareTitle;
+                    String shareMessage;
+
+                    OneShotTask(String pTitle, String pMessage)
+                    {
+                        shareTitle = pTitle;
+                        shareMessage = pMessage;
+                    }
+
+                    public void run() {
+                        try {
+                            Intent sendIntent = new Intent();
+                            sendIntent.setAction(Intent.ACTION_SEND);
+                            sendIntent.putExtra(Intent.EXTRA_TEXT, shareMessage);
+                            sendIntent.setType("text/plain");
+                            _context.startActivity(Intent.createChooser(sendIntent, shareTitle));
+                        } catch (Exception e) {
+                            Log.e(TAG, e.getMessage());
+                        }
+                    }
+                }
+            }
+        }
+        catch(Exception e)
+        {
+            Log.e(TAG, e.getMessage());
+        }
+    }
     
     public static void showToast(String Msg, int Duration, int Gravity, int xOffset, int yOffset){
         try

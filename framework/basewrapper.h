@@ -208,8 +208,11 @@ public:
     static void                Sleep                       (unsigned MilliSeconds);
 
     // Environment functions                               
-    static Locale::Lang        GetDeviceLanguage();    
-    static std::string         GetEnvVariable(const char* Variable); // Only for windows
+    static Locale::Lang        GetDeviceLanguage           ();    
+    static std::string         GetEnvVariable              (const char* Variable); // Only for windows
+    
+    // Feature functions
+    void                       ShareText                   (const char* Title, const char* Message);
 
     static constexpr BWrapper::OS GetDeviceOS()
     {

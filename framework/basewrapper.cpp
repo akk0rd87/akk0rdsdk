@@ -1272,6 +1272,12 @@ std::string BWrapper::GetEnvVariable(const char* Variable)
 {
     return Platforms::GetEnvVariable(Variable);
 }
+
+void BWrapper::ShareText(const char* Title, const char* Message)
+{
+    Platforms::ShareText(Title, Message);
+};
+
 //////////////////////////
 /////// FileReader
 //////////////////////////

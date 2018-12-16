@@ -60,6 +60,7 @@ public:
     static bool                     GetDirContent  (const char* Dir, DirContentElementArray& ArrayList);
 							        
 	static void                     MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS);
+    static void                     ShareText(const char* Title, const char* Message);
 };
 
 /////////////////////////////////////////
@@ -299,6 +300,13 @@ void Platforms::MessageBoxShow(int Code, const char* Title, const char* Message,
     iOSWrapper::MessageBoxShow(Code, Title, Message, Button1, Button2, Button3);
 #endif
 }
+
+void Platforms::ShareText(const char* Title, const char* Message)
+{
+#ifdef __ANDROID__
+	return AndroidWrapper::ShareText(Title, Message);
+#endif
+};
 
 bool Platforms::Init()
 {
