@@ -258,7 +258,9 @@ public class Utils {
                             Log.e(TAG, e.getMessage());
                         }
                     }
-                }
+                };
+
+                _context.runOnUiThread(new OneShotTask(Title, Message));
             }
         }
         catch(Exception e)
