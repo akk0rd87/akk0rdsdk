@@ -212,7 +212,7 @@ public:
     static std::string         GetEnvVariable              (const char* Variable); // Only for windows
     
     // Feature functions
-    void                       ShareText                   (const char* Title, const char* Message);
+    static void                ShareText                   (const char* Title, const char* Message);
 
     static constexpr BWrapper::OS GetDeviceOS()
     {
