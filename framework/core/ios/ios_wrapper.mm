@@ -195,6 +195,7 @@ void iOSWrapper::ShareText(const char* Title, const char* Message)
     activityVC.excludedActivityTypes = excludeActivities;
     
     auto appDelegate = [[UIApplication sharedApplication] delegate];
+    activityVC.popoverPresentationController.sourceView = appDelegate.window.rootViewController.view;
     [appDelegate.window.rootViewController presentViewController:activityVC animated:YES completion:nil];
     
 //    [sTitle release];
