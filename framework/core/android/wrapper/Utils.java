@@ -151,6 +151,23 @@ public class Utils {
             public void run() {
                 try
                 {
+                    /* пример с картинкой
+                    ImageView image = new ImageView(_context);
+                    image.setImageResource(R.drawable.icon);
+
+                    AlertDialog.Builder builder =
+                            new AlertDialog.Builder(_context, android.R.style.Theme_Material_Dialog_Alert).
+                            setMessage("Message above the image").
+                            setView(image).
+                            setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                }
+                            });
+                    builder.create().show();
+                    * */
+
                     AlertDialog.Builder builder;
                     //android.os.Build.VERSION.SDK_INT
                     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
