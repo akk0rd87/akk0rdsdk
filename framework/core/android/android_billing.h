@@ -34,6 +34,12 @@ bool AndroidBillingManager::Init()
     bool Result = true;
 	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
     jclass localClass =  env->FindClass("org/akkord/lib/BillingManager");
+    if(!localClass)
+    {
+        logError("Could not find BillingManager class");        
+        return false;        
+    }
+    
 	AndroidBillingClass = reinterpret_cast<jclass>(env->NewGlobalRef(localClass));
 	env->DeleteLocalRef(localClass);
     
