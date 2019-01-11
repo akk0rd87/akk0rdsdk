@@ -60,6 +60,10 @@ bool BWrapper::Init(Uint32 flags)
         return false;
     }
 
+    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
+    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);
+    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
+
 	CurrentContext.MessageBoxEvent = SDL_RegisterEvents(1);
 
 	Platforms::Init();
