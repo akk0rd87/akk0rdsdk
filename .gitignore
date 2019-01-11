@@ -20,6 +20,8 @@ examples/**/obj/*
 examples/**/*.exp
 examples/**/*.lib
 examples/**/*.db
+examples/**/*.opendb
+examples/**/*.ipch
 examples/**/Release/*
 examples/**/Debug/*
 

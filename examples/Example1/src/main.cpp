@@ -7,7 +7,6 @@ AkkordRect ZombiePosition;
 
 AtlasManager AtlasMgr;
 AdRandomizer adRand;
-AkkordRect AdImagesRects[4];
 
 AkkordTexture Background;
 
@@ -107,18 +106,6 @@ bool Init()
 
 bool UpdateOnClick(int X, int Y)
 {
-
-    for (unsigned i = 0; i < 4; i++)
-    {
-        if (BWrapper::IsPointInRect(AkkordPoint(X, Y), AdImagesRects[i]))
-        {
-            //adRand.OpenURLByIndex(i);
-            ShowMessagebox();
-            logDebug("Clicked Ad Image = %d", i);
-        }
-    }
-
-
     if (X < BWrapper::GetScreenWidth() / 2) Flip = AkkordTexture::Flip::Horizontal;
     else                                    Flip = AkkordTexture::Flip::None;
 
@@ -135,21 +122,8 @@ void ReDraw()
 
     Background.Draw(AkkordRect(0, 0, ScreenWidth, ScreenHeight));
 
-
-    AdImagesRects[0].x = 10;
-    AdImagesRects[0].y = ScreenHeight - AdImagesRects[0].h - 10;
-
-    AdImagesRects[1].x = ScreenWidth - AdImagesRects[1].w - 10;
-    AdImagesRects[1].y = ScreenHeight - AdImagesRects[1].h - 10;
-
     auto x   = (ScreenWidth - 400 - 10) / 3;
     auto psx = ScreenWidth / 2;
-
-    AdImagesRects[2].x = psx - AdImagesRects[2].w - x / 2;
-    AdImagesRects[2].y = ScreenHeight - AdImagesRects[0].h - 10;
-
-    AdImagesRects[3].x = psx + x / 2;
-    AdImagesRects[3].y = ScreenHeight - AdImagesRects[0].h - 10;
 
     ZombiePosition.w = 430;
     ZombiePosition.h = 519;
@@ -175,10 +149,6 @@ void ReDraw()
     }
 
     AtlasMgr.DrawSprite(ZombieVector[ZombieIndex], ZombiePosition, Flip);
-
-    for (unsigned i = 0; i < 4; i++)
-        adRand.DrawImageByIndex(i, AdImagesRects[i]);
-
     AtlasMgr.DrawSprite(ImageFacebookIndex, AkkordRect(0, 0, 100, 100));
 
     BWrapper::RefreshRenderer();
@@ -246,13 +216,6 @@ int main(int, char**){
             break;
     }
 
-    // Add Rects to Control Clicks by Images
-    int imagesCnt = adRand.Randomize(4);
-    for (int i = 0; i < imagesCnt; i++)
-    {
-        AdImagesRects[i].w = adRand.ImageWidth;
-        AdImagesRects[i].h = adRand.ImageHeight;
-    }
 
     LoadZombies();
     LoadSpriteSheet();
