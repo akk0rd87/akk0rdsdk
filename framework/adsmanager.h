@@ -28,11 +28,11 @@ class adsManager
 	Uint32 GetInterstitialNextShowTime();
 	
 	// выбираем подходящий по времени Unit
-	void ChooseAdmobAdBlock();
-    void Clear();
+	void ChooseAdmobAdBlock();    
 public:
 	
-	void Init();	
+    void Init();
+    void Clear();
 	void SetIntersitialShowDelay(Uint32 DelaySeconds);
 	void SetIntersitialLoadDelay(Uint32 DelaySeconds);
 	void AddAdMobUnit(const std::string& Id, Uint32 TimePriority);
