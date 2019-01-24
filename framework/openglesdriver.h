@@ -44,9 +44,9 @@ SDL_PROC(void, glGetShaderInfoLog, (GLuint, GLsizei, GLsizei *, char *)) \
 SDL_PROC(void, glGetShaderiv, (GLuint, GLenum, GLint *)) \
 SDL_PROC(void, glGetVertexAttribiv, (GLuint, GLenum, GLint *))
 
-#define CheckGLESError()            GLESDriver::GetInstance()->CheckError    (         __FILE__, __FUNCTION__, __LINE__)
-#define PrintGLESProgamLog(Program) GLESDriver::GetInstance()->PrintProgamLog(Program, __FILE__, __FUNCTION__, __LINE__)
-#define PrintGLESShaderLog(Shader)  GLESDriver::GetInstance()->PrintShaderLog(Shader , __FILE__, __FUNCTION__, __LINE__)
+#define CheckGLESError()            GLESDriver::GetInstance().CheckError    (         __FILE__, __FUNCTION__, __LINE__)
+#define PrintGLESProgamLog(Program) GLESDriver::GetInstance().PrintProgamLog(Program, __FILE__, __FUNCTION__, __LINE__)
+#define PrintGLESShaderLog(Shader)  GLESDriver::GetInstance().PrintShaderLog(Shader , __FILE__, __FUNCTION__, __LINE__)
 
 class GLESDriver
 {
@@ -61,7 +61,7 @@ public:
     void PrintShaderLog(GLuint Shader, const char* File, const char* Function, unsigned Line);
     void PrintShaderSource(GLuint Shader);
     
-    static GLESDriver* GetInstance();
+    static GLESDriver& GetInstance();
 };
 
 #endif // __AKK0RD_OPENGLES_DRIVER_H__

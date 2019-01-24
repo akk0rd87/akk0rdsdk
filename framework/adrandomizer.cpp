@@ -2,7 +2,7 @@
 
 void AdRandomizer::OpenURL_private(BWrapper::OS OSCode, Apps AppId)
 {
-    logVerbose("Open URL OSCode=%d, AppId", OSCode, AppId);
+    logVerbose("Open URL OSCode=%d, %d", (int)OSCode, (int)AppId);
 
     auto Language = BWrapper::GetDeviceLanguage();
 

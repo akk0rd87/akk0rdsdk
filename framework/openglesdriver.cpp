@@ -90,8 +90,8 @@
     }
 
 
-GLESDriver* GLESDriver::GetInstance()
+GLESDriver& GLESDriver::GetInstance()
 {
     static GLESDriver Driver;
-    return &Driver;
+    return Driver;
 }

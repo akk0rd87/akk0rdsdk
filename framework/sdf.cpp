@@ -109,7 +109,7 @@ SDFProgram& SDFProgram::GetInstance()
     {
         GLint oldProgramId;
 
-        auto Driver = GLESDriver::GetInstance();        
+        auto Driver = &GLESDriver::GetInstance();        
 
         // Create and compile the fragment shader
         GLuint vertexShader = Driver->glCreateShader(GL_VERTEX_SHADER); CheckGLESError(); PrintGLESShaderLog(vertexShader);
@@ -222,47 +222,47 @@ bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColo
 
     auto Driver = GLESDriver::GetInstance();
 
-    Driver->glGetIntegerv((GLenum)GL_CURRENT_PROGRAM, &oldProgramId); CheckGLESError();
+    Driver.glGetIntegerv((GLenum)GL_CURRENT_PROGRAM, &oldProgramId); CheckGLESError();
     
     {
-        Driver->glGetVertexAttribiv((GLuint)0, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_0_enabled); CheckGLESError();
-        Driver->glGetVertexAttribiv((GLuint)1, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_1_enabled); CheckGLESError();
-        Driver->glGetVertexAttribiv((GLuint)2, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_2_enabled); CheckGLESError();
-        Driver->glGetVertexAttribiv((GLuint)3, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_3_enabled); CheckGLESError();
+        Driver.glGetVertexAttribiv((GLuint)0, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_0_enabled); CheckGLESError();
+        Driver.glGetVertexAttribiv((GLuint)1, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_1_enabled); CheckGLESError();
+        Driver.glGetVertexAttribiv((GLuint)2, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_2_enabled); CheckGLESError();
+        Driver.glGetVertexAttribiv((GLuint)3, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_3_enabled); CheckGLESError();
 
         // эти два атрибута нужно включить, если они выключены
-        if (VertexParams.attr_0_enabled == GL_FALSE) { Driver->glEnableVertexAttribArray((GLuint)0); CheckGLESError(); }
-        if (VertexParams.attr_1_enabled == GL_FALSE) { Driver->glEnableVertexAttribArray((GLuint)1); CheckGLESError(); }
+        if (VertexParams.attr_0_enabled == GL_FALSE) { Driver.glEnableVertexAttribArray((GLuint)0); CheckGLESError(); }
+        if (VertexParams.attr_1_enabled == GL_FALSE) { Driver.glEnableVertexAttribArray((GLuint)1); CheckGLESError(); }
 
         // эти атрибуты выключаем всегда, если они включены
-        if (VertexParams.attr_2_enabled != GL_FALSE) { Driver->glDisableVertexAttribArray((GLuint)2); CheckGLESError(); }
-        if (VertexParams.attr_3_enabled != GL_FALSE) { Driver->glDisableVertexAttribArray((GLuint)3); CheckGLESError(); }
+        if (VertexParams.attr_2_enabled != GL_FALSE) { Driver.glDisableVertexAttribArray((GLuint)2); CheckGLESError(); }
+        if (VertexParams.attr_3_enabled != GL_FALSE) { Driver.glDisableVertexAttribArray((GLuint)3); CheckGLESError(); }
     }
     
     if (oldProgramId != shaderProgram->shaderProgram)
     {
-        Driver->glUseProgram(shaderProgram->shaderProgram); CheckGLESError(); PrintGLESProgamLog(shaderProgram->shaderProgram);
+        Driver.glUseProgram(shaderProgram->shaderProgram); CheckGLESError(); PrintGLESProgamLog(shaderProgram->shaderProgram);
     }
 
     //Driver->glBindTexture((GLenum)GL_TEXTURE_2D, GLTexture); CheckGLESError();
     SDL_GL_BindTexture(akkordTexture.GetTexture(), nullptr, nullptr);
 
-    Driver->glVertexAttribPointer(SDFProgram::Attributes::SDF_ATTRIB_POSITION, (GLint)2, (GLenum)GL_FLOAT, (GLboolean)GL_FALSE, (GLsizei)0, squareVertices); CheckGLESError();
-    Driver->glVertexAttribPointer(SDFProgram::Attributes::SDF_ATTRIB_UV, (GLint)2, (GLenum)GL_FLOAT, (GLboolean)GL_FALSE, (GLsizei)0, UV); CheckGLESError();
+    Driver.glVertexAttribPointer(SDFProgram::Attributes::SDF_ATTRIB_POSITION, (GLint)2, (GLenum)GL_FLOAT, (GLboolean)GL_FALSE, (GLsizei)0, squareVertices); CheckGLESError();
+    Driver.glVertexAttribPointer(SDFProgram::Attributes::SDF_ATTRIB_UV, (GLint)2, (GLenum)GL_FLOAT, (GLboolean)GL_FALSE, (GLsizei)0, UV); CheckGLESError();
 
-    Driver->glUniform4f(shaderProgram->font_color, GLfloat(FontColor.GetR()) / 255.0f, GLfloat(FontColor.GetG()) / 255.0f, GLfloat(FontColor.GetB()) / 255.0f, GLfloat(FontColor.GetA()) / 255.0f); CheckGLESError();
+    Driver.glUniform4f(shaderProgram->font_color, GLfloat(FontColor.GetR()) / 255.0f, GLfloat(FontColor.GetG()) / 255.0f, GLfloat(FontColor.GetB()) / 255.0f, GLfloat(FontColor.GetA()) / 255.0f); CheckGLESError();
 
     GLfloat smoothness = std::min(0.3f, 0.25f / (GLfloat)Spread / Scale * 1.5f) * 850.0f / 255.f / 3.333f;
 
     //0.25f / (float)Spread / Scale*/*smoothfact*/1.5)*850.0f
 
-    Driver->glUniform1f(shaderProgram->smooth, smoothness); CheckGLESError();
+    Driver.glUniform1f(shaderProgram->smooth, smoothness); CheckGLESError();
 
     if (Outline)
     {
         if (shaderProgram->sdf_outline_color >= 0)
         {
-            Driver->glUniform4f(shaderProgram->sdf_outline_color, GLfloat(OutlineColor.GetR()) / 255.0f, GLfloat(OutlineColor.GetG()) / 255.0f, GLfloat(OutlineColor.GetB()) / 255.0f, GLfloat(OutlineColor.GetA()) / 255.0f); CheckGLESError();
+            Driver.glUniform4f(shaderProgram->sdf_outline_color, GLfloat(OutlineColor.GetR()) / 255.0f, GLfloat(OutlineColor.GetG()) / 255.0f, GLfloat(OutlineColor.GetB()) / 255.0f, GLfloat(OutlineColor.GetA()) / 255.0f); CheckGLESError();
         }
         else
         {
@@ -271,7 +271,7 @@ bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColo
 
         if (shaderProgram->border >= 0)
         {
-            Driver->glUniform1f(shaderProgram->border, Border / 6.666f); CheckGLESError();
+            Driver.glUniform1f(shaderProgram->border, Border / 6.666f); CheckGLESError();
         }
         else
         {
@@ -279,24 +279,24 @@ bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColo
         }
     }
         
-    Driver->glDrawElements((GLenum)GL_TRIANGLES, Count, (GLenum)GL_UNSIGNED_SHORT, Indices); CheckGLESError();    
+    Driver.glDrawElements((GLenum)GL_TRIANGLES, Count, (GLenum)GL_UNSIGNED_SHORT, Indices); CheckGLESError();    
 
     // unbind texture
     SDL_GL_UnbindTexture(akkordTexture.GetTexture());
     
     if (shaderProgram->shaderProgram != oldProgramId)
     {
-        Driver->glUseProgram(oldProgramId); CheckGLESError();
+        Driver.glUseProgram(oldProgramId); CheckGLESError();
     }
     
     { // возвращаем все исходное состояние
         
         // в рамках обработки SDF мы включили эти атрибуты. Возвращаем их в исходное состояние
-        if (VertexParams.attr_0_enabled == GL_FALSE) { Driver->glDisableVertexAttribArray((GLuint)0); CheckGLESError(); }
-        if (VertexParams.attr_1_enabled == GL_FALSE) { Driver->glDisableVertexAttribArray((GLuint)1); CheckGLESError(); }
-        
-        if (VertexParams.attr_2_enabled != GL_FALSE) { Driver->glEnableVertexAttribArray((GLuint)2); CheckGLESError(); }
-        if (VertexParams.attr_3_enabled != GL_FALSE) { Driver->glEnableVertexAttribArray((GLuint)3); CheckGLESError(); }
+        if (VertexParams.attr_0_enabled == GL_FALSE) { Driver.glDisableVertexAttribArray((GLuint)0); CheckGLESError(); }
+        if (VertexParams.attr_1_enabled == GL_FALSE) { Driver.glDisableVertexAttribArray((GLuint)1); CheckGLESError(); }
+                                                             
+        if (VertexParams.attr_2_enabled != GL_FALSE) { Driver.glEnableVertexAttribArray((GLuint)2); CheckGLESError(); }
+        if (VertexParams.attr_3_enabled != GL_FALSE) { Driver.glEnableVertexAttribArray((GLuint)3); CheckGLESError(); }
     }    
 
     return true;
