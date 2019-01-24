@@ -69,6 +69,28 @@ void main() \n\
     gl_FragColor = rgba; \n\
 }\n";
 
+// https://habrahabr.ru/post/282191/
+static inline unsigned int UTF2Unicode(const /*unsigned*/ char *txt, unsigned int &i) {
+    unsigned int a = txt[i++];
+    if ((a & 0x80) == 0)return a;
+    if ((a & 0xE0) == 0xC0) {
+        a = (a & 0x1F) << 6;
+        a |= txt[i++] & 0x3F;
+    }
+    else if ((a & 0xF0) == 0xE0) {
+        a = (a & 0xF) << 12;
+        a |= (txt[i++] & 0x3F) << 6;
+        a |= txt[i++] & 0x3F;
+    }
+    else if ((a & 0xF8) == 0xF0) {
+        a = (a & 0x7) << 18;
+        a |= (a & 0x3F) << 12;
+        a |= (txt[i++] & 0x3F) << 6;
+        a |= txt[i++] & 0x3F;
+    }
+    return a;
+};
+
 static const GLfloat SDF_Mat[] =
 {
     1.0f, 0.0f, 0.0f, 0.0f,
