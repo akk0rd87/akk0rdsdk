@@ -183,9 +183,6 @@ SDFProgram& SDFProgram::GetInstance()
         Clear();
     }
 
-
-static SDFProgram sdfProgram;
-
 /*
 class SDFGLTexture
 {
@@ -221,7 +218,7 @@ bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColo
     } VertexParams;
     VertexParams.attr_0_enabled = VertexParams.attr_1_enabled = VertexParams.attr_2_enabled = VertexParams.attr_3_enabled = GL_FALSE;
 
-    auto shaderProgram = sdfProgram.GetShaderProgram(Outline);
+    auto shaderProgram = SDFProgram::GetInstance().GetShaderProgram(Outline);
 
     auto Driver = GLESDriver::GetInstance();
 
