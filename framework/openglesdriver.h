@@ -44,115 +44,24 @@ SDL_PROC(void, glGetShaderInfoLog, (GLuint, GLsizei, GLsizei *, char *)) \
 SDL_PROC(void, glGetShaderiv, (GLuint, GLenum, GLint *)) \
 SDL_PROC(void, glGetVertexAttribiv, (GLuint, GLenum, GLint *))
 
-#define CheckGLESError()            GLESDriver::GetInstance()->CheckError    (         __FILE__, __FUNCTION__, __LINE__)
-#define PrintGLESProgamLog(Program) GLESDriver::GetInstance()->PrintProgamLog(Program, __FILE__, __FUNCTION__, __LINE__)
-#define PrintGLESShaderLog(Shader)  GLESDriver::GetInstance()->PrintShaderLog(Shader , __FILE__, __FUNCTION__, __LINE__)
+#define CheckGLESError()            GLESDriver::GetInstance().CheckError    (         __FILE__, __FUNCTION__, __LINE__)
+#define PrintGLESProgamLog(Program) GLESDriver::GetInstance().PrintProgamLog(Program, __FILE__, __FUNCTION__, __LINE__)
+#define PrintGLESShaderLog(Shader)  GLESDriver::GetInstance().PrintShaderLog(Shader , __FILE__, __FUNCTION__, __LINE__)
 
-class GLESDriverInstance
+class GLESDriver
 {
 public:    
 #define SDL_PROC(ret,func,params) typedef ret (APIENTRY * func##_fnc)params; func##_fnc func = 0;
 //#include "../src/render/opengles2/SDL_gles2funcs.h"
     OPENGLES2_FUCNTION_LIST // включаем дополнительные OPENGLES-функции
 #undef SDL_PROC
-    void Init()
-    {
-#define SDL_PROC(ret,func,params) func = (func##_fnc)SDL_GL_GetProcAddress(#func); if(func) logVerbose("GLESDriver:: " #func " pointer was loaded successfully"); else logError("GLESDriver:: " #func " pointer was not loaded");
-//#include "../src/render/opengles2/SDL_gles2funcs.h"        
-    OPENGLES2_FUCNTION_LIST // включаем дополнительные OPENGLES-функции
-#undef SDL_PROC
-    }
-
-    bool CheckError(const char* File, const char* Function, unsigned Line)
-    {                 
-#ifdef __AKK0RD_DEBUG_MACRO__
-        auto glErr = this->glGetError();
-        if (glErr != GL_NO_ERROR)
-        {                        
-            std::string ErrorMsg;
-            switch (glErr)
-            {
-                case GL_INVALID_ENUM:                  ErrorMsg =  "GL_INVALID_ENUM"; break;
-                case GL_INVALID_OPERATION:             ErrorMsg =  "GL_INVALID_OPERATION"; break;
-                case GL_INVALID_FRAMEBUFFER_OPERATION: ErrorMsg =  "GL_INVALID_FRAMEBUFFER_OPERATION"; break;
-                case GL_OUT_OF_MEMORY:                 ErrorMsg =  "GL_OUT_OF_MEMORY"; break;
-                case GL_INVALID_VALUE:                 ErrorMsg =  "GL_INVALID_VALUE"; break;                
-                default:                               ErrorMsg =  "UNKNOWN ERROR"; break;
-            }            
-            // тут именно вызов функции напрямую, а не через макрос, чтбоы не терять информацию о месте возникнования события
-            BWrapper::Log(BWrapper::LogPriority::Error, File, Function, Line, "glGetError() = %u, Msg = %s", glErr, ErrorMsg.c_str());
-            return true;
-        }
-#endif
-        return false;        
-    };
-
-    void PrintProgamLog(GLuint Program, const char* File, const char* Function, unsigned Line)
-    {        
-#ifdef __AKK0RD_DEBUG_MACRO__
-        GLint logLength = 0;
-        glGetProgramiv(Program, GL_INFO_LOG_LENGTH, &logLength);
-        if (logLength > 0)
-        {
-            GLchar *log = (GLchar *)malloc(logLength);
-            glGetProgramInfoLog(Program, logLength, &logLength, log);
-            if (std::string(log).size() > 0)
-            {
-                // тут именно вызов функции напрямую, а не через макрос, чтбоы не терять информацию о месте возникнования события
-                BWrapper::Log(BWrapper::LogPriority::Debug, File, Function, Line, "Program log [Program=%u]: %s", Program, log);
-            }
-            free(log);
-        }
-#endif
-    }    
-
-    void PrintShaderLog(GLuint Shader, const char* File, const char* Function, unsigned Line)
-    {        
-#ifdef __AKK0RD_DEBUG_MACRO__
-        GLint logLength = 0;
-        glGetShaderiv (Shader, GL_INFO_LOG_LENGTH, &logLength);
-        if (logLength > 0)
-        {
-            GLchar *log = (GLchar *)malloc(logLength);
-            glGetShaderInfoLog(Shader, logLength, &logLength, log);
-            if (std::string(log).size() > 0)
-            {
-                // тут именно вызов функции напрямую, а не через макрос, чтбоы не терять информацию о месте возникнования события
-                BWrapper::Log(BWrapper::LogPriority::Debug, File, Function, Line, "Shader log [Shader=%u]: %s", Shader, log);
-            }
-            free(log);
-        }
-#endif
-    };
-
-    void PrintShaderSource(GLuint Shader)
-    {        
-#ifdef __AKK0RD_DEBUG_MACRO__
-        GLint logLength = 0;
-        glGetShaderiv(Shader, GL_SHADER_SOURCE_LENGTH, &logLength);
-        if (logLength > 0)
-        { 
-            GLchar *log = (GLchar *)malloc(logLength);
-            glGetShaderSource(Shader, logLength, &logLength, log);
-            if (std::string(log).size() > 0)
-            {
-                logDebug("Shader Source:\n %s\n\n", log);
-            }
-            free(log);
-        }     
-#endif
-    }
-};
-
-static GLESDriverInstance _GLESDriver;
-
-class GLESDriver
-{
-    public:
-    static GLESDriverInstance* GetInstance()
-    {
-        return &_GLESDriver;
-    }
+    void Init();
+    bool CheckError(const char* File, const char* Function, unsigned Line);
+    void PrintProgamLog(GLuint Program, const char* File, const char* Function, unsigned Line);
+    void PrintShaderLog(GLuint Shader, const char* File, const char* Function, unsigned Line);
+    void PrintShaderSource(GLuint Shader);
+    
+    static GLESDriver& GetInstance();
 };
 
 #endif // __AKK0RD_OPENGLES_DRIVER_H__
