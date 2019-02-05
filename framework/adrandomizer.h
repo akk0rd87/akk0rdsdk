@@ -6,7 +6,7 @@
 class AdRandomizer
 {
 public:
-    enum struct Apps : unsigned { CFCross, FCross, JCross, JDraw, WordsRu1, WordsRu2, WordsRu8, WordsUs/*, CJCross*/};
+    enum struct Apps : unsigned { CFCross, FCross, JCross, JDraw, WordsRu1, WordsRu2, WordsRu8, WordsUs, Sudoku /*, CJCross*/};
     static void    OpenURL(Apps AppId);    
     static void    OpenPublisherAppstorePage();
 private:    

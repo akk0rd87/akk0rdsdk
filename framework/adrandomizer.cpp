@@ -140,6 +140,24 @@ void AdRandomizer::OpenURL_private(BWrapper::OS OSCode, Apps AppId)
 				break;
         }
         break;
+        
+    case Apps::Sudoku:
+        switch (OSCode)
+        {
+            case BWrapper::OS::iOS:
+                //if (Language == Locale::Lang::Russian) BWrapper::OpenURL("https://itunes.apple.com/ru/app/id1147212126");
+                //else                                   BWrapper::OpenURL("https://itunes.apple.com/app/id1147212126");
+                BWrapper::OpenURL("https://itunes.apple.com/app/id1446860030");
+                break;
+
+            case BWrapper::OS::AndroidOS:
+                BWrapper::OpenURL("https://play.google.com/store/apps/details?id=org.popapp.sudoku");
+				break;
+
+			default:
+				break;
+        }
+        break;
     }
 }
 
