@@ -549,9 +549,9 @@ bool SDFTexture::Flush()
 
         unsigned int i = 0;
         unsigned int a = 0;
-        unsigned len = 0;
+        unsigned int len = 0;
         
-        if(Text != nullptr)
+        if(Text != nullptr && Text[0] != '\0')
             len = static_cast<unsigned>(std::string(Text).size());
 
         if (len == 0)
