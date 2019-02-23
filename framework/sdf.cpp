@@ -551,8 +551,8 @@ bool SDFTexture::Flush()
         unsigned int a = 0;
         unsigned int len = 0;
         
-        if(Text != nullptr && Text[0] != '\0')
-            len = static_cast<unsigned>(std::string(Text).size());
+        if (Text != nullptr)
+            len = strlen(Text);
 
         if (len == 0)
             logWarning("Zero-length text");
