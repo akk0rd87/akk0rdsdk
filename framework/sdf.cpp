@@ -1,5 +1,5 @@
 #include "sdf.h"
-
+#include <cstring>
 #include "SDL_image.h"
 #include"openglesdriver.h"
 
