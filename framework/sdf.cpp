@@ -545,41 +545,39 @@ bool SDFTexture::Flush()
         // VecSize - вектор строк (в надписи может быть несколько строк, нужно считать длину каждой строки отдельно - для выравнивания)
         
         AkkordPoint pt, localpoint;
+        pt = localpoint = AkkordPoint(0, 0);
 
         unsigned int a = 0;
         unsigned int i = 0;
 
-        pt.x = 0;
-        pt.y = 0;
-
-        localpoint.x = 0;
-        localpoint.y = 0;
-
         SDFCharInfo charParams;
 
-        do
+        if (Text != nullptr)
         {
-            a = UTF2Unicode(Text, i);
+            do
+            {
+                a = UTF2Unicode(Text, i);
 
-            if (a == 0)
-            {
-                break;
-            }
-            else if (a == 10) // Если это переход строки
-            {
-                pt.y += static_cast<decltype(pt.y)>(scaleY * sdfFont->GetLineHeight()); // надо учесть общую высоту строки
-                VecSize.push_back(localpoint.x);
-                pt.x = std::max(pt.x, localpoint.x);
-                localpoint.x = 0;
-            }            
-            else if (a != 13) // Если это не переход строки       
-            {
-                sdfFont->GetCharInfo(a, charParams);
+                if (a == 0)
+                {
+                    break;
+                }
+                else if (a == 10) // Если это переход строки
+                {
+                    pt.y += static_cast<decltype(pt.y)>(scaleY * sdfFont->GetLineHeight()); // надо учесть общую высоту строки
+                    VecSize.push_back(localpoint.x);
+                    pt.x = std::max(pt.x, localpoint.x);
+                    localpoint.x = 0;
+                }
+                else if (a != 13) // Если это не переход строки       
+                {
+                    sdfFont->GetCharInfo(a, charParams);
 
-                localpoint.x += static_cast<decltype(localpoint.x)>(scaleX * charParams.xoffset);
-				localpoint.x += static_cast<decltype(localpoint.x)>(scaleX * charParams.xadvance);
-            }
-        } while(true);
+                    localpoint.x += static_cast<decltype(localpoint.x)>(scaleX * charParams.xoffset);
+                    localpoint.x += static_cast<decltype(localpoint.x)>(scaleX * charParams.xadvance);
+                }
+            } while (true);
+        }
 
         VecSize.push_back(localpoint.x);
         pt.x = std::max(pt.x, localpoint.x);
@@ -659,107 +657,111 @@ bool SDFTexture::Flush()
 
     AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text)
     {        
-        std::vector<unsigned> VecSize;
-        AkkordPoint pt, size;
-        pt = size = GetTextSizeByLine(Text, VecSize);        
-#ifndef __CODEBLOCKS
-        decltype(X) x_start, x_current;
-        pt = AkkordPoint(0, 0);
-                
-        unsigned int a = 0;
-
-        unsigned i = 0;
-
-        auto atlasW = sdfFont->GetAtlasW();
-        auto atlasH = sdfFont->GetAtlasH();
-
-        auto ScreenSize = BWrapper::GetScreenSize();    
-        
-        float ScrenW = static_cast<decltype(ScrenW)>(ScreenSize.x);
-        float ScrenH = static_cast<decltype(ScrenH)>(ScreenSize.y);
-
-        SDFCharInfo charParams;
-        
-        unsigned line = 0;
-        decltype (Indices)::value_type PointsCnt = static_cast<decltype (Indices)::value_type>(UV.size() / 2); // Разделив на 2, получаем количество вершин
-
-        switch (alignV)
+        AkkordPoint pt = AkkordPoint(0,0);
+        if (Text != nullptr)
         {
-            case SDFFont::AlignV::Center:
-                Y = Y + (rectH - size.y) / 2;
-                break;
-            case SDFFont::AlignV::Bottom:
-                Y = Y + (rectH - size.y);
-                break;
-            default: // в остальных случаях ничего не делаем, координату Y не меняем
-                break;
-        };
+            std::vector<unsigned> VecSize;
+            AkkordPoint size;
+            pt = size = GetTextSizeByLine(Text, VecSize);
+#ifndef __CODEBLOCKS
+            decltype(X) x_start, x_current;
+            pt = AkkordPoint(0, 0);
+
+            unsigned int a = 0;
+
+            unsigned i = 0;
+
+            auto atlasW = sdfFont->GetAtlasW();
+            auto atlasH = sdfFont->GetAtlasH();
+
+            auto ScreenSize = BWrapper::GetScreenSize();
+
+            float ScrenW = static_cast<decltype(ScrenW)>(ScreenSize.x);
+            float ScrenH = static_cast<decltype(ScrenH)>(ScreenSize.y);
+
+            SDFCharInfo charParams;
+
+            unsigned line = 0;
+            decltype (Indices)::value_type PointsCnt = static_cast<decltype (Indices)::value_type>(UV.size() / 2); // Разделив на 2, получаем количество вершин
+
+            switch (alignV)
+            {
+                case SDFFont::AlignV::Center:
+                    Y = Y + (rectH - size.y) / 2;
+                    break;
+                case SDFFont::AlignV::Bottom:
+                    Y = Y + (rectH - size.y);
+                    break;
+                default: // в остальных случаях ничего не делаем, координату Y не меняем
+                    break;
+            };
 
         check_h_align:
-        // Выбираем начальную точку в зависимости от выравнивания
-        switch (alignH)
-        {
-            case SDFFont::AlignH::Center:
-                x_start = X + (rectW - VecSize[line]) / 2;                
-                break;
-            case SDFFont::AlignH::Right:
-                x_start = X + (rectW - VecSize[line]);                
-                break;
-            default:
-                x_start = X;                
-                break;
-        };        
-
-        x_current = x_start;
-
-        do
-        {
-            a = UTF2Unicode(Text, i);
-
-            if (a == 0)
+            // Выбираем начальную точку в зависимости от выравнивания
+            switch (alignH)
             {
-                break;
-            }
-            else if (a == 10)
+                case SDFFont::AlignH::Center:
+                    x_start = X + (rectW - VecSize[line]) / 2;
+                    break;
+                case SDFFont::AlignH::Right:
+                    x_start = X + (rectW - VecSize[line]);
+                    break;
+                default:
+                    x_start = X;
+                    break;
+            };
+
+            x_current = x_start;
+
+            do
             {
-                ++line;
-                Y += static_cast<decltype(Y)>(scaleY * sdfFont->GetLineHeight());
+                a = UTF2Unicode(Text, i);
 
-                pt.x = std::max(pt.x, x_current - x_start + 1);
-                goto check_h_align;                                                        
-            }
-            else if (a == 13) {} // ничего не делаем
-            else
-            {
-                sdfFont->GetCharInfo(a, charParams);
+                if (a == 0)
+                {
+                    break;
+                }
+                else if (a == 10)
+                {
+                    ++line;
+                    Y += static_cast<decltype(Y)>(scaleY * sdfFont->GetLineHeight());
 
-                x_current += static_cast<decltype(x_current)>(scaleX * charParams.xoffset);
+                    pt.x = std::max(pt.x, x_current - x_start + 1);
+                    goto check_h_align;
+                }
+                else if (a == 13) {} // ничего не делаем
+                else
+                {
+                    sdfFont->GetCharInfo(a, charParams);
 
-                const decltype(charParams.w) minus = 0;
-                
-                UV.push_back(float(charParams.x) / atlasW);                        UV.push_back(float(charParams.y + charParams.h - minus) / atlasH);
-                UV.push_back(float(charParams.x + charParams.w - minus) / atlasW); UV.push_back(float(charParams.y + charParams.h - minus) / atlasH);
-                UV.push_back(float(charParams.x) / atlasW);                        UV.push_back(float(charParams.y) / atlasH);
-                UV.push_back(float(charParams.x + charParams.w - minus) / atlasW); UV.push_back(float(charParams.y) / atlasH);
+                    x_current += static_cast<decltype(x_current)>(scaleX * charParams.xoffset);
 
-                squareVertices.push_back(2 * (float)(x_current / ScrenW) - 1.0f);                                      squareVertices.push_back(2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f);
-                squareVertices.push_back(2 * (float)(x_current + (float)scaleX * (charParams.w - 1)) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f);
-                squareVertices.push_back(2 * (float)(x_current / ScrenW) - 1.0f);                                      squareVertices.push_back(2 * (ScrenH - Y - scaleY * charParams.yoffset) / ScrenH - 1.0f);
-                squareVertices.push_back(2 * (float)(x_current + (float)scaleX * (charParams.w - 1)) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - Y - scaleY * charParams.yoffset) / ScrenH - 1.0f);
+                    const decltype(charParams.w) minus = 0;
 
-                Indices.push_back(PointsCnt + 0); Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2);
-                Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2); Indices.push_back(PointsCnt + 3);
+                    UV.push_back(float(charParams.x) / atlasW);                        UV.push_back(float(charParams.y + charParams.h - minus) / atlasH);
+                    UV.push_back(float(charParams.x + charParams.w - minus) / atlasW); UV.push_back(float(charParams.y + charParams.h - minus) / atlasH);
+                    UV.push_back(float(charParams.x) / atlasW);                        UV.push_back(float(charParams.y) / atlasH);
+                    UV.push_back(float(charParams.x + charParams.w - minus) / atlasW); UV.push_back(float(charParams.y) / atlasH);
 
-                //x_current = x_current + (float)scaleX * (charParams.w /*+ charParams.xadvance*/);
-				x_current = x_current + static_cast<decltype(x_current)>(scaleX * charParams.xadvance);
-                PointsCnt += 4;
-            }
-        } while(true);        
+                    squareVertices.push_back(2 * (float)(x_current / ScrenW) - 1.0f);                                      squareVertices.push_back(2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f);
+                    squareVertices.push_back(2 * (float)(x_current + (float)scaleX * (charParams.w - 1)) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f);
+                    squareVertices.push_back(2 * (float)(x_current / ScrenW) - 1.0f);                                      squareVertices.push_back(2 * (ScrenH - Y - scaleY * charParams.yoffset) / ScrenH - 1.0f);
+                    squareVertices.push_back(2 * (float)(x_current + (float)scaleX * (charParams.w - 1)) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - Y - scaleY * charParams.yoffset) / ScrenH - 1.0f);
 
-        pt.x = std::max(pt.x, x_current - x_start + 1);
-        pt.y = static_cast<decltype(pt.y)>(scaleY * sdfFont->GetLineHeight() * VecSize.size());
+                    Indices.push_back(PointsCnt + 0); Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2);
+                    Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2); Indices.push_back(PointsCnt + 3);
 
-        //logDebug("[%d %d] [%d %d]", size.x, size.y, pt.x, pt.y);
+                    //x_current = x_current + (float)scaleX * (charParams.w /*+ charParams.xadvance*/);
+                    x_current = x_current + static_cast<decltype(x_current)>(scaleX * charParams.xadvance);
+                    PointsCnt += 4;
+                }
+            } while (true);
+
+            pt.x = std::max(pt.x, x_current - x_start + 1);
+            pt.y = static_cast<decltype(pt.y)>(scaleY * sdfFont->GetLineHeight() * VecSize.size());
+
+            //logDebug("[%d %d] [%d %d]", size.x, size.y, pt.x, pt.y);
 #endif
+        }
         return pt;
     };
