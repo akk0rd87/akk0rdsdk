@@ -1,5 +1,4 @@
 #include "sdf.h"
-#include <cstring>
 #include "SDL_image.h"
 #include"openglesdriver.h"
 
@@ -70,7 +69,7 @@ void main() \n\
 }\n";
 
 // https://habrahabr.ru/post/282191/
-static inline unsigned int UTF2Unicode(const /*unsigned*/ char *txt, unsigned int &i) {
+static inline unsigned int UTF2Unicode(const /*unsigned*/ char *txt, size_t &i) {
     unsigned int a = txt[i++];
     if ((a & 0x80) == 0)return a;
     if ((a & 0xE0) == 0xC0) {
@@ -547,12 +546,12 @@ bool SDFTexture::Flush()
         
         AkkordPoint pt, localpoint;
 
-        unsigned int i = 0;
         unsigned int a = 0;
-        unsigned int len = 0;
+        decltype(std::strlen(Text)) i, len;
+        i = len = 0;
         
         if (Text != nullptr)
-            len = strlen(Text);
+            len = std::strlen(Text);            
 
         if (len == 0)
             logWarning("Zero-length text");
