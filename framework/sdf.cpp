@@ -69,7 +69,7 @@ void main() \n\
 }\n";
 
 // https://habrahabr.ru/post/282191/
-static inline unsigned int UTF2Unicode(const /*unsigned*/ char *txt, size_t &i) {
+static inline unsigned int UTF2Unicode(const /*unsigned*/ char *txt, unsigned &i) {
     unsigned int a = txt[i++];
     if ((a & 0x80) == 0)return a;
     if ((a & 0xE0) == 0xC0) {
@@ -173,7 +173,7 @@ SDFProgram& SDFProgram::GetInstance()
     
     SDFProgram::SDFProgram()
     {
-        logDebug("SDFProgram constructor");
+        //logDebug("SDFProgram constructor");
     }
 
     SDFProgram::~SDFProgram()
@@ -547,11 +547,7 @@ bool SDFTexture::Flush()
         AkkordPoint pt, localpoint;
 
         unsigned int a = 0;
-        decltype(std::strlen(Text)) i = 0;
-        auto len = std::strlen(Text);
-
-        if (len == 0)
-            logWarning("Zero-length text");
+        unsigned int i = 0;
 
         pt.x = 0;
         pt.y = 0;
@@ -561,11 +557,15 @@ bool SDFTexture::Flush()
 
         SDFCharInfo charParams;
 
-        while (i < len)
+        do
         {
             a = UTF2Unicode(Text, i);
 
-            if (a == 10) // Если это переход строки
+            if (a == 0)
+            {
+                break;
+            }
+            else if (a == 10) // Если это переход строки
             {
                 pt.y += static_cast<decltype(pt.y)>(scaleY * sdfFont->GetLineHeight()); // надо учесть общую высоту строки
                 VecSize.push_back(localpoint.x);
@@ -579,7 +579,7 @@ bool SDFTexture::Flush()
                 localpoint.x += static_cast<decltype(localpoint.x)>(scaleX * charParams.xoffset);
 				localpoint.x += static_cast<decltype(localpoint.x)>(scaleX * charParams.xadvance);
             }
-        };
+        } while(true);
 
         VecSize.push_back(localpoint.x);
         pt.x = std::max(pt.x, localpoint.x);
@@ -668,8 +668,7 @@ bool SDFTexture::Flush()
                 
         unsigned int a = 0;
 
-        decltype(std::strlen(Text)) i = 0;
-        auto len = std::strlen(Text);
+        unsigned i = 0;
 
         auto atlasW = sdfFont->GetAtlasW();
         auto atlasH = sdfFont->GetAtlasH();
@@ -713,11 +712,15 @@ bool SDFTexture::Flush()
 
         x_current = x_start;
 
-        while (i < len)
+        do
         {
             a = UTF2Unicode(Text, i);
 
-            if (a == 10)
+            if (a == 0)
+            {
+                break;
+            }
+            else if (a == 10)
             {
                 ++line;
                 Y += static_cast<decltype(Y)>(scaleY * sdfFont->GetLineHeight());
@@ -751,7 +754,7 @@ bool SDFTexture::Flush()
 				x_current = x_current + static_cast<decltype(x_current)>(scaleX * charParams.xadvance);
                 PointsCnt += 4;
             }
-        };        
+        } while(true);        
 
         pt.x = std::max(pt.x, x_current - x_start + 1);
         pt.y = static_cast<decltype(pt.y)>(scaleY * sdfFont->GetLineHeight() * VecSize.size());
