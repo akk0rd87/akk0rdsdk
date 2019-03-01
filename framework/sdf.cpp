@@ -547,11 +547,8 @@ bool SDFTexture::Flush()
         AkkordPoint pt, localpoint;
 
         unsigned int a = 0;
-        decltype(std::strlen(Text)) i, len;
-        i = len = 0;
-        
-        if (Text != nullptr)
-            len = std::strlen(Text);            
+        decltype(std::strlen(Text)) i = 0;
+        auto len = std::strlen(Text);
 
         if (len == 0)
             logWarning("Zero-length text");
@@ -668,10 +665,11 @@ bool SDFTexture::Flush()
 #ifndef __CODEBLOCKS
         decltype(X) x_start, x_current;
         pt = AkkordPoint(0, 0);
-
-        unsigned int i = 0;
+                
         unsigned int a = 0;
-        unsigned len = std::string(Text).size();
+
+        decltype(std::strlen(Text)) i = 0;
+        auto len = std::strlen(Text);
 
         auto atlasW = sdfFont->GetAtlasW();
         auto atlasH = sdfFont->GetAtlasH();
