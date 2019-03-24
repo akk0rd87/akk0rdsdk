@@ -663,7 +663,6 @@ bool SDFTexture::Flush()
             std::vector<unsigned> VecSize;
             AkkordPoint size;
             pt = size = GetTextSizeByLine(Text, VecSize);
-#ifndef __CODEBLOCKS
             decltype(X) x_start, x_current;
             pt = AkkordPoint(0, 0);
 
@@ -761,7 +760,6 @@ bool SDFTexture::Flush()
             pt.y = static_cast<decltype(pt.y)>(scaleY * sdfFont->GetLineHeight() * VecSize.size());
 
             //logDebug("[%d %d] [%d %d]", size.x, size.y, pt.x, pt.y);
-#endif
         }
         return pt;
     };
