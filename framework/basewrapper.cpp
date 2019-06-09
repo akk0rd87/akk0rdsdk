@@ -384,7 +384,7 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
 
 	if (nullptr == Buffer)
 	{
-		logError("Error load texture from memory");
+		logError("Error load texture from memory: buffer is not specified");
 		return false;
 	}
 		
