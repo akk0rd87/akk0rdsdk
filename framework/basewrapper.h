@@ -249,7 +249,8 @@ public:
     struct Flip { enum : unsigned char { None = SDL_FLIP_NONE, Horizontal = SDL_FLIP_HORIZONTAL, Vertical = SDL_FLIP_VERTICAL }; };  
     void Destroy();
     //bool LoadFromFile(const char* FileName);
-    bool LoadFromFile(const char* FileName, TextureType Type, const BWrapper::FileSearchPriority SearchPriority = BWrapper::FileSearchPriority::Assets, float Scale = 1.0f);
+    bool LoadFromFile  (const char* FileName, TextureType Type, const BWrapper::FileSearchPriority SearchPriority = BWrapper::FileSearchPriority::Assets, float Scale = 1.0f);
+	bool LoadFromMemory(const char* Buffer, int Size, TextureType Type, const BWrapper::FileSearchPriority SearchPriority = BWrapper::FileSearchPriority::Assets, float Scale = 1.0f);
     //int Draw(AkkordRect Rect);
     //int Draw(AkkordRect RectFromAtlas, AkkordRect Rect);
     bool Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas = nullptr, unsigned char Flip = AkkordTexture::Flip::None, double Angle = 0, AkkordPoint* Point = nullptr) const;

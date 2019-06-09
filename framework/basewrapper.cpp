@@ -374,6 +374,105 @@ bool BWrapper::SetWindowSize(int W, int H)
     return true;
 }
 
+
+bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Type, const BWrapper::FileSearchPriority SearchPriority, float Scale)
+{	
+	if (tex != nullptr)
+	{
+		this->Destroy();
+	}
+
+	if (nullptr == Buffer)
+	{
+		logError("Error load texture from memory");
+		return false;
+	}
+		
+	auto io = SDL_RWFromMem((void*)Buffer, Size);
+	bool result = false;
+
+	if (io)
+	{
+		SDL_Surface *image = nullptr;
+		switch (Type)
+		{
+			case AkkordTexture::TextureType::BMP:
+				image = IMG_LoadBMP_RW(io);
+				break;
+			case AkkordTexture::TextureType::PNG:
+				image = IMG_LoadPNG_RW(io);
+				break;
+			case AkkordTexture::TextureType::JPEG:
+				image = IMG_LoadJPG_RW(io);
+				break;
+			case AkkordTexture::TextureType::SVG:
+			{
+				auto data = (char *)SDL_LoadFile_RW(io, nullptr, SDL_FALSE);
+				if (data == nullptr)
+				{
+					logError("Couldn't parse SVG image %s", SDL_GetError());
+					goto end;
+				}
+				auto svg_image = nsvgParse(data, "px", 96.0f);
+				SDL_free(data);
+
+				if (svg_image == nullptr)
+				{
+					logError("Couldn't parse SVG image %s", SDL_GetError());
+					goto end;
+				}
+
+				auto rasterizer = nsvgCreateRasterizer();
+				if (rasterizer == nullptr)
+				{
+					nsvgDelete(svg_image);
+					logError("Couldn't create SVG rasterizer %s", SDL_GetError());
+					goto end;
+				}
+
+				image = SDL_CreateRGBSurface(SDL_SWSURFACE,
+					(int)(svg_image->width * Scale),
+					(int)(svg_image->height * Scale),
+					32,
+					0x000000FF,
+					0x0000FF00,
+					0x00FF0000,
+					0xFF000000);
+				if (image == nullptr)
+				{
+					nsvgDeleteRasterizer(rasterizer);
+					nsvgDelete(svg_image);
+					goto end;
+				}
+
+				nsvgRasterize(rasterizer, svg_image, 0.0f, 0.0f, Scale, (unsigned char *)image->pixels, image->w, image->h, image->pitch);
+				nsvgDeleteRasterizer(rasterizer);
+				nsvgDelete(svg_image);
+			}
+			break;
+		}
+
+		if (image)
+		{
+			tex = SDL_CreateTextureFromSurface(CurrentContext.CurrentRenderer, image);
+			SDL_FreeSurface(image);
+
+			if (tex)
+				result = true;
+		}
+		else
+		{
+			logError("Error load Image SDL_RWFromMem error=%s",  SDL_GetError());
+		}
+	}
+
+	end:
+	SDL_RWclose(io);
+
+	return result;
+};
+
+
 bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const BWrapper::FileSearchPriority SearchPriority, float Scale)
 {
     if (tex != nullptr)
@@ -390,91 +489,14 @@ bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const B
         logError("Error load file image = %s, error=%s", FileName, SDL_GetError());
         return result;
     }
-
-    auto io = SDL_RWFromMem(buffer, Size);
-
-    if (io)
-    {
-        SDL_Surface *image = nullptr;
-        switch (Type)
-        {
-            case AkkordTexture::TextureType::BMP:
-                image = IMG_LoadBMP_RW(io);
-                break;
-            case AkkordTexture::TextureType::PNG:
-                image = IMG_LoadPNG_RW(io);
-                break;
-            case AkkordTexture::TextureType::JPEG:
-                image = IMG_LoadJPG_RW(io);
-                break;
-			case AkkordTexture::TextureType::SVG:				
-                {
-                    auto data = (char *)SDL_LoadFile_RW(io, nullptr, SDL_FALSE);
-                    if (data == nullptr) 
-                    {
-                        logError("Couldn't parse SVG image %s %s", FileName, SDL_GetError());                        
-                        goto end;
-                    }
-                    auto svg_image = nsvgParse(data, "px", 96.0f);
-                    SDL_free(data);
-
-                    if (svg_image == nullptr)
-                    {
-                        logError("Couldn't parse SVG image %s %s", FileName, SDL_GetError());
-                        goto end;
-                    }
-
-                    auto rasterizer = nsvgCreateRasterizer();
-                    if (rasterizer == nullptr)
-                    {                        
-                        nsvgDelete(svg_image);
-                        logError("Couldn't create SVG rasterizer %s %s", FileName, SDL_GetError());                        
-                        goto end;
-                    }
-
-                    image = SDL_CreateRGBSurface(SDL_SWSURFACE,
-                        (int)(svg_image->width * Scale),
-                        (int)(svg_image->height * Scale),
-                        32,
-                        0x000000FF,
-                        0x0000FF00,
-                        0x00FF0000,
-                        0xFF000000);
-                    if (image == nullptr)
-                    {
-                        nsvgDeleteRasterizer(rasterizer);
-                        nsvgDelete(svg_image);
-                        goto end;
-                    }
-
-                    nsvgRasterize(rasterizer, svg_image, 0.0f, 0.0f, Scale, (unsigned char *)image->pixels, image->w, image->h, image->pitch);
-                    nsvgDeleteRasterizer(rasterizer);
-                    nsvgDelete(svg_image);                    
-                }
-				break;
-        }
-
-        if (image)
-        {
-            tex = SDL_CreateTextureFromSurface(CurrentContext.CurrentRenderer, image);
-            SDL_FreeSurface(image);
-
-            if (tex)
-                result = true;
-        }
-        else
-        {
-            logError("Error load Image SDL_RWFromMem = %s, error=%s", FileName, SDL_GetError());
-        }
-    }
-    else
-    {
-        logError("Error load Image IMG_Load_RW = %s, error=%s", FileName, SDL_GetError());
-    }
-
-    end:
+	
+	result = this->LoadFromMemory(buffer, Size, Type, SearchPriority, Scale);
     BWrapper::CloseBuffer(buffer);
-    SDL_RWclose(io);
+
+	if (!result)
+	{
+		logError("Error load file %s", FileName);
+	}
 
     return result;
 };
