@@ -375,7 +375,7 @@ bool BWrapper::SetWindowSize(int W, int H)
 }
 
 
-bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Type, const BWrapper::FileSearchPriority SearchPriority, float Scale)
+bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Type, float Scale)
 {	
 	if (tex != nullptr)
 	{
@@ -490,7 +490,7 @@ bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const B
         return result;
     }
 	
-	result = this->LoadFromMemory(buffer, Size, Type, SearchPriority, Scale);
+	result = this->LoadFromMemory(buffer, Size, Type, Scale);
     BWrapper::CloseBuffer(buffer);
 
 	if (!result)
