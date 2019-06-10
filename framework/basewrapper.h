@@ -319,6 +319,7 @@ class WAVPlayer
     
 public:
     bool LoadFromFile(const char* FileName, const BWrapper::FileSearchPriority SearchPriority = BWrapper::FileSearchPriority::Assets);
+	bool LoadFromMemory(const char* Buffer, int Size);
     bool Play();
     void Clear();
     ~WAVPlayer();

@@ -1421,6 +1421,30 @@ void WAVPlayer::Clear()
     }
 };
 
+bool WAVPlayer::LoadFromMemory(const char* Buffer, int Size)
+{	
+	this->Clear();
+
+	if (nullptr == Buffer)
+	{
+		logError("Emptry buffer for wav load");
+		return false;
+	}
+
+	bool result = true;
+	auto io = SDL_RWFromMem((void*)Buffer, Size);
+	SDL_zero(this->wav_spec);
+
+	if (SDL_LoadWAV_RW(io, 1, &this->wav_spec, &this->wav_buffer, &this->wav_length) == nullptr)
+	{
+		logError("error SDL_LoadWAV_RW %s", SDL_GetError());		
+		result = false;
+	}
+		
+	SDL_RWclose(io);
+	return result;
+};
+
 bool WAVPlayer::LoadFromFile(const char* FileName, const BWrapper::FileSearchPriority SearchPriority)
 {
     this->Clear();
@@ -1432,20 +1456,21 @@ bool WAVPlayer::LoadFromFile(const char* FileName, const BWrapper::FileSearchPri
         logError("Error load file = %s, error=%s", FileName, SDL_GetError());
         return false;
     }
+	
+	bool result = this->LoadFromMemory(buffer, Size);
+    BWrapper::CloseBuffer(buffer);
 
-    auto io = SDL_RWFromMem(buffer, Size);
-    SDL_zero(this->wav_spec);
-
-    if (SDL_LoadWAV_RW(io, 1, &this->wav_spec, &this->wav_buffer, &this->wav_length) == nullptr) {
-        logError("error SDL_LoadWAV_RW %s %s", FileName, SDL_GetError());
-        delete[] buffer;
-        return false;
-    }
-
-    delete[] buffer;    
-    this->deviceId = SDL_OpenAudioDevice(nullptr, 0, &this->wav_spec, nullptr, 0);
-    logDebug("deviceId = %d", deviceId);
-    return true;
+	if (result)
+	{
+		this->deviceId = SDL_OpenAudioDevice(nullptr, 0, &this->wav_spec, nullptr, 0);
+		logDebug("deviceId = %d", deviceId);
+	}
+	else
+	{
+		logError("Error load wav file = %s, error=%s", FileName, SDL_GetError());
+	}
+    
+    return result;
 };
 
 bool WAVPlayer::Play()
