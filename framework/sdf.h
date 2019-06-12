@@ -65,6 +65,7 @@ class SDFGLTexture
 public:
     void Clear();
     bool Load(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority);
+    bool LoadFromMemory(const char* Buffer, int Size);
     bool Draw(bool Outline, GLsizei Count, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border, int Spread);
     AkkordPoint GetSize();
     ~SDFGLTexture();
@@ -86,6 +87,7 @@ class SDFTexture
 
 public:
     bool Load(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority, int Spread);
+    bool LoadFromMemory(const char* Buffer, int Size, int Spread);
     void SetColor(const AkkordColor& Color) { this->Color = Color; };
     void SetOutlineColor(const AkkordColor& OutlineColor) { this->OutlineColor = OutlineColor; };
     bool Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect = nullptr);    

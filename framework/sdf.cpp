@@ -207,6 +207,13 @@ bool SDFGLTexture::Load(const char* FileNamePNG, BWrapper::FileSearchPriority Se
     return true;
 }
 
+bool SDFGLTexture::LoadFromMemory(const char* Buffer, int Size)
+{
+	this->Clear();	
+	akkordTexture.LoadFromMemory(Buffer, Size, AkkordTexture::TextureType::PNG);
+	return true;
+};
+
 bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border, int Spread)
 {
     GLint oldProgramId;
@@ -331,6 +338,13 @@ bool SDFTexture::Load(const char* FileNamePNG, BWrapper::FileSearchPriority Sear
     Texture.Load(FileNamePNG, SearchPriority);
     return true;
 }
+
+bool SDFTexture::LoadFromMemory(const char* Buffer, int Size, int Spread)
+{
+	this->Spread = Spread;
+	Texture.LoadFromMemory(Buffer, Size);
+	return true;
+};
 
 bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
 {
