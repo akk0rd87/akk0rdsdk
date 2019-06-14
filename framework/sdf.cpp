@@ -290,7 +290,7 @@ bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColo
     // unbind texture
     SDL_GL_UnbindTexture(akkordTexture.GetTexture());
     
-    if (shaderProgram->shaderProgram != oldProgramId)
+    if (shaderProgram->shaderProgram != oldProgramId && oldProgramId > 0)
     {
         Driver.glUseProgram(oldProgramId); CheckGLESError();
     }
