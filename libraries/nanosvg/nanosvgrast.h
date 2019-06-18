@@ -31,6 +31,8 @@ extern "C" {
 #endif
 #endif
 
+#define nsvg__div255(X) ((X + 1) * 257) >> 16
+
 typedef struct NSVGrasterizer NSVGrasterizer;
 
 /* Example Usage:
@@ -230,14 +232,14 @@ static unsigned char* nsvg__alloc(NSVGrasterizer* r, int size)
 	return buf;
 }
 
-static int nsvg__ptEquals(float x1, float y1, float x2, float y2, float tol)
+static int nsvg__ptEquals(const float& x1, const float& y1, const float& x2, const float& y2, const float& tol)
 {
 	float dx = x2 - x1;
 	float dy = y2 - y1;
 	return dx*dx + dy*dy < tol*tol;
 }
 
-static void nsvg__addPathPoint(NSVGrasterizer* r, float x, float y, int flags)
+static void nsvg__addPathPoint(NSVGrasterizer* r, const float& x, const float& y, int flags)
 {
 	NSVGpoint* pt;
 
@@ -328,11 +330,11 @@ static float nsvg__normalize(float *x, float* y)
 	return d;
 }
 
-static float nsvg__absf(float x) { return x < 0 ? -x : x; }
+static float nsvg__absf(const float& x) { return x < 0 ? -x : x; }
 
 static void nsvg__flattenCubicBez(NSVGrasterizer* r,
-								  float x1, float y1, float x2, float y2,
-								  float x3, float y3, float x4, float y4,
+	const float& x1, const float& y1, const float& x2, const float& y2,
+	const float& x3, const float& y3, const float& x4, const float& y4,
 								  int level, int type)
 {
 	float x12,y12,x23,y23,x34,y34,x123,y123,x234,y234,x1234,y1234;
@@ -979,10 +981,8 @@ static unsigned int nsvg__applyOpacity(unsigned int c, float u)
 	return nsvg__RGBA((unsigned char)r, (unsigned char)g, (unsigned char)b, (unsigned char)a);
 }
 
-static inline int nsvg__div255(int x)
-{
-    return ((x+1) * 257) >> 16;
-}
+
+
 
 static void nsvg__scanlineSolid(unsigned char* dst, int count, unsigned char* cover, int x, int y,
 								float tx, float ty, float scale, NSVGcachedPaint* cache)
