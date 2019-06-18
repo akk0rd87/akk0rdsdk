@@ -167,7 +167,7 @@ NSVGimage* nsvgParseFromFile(const char* filename, const char* units, float dpi)
 
 // Parses SVG file from a null terminated string, returns SVG image as paths.
 // Important note: changes the string.
-NSVGimage* nsvgParse(char* input, const char* units, float dpi);
+NSVGimage* nsvgParse(char* input, const char* units, const float& dpi);
 
 // Duplicates a path.
 NSVGpath* nsvgDuplicatePath(NSVGpath* p);
@@ -187,7 +187,7 @@ void nsvgDelete(NSVGimage* image);
 
 #include <string.h>
 #include <stdlib.h>
-#include <math.h>
+#include <cmath>
 
 #define NSVG_PI (3.14159265358979323846264338327f)
 #define NSVG_KAPPA90 (0.5522847493f)	// Length proportional to radius of a cubic bezier handle for 90deg arcs.
@@ -2873,7 +2873,7 @@ static void nsvg__scaleToViewbox(NSVGparser* p, const char* units)
 	}
 }
 
-NSVGimage* nsvgParse(char* input, const char* units, float dpi)
+NSVGimage* nsvgParse(char* input, const char* units, const float& dpi)
 {
 	NSVGparser* p;
 	NSVGimage* ret = 0;

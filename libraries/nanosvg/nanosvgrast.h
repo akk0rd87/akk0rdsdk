@@ -61,7 +61,7 @@ NSVGrasterizer* nsvgCreateRasterizer();
 //   h - height of the image to render
 //   stride - number of bytes per scaleline in the destination buffer
 void nsvgRasterize(NSVGrasterizer* r,
-				   NSVGimage* image, float tx, float ty, float scale,
+				   NSVGimage* image, const float& tx, const float& ty, const float& scale,
 				   unsigned char* dst, int w, int h, int stride);
 
 // Deletes rasterizer context.
@@ -78,7 +78,7 @@ void nsvgDeleteRasterizer(NSVGrasterizer*);
 
 #ifdef NANOSVGRAST_IMPLEMENTATION
 
-#include <math.h>
+#include <cmath>
 
 #define NSVG__SUBSAMPLES	5
 #define NSVG__FIXSHIFT		10
@@ -330,7 +330,7 @@ static float nsvg__normalize(float *x, float* y)
 	return d;
 }
 
-static float nsvg__absf(const float& x) { return x < 0 ? -x : x; }
+static float nsvg__absf(const float& x) { return x < 0.0f ? -x : x; }
 
 static void nsvg__flattenCubicBez(NSVGrasterizer* r,
 	const float& x1, const float& y1, const float& x2, const float& y2,
@@ -353,9 +353,12 @@ static void nsvg__flattenCubicBez(NSVGrasterizer* r,
 
 	dx = x4 - x1;
 	dy = y4 - y1;
-	d2 = nsvg__absf(((x2 - x4) * dy - (y2 - y4) * dx));
-	d3 = nsvg__absf(((x3 - x4) * dy - (y3 - y4) * dx));
+	d2 = (x2 - x4) * dy - (y2 - y4) * dx;
+	d3 = (x3 - x4) * dy - (y3 - y4) * dx;
 
+	d2 = (d2 < 0.0f ? -d2 : d2);
+	d3 = (d3 < 0.0f ? -d3 : d3);
+	
 	if ((d2 + d3)*(d2 + d3) < r->tessTol * (dx*dx + dy*dy)) {
 		nsvg__addPathPoint(r, x4, y4, type);
 		return;
@@ -366,11 +369,11 @@ static void nsvg__flattenCubicBez(NSVGrasterizer* r,
 	x1234 = (x123+x234)*0.5f;
 	y1234 = (y123+y234)*0.5f;
 
-	nsvg__flattenCubicBez(r, x1,y1, x12,y12, x123,y123, x1234,y1234, level+1, 0);
+	nsvg__flattenCubicBez(r, x1, y1, x12,y12, x123,y123, x1234,y1234, level+1, 0);
 	nsvg__flattenCubicBez(r, x1234,y1234, x234,y234, x34,y34, x4,y4, level+1, type);
 }
 
-static void nsvg__flattenShape(NSVGrasterizer* r, NSVGshape* shape, float scale)
+static void nsvg__flattenShape(NSVGrasterizer* r, NSVGshape* shape, const float& scale)
 {
 	int i, j;
 	NSVGpath* path;
@@ -1363,7 +1366,7 @@ static void dumpEdges(NSVGrasterizer* r, const char* name)
 */
 
 void nsvgRasterize(NSVGrasterizer* r,
-				   NSVGimage* image, float tx, float ty, float scale,
+				   NSVGimage* image, const float& tx, const float& ty, const float& scale,
 				   unsigned char* dst, int w, int h, int stride)
 {
 	NSVGshape *shape = NULL;
