@@ -124,6 +124,7 @@ public:
     // System init-quit functions                          
     static bool                Init                        (Uint32 flags);
     static void                Quit                        ();
+	static int                 GetCPUCount                 ();
 
     // Windows and Render functions
     static AkkordWindow*       CreateRenderWindow          (const char* Title, int X, int Y, int W, int H, Uint32 Flags);

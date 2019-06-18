@@ -47,6 +47,11 @@ public:
 static CurrentContextStruct CurrentContext;
 static LogParamsStruct LogParams;
 
+int BWrapper::GetCPUCount()
+{
+	return SDL_GetCPUCount();
+}
+
 bool BWrapper::Init(Uint32 flags)
 {
     //Если раскомментить нижеприведенную строку, то на винде валится при закрытии окна приложения (не консоли)
