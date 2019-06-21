@@ -378,7 +378,22 @@ bool BWrapper::SetWindowSize(int W, int H)
     SDL_SetWindowSize(CurrentContext.CurrentWindow, W, H);
     return true;
 }
+bool AkkordTexture::CreateFromSurface(SDL_Surface* Surface)
+{
+	if (tex != nullptr)
+	{
+		this->Destroy();
+	}
 
+	tex = SDL_CreateTextureFromSurface(CurrentContext.CurrentRenderer, Surface);
+
+	if (!tex)
+	{
+		logError("Error create texture from surface %s", SDL_GetError());
+		return false;
+	}
+	return true;
+};
 
 bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Type, float Scale)
 {	
@@ -458,12 +473,9 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
 		}
 
 		if (image)
-		{
-			tex = SDL_CreateTextureFromSurface(CurrentContext.CurrentRenderer, image);
+		{			
+			result = this->CreateFromSurface(image);
 			SDL_FreeSurface(image);
-
-			if (tex)
-				result = true;
 		}
 		else
 		{
