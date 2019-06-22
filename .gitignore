@@ -41,6 +41,9 @@ libraries/SDL_image/SDL_image/VisualC/Win32
 libraries/SDL_ttf/SDL_ttf/VisualC/Win32/Debug
 libraries/SDL_ttf/SDL_ttf/VisualC/Win32/Release
 
+libraries/SDL_image/SDL_image/Xcode-iOS/build
+libraries/SDL/SDL/Xcode-iOS/SDL/build
+
 ut/**/build/*
 ut/**/lib/*
 ut/**/libs/*
