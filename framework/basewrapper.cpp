@@ -1450,6 +1450,11 @@ bool WAVPlayer::LoadFromMemory(const char* Buffer, int Size)
 
 	bool result = true;
 	auto io = SDL_RWFromMem((void*)Buffer, Size);
+	if (!io)
+	{
+		logError("Error read SDL_RWFromMem %s", SDL_GetError());
+		return false;
+	}
 	SDL_zero(this->wav_spec);
 
 	if (SDL_LoadWAV_RW(io, 1, &this->wav_spec, &this->wav_buffer, &this->wav_length) == nullptr)
