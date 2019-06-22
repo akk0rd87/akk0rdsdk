@@ -6,3 +6,6 @@ set APP_BUILD_SCRIPT=%NDK_PROJECT_PATH%\Android.mk
 
 call %ANDROID_NDK_HOME%/ndk-build -e clean
 call %ANDROID_NDK_HOME%/ndk-build -e
+
+rem rd /s/q lib
+rem xcopy %NDK_PROJECT_PATH%\libs lib\ /E
