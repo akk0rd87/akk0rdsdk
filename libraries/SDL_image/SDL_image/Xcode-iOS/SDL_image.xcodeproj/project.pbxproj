@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
@@ -249,7 +249,7 @@
 				};
 			};
 			buildConfigurationList = 00B7E3B6097EB73D00826121 /* Build configuration list for PBXProject "SDL_image" */;
-			compatibilityVersion = "Xcode 3.2";
+			compatibilityVersion = "Xcode 10.0";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
