@@ -416,9 +416,16 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
 			2.0f * (Dest.x + (Dest.w - 1.0f)) / ScrenW - 1.0f, 2.0f * (ScrenH - Dest.y) / ScrenH - 1.0f
 		});
        
-    decltype(Indices)::value_type PointsCnt = Indices.size() / 6 * 4;
-    Indices.emplace_back(PointsCnt + 0); Indices.emplace_back(PointsCnt + 1); Indices.emplace_back(PointsCnt + 2);
-    Indices.emplace_back(PointsCnt + 1); Indices.emplace_back(PointsCnt + 2); Indices.emplace_back(PointsCnt + 3);
+    decltype(Indices)::value_type PointsCnt0 = Indices.size() / 6 * 4;
+	decltype(PointsCnt0) PointsCnt1 = PointsCnt0 + 1;
+	decltype(PointsCnt0) PointsCnt2 = PointsCnt0 + 2;
+	decltype(PointsCnt0) PointsCnt3 = PointsCnt0 + 3;
+	
+	Indices.insert(Indices.cend(),
+		{
+			PointsCnt0, PointsCnt1, PointsCnt2,
+			PointsCnt1, PointsCnt2, PointsCnt3
+		});
 
     Scale = std::max((Dest.w) / Src.w, (Dest.h) / Src.h);
 
