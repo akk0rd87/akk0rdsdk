@@ -729,8 +729,8 @@ bool SDFTexture::Flush()
 
             unsigned i = 0;
 
-            auto atlasW = sdfFont->GetAtlasW();
-            auto atlasH = sdfFont->GetAtlasH();
+            auto atlasW = static_cast<float>(sdfFont->GetAtlasW());
+            auto atlasH = static_cast<float>(sdfFont->GetAtlasH());
 
             auto ScreenSize = BWrapper::GetScreenSize();
 
@@ -794,11 +794,11 @@ bool SDFTexture::Flush()
 
                     x_current += static_cast<decltype(x_current)>(scaleX * charParams.xoffset);
 
-                    const decltype(charParams.w) minus = 0;
+                    //const decltype(charParams.w) minus = 0;
 
 					px1 = float(charParams.x) / atlasW;
-					px2 = float(charParams.x + charParams.w - minus) / atlasW;
-					py1 = float(charParams.y + charParams.h - minus) / atlasH;
+					px2 = float(charParams.x + charParams.w /*- minus */) / atlasW;
+					py1 = float(charParams.y + charParams.h /*- minus */) / atlasH;
 					py2 = float(charParams.y) / atlasH;
 
 					UV.insert(UV.cend(),
@@ -809,8 +809,8 @@ bool SDFTexture::Flush()
 							px2, py2
 						});
 
-					px1 = 2 * (float)(x_current / ScrenW) - 1.0f;
-					px2 = 2 * (float)(x_current + (float)scaleX * (charParams.w - 1)) / ScrenW - 1.0f;
+					px1 = 2 * ((float)x_current / ScrenW) - 1.0f;
+					px2 = 2 * ((float)x_current + scaleX * (charParams.w - 1.0f)) / ScrenW - 1.0f;
 					py1 = 2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f;
 					py2 = 2 * (ScrenH - Y - scaleY * charParams.yoffset) / ScrenH - 1.0f;
 
