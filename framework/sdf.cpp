@@ -385,16 +385,26 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
 		Src.h = atlasH;
 	}
 
+	Dest.x = Src.x / atlasW;					 //px1
+	Dest.y = (Src.x + Src.w - 1.0f) / atlasW;	 //px2
+	Dest.w = (Src.y + Src.h - 1.0f) / atlasH;	 //py1
+	Dest.h = Src.y / atlasH;                   //py2
+
+	float& px1 = Dest.x;
+	float& px2 = Dest.y;
+	float& py1 = Dest.w;
+	float& py2 = Dest.h;
+
+    UV.emplace_back(px1); UV.emplace_back(py1);
+    UV.emplace_back(px2); UV.emplace_back(py1);
+    UV.emplace_back(px1); UV.emplace_back(py2);
+    UV.emplace_back(px2); UV.emplace_back(py2);
+
 	Dest.x = static_cast<float>(DestRect.x);
 	Dest.y = static_cast<float>(DestRect.y);
 	Dest.w = static_cast<float>(DestRect.w);
 	Dest.h = static_cast<float>(DestRect.h);
 
-    UV.emplace_back((Src.x) / atlasW);                UV.emplace_back((Src.y + Src.h - 1.0f) / atlasH);
-    UV.emplace_back((Src.x + Src.w - 1.0f) / atlasW); UV.emplace_back((Src.y + Src.h - 1.0f) / atlasH);
-    UV.emplace_back((Src.x) / atlasW);                UV.emplace_back((Src.y) / atlasH);
-    UV.emplace_back((Src.x + Src.w - 1.0f) / atlasW); UV.emplace_back((Src.y) / atlasH);
-   
     squareVertices.emplace_back(2 * (Dest.x / ScrenW) - 1.0f);                   squareVertices.emplace_back(2 * (ScrenH - Dest.y - (Dest.h)) / ScrenH - 1.0f);
     squareVertices.emplace_back(2 * (Dest.x + (Dest.w - 1.0f)) / ScrenW - 1.0f); squareVertices.emplace_back(2 * (ScrenH - Dest.y - (Dest.h)) / ScrenH - 1.0f);
     squareVertices.emplace_back(2 * (Dest.x / ScrenW) - 1.0f);                   squareVertices.emplace_back(2 * (ScrenH - Dest.y) / ScrenH - 1.0f);
