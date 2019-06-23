@@ -395,10 +395,10 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
     UV.emplace_back((Src.x) / atlasW);                UV.emplace_back((Src.y) / atlasH);
     UV.emplace_back((Src.x + Src.w - 1.0f) / atlasW); UV.emplace_back((Src.y) / atlasH);
    
-    squareVertices.emplace_back(2 * (float)(Dest.x / ScrenW) - 1.0f);                       squareVertices.emplace_back(2 * (ScrenH - Dest.y - (Dest.h)) / ScrenH - 1.0f);
-    squareVertices.emplace_back(2 * (float)(Dest.x + (float)(Dest.w - 1)) / ScrenW - 1.0f); squareVertices.emplace_back(2 * (ScrenH - Dest.y - (Dest.h)) / ScrenH - 1.0f);
-    squareVertices.emplace_back(2 * (float)(Dest.x / ScrenW) - 1.0f);                       squareVertices.emplace_back(2 * (ScrenH - Dest.y) / ScrenH - 1.0f);
-    squareVertices.emplace_back(2 * (float)(Dest.x + (float)(Dest.w - 1)) / ScrenW - 1.0f); squareVertices.emplace_back(2 * (ScrenH - Dest.y) / ScrenH - 1.0f);
+    squareVertices.emplace_back(2 * (Dest.x / ScrenW) - 1.0f);                   squareVertices.emplace_back(2 * (ScrenH - Dest.y - (Dest.h)) / ScrenH - 1.0f);
+    squareVertices.emplace_back(2 * (Dest.x + (Dest.w - 1.0f)) / ScrenW - 1.0f); squareVertices.emplace_back(2 * (ScrenH - Dest.y - (Dest.h)) / ScrenH - 1.0f);
+    squareVertices.emplace_back(2 * (Dest.x / ScrenW) - 1.0f);                   squareVertices.emplace_back(2 * (ScrenH - Dest.y) / ScrenH - 1.0f);
+    squareVertices.emplace_back(2 * (Dest.x + (Dest.w - 1.0f)) / ScrenW - 1.0f); squareVertices.emplace_back(2 * (ScrenH - Dest.y) / ScrenH - 1.0f);
        
     decltype(Indices)::value_type PointsCnt = Indices.size() / 6 * 4;
     Indices.emplace_back(PointsCnt + 0); Indices.emplace_back(PointsCnt + 1); Indices.emplace_back(PointsCnt + 2);
