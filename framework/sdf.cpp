@@ -716,6 +716,7 @@ bool SDFTexture::Flush()
     AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text)
     {        
         AkkordPoint pt = AkkordPoint(0,0);
+		float px1, px2, py1, py2;
         if (Text != nullptr)
         {
             std::vector<unsigned> VecSize;
@@ -795,20 +796,44 @@ bool SDFTexture::Flush()
 
                     const decltype(charParams.w) minus = 0;
 
-                    UV.emplace_back(float(charParams.x) / atlasW);                        UV.emplace_back(float(charParams.y + charParams.h - minus) / atlasH);
-                    UV.emplace_back(float(charParams.x + charParams.w - minus) / atlasW); UV.emplace_back(float(charParams.y + charParams.h - minus) / atlasH);
-                    UV.emplace_back(float(charParams.x) / atlasW);                        UV.emplace_back(float(charParams.y) / atlasH);
-                    UV.emplace_back(float(charParams.x + charParams.w - minus) / atlasW); UV.emplace_back(float(charParams.y) / atlasH);
+					px1 = float(charParams.x) / atlasW;
+					px2 = float(charParams.x + charParams.w - minus) / atlasW;
+					py1 = float(charParams.y + charParams.h - minus) / atlasH;
+					py2 = float(charParams.y) / atlasH;
 
-                    squareVertices.emplace_back(2 * (float)(x_current / ScrenW) - 1.0f);                                      squareVertices.emplace_back(2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f);
-                    squareVertices.emplace_back(2 * (float)(x_current + (float)scaleX * (charParams.w - 1)) / ScrenW - 1.0f); squareVertices.emplace_back(2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f);
-                    squareVertices.emplace_back(2 * (float)(x_current / ScrenW) - 1.0f);                                      squareVertices.emplace_back(2 * (ScrenH - Y - scaleY * charParams.yoffset) / ScrenH - 1.0f);
-                    squareVertices.emplace_back(2 * (float)(x_current + (float)scaleX * (charParams.w - 1)) / ScrenW - 1.0f); squareVertices.emplace_back(2 * (ScrenH - Y - scaleY * charParams.yoffset) / ScrenH - 1.0f);
+					UV.insert(UV.cend(),
+						{
+							px1, py1,
+							px2, py1,
+							px1, py2,
+							px2, py2
+						});
 
-                    Indices.emplace_back(PointsCnt + 0); Indices.emplace_back(PointsCnt + 1); Indices.emplace_back(PointsCnt + 2);
-                    Indices.emplace_back(PointsCnt + 1); Indices.emplace_back(PointsCnt + 2); Indices.emplace_back(PointsCnt + 3);
+					px1 = 2 * (float)(x_current / ScrenW) - 1.0f;
+					px2 = 2 * (float)(x_current + (float)scaleX * (charParams.w - 1)) / ScrenW - 1.0f;
+					py1 = 2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f;
+					py2 = 2 * (ScrenH - Y - scaleY * charParams.yoffset) / ScrenH - 1.0f;
 
-                    //x_current = x_current + (float)scaleX * (charParams.w /*+ charParams.xadvance*/);
+					squareVertices.insert(squareVertices.cend(),
+						{
+							px1, py1,
+							px2, py1,
+							px1, py2,
+							px2, py2
+						});
+
+					{
+						auto& PointsCnt0 = PointsCnt;
+						decltype(PointsCnt) PointsCnt1 = PointsCnt + 1;
+						decltype(PointsCnt) PointsCnt2 = PointsCnt + 2;
+						decltype(PointsCnt) PointsCnt3 = PointsCnt + 3;
+
+						Indices.insert(Indices.cend(),
+							{
+								PointsCnt0, PointsCnt1, PointsCnt2,
+								PointsCnt1, PointsCnt2, PointsCnt3
+							});
+					}
                     x_current = x_current + static_cast<decltype(x_current)>(scaleX * charParams.xadvance);
                     PointsCnt += 4;
                 }
