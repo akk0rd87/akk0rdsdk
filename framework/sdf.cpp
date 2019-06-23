@@ -579,7 +579,7 @@ bool SDFTexture::Flush()
                 else if (a == 10) // Если это переход строки
                 {
                     pt.y += static_cast<decltype(pt.y)>(scaleY * sdfFont->GetLineHeight()); // надо учесть общую высоту строки
-                    VecSize.push_back(localpoint.x);
+                    VecSize.emplace_back(localpoint.x);
                     pt.x = std::max(pt.x, localpoint.x);
                     localpoint.x = 0;
                 }
@@ -593,7 +593,7 @@ bool SDFTexture::Flush()
             } while (true);
         }
 
-        VecSize.push_back(localpoint.x);
+        VecSize.emplace_back(localpoint.x);
         pt.x = std::max(pt.x, localpoint.x);
 
         //pt.y += localpoint.y; // надо учесть общую высоту строки
@@ -751,18 +751,18 @@ bool SDFTexture::Flush()
 
                     const decltype(charParams.w) minus = 0;
 
-                    UV.push_back(float(charParams.x) / atlasW);                        UV.push_back(float(charParams.y + charParams.h - minus) / atlasH);
-                    UV.push_back(float(charParams.x + charParams.w - minus) / atlasW); UV.push_back(float(charParams.y + charParams.h - minus) / atlasH);
-                    UV.push_back(float(charParams.x) / atlasW);                        UV.push_back(float(charParams.y) / atlasH);
-                    UV.push_back(float(charParams.x + charParams.w - minus) / atlasW); UV.push_back(float(charParams.y) / atlasH);
+                    UV.emplace_back(float(charParams.x) / atlasW);                        UV.emplace_back(float(charParams.y + charParams.h - minus) / atlasH);
+                    UV.emplace_back(float(charParams.x + charParams.w - minus) / atlasW); UV.emplace_back(float(charParams.y + charParams.h - minus) / atlasH);
+                    UV.emplace_back(float(charParams.x) / atlasW);                        UV.emplace_back(float(charParams.y) / atlasH);
+                    UV.emplace_back(float(charParams.x + charParams.w - minus) / atlasW); UV.emplace_back(float(charParams.y) / atlasH);
 
-                    squareVertices.push_back(2 * (float)(x_current / ScrenW) - 1.0f);                                      squareVertices.push_back(2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f);
-                    squareVertices.push_back(2 * (float)(x_current + (float)scaleX * (charParams.w - 1)) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f);
-                    squareVertices.push_back(2 * (float)(x_current / ScrenW) - 1.0f);                                      squareVertices.push_back(2 * (ScrenH - Y - scaleY * charParams.yoffset) / ScrenH - 1.0f);
-                    squareVertices.push_back(2 * (float)(x_current + (float)scaleX * (charParams.w - 1)) / ScrenW - 1.0f); squareVertices.push_back(2 * (ScrenH - Y - scaleY * charParams.yoffset) / ScrenH - 1.0f);
+                    squareVertices.emplace_back(2 * (float)(x_current / ScrenW) - 1.0f);                                      squareVertices.emplace_back(2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f);
+                    squareVertices.emplace_back(2 * (float)(x_current + (float)scaleX * (charParams.w - 1)) / ScrenW - 1.0f); squareVertices.emplace_back(2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f);
+                    squareVertices.emplace_back(2 * (float)(x_current / ScrenW) - 1.0f);                                      squareVertices.emplace_back(2 * (ScrenH - Y - scaleY * charParams.yoffset) / ScrenH - 1.0f);
+                    squareVertices.emplace_back(2 * (float)(x_current + (float)scaleX * (charParams.w - 1)) / ScrenW - 1.0f); squareVertices.emplace_back(2 * (ScrenH - Y - scaleY * charParams.yoffset) / ScrenH - 1.0f);
 
-                    Indices.push_back(PointsCnt + 0); Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2);
-                    Indices.push_back(PointsCnt + 1); Indices.push_back(PointsCnt + 2); Indices.push_back(PointsCnt + 3);
+                    Indices.emplace_back(PointsCnt + 0); Indices.emplace_back(PointsCnt + 1); Indices.emplace_back(PointsCnt + 2);
+                    Indices.emplace_back(PointsCnt + 1); Indices.emplace_back(PointsCnt + 2); Indices.emplace_back(PointsCnt + 3);
 
                     //x_current = x_current + (float)scaleX * (charParams.w /*+ charParams.xadvance*/);
                     x_current = x_current + static_cast<decltype(x_current)>(scaleX * charParams.xadvance);
