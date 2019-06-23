@@ -395,20 +395,26 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
 	float& py1 = Dest.w;
 	float& py2 = Dest.h;
 
-    UV.emplace_back(px1); UV.emplace_back(py1);
-    UV.emplace_back(px2); UV.emplace_back(py1);
-    UV.emplace_back(px1); UV.emplace_back(py2);
-    UV.emplace_back(px2); UV.emplace_back(py2);
+	UV.insert(UV.cend(), 
+		{		
+			px1, py1,
+			px2, py1,
+			px1, py2,
+			px2, py2		
+		});
 
 	Dest.x = static_cast<float>(DestRect.x);
 	Dest.y = static_cast<float>(DestRect.y);
 	Dest.w = static_cast<float>(DestRect.w);
 	Dest.h = static_cast<float>(DestRect.h);
 
-    squareVertices.emplace_back(2 * (Dest.x / ScrenW) - 1.0f);                   squareVertices.emplace_back(2 * (ScrenH - Dest.y - (Dest.h)) / ScrenH - 1.0f);
-    squareVertices.emplace_back(2 * (Dest.x + (Dest.w - 1.0f)) / ScrenW - 1.0f); squareVertices.emplace_back(2 * (ScrenH - Dest.y - (Dest.h)) / ScrenH - 1.0f);
-    squareVertices.emplace_back(2 * (Dest.x / ScrenW) - 1.0f);                   squareVertices.emplace_back(2 * (ScrenH - Dest.y) / ScrenH - 1.0f);
-    squareVertices.emplace_back(2 * (Dest.x + (Dest.w - 1.0f)) / ScrenW - 1.0f); squareVertices.emplace_back(2 * (ScrenH - Dest.y) / ScrenH - 1.0f);
+	squareVertices.insert(squareVertices.cend(),
+		{
+			2.0f * (Dest.x / ScrenW) - 1.0f                  , 2.0f * (ScrenH - Dest.y - (Dest.h)) / ScrenH - 1.0f,
+			2.0f * (Dest.x + (Dest.w - 1.0f)) / ScrenW - 1.0f, 2.0f * (ScrenH - Dest.y - (Dest.h)) / ScrenH - 1.0f,
+			2.0f * (Dest.x / ScrenW) - 1.0f                  , 2.0f * (ScrenH - Dest.y) / ScrenH - 1.0f,
+			2.0f * (Dest.x + (Dest.w - 1.0f)) / ScrenW - 1.0f, 2.0f * (ScrenH - Dest.y) / ScrenH - 1.0f
+		});
        
     decltype(Indices)::value_type PointsCnt = Indices.size() / 6 * 4;
     Indices.emplace_back(PointsCnt + 0); Indices.emplace_back(PointsCnt + 1); Indices.emplace_back(PointsCnt + 2);
