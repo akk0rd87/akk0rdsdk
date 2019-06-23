@@ -367,7 +367,7 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
 
     float ScrenW = static_cast<decltype(ScrenW)>(ScreenSize.x);
     float ScrenH = static_cast<decltype(ScrenH)>(ScreenSize.y);
-	  
+
 	struct FloatRect { float x, y, w, h; };
 	FloatRect Src, Dest;
 
@@ -390,10 +390,10 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
 	Dest.w = static_cast<float>(DestRect.w);
 	Dest.h = static_cast<float>(DestRect.h);
 
-    UV.emplace_back((Src.x) / atlasW);             UV.emplace_back((Src.y + Src.h - 1) / atlasH);
-    UV.emplace_back((Src.x + Src.w - 1) / atlasW); UV.emplace_back((Src.y + Src.h - 1) / atlasH);
-    UV.emplace_back((Src.x) / atlasW);             UV.emplace_back((Src.y) / atlasH);
-    UV.emplace_back((Src.x + Src.w - 1) / atlasW); UV.emplace_back((Src.y) / atlasH);
+    UV.emplace_back((Src.x) / atlasW);                UV.emplace_back((Src.y + Src.h - 1.0f) / atlasH);
+    UV.emplace_back((Src.x + Src.w - 1.0f) / atlasW); UV.emplace_back((Src.y + Src.h - 1.0f) / atlasH);
+    UV.emplace_back((Src.x) / atlasW);                UV.emplace_back((Src.y) / atlasH);
+    UV.emplace_back((Src.x + Src.w - 1.0f) / atlasW); UV.emplace_back((Src.y) / atlasH);
    
     squareVertices.emplace_back(2 * (float)(Dest.x / ScrenW) - 1.0f);                       squareVertices.emplace_back(2 * (ScrenH - Dest.y - (Dest.h)) / ScrenH - 1.0f);
     squareVertices.emplace_back(2 * (float)(Dest.x + (float)(Dest.w - 1)) / ScrenW - 1.0f); squareVertices.emplace_back(2 * (ScrenH - Dest.y - (Dest.h)) / ScrenH - 1.0f);
@@ -404,7 +404,7 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
     Indices.emplace_back(PointsCnt + 0); Indices.emplace_back(PointsCnt + 1); Indices.emplace_back(PointsCnt + 2);
     Indices.emplace_back(PointsCnt + 1); Indices.emplace_back(PointsCnt + 2); Indices.emplace_back(PointsCnt + 3);
 
-    Scale = std::max(static_cast<float>(Dest.w) / Src.w, static_cast<float>(Dest.h) / Src.h);
+    Scale = std::max((Dest.w) / Src.w, (Dest.h) / Src.h);
 
     if (this->AutoFlush)
         Flush();
