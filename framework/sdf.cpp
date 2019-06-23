@@ -369,37 +369,42 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
     float ScrenH = static_cast<decltype(ScrenH)>(ScreenSize.y);
 	  
 	struct FloatRect { float x, y, w, h; };
-	FloatRect Rect;
+	FloatRect Src, Dest;
 
 	if (SourceRect != nullptr)
 	{
-		Rect.x = static_cast<float>(SourceRect->x);
-		Rect.y = static_cast<float>(SourceRect->y);
-		Rect.w = static_cast<float>(SourceRect->w);
-		Rect.h = static_cast<float>(SourceRect->h);
+		Src.x = static_cast<float>(SourceRect->x);
+		Src.y = static_cast<float>(SourceRect->y);
+		Src.w = static_cast<float>(SourceRect->w);
+		Src.h = static_cast<float>(SourceRect->h);
 	}
 	else
 	{
-		Rect.x = Rect.y = 0.0f;
-		Rect.w = atlasW;
-		Rect.h = atlasH;
+		Src.x = Src.y = 0.0f;
+		Src.w = atlasW;
+		Src.h = atlasH;
 	}
 
-    UV.emplace_back((Rect.x) / atlasW);              UV.emplace_back((Rect.y + Rect.h - 1) / atlasH);
-    UV.emplace_back((Rect.x + Rect.w - 1) / atlasW); UV.emplace_back((Rect.y + Rect.h - 1) / atlasH);
-    UV.emplace_back((Rect.x) / atlasW);              UV.emplace_back((Rect.y) / atlasH);
-    UV.emplace_back((Rect.x + Rect.w - 1) / atlasW); UV.emplace_back((Rect.y) / atlasH);
+	Dest.x = static_cast<float>(DestRect.x);
+	Dest.y = static_cast<float>(DestRect.y);
+	Dest.w = static_cast<float>(DestRect.w);
+	Dest.h = static_cast<float>(DestRect.h);
+
+    UV.emplace_back((Src.x) / atlasW);             UV.emplace_back((Src.y + Src.h - 1) / atlasH);
+    UV.emplace_back((Src.x + Src.w - 1) / atlasW); UV.emplace_back((Src.y + Src.h - 1) / atlasH);
+    UV.emplace_back((Src.x) / atlasW);             UV.emplace_back((Src.y) / atlasH);
+    UV.emplace_back((Src.x + Src.w - 1) / atlasW); UV.emplace_back((Src.y) / atlasH);
    
-    squareVertices.emplace_back(2 * (float)(DestRect.x / ScrenW) - 1.0f);                           squareVertices.emplace_back(2 * (ScrenH - DestRect.y - (DestRect.h)) / ScrenH - 1.0f);
-    squareVertices.emplace_back(2 * (float)(DestRect.x + (float)(DestRect.w - 1)) / ScrenW - 1.0f); squareVertices.emplace_back(2 * (ScrenH - DestRect.y - (DestRect.h)) / ScrenH - 1.0f);
-    squareVertices.emplace_back(2 * (float)(DestRect.x / ScrenW) - 1.0f);                           squareVertices.emplace_back(2 * (ScrenH - DestRect.y) / ScrenH - 1.0f);
-    squareVertices.emplace_back(2 * (float)(DestRect.x + (float)(DestRect.w - 1)) / ScrenW - 1.0f); squareVertices.emplace_back(2 * (ScrenH - DestRect.y) / ScrenH - 1.0f);
+    squareVertices.emplace_back(2 * (float)(Dest.x / ScrenW) - 1.0f);                       squareVertices.emplace_back(2 * (ScrenH - Dest.y - (Dest.h)) / ScrenH - 1.0f);
+    squareVertices.emplace_back(2 * (float)(Dest.x + (float)(Dest.w - 1)) / ScrenW - 1.0f); squareVertices.emplace_back(2 * (ScrenH - Dest.y - (Dest.h)) / ScrenH - 1.0f);
+    squareVertices.emplace_back(2 * (float)(Dest.x / ScrenW) - 1.0f);                       squareVertices.emplace_back(2 * (ScrenH - Dest.y) / ScrenH - 1.0f);
+    squareVertices.emplace_back(2 * (float)(Dest.x + (float)(Dest.w - 1)) / ScrenW - 1.0f); squareVertices.emplace_back(2 * (ScrenH - Dest.y) / ScrenH - 1.0f);
        
     decltype(Indices)::value_type PointsCnt = Indices.size() / 6 * 4;
     Indices.emplace_back(PointsCnt + 0); Indices.emplace_back(PointsCnt + 1); Indices.emplace_back(PointsCnt + 2);
     Indices.emplace_back(PointsCnt + 1); Indices.emplace_back(PointsCnt + 2); Indices.emplace_back(PointsCnt + 3);
 
-    Scale = std::max(static_cast<float>(DestRect.w) / Rect.w, static_cast<float>(DestRect.h) / Rect.h);
+    Scale = std::max(static_cast<float>(Dest.w) / Src.w, static_cast<float>(Dest.h) / Src.h);
 
     if (this->AutoFlush)
         Flush();
