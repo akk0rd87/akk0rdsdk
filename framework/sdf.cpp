@@ -332,10 +332,18 @@ SDFTexture::~SDFTexture()
     Texture.Clear();
 };
 
+void SDFTexture::InitAtlasWH()
+{
+	auto size = Texture.GetSize();
+	atlasW = static_cast<float>(size.x);
+	atlasH = static_cast<float>(size.y);
+};
+
 bool SDFTexture::Load(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority, int Spread)
 {
     this->Spread = Spread;
     Texture.Load(FileNamePNG, SearchPriority);
+	InitAtlasWH();
     return true;
 }
 
@@ -343,6 +351,7 @@ bool SDFTexture::LoadFromMemory(const char* Buffer, int Size, int Spread)
 {
 	this->Spread = Spread;
 	Texture.LoadFromMemory(Buffer, Size);
+	InitAtlasWH();
 	return true;
 };
 
@@ -358,10 +367,7 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
 
     float ScrenW = static_cast<decltype(ScrenW)>(ScreenSize.x);
     float ScrenH = static_cast<decltype(ScrenH)>(ScreenSize.y);
-
-    auto Size = Texture.GetSize();
-    auto atlasW = Size.x;
-    auto atlasH = Size.y;
+	    
     auto Rect = AkkordRect(0,0, atlasW, atlasH);
 
     if (SourceRect != nullptr)

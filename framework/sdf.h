@@ -84,7 +84,9 @@ class SDFTexture
     float Scale, Border;
     bool AutoFlush = false;
     bool Outline = false;
-
+	float atlasW;
+	float atlasH;
+	void InitAtlasWH();
 public:
     bool Load(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority, int Spread);
     bool LoadFromMemory(const char* Buffer, int Size, int Spread);
