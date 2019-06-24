@@ -100,10 +100,9 @@ bool WindowsWrapper::GetDirContent(const char* Dir, DirContentElementArray& Arra
             Path = std::string(fd.cFileName);
             if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY && (Path == ".." || Path == ".")))
             {                
-                std::unique_ptr<DirContentElement> dc (new DirContentElement());
-                dc->Name = std::string(fd.cFileName);
-                dc->isDir = ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0);
-                ArrayList.push_back(std::move(dc));
+				ArrayList.emplace_back(std::make_unique<DirContentElement>());
+				ArrayList.back()->Name = std::string(fd.cFileName);
+				ArrayList.back()->isDir = ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0);
             }
         } while (FindNextFile(Handle, &fd) != 0);
     }

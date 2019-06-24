@@ -128,18 +128,17 @@ bool iOSWrapper::GetDirContent      (const char* Dir, DirContentElementArray& Ar
     
     NSUInteger count;
     for(count = 0; count < [dirContent count]; ++count)
-    {        
-        std::unique_ptr<DirContentElement> dc (new DirContentElement());
+    {
         URL = [dirContent objectAtIndex:count];
-        dc->isDir = false;
+        ArrayList.emplace_back(std::make_unique<DirContentElement>());
+        ArrayList.back()->isDir = false;
         {
             NSNumber *isDirectory;
             BOOL success = [URL getResourceValue:&isDirectory forKey:NSURLIsDirectoryKey error:nil];
             if (success && [isDirectory boolValue])
-                dc->isDir = true;
+                ArrayList.back()->isDir = true;
         }
-        dc->Name  = std::string([URL.pathComponents[URL.pathComponents.count - 1] UTF8String]);        
-        ArrayList.push_back(std::move(dc));
+        ArrayList.back()->Name = std::string([URL.pathComponents[URL.pathComponents.count - 1] UTF8String]);        
     }
     
     [dirContent release];
