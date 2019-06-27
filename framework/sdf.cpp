@@ -143,7 +143,8 @@ SDFProgram& SDFProgram::GetInstance()
         Driver.glUniformMatrix4fv(mat, 1, GL_FALSE, SDF_Mat);    CheckGLESError();
         Driver.glUniform1i(base_texture, 0);
 
-        Driver.glUseProgram(oldProgramId);
+        if(oldProgramId > 0)
+			Driver.glUseProgram(oldProgramId);
 
         //logDebug("sdf_outline_color = %d; sdf_params = %d; mat = %d, base_texture = %d, font_color = %d", Program->sdf_outline_color, Program->sdf_params, mat, base_texture, Program->font_color);
         return true;
