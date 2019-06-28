@@ -1,0 +1,1 @@
+setx AKKORD_SDK_HOME %~dp0
