@@ -243,6 +243,7 @@ public:
 	//Запрещаем создавать экземпляр класса BWrapper
 	BWrapper() = delete;
 	~BWrapper() = delete;
+	BWrapper(BWrapper& rhs)  = delete; // Копирующий: конструктор
 	BWrapper(BWrapper&& rhs) = delete; // Перемещающий: конструктор
 	BWrapper& operator= (BWrapper&& rhs) = delete; // Оператор перемещающего присваивания
 };
