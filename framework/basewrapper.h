@@ -239,6 +239,9 @@ public:
 #endif
         return true;
     }
+
+	//Запрещаем создавать экземпляр класса BWrapper
+	BWrapper() = delete;
 };
 
 class AkkordTexture
