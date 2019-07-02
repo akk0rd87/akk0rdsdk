@@ -64,7 +64,7 @@ class SDFGLTexture
     AkkordTexture akkordTexture;
 public:
     void Clear();
-    bool Load(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority);
+    bool LoadFromFile(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority);
     bool LoadFromMemory(const char* Buffer, int Size);
     bool Draw(bool Outline, GLsizei Count, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border, int Spread);
     AkkordPoint GetSize();
@@ -88,7 +88,7 @@ class SDFTexture
 	float atlasH;
 	void InitAtlasWH();
 public:
-    bool Load(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority, int Spread);
+    bool LoadFromFile(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority, int Spread);
     bool LoadFromMemory(const char* Buffer, int Size, int Spread);
     void SetColor(const AkkordColor& Color) { this->Color = Color; };
     void SetOutlineColor(const AkkordColor& OutlineColor) { this->OutlineColor = OutlineColor; };

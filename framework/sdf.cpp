@@ -201,7 +201,7 @@ void SDFGLTexture::Clear()
 
 }
 
-bool SDFGLTexture::Load(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority)
+bool SDFGLTexture::LoadFromFile(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority)
 {
     this->Clear();
     akkordTexture.LoadFromFile(FileNamePNG, AkkordTexture::TextureType::PNG, SearchPriority);
@@ -340,10 +340,10 @@ void SDFTexture::InitAtlasWH()
 	atlasH = static_cast<float>(size.y);
 };
 
-bool SDFTexture::Load(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority, int Spread)
+bool SDFTexture::LoadFromFile(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority, int Spread)
 {
     this->Spread = Spread;
-    Texture.Load(FileNamePNG, SearchPriority);
+    Texture.LoadFromFile(FileNamePNG, SearchPriority);
 	InitAtlasWH();
     return true;
 }
@@ -569,7 +569,7 @@ bool SDFTexture::Flush()
     {
         this->Clear();
         this->Spread = Spread;
-        FontAtlas.Load(FileNamePNG, SearchPriority);
+        FontAtlas.LoadFromFile(FileNamePNG, SearchPriority);
         ParseFNTFile(FileNameFNT, BWrapper::FileSearchPriority::Assets);
         return true;
     };
