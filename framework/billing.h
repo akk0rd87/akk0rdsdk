@@ -26,7 +26,14 @@ public:
 	static decltype(SDL_RegisterEvents(1))  GetEventCode();
 	
 	static void                             DecodeEvent(const SDL_Event& Event, int& Code, int& Result);
-	static void                             PushEvent  (int Code, const int Result);
+	static void                             PushEvent  (int Code, const int Result);    
+
+	//Запрещаем создавать экземпляр класса BillingManager
+	BillingManager() = delete;
+	~BillingManager() = delete;
+	BillingManager(BillingManager& rhs)  = delete; // Копирующий: конструктор
+	BillingManager(BillingManager&& rhs) = delete; // Перемещающий: конструктор
+	BillingManager& operator= (BillingManager&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 #endif // __AKK0RD_INAPP_BILLING_H__
