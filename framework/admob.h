@@ -43,6 +43,13 @@ public:
         int EventType, Code;
     };    
     typedef bool (AdEventCallback)(const AdMob::AdEvent* Event);
+
+	//Запрещаем создавать экземпляр класса AdMob
+	AdMob() = delete;
+	~AdMob() = delete;
+	AdMob(AdMob& rhs) = delete; // Копирующий: конструктор
+	AdMob(AdMob&& rhs) = delete; // Перемещающий: конструктор
+	AdMob& operator= (AdMob&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 #endif // __AKK0RD_ADMOBWRAPPER_H__
