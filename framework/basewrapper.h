@@ -350,6 +350,8 @@ public:
 	bool LoadFromMemory(const char* Buffer, int Size);
     bool Play();
     void Clear();
+    
+    WAVPlayer(){};
     ~WAVPlayer();
 
 	WAVPlayer(WAVPlayer& rhs) = delete; // Копирующий: конструктор
