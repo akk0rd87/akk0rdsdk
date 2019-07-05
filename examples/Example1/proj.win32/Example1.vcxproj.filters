@@ -29,9 +29,12 @@
     </ClCompile>
     <ClCompile Include="$(AKKORD_SDK_HOME)\framework\basewrapper.cpp">
       <Filter>Framework\Source</Filter>
-    </ClCompile>    
+    </ClCompile>
     <ClCompile Include="$(AKKORD_SDK_HOME)\framework\admob.cpp">
       <Filter>Framework\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="$(AKKORD_SDK_HOME)\framework\atlasmanager.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
