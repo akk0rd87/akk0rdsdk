@@ -661,12 +661,7 @@ bool BWrapper::IsPointInRect(const AkkordPoint& Point, const AkkordRect& Rect)
 void AkkordColor::SetInt32(unsigned int Color)
 {
 	color = Color;
-};
-
-AkkordColor::AkkordColor(unsigned int Color) // constructor
-{
-	color = Color;
-};
+}
 
 AkkordColor::AkkordColor(Uint8 R, Uint8 G, Uint8 B) // constructor
 {
@@ -1231,21 +1226,6 @@ std::string BWrapper::GetSDKVersionInfo()
     SDL_GetVersion(&version);
     VersionString += std::string("Linked version: ") + std::to_string(version.major) + "." + std::to_string(version.minor) + std::to_string(version.patch) + ", Revision: " + SDL_GetRevision();
     return VersionString;
-}
-
-AkkordRect::AkkordRect()
-{
-    x = 0; y = 0; w = 0; h = 0;
-}
-
-AkkordRect::AkkordRect(int X, int Y, int W, int H)
-{
-    x = X; y = Y; w = W; h = H;
-};
-
-AkkordRect::AkkordRect(const AkkordPoint& Point1, const AkkordPoint& Point2)
-{
-    x = Point1.x; y = Point1.y; w = Point2.x; h = Point2.y;
 }
 
 bool BWrapper::DirExists(const char* Dir)

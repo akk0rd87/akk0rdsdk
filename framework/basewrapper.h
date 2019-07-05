@@ -19,10 +19,10 @@ class AkkordRect
 {
 public:
     int x, y, w, h;
-    AkkordRect();
-    AkkordRect(const AkkordRect& Rect) { this->x = Rect.x; this->y = Rect.y; this->w = Rect.w; this->h = Rect.h; };
-    AkkordRect(int X, int Y, int W, int H);
-    AkkordRect(const AkkordPoint& Point1, const AkkordPoint& Point2);
+    AkkordRect(): x(0), y(0), w(0), h(0) {};
+	AkkordRect(const AkkordRect& Rect) : x(Rect.x), y(Rect.y), w(Rect.w), h(Rect.h) {};
+    AkkordRect(int X, int Y, int W, int H) : x(X), y(Y), w(W), h(H) {};
+    AkkordRect(const AkkordPoint& Point1, const AkkordPoint& Point2): x(Point1.x), y(Point1.y), w(Point2.x), h(Point2.y) {};
 
     void SetW(int W) { w = W; };
     void SetH(int H) { h = H; };
@@ -36,7 +36,7 @@ private :
     unsigned int color;
 public:
     AkkordColor();
-    AkkordColor(unsigned int Color);
+	AkkordColor(unsigned int Color) : color(Color) {};
     AkkordColor(Uint8 R, Uint8 G, Uint8 B);
     AkkordColor(Uint8 R, Uint8 G, Uint8 B, Uint8 A);
 
