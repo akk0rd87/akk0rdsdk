@@ -23,6 +23,13 @@ public:
     static bool RestorePurchases();
     static bool PurchaseProdItem(const char* ProductCode);
     static bool ConsumeProductItem(const char* PurchaseToken);
+    
+	//Запрещаем создавать экземпляр класса AndroidBillingManager
+	AndroidBillingManager() = delete;
+	~AndroidBillingManager() = delete;
+	AndroidBillingManager(AndroidBillingManager& rhs)  = delete; // Копирующий: конструктор
+	AndroidBillingManager(AndroidBillingManager&& rhs) = delete; // Перемещающий: конструктор
+	AndroidBillingManager& operator= (AndroidBillingManager&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 //----------

@@ -39,6 +39,13 @@ public:
 	bool InterstitialLoad();
 	bool InterstitialShow();
 	void ShowAdUnits();
+
+	adsManager() {};
+
+	//Запрещаем создавать экземпляр класса adsManager	
+	adsManager(adsManager& rhs) = delete; // Копирующий: конструктор
+	adsManager(adsManager&& rhs) = delete; // Перемещающий: конструктор
+	adsManager& operator= (adsManager&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 #endif // __AKK0RD_ADS_H__

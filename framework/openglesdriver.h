@@ -68,6 +68,13 @@ public:
     void PrintShaderSource(GLuint Shader);
     
     static GLESDriver& GetInstance();
+
+	GLESDriver() {};
+
+	//Запрещаем создавать экземпляр класса GLESDriver	
+	GLESDriver(GLESDriver& rhs) = delete; // Копирующий: конструктор
+	GLESDriver(GLESDriver&& rhs) = delete; // Перемещающий: конструктор	
+	GLESDriver& operator= (GLESDriver&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 #endif // __AKK0RD_OPENGLES_DRIVER_H__

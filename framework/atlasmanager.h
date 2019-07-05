@@ -53,6 +53,11 @@ private:
     bool IsValidAtlasIndex(IndexType AtlasIndex);
     void ParseFile_LeshyLabsText(FileReader& fr, IndexType AtlasIndex);
     void AddTexture();
+
+	//Запрещаем создавать экземпляр класса AtlasManager	
+	AtlasManager(AtlasManager& rhs) = delete; // Копирующий: конструктор
+	AtlasManager(AtlasManager&& rhs) = delete; // Перемещающий: конструктор	
+	AtlasManager& operator= (AtlasManager&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 #endif // __AKK0RD_ATLAS_MANAGER_H__

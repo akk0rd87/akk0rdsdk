@@ -57,6 +57,11 @@ public :
     ~SDFProgram();
 
     static SDFProgram& GetInstance();
+
+	//Запрещаем создавать экземпляр класса SDFProgram	
+	SDFProgram(SDFProgram& rhs) = delete; // Копирующий: конструктор
+	SDFProgram(SDFProgram&& rhs) = delete; // Перемещающий: конструктор	
+	SDFProgram& operator= (SDFProgram&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 class SDFGLTexture

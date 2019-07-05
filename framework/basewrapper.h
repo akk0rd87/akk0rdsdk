@@ -270,9 +270,12 @@ public:
 	
     AkkordTexture();
     ~AkkordTexture();
-    AkkordTexture(AkkordTexture&& tmp);
 
     SDL_Texture * GetTexture() { return tex;  };
+
+	AkkordTexture(AkkordTexture& rhs) = delete; // Копирующий: конструктор
+	AkkordTexture(AkkordTexture&& tmp); // Перемещающий конструктор объявлен
+	AkkordTexture& operator= (AkkordTexture&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 class DirContentReader
@@ -285,7 +288,12 @@ public:
     bool Open(const char* Dir);
     bool Close();
     bool Next(DirContentElement*& Element);    
-    ~DirContentReader();
+	DirContentReader() {};
+	~DirContentReader();
+
+	DirContentReader(DirContentReader& rhs) = delete; // Копирующий: конструктор
+	DirContentReader(DirContentReader&& rhs) = delete; // Перемещающий: конструктор
+	DirContentReader& operator= (DirContentReader&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 class FileReader
@@ -307,6 +315,10 @@ public:
     bool IsOpen() const;
     bool ReadLine(std::string& Line);
     bool Read(char* Buffer, unsigned MaxSize, unsigned& Readed);
+
+	FileReader(FileReader& rhs) = delete; // Копирующий: конструктор
+	FileReader(FileReader&& rhs) = delete; // Перемещающий: конструктор
+	FileReader& operator= (FileReader&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 class msgBox
@@ -317,6 +329,13 @@ public:
 	static void   Show(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2 = nullptr, const char* Button3 = nullptr, Uint32 TimeOutMS = 0);
 	static Uint32 GetEventCode();
 	static void   DecodeEvent(const SDL_Event& Event, int& Code, msgBox::Action& Action);
+
+	//Запрещаем создавать экземпляр класса msgBox
+	msgBox() = delete;
+	~msgBox() = delete;
+	msgBox(msgBox& rhs) = delete; // Копирующий: конструктор
+	msgBox(msgBox&& rhs) = delete; // Перемещающий: конструктор
+	msgBox& operator= (msgBox&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 class WAVPlayer
@@ -332,6 +351,10 @@ public:
     bool Play();
     void Clear();
     ~WAVPlayer();
+
+	WAVPlayer(WAVPlayer& rhs) = delete; // Копирующий: конструктор
+	WAVPlayer(WAVPlayer&& rhs) = delete; // Перемещающий: конструктор
+	WAVPlayer& operator= (WAVPlayer&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 #endif // __AKK0RD_BASE_BASEWRAPPER_H__

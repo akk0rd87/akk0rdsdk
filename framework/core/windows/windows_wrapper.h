@@ -23,6 +23,13 @@ class WindowsWrapper
 
     static bool             GetDirContent  (const char* Dir, DirContentElementArray& ArrayList);
 	static void             MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3);
+
+	//Запрещаем создавать экземпляр класса WindowsWrapper
+	WindowsWrapper() = delete;
+	~WindowsWrapper() = delete;
+	WindowsWrapper(WindowsWrapper& rhs) = delete; // Копирующий: конструктор
+	WindowsWrapper(WindowsWrapper&& rhs) = delete; // Перемещающий: конструктор
+	WindowsWrapper& operator= (WindowsWrapper&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 
