@@ -433,10 +433,10 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
 					logError("Couldn't parse SVG image %s", SDL_GetError());
 					goto end;
 				}
-				auto svg_image = nsvgParse(data, "px", 96.0f);
+				auto svg_image = std::unique_ptr<NSVGimage, void(*)(NSVGimage*)>(nsvgParse(data, "px", 96.0f), [](NSVGimage* i) { nsvgDelete(i); });
 				SDL_free(data);
 
-				if (svg_image == nullptr)
+				if (svg_image.get() == nullptr)
 				{
 					logError("Couldn't parse SVG image %s", SDL_GetError());
 					goto end;
@@ -445,7 +445,6 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
 				auto rasterizer = nsvgCreateRasterizer();
 				if (rasterizer == nullptr)
 				{
-					nsvgDelete(svg_image);
 					logError("Couldn't create SVG rasterizer %s", SDL_GetError());
 					goto end;
 				}
@@ -460,14 +459,12 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
 					0xFF000000);
 				if (image == nullptr)
 				{
-					nsvgDeleteRasterizer(rasterizer);
-					nsvgDelete(svg_image);
+					nsvgDeleteRasterizer(rasterizer);					
 					goto end;
 				}
 
-				nsvgRasterize(rasterizer, svg_image, 0.0f, 0.0f, Scale, (unsigned char *)image->pixels, image->w, image->h, image->pitch);
-				nsvgDeleteRasterizer(rasterizer);
-				nsvgDelete(svg_image);
+				nsvgRasterize(rasterizer, svg_image.get(), 0.0f, 0.0f, Scale, (unsigned char *)image->pixels, image->w, image->h, image->pitch);
+				nsvgDeleteRasterizer(rasterizer);				
 			}
 			break;
 		}
