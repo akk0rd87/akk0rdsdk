@@ -2,15 +2,11 @@
 #include "adrandomizer.h"
 #include "atlasmanager.h"
 
-AkkordPoint Position;
 AkkordRect ZombiePosition;
-
 AtlasManager AtlasMgr;
-AdRandomizer adRand;
 
 AkkordTexture Background;
 
-AkkordRect rect;
 AkkordTexture Ground;
 
 AtlasManager::IndexType ZombieIndex = 0;
@@ -111,13 +107,6 @@ void ClearAll()
     BWrapper::DestroyWindow();
 }
 
-
-void LoadSpriteSheet()
-{
-    auto AtlasIndex = AtlasMgr.LoadAtlas("images/sprites.txt", "images/spritesheet.png", AtlasManager::AtlasType::LeshyLabsText);    
-}
-
-
 void LoadZombies()
 {
     auto ZombieAtlasMale = AtlasMgr.LoadAtlas("zombiemale/sprites.txt", "zombiemale/spritesheet.png", AtlasManager::AtlasType::LeshyLabsText);
@@ -135,8 +124,7 @@ int main(int, char**){
 
     BWrapper::SetLogPriority(BWrapper::LogPriority::Debug);
     auto LogParams = BWrapper::GetLogParams();
-    LogParams->lenFile = 20;
-    logDebug("Program started");
+    LogParams->lenFile = 20;    
     SDL_Event event;
     if (!Init())
     {
@@ -149,25 +137,7 @@ int main(int, char**){
 	SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 
-    switch (BWrapper::GetDeviceLanguage())
-    {
-        case Locale::Lang::Russian:
-            logDebug("Russian;");
-            break;
-
-        case Locale::Lang::English:
-            logDebug("English;");
-            break;
-
-        default:
-            logDebug("Other language");
-            break;
-    }
-
-
     LoadZombies();
-    LoadSpriteSheet();
-
     ZombiePosition.x = BWrapper::GetScreenWidth() / 2;
 
     Background.LoadFromFile("background/bg.png", AkkordTexture::TextureType::PNG, BWrapper::FileSearchPriority::Assets);
