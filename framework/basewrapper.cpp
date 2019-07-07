@@ -407,8 +407,8 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
 		logError("Error load texture from memory: buffer is not specified");
 		return false;
 	}
-		
-	auto io = SDL_RWFromMem((void*)Buffer, Size);
+	
+	std::unique_ptr<SDL_RWops, void(*)(SDL_RWops*)>io(SDL_RWFromMem((void*)Buffer, Size), [](SDL_RWops* i) {SDL_RWclose(i);});	
 	bool result = false;
 
 	if (io)
@@ -417,24 +417,23 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
 		switch (Type)
 		{
 			case AkkordTexture::TextureType::BMP:				
-				image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadBMP_RW(io), SDL_FreeSurface);
+				image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadBMP_RW(io.get()), SDL_FreeSurface);
 				break;
 			case AkkordTexture::TextureType::PNG:				
-				image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadPNG_RW(io), SDL_FreeSurface);
+				image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadPNG_RW(io.get()), SDL_FreeSurface);
 				break;
 			case AkkordTexture::TextureType::JPEG:				
-				image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadJPG_RW(io), SDL_FreeSurface);
+				image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadJPG_RW(io.get()), SDL_FreeSurface);
 				break;
 			case AkkordTexture::TextureType::SVG:
-			{
-				auto data = (char *)SDL_LoadFile_RW(io, nullptr, SDL_FALSE);
-				if (data == nullptr)
+			{				
+				std::unique_ptr<char, void(*)(char*)> data((char *)SDL_LoadFile_RW(io.get(), nullptr, SDL_FALSE), [](char * i) { SDL_free(i); });				
+				if (data.get() == nullptr)
 				{
 					logError("Couldn't parse SVG image %s", SDL_GetError());
 					goto end;
 				}
-				std::unique_ptr<NSVGimage, void(*)(NSVGimage*)> svg_image(nsvgParse(data, "px", 96.0f), nsvgDelete);
-				SDL_free(data);
+				std::unique_ptr<NSVGimage, void(*)(NSVGimage*)> svg_image(nsvgParse(data.get(), "px", 96.0f), nsvgDelete);
 
 				if (svg_image.get() == nullptr)
 				{
@@ -442,8 +441,8 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
 					goto end;
 				}
 
-				auto rasterizer = nsvgCreateRasterizer();
-				if (rasterizer == nullptr)
+				std::unique_ptr<NSVGrasterizer, void(*)(NSVGrasterizer*)>rasterizer(nsvgCreateRasterizer(), nsvgDeleteRasterizer);
+				if (rasterizer.get() == nullptr)
 				{
 					logError("Couldn't create SVG rasterizer %s", SDL_GetError());
 					goto end;
@@ -462,12 +461,10 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
 
 				if (image.get() == nullptr)
 				{
-					nsvgDeleteRasterizer(rasterizer);					
 					goto end;
 				}
 
-				nsvgRasterize(rasterizer, svg_image.get(), 0.0f, 0.0f, Scale, (unsigned char *)image->pixels, image->w, image->h, image->pitch);
-				nsvgDeleteRasterizer(rasterizer);				
+				nsvgRasterize(rasterizer.get(), svg_image.get(), 0.0f, 0.0f, Scale, (unsigned char *)image->pixels, image->w, image->h, image->pitch);				
 			}
 			break;
 		}
@@ -483,7 +480,6 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
 	}
 
 	end:
-	SDL_RWclose(io);
 
 	return result;
 };
