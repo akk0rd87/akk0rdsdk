@@ -11,8 +11,8 @@ class AkkordPoint
 {
     public:
     int x, y;
-    AkkordPoint();
-    AkkordPoint(int X, int Y);
+    AkkordPoint() : x(0), y(0) {};
+    AkkordPoint(int X, int Y) : x(X), y(Y) {};
 };
 
 class AkkordRect

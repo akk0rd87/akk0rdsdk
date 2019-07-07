@@ -92,18 +92,18 @@ FILE* FileOpen_private(const char* Filename, BWrapper::FileSearchPriority Search
         }
     }
 
-    char mode[3];
+    const char* mode = nullptr;
 
     switch (OpenMode)
     {
         case BWrapper::FileOpenMode::ReadBinary:
-            strcpy(mode, "rb");
+            mode = "rb";
             break;
         case BWrapper::FileOpenMode::WriteBinary:
-            strcpy(mode, "wb");
+            mode = "wb";
             break;
         case BWrapper::FileOpenMode::AppendBinary:
-            strcpy(mode, "ab");
+            mode = "ab";
             break;
             /*
         case BWrapper::FileOpenMode::ReadText:
@@ -119,8 +119,7 @@ FILE* FileOpen_private(const char* Filename, BWrapper::FileSearchPriority Search
             break;
     }
 
-    auto File = fopen(Filename, mode);
-    return File;
+    return fopen(Filename, mode);
 }
 
 char* File2Buffer_private(FILE* File, unsigned& Size)
@@ -184,22 +183,18 @@ char* BWrapper::File2Buffer(const char* FileName, FileSearchPriority SearchPrior
 #endif
     }
 
-    auto File = FileOpen_private(Fname.c_str(), SearchPriority, BWrapper::FileOpenMode::ReadBinary);
+    std::unique_ptr<FILE, int(*)(FILE*)> File(FileOpen_private(Fname.c_str(), SearchPriority, BWrapper::FileOpenMode::ReadBinary), fclose);
 
     if(nullptr == File)
     {
         logError("BWrapper::File2Buffer: File %s open error", FileName, Fname.c_str());
-        goto end;
     }
 
-    buffer = File2Buffer_private(File, BufferSize);
+    buffer = File2Buffer_private(File.get(), BufferSize);
     if (nullptr == buffer)
     {
         logError("BWrapper::File2Buffer: File %s read to buffer error", FileName, Fname.c_str());
     }
-
-    end:
-    FileClose(File);
     return buffer;
 }
 
@@ -610,16 +605,6 @@ AkkordPoint AkkordTexture::GetSize() const
     }
     return Point;
 };
-
-AkkordPoint::AkkordPoint()
-{
-    x = 0; y = 0;
-}
-
-AkkordPoint::AkkordPoint(int X, int Y)
-{
-    x = X; y = Y;
-}
 
 AkkordPoint BWrapper::GetScreenSize()
 {
