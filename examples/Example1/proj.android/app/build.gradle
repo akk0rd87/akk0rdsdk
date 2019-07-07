@@ -15,16 +15,16 @@ model {
 //                headers.srcDir "${akkord_sdk_path}/libraries/SDL/SDL/include"
 //                binaries.withType(SharedLibraryBinary) {
 //                    sharedLibraryFile = file("${akkord_sdk_path}/libraries/SDL/android/lib/${targetPlatform.getName()}/libSDL2.so")
-//                }               
-//            }        
+//                }
+//            }
 
 //            SDL2_image {
 //                headers.srcDir "${akkord_sdk_path}/libraries/SDLLibs/SDL2_image/include"
 //                binaries.withType(SharedLibraryBinary) {
 //                    sharedLibraryFile = file("${akkord_sdk_path}/libraries/SDLLibs/android/libs/SDL2_image/${targetPlatform.getName()}/libSDL2_image.so")
-//                }                
-//            }            
-            
+//                }
+//            }
+
             main {
                 binaries.withType(SharedLibraryBinary) {
                     sharedLibraryFile = file("../main/lib/${targetPlatform.getName()}/libmain.so")
@@ -37,42 +37,42 @@ model {
         compileSdkVersion = rootProject.ext.compileSdkVersion
         buildToolsVersion = rootProject.ext.buildToolsVersion
 
-        defaultConfig {            
+        defaultConfig {
 
         }
         sources {
             main {
                 jni {
-                    dependencies {                        
+                    dependencies {
                         project ':main'      linkage 'shared'
                         //library 'SDL2'       linkage 'shared'
                         //library 'SDL2_image' linkage 'shared'
-                    }   
-                }   
+                    }
+                }
                 jniLibs {
-                    source {                        
+                    source {
                         srcDir "../main/lib"
-                    }   
-                } 
+                    }
+                }
                 java {
-                    source {                        
+                    source {
                         srcDir "${akkord_sdk_path}/framework/core/android/wrapper/"
                         //srcDir "${akkord_sdk_path}/framework/core/android/admob/"
-                    }   
-                }     
+                    }
+                }
 //                manifest {
-//                    source {                        
+//                    source {
 //                        srcDir "../main/lib"
-//                    }   
-//                }              
+//                    }
+//                }
                 assets {
                      source {
                          srcDir "../../assets/"
                          srcDir "${akkord_sdk_path}/resources/adimages/"
-                     } 
-                }                 
-            }   
-        }         
+                     }
+                }
+            }
+        }
 
         buildTypes {
             release {
@@ -118,7 +118,7 @@ model {
             keyPassword "android"
             storeType "jks"
         }
-    }      
+    }
 }
 
 tasks.whenTaskAdded { task ->

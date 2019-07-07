@@ -9,15 +9,15 @@ model {
                 headers.srcDir "${akkord_sdk_path}/libraries/SDL/SDL/include"
                 binaries.withType(SharedLibraryBinary) {
                     sharedLibraryFile = file("${akkord_sdk_path}/libraries/SDL/android/lib/${targetPlatform.getName()}/libSDL2.so")
-                }               
-            }        
+                }
+            }
 
             SDL2_image {
                 headers.srcDir "${akkord_sdk_path}/libraries/SDL_image/SDL_image"
                 binaries.withType(SharedLibraryBinary) {
                     sharedLibraryFile = file("${akkord_sdk_path}/libraries/SDL_image/android/lib/${targetPlatform.getName()}/libSDL2_image.so")
-                }                
-            }             
+                }
+            }
         }
     }
 
@@ -31,19 +31,19 @@ model {
         ndk {
             moduleName = 'main'
             platformVersion = "14"
-            
+
             ldLibs.addAll(["android"])
-            
+
             cppFlags.addAll(["-std=c++11"])
-            
+
             cppFlags.addAll(["-I" + file("${akkord_sdk_path}/libraries/SDL/SDL/include/").absolutePath])
             CFlags.addAll(["-I" + file("${akkord_sdk_path}/libraries/SDL/SDL/include/").absolutePath])
 
             cppFlags.addAll(["-I" + file("${akkord_sdk_path}/libraries/SDL_image/SDL_image").absolutePath])
             CFlags.addAll(["-I" + file("${akkord_sdk_path}/libraries/SDL_image/SDL_image").absolutePath])
-            
-            cppFlags.addAll(["-I" + file("${akkord_sdk_path}/framework/").absolutePath])            
-            
+
+            cppFlags.addAll(["-I" + file("${akkord_sdk_path}/framework/").absolutePath])
+
             stl "c++_static"
         }
 
@@ -51,13 +51,13 @@ model {
             main {
                 jni {
                     dependencies {
-                        library 'SDL2'       linkage 'shared'                        
+                        library 'SDL2'       linkage 'shared'
                         library 'SDL2_image' linkage 'shared'
                     }
                     source {
-			            srcDirs "../../src/"
+                        srcDirs "../../src/"
                         //srcDirs "${akkord_sdk_path}/framework/platforms/android/"
-                        srcDirs "${akkord_sdk_path}/framework/"                        
+                        srcDirs "${akkord_sdk_path}/framework/"
                     }
                 }
             }

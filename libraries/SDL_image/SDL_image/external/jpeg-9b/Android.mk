@@ -12,7 +12,7 @@ LOCAL_SRC_FILES := \
     jdmerge.c jdpostct.c jdsample.c jdtrans.c jerror.c jfdctflt.c \
     jfdctfst.c jfdctint.c jidctflt.c jquant1.c \
     jquant2.c jutils.c jmemmgr.c \
-	jmem-android.c
+    jmem-android.c
 
 # the assembler is only for the ARM version, don't break the Linux sim
 ifneq ($(TARGET_ARCH),arm)
@@ -28,7 +28,7 @@ else
 LOCAL_SRC_FILES += jidctint.c jidctfst.S
 endif
 
-LOCAL_CFLAGS += -DAVOID_TABLES 
+LOCAL_CFLAGS += -DAVOID_TABLES
 LOCAL_CFLAGS += -O3 -fstrict-aliasing -fprefetch-loop-arrays
 #LOCAL_CFLAGS += -march=armv6j
 

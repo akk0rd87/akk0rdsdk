@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    
+
     repositories {
         google()
         jcenter()
@@ -9,7 +9,7 @@ buildscript {
         mavenLocal()
         maven {
             url "https://maven.google.com"
-        }        
+        }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.1.4'
@@ -24,27 +24,27 @@ allprojects {
         google()
         jcenter()
         mavenCentral()
-        mavenLocal()        
+        mavenLocal()
     }
 }
 
-task _start(type: Exec) {	
+task _start(type: Exec) {
     group 'Custom'
-    description 'Run build'	
-	def finalPath = projectDir.toString() + "/cmd/utils/run.bat"
-	commandLine = [finalPath]
+    description 'Run build'
+    def finalPath = projectDir.toString() + "/cmd/utils/run.bat"
+    commandLine = [finalPath]
 }
 
 task _cleanDebug(type: GradleBuild) {
     group 'Custom'
     description 'Remove debug build'
-	tasks = [':app:clean']
+    tasks = [':app:clean']
 }
 
 task _cleanRelease(type: GradleBuild) {
     group 'Custom'
     description 'Remove release build'
-	tasks = [':app:clean']
+    tasks = [':app:clean']
 }
 
 task _rebuildDebug(type: GradleBuild) {
@@ -107,8 +107,8 @@ task _uiStartRelease(type: GradleBuild) {
     tasks = ['uninstallRelease', 'installRelease', '_start']
 }
 
-ext { 
+ext {
     compileSdkVersion = 26
     buildToolsVersion = "26.1.1"
-    //minSdkVersion 14    
+    //minSdkVersion 14
 }

@@ -5,39 +5,39 @@ def akkord_sdk_path = System.getenv('AKKORD_SDK_HOME')
 android {
     //ndkDirectory = "gerg"
     compileSdkVersion rootProject.ext.compileSdkVersion
-    defaultConfig {                     
+    defaultConfig {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
 
 
-        
+
         //ndk { // http://google.github.io/android-gradle-dsl/current/com.android.build.gradle.internal.dsl.ExternalNativeNdkBuildOptions.html
         //    // Tells Gradle to build outputs for the following ABIs and package
         //    // them into your APK.
-        //    
+        //
         //    // When this flag is not configured, Gradle builds and packages all available ABIs.
         //    // http://google.github.io/android-gradle-dsl/current/com.android.build.gradle.internal.dsl.NdkOptions.html
         //    abiFilters 'armeabi', 'armeabi-v7a', 'arm64-v8a', 'mips', 'mips64', 'x86', 'x86_64'
         //}
-        
+
         //externalNativeBuild {
         //    ndkBuild{
         //        abiFilters 'armeabi', 'armeabi-v7a', 'arm64-v8a', 'mips', 'mips64', 'x86', 'x86_64'
         //
         //        //CFlags.addAll(["-I" + file("${akkord_sdk_path}/libraries/SDL/SDL/include/").absolutePath])
         //        //CFlags.addAll(["-I" + file("${akkord_sdk_path}/libraries/SDL_image/SDL_image").absolutePath])
-        //        
-        //        cppFlags.addAll(["-I" + file("${akkord_sdk_path}/libraries/SDL/SDL/include/").absolutePath])                                
-        //        cppFlags.addAll(["-I" + file("${akkord_sdk_path}/libraries/SDL_image/SDL_image").absolutePath])             
+        //
+        //        cppFlags.addAll(["-I" + file("${akkord_sdk_path}/libraries/SDL/SDL/include/").absolutePath])
+        //        cppFlags.addAll(["-I" + file("${akkord_sdk_path}/libraries/SDL_image/SDL_image").absolutePath])
         //        cppFlags.addAll(["-I" + file("${akkord_sdk_path}/framework/common/").absolutePath])
-        //        cppFlags.addAll(["-I" + file("${akkord_sdk_path}/framework/platforms/android").absolutePath])                    
+        //        cppFlags.addAll(["-I" + file("${akkord_sdk_path}/framework/platforms/android").absolutePath])
         //        // add ../../src/main.cpp
-        //        
+        //
         //        arguments "NDK_MODULE_PATH+=../main/ V=1"
-        //    }            
+        //    }
         //}
     }
-    
+
     externalNativeBuild {
         ndkBuild {
             // Tells Gradle to find the root ndk-build script in the same
@@ -46,23 +46,23 @@ android {
             // pull your native sources into your Android project.
             buildStagingDirectory "../main/lib"
             path "../main/Android.mk"
-            
+
             //cppFlags.addAll(["-std=c++11"])
         }
-    }    
+    }
 
     sourceSets {
         main {
             jniLibs.srcDirs = ['libs']
-            manifest.srcFile '../AndroidManifest.xml'                        
+            manifest.srcFile '../AndroidManifest.xml'
             java.srcDir "${akkord_sdk_path}/framework/core/android/wrapper/"
-            java.srcDir '../java'            
+            java.srcDir '../java'
             res.srcDirs    = ['../res']
             assets.srcDir '../../assets'
             assets.srcDir "${akkord_sdk_path}/resources/adimages/"
         }
-    }    
-    
+    }
+
     buildTypes {
         release {
             minifyEnabled false

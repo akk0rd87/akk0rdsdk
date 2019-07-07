@@ -27,7 +27,7 @@ LOCAL_SRC_FILES    := $(AKKORD_SDK_HOME)/framework/admob.cpp \
                       $(AKKORD_SDK_HOME)/framework/basewrapper.cpp \
                       $(AKKORD_SDK_HOME)/examples/Example1/src/main.cpp
                       #$(MY_LOCAL_PATH)/../../src/main.cpp
-                      
+
 LOCAL_SHARED_LIBRARIES := SDL2
 LOCAL_SHARED_LIBRARIES += SDL2_image
 TARGET_PLATFORM := android-14
