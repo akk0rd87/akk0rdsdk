@@ -35,31 +35,31 @@ class Platforms
 {
 private:
     static bool InitInternalDirs();
-public:    
-	static bool                     Init();
-	static Locale::Lang             GetDeviceLanguage();
+public:
+    static bool                     Init();
+    static Locale::Lang             GetDeviceLanguage();
     //static constexpr BWrapper::OS   GetDeviceOS();
     static std::string              GetEnvVariable   (const char* Variable); // Only for windows
-    						        
+
     static std::string              GetInternalDir();
     static std::string              GetInternalWriteDir();
     static std::string              GetInternalAssetsDir();
-							        
+
     static bool                     DirCreate(const char* Dir);
-    static bool                     DirExists(const char* Dir);    
+    static bool                     DirExists(const char* Dir);
     static bool                     DirRemove(const char* Dir);
     static bool                     DirRemoveRecursive(const char* Dir);
-							        
-    // Activity functions	        
+
+    // Activity functions
     static bool                     OpenURL(const char* url);
 
     // Android-specific functions
     static int                      AndroidGetApiLevel();
     static bool                     AndroidShowToast(const char* Message, BWrapper::AndroidToastDuration Duration, int Gravity, int xOffset, int yOffset);
-							        
+
     static bool                     GetDirContent  (const char* Dir, DirContentElementArray& ArrayList);
-							        
-	static void                     MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS);
+
+    static void                     MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS);
     static void                     ShareText(const char* Title, const char* Message);
 };
 
@@ -74,7 +74,7 @@ bool Platforms::InitInternalDirs()
     AndroidWrapper::GetInternalDirs(InteralDirs.InternalDir, InteralDirs.InternalWriteDir);
     InteralDirs.Initialized = true;
     result = true;
-#endif       
+#endif
 
 #ifdef __APPLE__
     iOSWrapper::GetInternalWriteDir(InteralDirs.InternalWriteDir);
@@ -86,7 +86,7 @@ bool Platforms::InitInternalDirs()
     InteralDirs.InternalWriteDir = std::string("data-ram/");
     InteralDirs.Initialized = true;
     result = true;
-#endif 
+#endif
 
     if (result)
     {
@@ -106,14 +106,14 @@ bool Platforms::InitInternalDirs()
     return result;
 };
 
-std::string Platforms::GetInternalDir()      
-{ 
+std::string Platforms::GetInternalDir()
+{
     if (!InteralDirs.Initialized) InitInternalDirs();
     return InteralDirs.InternalDir;
 };
 
-std::string Platforms::GetInternalWriteDir() 
-{ 
+std::string Platforms::GetInternalWriteDir()
+{
     if (!InteralDirs.Initialized) InitInternalDirs();
     return InteralDirs.InternalWriteDir;
 };
@@ -130,7 +130,7 @@ Locale::Lang Platforms::GetDeviceLanguage()
 {
     std::string lang;
 #if __ANDROID__
-    lang = AndroidWrapper::GetLanguage();    
+    lang = AndroidWrapper::GetLanguage();
 #endif
 
 #ifdef __WIN32__
@@ -140,7 +140,7 @@ Locale::Lang Platforms::GetDeviceLanguage()
 #endif
 
 #ifdef __APPLE__
-    lang = iOSWrapper::GetLanguage();    
+    lang = iOSWrapper::GetLanguage();
 #endif
 
     return Locale::DecodeLang_ISO639_Code(lang.c_str());
@@ -167,33 +167,33 @@ bool Platforms::DirCreate(const char* Dir)
 bool Platforms::OpenURL(const char* url)
 {
 #ifdef __ANDROID__
-    return AndroidWrapper::OpenURL(url);    
+    return AndroidWrapper::OpenURL(url);
 #endif // __ANDROID__
 
 #ifdef __WIN32__
-    return WindowsWrapper::OpenURL(url);    
+    return WindowsWrapper::OpenURL(url);
 #endif // __WIN32__
 
 #ifdef __APPLE__
-    return iOSWrapper::OpenURL(url);    
+    return iOSWrapper::OpenURL(url);
 #endif // __APPLE__
-    
+
     return false;
 }
 
 /*
 constexpr BWrapper::OS Platforms::GetDeviceOS()
-{	
+{
 #ifdef __APPLE__
-	return BWrapper::OS::iOS;
+    return BWrapper::OS::iOS;
 #endif
 
 #ifdef __ANDROID__
-	return BWrapper::OS::AndroidOS;
+    return BWrapper::OS::AndroidOS;
 #endif
 
 #ifdef __WIN32__
-	return  BWrapper::OS::Windows;
+    return  BWrapper::OS::Windows;
 #endif
 
     return BWrapper::OS::Unknown;
@@ -203,21 +203,21 @@ constexpr BWrapper::OS Platforms::GetDeviceOS()
 int Platforms::AndroidGetApiLevel()
 {
 #ifdef __ANDROID__
-    return AndroidWrapper::GetApiLevel();    
+    return AndroidWrapper::GetApiLevel();
 #endif
     return 0;
 }
 
 bool Platforms::AndroidShowToast(const char* Message, BWrapper::AndroidToastDuration Duration, int Gravity, int xOffset, int yOffset)
 {
-#ifdef __ANDROID__            
+#ifdef __ANDROID__
     return AndroidWrapper::ShowToast(Message, Duration, Gravity, xOffset, yOffset);
-#endif    
+#endif
     return false;
 }
 
 bool Platforms::DirExists(const char* Dir)
-{    
+{
 #ifdef __APPLE__
     return iOSWrapper::DirectoryExists(Dir);
 #endif
@@ -228,8 +228,8 @@ bool Platforms::DirExists(const char* Dir)
 
 #ifdef __WIN32__
     return WindowsWrapper::DirectoryExists(Dir);
-#endif    
-    
+#endif
+
     return false;
 }
 
@@ -245,7 +245,7 @@ bool Platforms::GetDirContent  (const char* Dir, DirContentElementArray& ArrayLi
 
 #ifdef __WIN32__
     return WindowsWrapper::GetDirContent(Dir, ArrayList);
-#endif   
+#endif
     return false;
 }
 
@@ -253,11 +253,11 @@ bool Platforms::DirRemove(const char* Dir)
 {
 #ifdef __WIN32__
     return WindowsWrapper::DirRemove(Dir);
-#endif    
+#endif
 
 #ifdef __ANDROID__
     return AndroidWrapper::DirRemove(Dir);
-#endif   
+#endif
     return false;
 };
 
@@ -265,23 +265,23 @@ bool Platforms::DirRemoveRecursive(const char* Dir)
 {
 #ifdef __WIN32__
     return WindowsWrapper::DirRemoveRecursive(Dir);
-#endif    
+#endif
 
 #ifdef __ANDROID__
     return AndroidWrapper::DirRemoveRecursive(Dir);
-#endif    
+#endif
 
 #ifdef __APPLE__
     return iOSWrapper::DirRemoveRecursive(Dir);
-#endif    
+#endif
     return false;
 };
 
 std::string Platforms::GetEnvVariable(const char* Variable)
-{    
+{
 #ifdef __WIN32__
     return WindowsWrapper::GetEnvVariable(Variable);
-#endif        
+#endif
     return std::string("");
 }
 
@@ -289,11 +289,11 @@ std::string Platforms::GetEnvVariable(const char* Variable)
 void Platforms::MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS)
 {
 #ifdef __WIN32__
-	return WindowsWrapper::MessageBoxShow(Code, Title, Message, Button1, Button2, Button3);
+    return WindowsWrapper::MessageBoxShow(Code, Title, Message, Button1, Button2, Button3);
 #endif
 
 #ifdef __ANDROID__
-	return AndroidWrapper::MessageBoxShow(Code, Title, Message, Button1, Button2, Button3, TimeOutMS);
+    return AndroidWrapper::MessageBoxShow(Code, Title, Message, Button1, Button2, Button3, TimeOutMS);
 #endif
 
 #ifdef __APPLE__
@@ -304,21 +304,21 @@ void Platforms::MessageBoxShow(int Code, const char* Title, const char* Message,
 void Platforms::ShareText(const char* Title, const char* Message)
 {
 #ifdef __ANDROID__
-	return AndroidWrapper::ShareText(Title, Message);
+    return AndroidWrapper::ShareText(Title, Message);
 #endif
 
 #ifdef __APPLE__
-	return iOSWrapper::ShareText(Title, Message);
+    return iOSWrapper::ShareText(Title, Message);
 #endif
 };
 
 bool Platforms::Init()
 {
 #ifdef __ANDROID__
-	return AndroidWrapper::Init();
+    return AndroidWrapper::Init();
 #endif
 
-	return true;
+    return true;
 };
 
 #endif // __AKK0RD_PLATFORMS_H__

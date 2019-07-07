@@ -15,39 +15,39 @@ import android.util.Log;
 
 public class AdMobAdapter {
     private static String TAG = "SDL";
-    
-    private static final int EVENT_INTERSTITIAL_LOADED          = 1; 
-    private static final int EVENT_INTERSTITIAL_OPENED          = 2; 
-    private static final int EVENT_INTERSTITIAL_CLOSED          = 3; 
-    private static final int EVENT_INTERSTITIAL_FAILED          = 4; 
+
+    private static final int EVENT_INTERSTITIAL_LOADED          = 1;
+    private static final int EVENT_INTERSTITIAL_OPENED          = 2;
+    private static final int EVENT_INTERSTITIAL_CLOSED          = 3;
+    private static final int EVENT_INTERSTITIAL_FAILED          = 4;
     private static final int EVENT_INTERSTITIAL_LEFTAPPLICATION = 5;
-    
-    private static final int EVENT_REWARDEDVIDEO_LOADED          = 101; 
-    private static final int EVENT_REWARDEDVIDEO_OPENED          = 102; 
-    private static final int EVENT_REWARDEDVIDEO_CLOSED          = 103; 
-    private static final int EVENT_REWARDEDVIDEO_FAILED          = 104; 
+
+    private static final int EVENT_REWARDEDVIDEO_LOADED          = 101;
+    private static final int EVENT_REWARDEDVIDEO_OPENED          = 102;
+    private static final int EVENT_REWARDEDVIDEO_CLOSED          = 103;
+    private static final int EVENT_REWARDEDVIDEO_FAILED          = 104;
     private static final int EVENT_REWARDEDVIDEO_LEFTAPPLICATION = 105;
     private static final int EVENT_REWARDEDVIDEO_STARTED         = 106;
     private static final int EVENT_REWARDEDVIDEO_COMPLETED       = 107;
     private static final int EVENT_REWARDEDVIDEO_REWARDED        = 108;
 
-    
+
     private static final int AD_INTERSTITIAL       = 1;
     private static final int AD_REWARDEDVIDEO      = 2;
     private static final int AD_NATIVEADSADVANCED  = 4;
-    
+
     private static InterstitialAd mInterstitialAd;
     private static RewardedVideoAd mRewardedVideoAd;
-    
+
     private static String RewardedVideoUnitID;
-    
+
     public static native void AdCallback(int AdType, int EventType, int Code);
-    
+
     public static void Initialize(String AdMobAppID)
     {
         MobileAds.initialize(Utils.GetContext(), AdMobAppID);
     }
-    
+
     private static void InterstitialReCreate()
     {
         try {
@@ -113,7 +113,7 @@ public class AdMobAdapter {
     }
 
     public static void RewardedVideoInit()
-    {   
+    {
         try {
             Activity ctx = Utils.GetContext();
             ctx.runOnUiThread(new Runnable() {
@@ -169,22 +169,22 @@ public class AdMobAdapter {
             Log.e(TAG, e.getMessage());
         }
     }
-    
+
     public static void InterstitialSetUnitId(String ID)
     {
         try
-		{
-		    //Log.v(TAG, "InterstitialSetUnitId start");
+        {
+            //Log.v(TAG, "InterstitialSetUnitId start");
             InterstitialReCreate();
             mInterstitialAd.setAdUnitId(ID);
             //Log.v(TAG, "InterstitialSetUnitId finish");
-		}
-        catch(Exception e) 
+        }
+        catch(Exception e)
         {
-            Log.v(TAG, e.getMessage());            
+            Log.v(TAG, e.getMessage());
         }
     }
-    
+
     public static String InterstitialGetUnitId()
     {
         try {
@@ -200,7 +200,7 @@ public class AdMobAdapter {
             return null;
         }
     }
-    
+
     public static void RewardedVideoSetUnitId(String ID)
     {
         try {
@@ -211,7 +211,7 @@ public class AdMobAdapter {
             Log.e(TAG, e.getMessage());
         }
     }
-    
+
     public static String RewardedVideoGetUnitId()
     {
         try{
@@ -222,8 +222,8 @@ public class AdMobAdapter {
             Log.e(TAG, e.getMessage());
             return null;
         }
-    }    
-    
+    }
+
     public static void InterstitialLoad()
     {
         try
@@ -240,13 +240,13 @@ public class AdMobAdapter {
                     }
                 }
             });
-        } 
-        catch(Exception e) 
+        }
+        catch(Exception e)
         {
-            Log.v(TAG, e.getMessage());            
+            Log.v(TAG, e.getMessage());
         }
     }
-    
+
     public static void RewardedVideoLoad()
     {
         try
@@ -263,13 +263,13 @@ public class AdMobAdapter {
                     }
                 }
             });
-        } 
-        catch(Exception e) 
-        {
-            Log.v(TAG, e.getMessage());            
         }
-    } 
-    
+        catch(Exception e)
+        {
+            Log.v(TAG, e.getMessage());
+        }
+    }
+
     public static int InterstitialShow()
     {
         try
@@ -290,14 +290,14 @@ public class AdMobAdapter {
             });
 
             return 0;
-        } 
-        catch(Exception e) 
+        }
+        catch(Exception e)
         {
-            Log.v(TAG, e.getMessage());            
+            Log.v(TAG, e.getMessage());
             return -1;
-        }            
+        }
     }
-    
+
     public static int RewardedVideoShow()
     {
         try
@@ -315,15 +315,15 @@ public class AdMobAdapter {
 
                     }
                    }
-            });               
-                        
+            });
+
             return 0;
-        } 
-        catch(Exception e) 
+        }
+        catch(Exception e)
         {
-            System.err.println(e.getMessage());  
-            Log.v(TAG, e.getMessage());            
+            System.err.println(e.getMessage());
+            Log.v(TAG, e.getMessage());
             return -1;
-        }            
-    }    
+        }
+    }
 }

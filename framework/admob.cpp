@@ -8,10 +8,10 @@ class AdContextClass
 {
 private:
     std::atomic<int> InterstitialStatus;
-    std::atomic<int> RewardedVideoStatus;    
+    std::atomic<int> RewardedVideoStatus;
 
-	Uint32           AdMobEventCode;
-public:    
+    Uint32           AdMobEventCode;
+public:
 
     decltype(BWrapper::GetTicks()) InterstitialLastLoadRequestTime, RewardedLastLoadRequestTime; // время последних запросов на загрузку в секундах [чтобы джаву не дергать часто]
 
@@ -36,7 +36,7 @@ public:
     }
 
     AdContextClass()
-    {        
+    {
         InterstitialSetStatus(AdMob::InterstitialStatus::NotInited);
         RewardedVideoSetStatus(AdMob::RewardedVideoStatus::NotInited);
 
@@ -44,8 +44,8 @@ public:
         RewardedLastLoadRequestTime = 0;
     }
 
-	Uint32 GetAdMobEventCode(){ return AdMobEventCode; }
-	void   SetAdMobEventCode(){ AdMobEventCode = SDL_RegisterEvents(1); }
+    Uint32 GetAdMobEventCode(){ return AdMobEventCode; }
+    void   SetAdMobEventCode(){ AdMobEventCode = SDL_RegisterEvents(1); }
 };
 
 static AdContextClass AdContext;
@@ -57,27 +57,27 @@ bool AdMob_ProcessInterstitialAdEvent(const AdMob::AdEvent* Event)
     switch (EventType)
     {
         case AdMob::InterstitialEvent::Closed:
-        case AdMob::InterstitialEvent::Failed:			
-        case AdMob::InterstitialEvent::LeftApplication:		
+        case AdMob::InterstitialEvent::Failed:
+        case AdMob::InterstitialEvent::LeftApplication:
             AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::Inited);
-			//logDebug("Interstitial Inited");
+            //logDebug("Interstitial Inited");
             return true;
 
         case AdMob::InterstitialEvent::Loaded:
             AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::Loaded);
-			//logDebug("Interstitial Loaded");
+            //logDebug("Interstitial Loaded");
             return true;
             break;
 
         case AdMob::InterstitialEvent::Opened:
             AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::Opened);
-			//logDebug("Interstitial Opened");
+            //logDebug("Interstitial Opened");
             return true;
             break;
 
         default:
-			logDebug("Interstitial Something else");
-			return false;
+            logDebug("Interstitial Something else");
+            return false;
             break;
     }
     return false;
@@ -87,7 +87,7 @@ bool AdMob_ProcessInterstitialAdEvent(const AdMob::AdEvent* Event)
 bool AdMob_ProcessRewardedVideoAdEvent(const AdMob::AdEvent* Event)
 {
     auto EventType = (AdMob::RewardedVideoEvent)Event->EventType;
-    
+
     switch (EventType)
     {
         case AdMob::RewardedVideoEvent::Closed:
@@ -123,8 +123,8 @@ bool AdMob_ProcessRewardedVideoAdEvent(const AdMob::AdEvent* Event)
 
 // Разбор Общего Event-а
 bool AdMob_ProcessAdEvent(const AdMob::AdEvent* Event)
-{    
-	logDebug("AdMob_ProcessAdEvent");
+{
+    logDebug("AdMob_ProcessAdEvent");
     switch (Event->AdFormat)
     {
         case AdMob::Format::Interstitial:
@@ -132,42 +132,42 @@ bool AdMob_ProcessAdEvent(const AdMob::AdEvent* Event)
             break;
 
         case AdMob::Format::RewardedVideo:
-            AdMob_ProcessRewardedVideoAdEvent(Event);			
+            AdMob_ProcessRewardedVideoAdEvent(Event);
             break;
 
         default:
-            logError("Unsupported ad format type %u", Event->AdFormat);            
+            logError("Unsupported ad format type %u", Event->AdFormat);
             break;
     }
 
-	{
-		// Пушим евент в основной поток
-		SDL_Event sdl_Event;
-		sdl_Event.user.type = AdContext.GetAdMobEventCode();
-		sdl_Event.user.code = (Sint32)Event->AdFormat;
-		sdl_Event.user.data1 = (void*)(uintptr_t)Event->EventType;
-		sdl_Event.user.data2 = (void*)(uintptr_t)Event->Code;
-		SDL_PushEvent(&sdl_Event);
-	}
+    {
+        // Пушим евент в основной поток
+        SDL_Event sdl_Event;
+        sdl_Event.user.type = AdContext.GetAdMobEventCode();
+        sdl_Event.user.code = (Sint32)Event->AdFormat;
+        sdl_Event.user.data1 = (void*)(uintptr_t)Event->EventType;
+        sdl_Event.user.data2 = (void*)(uintptr_t)Event->Code;
+        SDL_PushEvent(&sdl_Event);
+    }
 
     return false;
 }
 
 int AdMob::GetEventAdFormat(const SDL_Event& Event)
 {
-	int fmt = (int)Event.user.code;
-	return fmt;
+    int fmt = (int)Event.user.code;
+    return fmt;
 }
 
 void AdMob::RewarededDecodeEvent(const SDL_Event& Event, AdMob::RewardedVideoEvent& EventType, int& Result)
-{	
-	EventType = (AdMob::RewardedVideoEvent)(int)(size_t)(Event.user.data1);
-	Result = (int)(size_t)Event.user.data2;
+{
+    EventType = (AdMob::RewardedVideoEvent)(int)(size_t)(Event.user.data1);
+    Result = (int)(size_t)Event.user.data2;
 };
 
 void AdMob::InterstitialDecodeEvent(const SDL_Event& Event, AdMob::InterstitialEvent& EventType)
 {
-	EventType = (AdMob::InterstitialEvent)(int)(size_t)Event.user.data1;
+    EventType = (AdMob::InterstitialEvent)(int)(size_t)Event.user.data1;
 };
 
 AdMob::InterstitialStatus AdMob::InterstitialGetStatus()
@@ -204,13 +204,13 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_AdMobAdapter_AdCallback(JNIEnv*, jcla
 
 Uint32 AdMob::GetEventCode()
 {
-	return AdContext.GetAdMobEventCode();
+    return AdContext.GetAdMobEventCode();
 }
 
 bool AdMob::Init(const char* AdMobAppID, int Formats)
 {
-	AdContext.SetAdMobEventCode();
-	bool inited = false;
+    AdContext.SetAdMobEventCode();
+    bool inited = false;
 
     AdContext.InterstitialLastLoadRequestTime = 0;
     AdContext.RewardedLastLoadRequestTime     = 0;
@@ -218,42 +218,42 @@ bool AdMob::Init(const char* AdMobAppID, int Formats)
     AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::NotInited);
 
 #ifdef __WIN32__
-	inited = true; // inited безусловно ставим Inited
+    inited = true; // inited безусловно ставим Inited
 #endif
 
 #ifdef __ANDROID__
     if (AdMobAndroid::Init(AdMobAppID, Formats))
     {
-		inited = true;
+        inited = true;
     };
 #endif
 
 #ifdef __APPLE__
     if (AdMobiOS::Init(AdMobAppID, Formats))
-    {		
+    {
         // нужно проставить Callback для отлова событий
         AdMobiOS::SetAdEventCallback(&AdMob_ProcessAdEvent);
         inited = true;
     };
 #endif
 
-	if (inited)
-	{
-		if (Formats & AdMob::Format::Interstitial)
-			AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::Inited);
+    if (inited)
+    {
+        if (Formats & AdMob::Format::Interstitial)
+            AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::Inited);
 
-		if (Formats & AdMob::Format::RewardedVideo)
-			AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::Inited);
-	}
+        if (Formats & AdMob::Format::RewardedVideo)
+            AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::Inited);
+    }
 
-	return inited;
+    return inited;
 };
 
 bool AdMob::InterstitialSetUnitId(const char* UnitId)
 {
-#ifdef __ANDROID__    
+#ifdef __ANDROID__
     return AdMobAndroid::InterstitialSetUnitId(UnitId);
-#endif    
+#endif
 
 #ifdef __APPLE__
     return AdMobiOS::InterstitialSetUnitId(UnitId);
@@ -263,7 +263,7 @@ bool AdMob::InterstitialSetUnitId(const char* UnitId)
 };
 
 bool AdMob::InterstitialLoad()
-{   
+{
     if (AdContext.InterstitialGetStatus() != AdMob::InterstitialStatus::Inited)
     {
         logWarning("Load should be requested on only in Inited status");
@@ -280,7 +280,7 @@ bool AdMob::InterstitialLoad()
     AdContext.InterstitialLastLoadRequestTime = newTime;
     AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::TryingToLoad);
 
-#ifdef __ANDROID__    
+#ifdef __ANDROID__
     return AdMobAndroid::InterstitialLoad();
 #endif
 
@@ -298,15 +298,15 @@ bool AdMob::InterstitialShow()
         logWarning("Show should be requested on only in Loaded status");
         return false;
     }
-    
+
     AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::TryingToShow);
 
-#ifdef __ANDROID__    
-    return AdMobAndroid::InterstitialShow();    
+#ifdef __ANDROID__
+    return AdMobAndroid::InterstitialShow();
 #endif
 
 #ifdef __APPLE__
-    return AdMobiOS::InterstitialShow();    
+    return AdMobiOS::InterstitialShow();
 #endif
 
     return false;
@@ -314,26 +314,26 @@ bool AdMob::InterstitialShow()
 
 bool AdMob::RewardedVideoSetUnitId(const char* UnitId)
 {
-#ifdef __ANDROID__    
+#ifdef __ANDROID__
     return AdMobAndroid::RewardedVideoSetUnitId(UnitId);
 #endif
 
-#ifdef __APPLE__    
+#ifdef __APPLE__
     return AdMobiOS::RewardedVideoSetUnitId(UnitId);
 #endif
-    
+
     return false;
 };
 
 bool AdMob::RewardedVideoLoad()
-{    
+{
     if (AdContext.RewardedVideoGetStatus() != AdMob::RewardedVideoStatus::Inited)
     {
         logWarning("Load should be requested on only in Inited status");
         return false;
     }
-    
-    auto newTime = BWrapper::GetTicks() / 1000;    
+
+    auto newTime = BWrapper::GetTicks() / 1000;
     if (newTime - AdContext.RewardedLastLoadRequestTime < LoadDelay)
     {
         logDebug("Rewarded load acquired too early");
@@ -363,11 +363,11 @@ bool AdMob::RewardedVideoShow()
     }
 
     AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::TryingToShow);
-#ifdef __ANDROID__    
+#ifdef __ANDROID__
     return AdMobAndroid::RewardedVideoShow();
 #endif
 
-#ifdef __APPLE__    
+#ifdef __APPLE__
     return AdMobiOS::RewardedVideoShow();
 #endif
 

@@ -35,13 +35,13 @@ public class Utils {
     public static void Init(Activity ActivityContext){
         _context = ActivityContext;
         AssetMgr = _context.getResources().getAssets();
-    }       
-    
+    }
+
     public static Activity GetContext()
     {
         return _context;
     }
-    
+
     public static long getTimeUTCMS() {
         return System.currentTimeMillis();
     }
@@ -52,12 +52,12 @@ public class Utils {
         long blsize = fs.getBlockSize();
         return blocks * blsize;
     }
-    
+
     public static AssetManager GetAssetManager(){
         //return getResources().getAssets();
         //Log.v(TAG, "GetAssetManager()");
         return AssetMgr;
-    }    
+    }
 
     public static String getLanguage() {
         return Locale.getDefault().getLanguage();
@@ -99,13 +99,13 @@ public class Utils {
 //    }
 
     public static void openURL(String url) {
-        try 
+        try
         {
             Intent browseIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             _context.startActivity(browseIntent);
         }
         catch(Exception e)
-        {            
+        {
             Log.e(TAG, e.getMessage());
         }
     }
@@ -239,7 +239,7 @@ public class Utils {
                     }
                 }
                 catch(Exception e)
-                {                    
+                {
                     Log.e(TAG, e.getMessage());
                 }
             }
@@ -285,7 +285,7 @@ public class Utils {
             Log.e(TAG, e.getMessage());
         }
     }
-    
+
     public static void showToast(String Msg, int Duration, int Gravity, int xOffset, int yOffset){
         try
         {
@@ -327,16 +327,16 @@ public class Utils {
             _context.runOnUiThread(new OneShotTask(Msg, Duration, Gravity, xOffset, yOffset));
         }
         catch(Exception e)
-        {            
+        {
             Log.e(TAG, e.getMessage());
         }
     }
-    
+
     public static int GetApiLevel()
     {
         return android.os.Build.VERSION.SDK_INT;
     }
-   
+
     public static String GetInternalWriteDir()
     {
         return _context.getFilesDir().getAbsolutePath();
@@ -345,14 +345,14 @@ public class Utils {
     public static String GetInternalDir()
     {
         return _context.getApplicationInfo().dataDir;
-    }    
-    
+    }
+
     public static int DirectoryExists(String Dir)
     {
         try
         {
-            File file = new File(Dir);        
-            if(file.exists()) 
+            File file = new File(Dir);
+            if(file.exists())
             {
                 if(file.isDirectory()) return 2;
                 return 3;
@@ -365,8 +365,8 @@ public class Utils {
             return 0;
         }
     }
-    
-    public static void deleteRecursive(File fileOrDirectory) 
+
+    public static void deleteRecursive(File fileOrDirectory)
     {
         try
         {
@@ -378,21 +378,21 @@ public class Utils {
         }
         catch(Exception e)
         {
-            Log.e(TAG, e.getMessage());         
+            Log.e(TAG, e.getMessage());
         }
-    }    
-    
+    }
+
     public static int DirectoryDelete(String Dir, int Recursive)
     {
         try
         {
             File file = new File(Dir);
-            
+
             if(file.exists())
             {
                 if(file.isDirectory())
                 {
-                    if(Recursive == 1)                
+                    if(Recursive == 1)
                     {
                         deleteRecursive(file);
                         return 0;
@@ -408,22 +408,22 @@ public class Utils {
                     // is's file
                     return 1;
                 }
-            }        
+            }
             return 0;
         }
         catch(Exception e)
         {
             Log.e(TAG, e.getMessage());
-            return 2; // delete error            
+            return 2; // delete error
         }
     }
-    
+
     public static int MkDir(String path)
-    {        
+    {
         try
         {
             File file = new File(path);
-            
+
             if(file.exists())
             {
                 if(file.isDirectory())
@@ -435,8 +435,8 @@ public class Utils {
                     return 2; // It' a file and it's exists
                 }
             }
-            
-            if(file.mkdirs()) 
+
+            if(file.mkdirs())
             {
                 return 0; // Success
             }
@@ -448,9 +448,9 @@ public class Utils {
         catch(Exception e)
         {
             Log.e(TAG, e.getMessage());
-            return 1; // Error  
+            return 1; // Error
         }
     }
-    
+
     public static native void runOnGameThread(Runnable task);
 }

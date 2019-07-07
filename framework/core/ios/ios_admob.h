@@ -9,15 +9,15 @@ class AdMobiOS
 {
 public:
     static bool Init(const char* AdMobAppID, int Formats);
-    
+
     static bool InterstitialSetUnitId(const char* UnitId);
     static bool InterstitialLoad();
     static bool InterstitialShow();
-    
+
     static bool RewardedVideoSetUnitId(const char* UnitId);
     static bool RewardedVideoLoad();
     static bool RewardedVideoShow();
-    
+
     static void SetAdEventCallback (AdMob::AdEventCallback * Callback);
 };
 

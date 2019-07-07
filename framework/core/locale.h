@@ -6,14 +6,14 @@
 
 class Locale
 {
-public:    
+public:
     enum struct Lang : unsigned {Abkhazian, Afar, Afrikaans, Akan, Albanian, Amharic, Arabic, Aragonese, Armenian, Assamese, Avaric, Avestan, Aymara, Azerbaijani, Bambara, Bashkir, Basque, Belarusian, Bengali, Bihari, Bislama, Bosnian, Breton, Bulgarian, Burmese, CatalanValencian, Chamorro, Chechen, ChichewaChewaNyanja, Chinese, Chuvash, Cornish, Corsican, Cree, Croatian, Czech, Danish, DivehiDhivehiMaldivian, DutchFlemish, Dzongkha, English, Esperanto, Estonian, Ewe, Faroese, Fijian, Finnish, French, Fulah, Galician, Georgian, German, Greek, Guarani, Gujarati, HaitianHaitianCreole, Hausa, HebrewB, Herero, Hindi, HiriMotu, Hungarian, Interlingua, Indonesian, Interlingue, Irish, Igbo, Inupiaq, Ido, Icelandic, Italian, Inuktitut, Japanese, Javanese, KalaallisutGreenlandic, Kannada, Kanuri, Kashmiri, Kazakh, CentralKhmer, KikuyuGikuyu, Kinyarwanda, KirghizKyrgyz, Komi, Kongo, Korean, Kurdish, KuanyamaKwanyama, Latin, LuxembourgishLetzeburgesch, Ganda, LimburganLimburgerLimburgish, Lingala, Lao, Lithuanian, LubaKatanga, Latvian, Manx, Macedonian, Malagasy, Malay, Malayalam, Maltese, Maori, Marathi, Marshallese, Mongolian, Nauru, NavajoNavaho, NorthNdebele, Nepali, Ndonga, NorwegianBokmai, NorwegianNynorsk, Norwegian, SichuanYiNuosu, SouthNdebele, Occitan, Ojibwa, ChurchSlavicOldSlavonicOldBulgarian, Oromo, Oriya, OssetianOssetic, PanjabiPunjabi, Pali, Persian, Polish, PashtoPushto, Portuguese, Quechua, Romansh, Rundi, RomanianMoldavian, Russian, Sanskrit, Sardinian, Sindhi, NorthernSami, Samoan, Sango, Serbian, GaelicScottishGaelic, Shona, SinhalaSinhalese, Slovak, Slovenian, Somali, SouthernSotho, SpanishCastilian, Sundanese, Swahili, Swati, Swedish, Tamil, Telugu, Tajik, Thai, Tigrinya, Tibetan, Turkmen, Tagalog, Tswana, Tonga, Turkish, Tsonga, Tatar, Twi, Tahitian, Uighur, Ukrainian, Urdu, Uzbek, Venda, Vietnamese, Volapuk, Walloon, Welsh, Wolof, WesternFrisian, Xhosa, Yiddish, Yoruba, ZhuangChuang, Zulu, Unknown };
-       
+
     static Locale::Lang DecodeLang_ISO639_Code(const char* LangCode) // https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
     {
-        std::string lang(LangCode);   
+        std::string lang(LangCode);
 
-        if ("ab" == lang) return Locale::Lang::Abkhazian;            
+        if ("ab" == lang) return Locale::Lang::Abkhazian;
         if ("aa" == lang) return Locale::Lang::Afar;
         if ("af" == lang) return Locale::Lang::Afrikaans;
         if ("ak" == lang) return Locale::Lang::Akan;
@@ -197,7 +197,7 @@ public:
         if ("yo" == lang) return Locale::Lang::Yoruba;
         if ("za" == lang) return Locale::Lang::ZhuangChuang;
         if ("zu" == lang) return Locale::Lang::Zulu;
-    
+
         return Locale::Lang::Unknown;
     };
 };

@@ -56,7 +56,7 @@ SDL_PROC(void, glGetVertexAttribiv, (GLuint, GLenum, GLint *))
 
 class GLESDriver
 {
-public:    
+public:
 #define SDL_PROC(ret,func,params) typedef ret (APIENTRY * func##_fnc)params; func##_fnc func = 0;
 //#include "../src/render/opengles2/SDL_gles2funcs.h"
     OPENGLES2_FUCNTION_LIST // включаем дополнительные OPENGLES-функции
@@ -66,15 +66,15 @@ public:
     void PrintProgamLog(GLuint Program, const char* File, const char* Function, unsigned Line);
     void PrintShaderLog(GLuint Shader, const char* File, const char* Function, unsigned Line);
     void PrintShaderSource(GLuint Shader);
-    
+
     static GLESDriver& GetInstance();
 
-	GLESDriver() {};
+    GLESDriver() {};
 
-	//Запрещаем создавать экземпляр класса GLESDriver	
-	GLESDriver(GLESDriver& rhs) = delete; // Копирующий: конструктор
-	GLESDriver(GLESDriver&& rhs) = delete; // Перемещающий: конструктор	
-	GLESDriver& operator= (GLESDriver&& rhs) = delete; // Оператор перемещающего присваивания
+    //Запрещаем создавать экземпляр класса GLESDriver
+    GLESDriver(GLESDriver& rhs) = delete; // Копирующий: конструктор
+    GLESDriver(GLESDriver&& rhs) = delete; // Перемещающий: конструктор
+    GLESDriver& operator= (GLESDriver&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 #endif // __AKK0RD_OPENGLES_DRIVER_H__

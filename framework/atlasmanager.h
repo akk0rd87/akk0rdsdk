@@ -8,7 +8,7 @@ class AtlasManager
 {
 public:
     using IndexType = std::vector<int>::size_type;
-    
+
     enum struct AtlasType : unsigned char
     {
         LeshyLabsText /* https://www.leshylabs.com/apps/sstool/ */
@@ -28,7 +28,7 @@ public:
     AkkordRect  GetSpriteRect           (IndexType SpriteIndex);
     void        Clear();
 
-	AkkordTexture* GetAtlasBySprite(IndexType SpriteIndex);
+    AkkordTexture* GetAtlasBySprite(IndexType SpriteIndex);
 
     AtlasManager();
     ~AtlasManager();
@@ -54,10 +54,10 @@ private:
     void ParseFile_LeshyLabsText(FileReader& fr, IndexType AtlasIndex);
     void AddTexture();
 
-	//Запрещаем создавать экземпляр класса AtlasManager	
-	AtlasManager(AtlasManager& rhs) = delete; // Копирующий: конструктор
-	AtlasManager(AtlasManager&& rhs) = delete; // Перемещающий: конструктор	
-	AtlasManager& operator= (AtlasManager&& rhs) = delete; // Оператор перемещающего присваивания
+    //Запрещаем создавать экземпляр класса AtlasManager
+    AtlasManager(AtlasManager& rhs) = delete; // Копирующий: конструктор
+    AtlasManager(AtlasManager&& rhs) = delete; // Перемещающий: конструктор
+    AtlasManager& operator= (AtlasManager&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 #endif // __AKK0RD_ATLAS_MANAGER_H__

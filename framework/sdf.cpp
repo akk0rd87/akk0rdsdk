@@ -22,8 +22,8 @@ varying highp float center; \n\
     uniform highp vec4  sdf_outline_color; \n\
     uniform highp float border; \n\
     varying highp vec4  outBorderCol; \n\
-    varying highp float	outlineMaxValue0; \n\
-    varying highp float	outlineMaxValue1; \n\
+    varying highp float    outlineMaxValue0; \n\
+    varying highp float    outlineMaxValue1; \n\
 #endif \n\
 void main()  \n\
 {\n\
@@ -125,8 +125,8 @@ SDFProgram& SDFProgram::GetInstance()
         Driver.glAttachShader(Program->shaderProgram, vertexShader); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
         Driver.glAttachShader(Program->shaderProgram, fragmentShader); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
 
-		Driver.glBindAttribLocation(Program->shaderProgram, SDFProgram::Attributes::SDF_ATTRIB_POSITION, "a_position"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
-		Driver.glBindAttribLocation(Program->shaderProgram, SDFProgram::Attributes::SDF_ATTRIB_UV, "a_texCoord"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
+        Driver.glBindAttribLocation(Program->shaderProgram, SDFProgram::Attributes::SDF_ATTRIB_POSITION, "a_position"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
+        Driver.glBindAttribLocation(Program->shaderProgram, SDFProgram::Attributes::SDF_ATTRIB_UV, "a_texCoord"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
 
         Driver.glLinkProgram(Program->shaderProgram); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
 
@@ -135,7 +135,7 @@ SDFProgram& SDFProgram::GetInstance()
 
         auto mat = Driver.glGetUniformLocation(Program->shaderProgram, "u_projection"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
         auto base_texture = Driver.glGetUniformLocation(Program->shaderProgram, "base_texture"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
-        Program->sdf_outline_color = Driver.glGetUniformLocation(Program->shaderProgram, "sdf_outline_color"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);                
+        Program->sdf_outline_color = Driver.glGetUniformLocation(Program->shaderProgram, "sdf_outline_color"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
         Program->font_color = Driver.glGetUniformLocation(Program->shaderProgram, "font_color"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
         Program->smooth = Driver.glGetUniformLocation(Program->shaderProgram, "smooth_param"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
         Program->border = Driver.glGetUniformLocation(Program->shaderProgram, "border"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
@@ -144,7 +144,7 @@ SDFProgram& SDFProgram::GetInstance()
         Driver.glUniform1i(base_texture, 0);
 
         if(oldProgramId > 0)
-			Driver.glUseProgram(oldProgramId);
+            Driver.glUseProgram(oldProgramId);
 
         //logDebug("sdf_outline_color = %d; sdf_params = %d; mat = %d, base_texture = %d, font_color = %d", Program->sdf_outline_color, Program->sdf_params, mat, base_texture, Program->font_color);
         return true;
@@ -156,7 +156,7 @@ SDFProgram& SDFProgram::GetInstance()
     }
 
     bool SDFProgram::Init()
-    {        
+    {
         if (this->CompileProgram(&ShaderProgram, SDF_vertexSource, SDF_fragmentSource) && this->CompileProgram(&ShaderProgramOutline, (std::string("#define SDF_OUTLINE \n") + SDF_vertexSource).c_str(), (std::string("#define SDF_OUTLINE \n") + SDF_fragmentSource).c_str()))
         {
             return true;
@@ -171,7 +171,7 @@ SDFProgram& SDFProgram::GetInstance()
 
         return &ShaderProgram;
     };
-    
+
     SDFProgram::SDFProgram()
     {
         //logDebug("SDFProgram constructor");
@@ -210,9 +210,9 @@ bool SDFGLTexture::LoadFromFile(const char* FileNamePNG, BWrapper::FileSearchPri
 
 bool SDFGLTexture::LoadFromMemory(const char* Buffer, int Size)
 {
-	this->Clear();	
-	akkordTexture.LoadFromMemory(Buffer, Size, AkkordTexture::TextureType::PNG);
-	return true;
+    this->Clear();
+    akkordTexture.LoadFromMemory(Buffer, Size, AkkordTexture::TextureType::PNG);
+    return true;
 };
 
 bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border, int Spread)
@@ -230,7 +230,7 @@ bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColo
     auto& Driver = GLESDriver::GetInstance();
 
     Driver.glGetIntegerv((GLenum)GL_CURRENT_PROGRAM, &oldProgramId); CheckGLESError();
-    
+
     {
         Driver.glGetVertexAttribiv((GLuint)0, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_0_enabled); CheckGLESError();
         Driver.glGetVertexAttribiv((GLuint)1, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_1_enabled); CheckGLESError();
@@ -245,7 +245,7 @@ bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColo
         if (VertexParams.attr_2_enabled != GL_FALSE) { Driver.glDisableVertexAttribArray((GLuint)2); CheckGLESError(); }
         if (VertexParams.attr_3_enabled != GL_FALSE) { Driver.glDisableVertexAttribArray((GLuint)3); CheckGLESError(); }
     }
-    
+
     if (oldProgramId != shaderProgram->shaderProgram)
     {
         Driver.glUseProgram(shaderProgram->shaderProgram); CheckGLESError(); PrintGLESProgamLog(shaderProgram->shaderProgram);
@@ -285,32 +285,32 @@ bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColo
             logError("shaderProgram->border error %d", shaderProgram->border);
         }
     }
-        
-    Driver.glDrawElements((GLenum)GL_TRIANGLES, Count, (GLenum)GL_UNSIGNED_SHORT, Indices); CheckGLESError();    
+
+    Driver.glDrawElements((GLenum)GL_TRIANGLES, Count, (GLenum)GL_UNSIGNED_SHORT, Indices); CheckGLESError();
 
     // unbind texture
     SDL_GL_UnbindTexture(akkordTexture.GetTexture());
-    
+
     if (shaderProgram->shaderProgram != oldProgramId && oldProgramId > 0)
     {
         Driver.glUseProgram(oldProgramId); CheckGLESError();
     }
-    
+
     { // возвращаем все исходное состояние
-        
+
         // в рамках обработки SDF мы включили эти атрибуты. Возвращаем их в исходное состояние
         if (VertexParams.attr_0_enabled == GL_FALSE) { Driver.glDisableVertexAttribArray((GLuint)0); CheckGLESError(); }
         if (VertexParams.attr_1_enabled == GL_FALSE) { Driver.glDisableVertexAttribArray((GLuint)1); CheckGLESError(); }
-                                                             
+
         if (VertexParams.attr_2_enabled != GL_FALSE) { Driver.glEnableVertexAttribArray((GLuint)2); CheckGLESError(); }
         if (VertexParams.attr_3_enabled != GL_FALSE) { Driver.glEnableVertexAttribArray((GLuint)3); CheckGLESError(); }
-    }    
+    }
 
     return true;
 };
 
 AkkordPoint SDFGLTexture::GetSize()
-{    
+{
     return akkordTexture.GetSize();
 };
 
@@ -335,25 +335,25 @@ SDFTexture::~SDFTexture()
 
 void SDFTexture::InitAtlasWH()
 {
-	auto size = Texture.GetSize();
-	atlasW = static_cast<float>(size.x);
-	atlasH = static_cast<float>(size.y);
+    auto size = Texture.GetSize();
+    atlasW = static_cast<float>(size.x);
+    atlasH = static_cast<float>(size.y);
 };
 
 bool SDFTexture::LoadFromFile(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority, int Spread)
 {
     this->Spread = Spread;
     Texture.LoadFromFile(FileNamePNG, SearchPriority);
-	InitAtlasWH();
+    InitAtlasWH();
     return true;
 }
 
 bool SDFTexture::LoadFromMemory(const char* Buffer, int Size, int Spread)
 {
-	this->Spread = Spread;
-	Texture.LoadFromMemory(Buffer, Size);
-	InitAtlasWH();
-	return true;
+    this->Spread = Spread;
+    Texture.LoadFromMemory(Buffer, Size);
+    InitAtlasWH();
+    return true;
 };
 
 bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
@@ -369,64 +369,64 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
     float ScrenW = static_cast<decltype(ScrenW)>(ScreenSize.x);
     float ScrenH = static_cast<decltype(ScrenH)>(ScreenSize.y);
 
-	struct FloatRect { float x, y, w, h; };
-	FloatRect Src, Dest;
+    struct FloatRect { float x, y, w, h; };
+    FloatRect Src, Dest;
 
-	if (SourceRect != nullptr)
-	{
-		Src.x = static_cast<float>(SourceRect->x);
-		Src.y = static_cast<float>(SourceRect->y);
-		Src.w = static_cast<float>(SourceRect->w);
-		Src.h = static_cast<float>(SourceRect->h);
-	}
-	else
-	{
-		Src.x = Src.y = 0.0f;
-		Src.w = atlasW;
-		Src.h = atlasH;
-	}
+    if (SourceRect != nullptr)
+    {
+        Src.x = static_cast<float>(SourceRect->x);
+        Src.y = static_cast<float>(SourceRect->y);
+        Src.w = static_cast<float>(SourceRect->w);
+        Src.h = static_cast<float>(SourceRect->h);
+    }
+    else
+    {
+        Src.x = Src.y = 0.0f;
+        Src.w = atlasW;
+        Src.h = atlasH;
+    }
 
-	Dest.x = Src.x / atlasW;					 //px1
-	Dest.y = (Src.x + Src.w - 1.0f) / atlasW;	 //px2
-	Dest.w = (Src.y + Src.h - 1.0f) / atlasH;	 //py1
-	Dest.h = Src.y / atlasH;                   //py2
+    Dest.x = Src.x / atlasW;                     //px1
+    Dest.y = (Src.x + Src.w - 1.0f) / atlasW;     //px2
+    Dest.w = (Src.y + Src.h - 1.0f) / atlasH;     //py1
+    Dest.h = Src.y / atlasH;                   //py2
 
-	float& px1 = Dest.x;
-	float& px2 = Dest.y;
-	float& py1 = Dest.w;
-	float& py2 = Dest.h;
+    float& px1 = Dest.x;
+    float& px2 = Dest.y;
+    float& py1 = Dest.w;
+    float& py2 = Dest.h;
 
-	UV.insert(UV.cend(), 
-		{		
-			px1, py1,
-			px2, py1,
-			px1, py2,
-			px2, py2		
-		});
+    UV.insert(UV.cend(),
+        {
+            px1, py1,
+            px2, py1,
+            px1, py2,
+            px2, py2
+        });
 
-	Dest.x = static_cast<float>(DestRect.x);
-	Dest.y = static_cast<float>(DestRect.y);
-	Dest.w = static_cast<float>(DestRect.w);
-	Dest.h = static_cast<float>(DestRect.h);
+    Dest.x = static_cast<float>(DestRect.x);
+    Dest.y = static_cast<float>(DestRect.y);
+    Dest.w = static_cast<float>(DestRect.w);
+    Dest.h = static_cast<float>(DestRect.h);
 
-	squareVertices.insert(squareVertices.cend(),
-		{
-			2.0f * (Dest.x / ScrenW) - 1.0f                  , 2.0f * (ScrenH - Dest.y - (Dest.h)) / ScrenH - 1.0f,
-			2.0f * (Dest.x + (Dest.w - 1.0f)) / ScrenW - 1.0f, 2.0f * (ScrenH - Dest.y - (Dest.h)) / ScrenH - 1.0f,
-			2.0f * (Dest.x / ScrenW) - 1.0f                  , 2.0f * (ScrenH - Dest.y) / ScrenH - 1.0f,
-			2.0f * (Dest.x + (Dest.w - 1.0f)) / ScrenW - 1.0f, 2.0f * (ScrenH - Dest.y) / ScrenH - 1.0f
-		});
-       
+    squareVertices.insert(squareVertices.cend(),
+        {
+            2.0f * (Dest.x / ScrenW) - 1.0f                  , 2.0f * (ScrenH - Dest.y - (Dest.h)) / ScrenH - 1.0f,
+            2.0f * (Dest.x + (Dest.w - 1.0f)) / ScrenW - 1.0f, 2.0f * (ScrenH - Dest.y - (Dest.h)) / ScrenH - 1.0f,
+            2.0f * (Dest.x / ScrenW) - 1.0f                  , 2.0f * (ScrenH - Dest.y) / ScrenH - 1.0f,
+            2.0f * (Dest.x + (Dest.w - 1.0f)) / ScrenW - 1.0f, 2.0f * (ScrenH - Dest.y) / ScrenH - 1.0f
+        });
+
     decltype(Indices)::value_type PointsCnt0 = Indices.size() / 6 * 4;
-	decltype(PointsCnt0) PointsCnt1 = PointsCnt0 + 1;
-	decltype(PointsCnt0) PointsCnt2 = PointsCnt0 + 2;
-	decltype(PointsCnt0) PointsCnt3 = PointsCnt0 + 3;
-	
-	Indices.insert(Indices.cend(),
-		{
-			PointsCnt0, PointsCnt1, PointsCnt2,
-			PointsCnt1, PointsCnt2, PointsCnt3
-		});
+    decltype(PointsCnt0) PointsCnt1 = PointsCnt0 + 1;
+    decltype(PointsCnt0) PointsCnt2 = PointsCnt0 + 2;
+    decltype(PointsCnt0) PointsCnt3 = PointsCnt0 + 3;
+
+    Indices.insert(Indices.cend(),
+        {
+            PointsCnt0, PointsCnt1, PointsCnt2,
+            PointsCnt1, PointsCnt2, PointsCnt3
+        });
 
     Scale = std::max((Dest.w) / Src.w, (Dest.h) / Src.h);
 
@@ -449,7 +449,7 @@ bool SDFTexture::Flush()
 
     bool SDFFont::ParseFNTFile(const char* FNTFile, BWrapper::FileSearchPriority SearchPriority)
     {
-        /*        
+        /*
         http://www.angelcode.com/products/bmfont/doc/file_format.html
         http://www.angelcode.com/products/bmfont/doc/export_options.html
         https://www.gamedev.net/forums/topic/284560-bmfont-and-how-to-interpret-the-fnt-file/
@@ -460,7 +460,7 @@ bool SDFTexture::Flush()
 
         decltype(line.find(',')) lpos;
         decltype(lpos)           rpos;
-        
+
         SDFCharInfo sd;
 
         if (fr.Open(FNTFile, SearchPriority))
@@ -500,8 +500,8 @@ bool SDFTexture::Flush()
                         lpos = rpos;
                         rpos = line.find("xoffset=", lpos) + 8;
                         if (line[rpos] == '\"') ++rpos;
-                        auto dx = std::stoi(std::string(line, rpos));                        
-                        
+                        auto dx = std::stoi(std::string(line, rpos));
+
                         lpos = rpos;
                         rpos = line.find("yoffset=", lpos) + 8;
                         if (line[rpos] == '\"') ++rpos;
@@ -516,11 +516,11 @@ bool SDFTexture::Flush()
                         CharsMap.emplace(id, sd);
 
                         //logDebug("dx=%d, dy=%d, xa=%d", dx, dy, xa);
-                    } 
+                    }
                     else if (line.find("chars", 0) != std::string::npos)
                     {
                         //auto cnt = BWrapper::Str2Num(std::string(line, line.find("\"", 0) + 1).c_str());
-                        //CharsVector.reserve(cnt);                        
+                        //CharsVector.reserve(cnt);
                     }
                     else if (line.find("common", 0) != std::string::npos)
                     {
@@ -537,7 +537,7 @@ bool SDFTexture::Flush()
                         if (line[rpos] == '\"') ++rpos;
                         ScaleH = BWrapper::Str2Num(std::string(line, rpos).c_str());
 
-                        //logDebug("ScaleW = %d, ScaleH = %d", ScaleW, ScaleH);                        
+                        //logDebug("ScaleW = %d, ScaleH = %d", ScaleW, ScaleH);
                     };
                 };
         };
@@ -550,7 +550,7 @@ bool SDFTexture::Flush()
     }
 
     void SDFFont::Clear()
-    {        
+    {
         CharsMap.clear();
         FontAtlas.Clear();
     };
@@ -574,7 +574,7 @@ bool SDFTexture::Flush()
         return true;
     };
 
-	bool SDFFont::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border)
+    bool SDFFont::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border)
     {
         FontAtlas.Draw(Outline, Count, FontColor, OutlineColor, UV, squareVertices, Indices, Scale, Border, Spread);
         return true;
@@ -588,7 +588,7 @@ bool SDFTexture::Flush()
             ci = res->second;
             return true;
         }
-        logError("Char with id=%u not found", Code);    
+        logError("Char with id=%u not found", Code);
         return false;
     };
 
@@ -602,7 +602,7 @@ bool SDFTexture::Flush()
     AkkordPoint SDFFontBuffer::GetTextSizeByLine(const char* Text, std::vector<unsigned>& VecSize)
     {
         // VecSize - вектор строк (в надписи может быть несколько строк, нужно считать длину каждой строки отдельно - для выравнивания)
-        
+
         AkkordPoint pt, localpoint;
         pt = localpoint = AkkordPoint(0, 0);
 
@@ -628,7 +628,7 @@ bool SDFTexture::Flush()
                     pt.x = std::max(pt.x, localpoint.x);
                     localpoint.x = 0;
                 }
-                else if (a != 13) // Если это не переход строки       
+                else if (a != 13) // Если это не переход строки
                 {
                     sdfFont->GetCharInfo(a, charParams);
 
@@ -650,12 +650,12 @@ bool SDFTexture::Flush()
     SDFFontBuffer::SDFFontBuffer(SDFFont* Font, unsigned int DigitsCount, const AkkordColor& Color)
     {
         this->Clear();
-        sdfFont = Font;        
+        sdfFont = Font;
         color = Color;
         Reserve(DigitsCount);
     }
 
-    void SDFFontBuffer::SetFont(SDFFont* Font){ sdfFont = Font; };    
+    void SDFFontBuffer::SetFont(SDFFont* Font){ sdfFont = Font; };
     void SDFFontBuffer::SetScale(float Scale){ scaleX = scaleY = Scale; }
     void SDFFontBuffer::SetScale(float ScaleX, float ScaleY){ scaleX = ScaleX; scaleY = ScaleY; }
 
@@ -665,18 +665,18 @@ bool SDFTexture::Flush()
     void SDFFontBuffer::SetBorder(float BorderWidth){ this->Border = BorderWidth; }
 
     float SDFFontBuffer::GetScaleX(){ return scaleX; }
-    float SDFFontBuffer::GetScaleY(){ return scaleY; }    
+    float SDFFontBuffer::GetScaleY(){ return scaleY; }
 
     void SDFFontBuffer::SetRect(int W, int H) { rectW = W; rectH = H; }
 
-    void SDFFontBuffer::SetAlignment(SDFFont::AlignH AlignH, SDFFont::AlignV AlignV){ alignH = AlignH; alignV = AlignV; }    
+    void SDFFontBuffer::SetAlignment(SDFFont::AlignH AlignH, SDFFont::AlignV AlignV){ alignH = AlignH; alignV = AlignV; }
     void SDFFontBuffer::SetAlignmentH(SDFFont::AlignH AlignH){ alignH = AlignH; }
     void SDFFontBuffer::SetAlignmentV(SDFFont::AlignV AlignV){ alignV = AlignV; }
 
     SDFFont::AlignH SDFFontBuffer::GetAlignH() { return alignH; }
     SDFFont::AlignV SDFFontBuffer::GetAlignV() { return alignV; }
 
-    void SDFFontBuffer::Reserve(unsigned Count) 
+    void SDFFontBuffer::Reserve(unsigned Count)
     {
         UV.reserve(Count * 4);
         squareVertices.reserve(Count * 4);
@@ -687,23 +687,23 @@ bool SDFTexture::Flush()
     {
         UV.clear();
         squareVertices.clear();
-        Indices.clear();                
+        Indices.clear();
     };
 
     void SDFFontBuffer::Flush()
-    {        
+    {
         if (Indices.size() > 0)
         {
-			sdfFont->Draw(this->outline, (GLsizei)Indices.size(), this->color, this->outlineColor, &UV.front(), &squareVertices.front(), &Indices.front(), (GLfloat)this->scaleX, (GLfloat)this->Border);
+            sdfFont->Draw(this->outline, (GLsizei)Indices.size(), this->color, this->outlineColor, &UV.front(), &squareVertices.front(), &Indices.front(), (GLfloat)this->scaleX, (GLfloat)this->Border);
         }
         Clear();
-    };    
-    
+    };
+
     SDFFontBuffer::~SDFFontBuffer()
     {
         Clear();
         sdfFont = nullptr;
-    };    
+    };
 
     // сейчас это int, возможно для этой функции сделать отдельный тип со float
     AkkordPoint SDFFontBuffer::GetTextSize(const char* Text)
@@ -715,9 +715,9 @@ bool SDFTexture::Flush()
     };
 
     AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text)
-    {        
+    {
         AkkordPoint pt = AkkordPoint(0,0);
-		float px1, px2, py1, py2;
+        float px1, px2, py1, py2;
         if (Text != nullptr)
         {
             std::vector<unsigned> VecSize;
@@ -797,44 +797,44 @@ bool SDFTexture::Flush()
 
                     //const decltype(charParams.w) minus = 0;
 
-					px1 = float(charParams.x) / atlasW;
-					px2 = float(charParams.x + charParams.w /*- minus */) / atlasW;
-					py1 = float(charParams.y + charParams.h /*- minus */) / atlasH;
-					py2 = float(charParams.y) / atlasH;
+                    px1 = float(charParams.x) / atlasW;
+                    px2 = float(charParams.x + charParams.w /*- minus */) / atlasW;
+                    py1 = float(charParams.y + charParams.h /*- minus */) / atlasH;
+                    py2 = float(charParams.y) / atlasH;
 
-					UV.insert(UV.cend(),
-						{
-							px1, py1,
-							px2, py1,
-							px1, py2,
-							px2, py2
-						});
+                    UV.insert(UV.cend(),
+                        {
+                            px1, py1,
+                            px2, py1,
+                            px1, py2,
+                            px2, py2
+                        });
 
-					px1 = 2 * ((float)x_current / ScrenW) - 1.0f;
-					px2 = 2 * ((float)x_current + scaleX * (charParams.w - 1.0f)) / ScrenW - 1.0f;
-					py1 = 2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f;
-					py2 = 2 * (ScrenH - Y - scaleY * charParams.yoffset) / ScrenH - 1.0f;
+                    px1 = 2 * ((float)x_current / ScrenW) - 1.0f;
+                    px2 = 2 * ((float)x_current + scaleX * (charParams.w - 1.0f)) / ScrenW - 1.0f;
+                    py1 = 2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0f;
+                    py2 = 2 * (ScrenH - Y - scaleY * charParams.yoffset) / ScrenH - 1.0f;
 
-					squareVertices.insert(squareVertices.cend(),
-						{
-							px1, py1,
-							px2, py1,
-							px1, py2,
-							px2, py2
-						});
+                    squareVertices.insert(squareVertices.cend(),
+                        {
+                            px1, py1,
+                            px2, py1,
+                            px1, py2,
+                            px2, py2
+                        });
 
-					{
-						auto& PointsCnt0 = PointsCnt;
-						decltype(PointsCnt) PointsCnt1 = PointsCnt + 1;
-						decltype(PointsCnt) PointsCnt2 = PointsCnt + 2;
-						decltype(PointsCnt) PointsCnt3 = PointsCnt + 3;
+                    {
+                        auto& PointsCnt0 = PointsCnt;
+                        decltype(PointsCnt) PointsCnt1 = PointsCnt + 1;
+                        decltype(PointsCnt) PointsCnt2 = PointsCnt + 2;
+                        decltype(PointsCnt) PointsCnt3 = PointsCnt + 3;
 
-						Indices.insert(Indices.cend(),
-							{
-								PointsCnt0, PointsCnt1, PointsCnt2,
-								PointsCnt1, PointsCnt2, PointsCnt3
-							});
-					}
+                        Indices.insert(Indices.cend(),
+                            {
+                                PointsCnt0, PointsCnt1, PointsCnt2,
+                                PointsCnt1, PointsCnt2, PointsCnt3
+                            });
+                    }
                     x_current = x_current + static_cast<decltype(x_current)>(scaleX * charParams.xadvance);
                     PointsCnt += 4;
                 }

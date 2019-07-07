@@ -20,8 +20,8 @@ void AdRandomizer::OpenURL_private(BWrapper::OS OSCode, Apps AppId)
                 BWrapper::OpenURL("https://play.google.com/store/apps/details?id=org.popapp.fcross");
                 break;
 
-			default:
-				break;
+            default:
+                break;
         }
         break;
 
@@ -38,8 +38,8 @@ void AdRandomizer::OpenURL_private(BWrapper::OS OSCode, Apps AppId)
                 BWrapper::OpenURL("https://play.google.com/store/apps/details?id=org.popapp.jdraw");
                 break;
 
-			default:
-				break;
+            default:
+                break;
         }
         break;
 
@@ -55,8 +55,8 @@ void AdRandomizer::OpenURL_private(BWrapper::OS OSCode, Apps AppId)
                 BWrapper::OpenURL("https://play.google.com/store/apps/details?id=org.popapp.jc");
                 break;
 
-			default:
-				break;
+            default:
+                break;
         }
         break;
 
@@ -69,10 +69,10 @@ void AdRandomizer::OpenURL_private(BWrapper::OS OSCode, Apps AppId)
 
             case BWrapper::OS::AndroidOS:
                 BWrapper::OpenURL("https://play.google.com/store/apps/details?id=com.popapp.WordsRu");
-				break;
+                break;
 
-			default:
-				break;
+            default:
+                break;
         }
         break;
 
@@ -85,10 +85,10 @@ void AdRandomizer::OpenURL_private(BWrapper::OS OSCode, Apps AppId)
 
             case BWrapper::OS::AndroidOS:
                 BWrapper::OpenURL("https://play.google.com/store/apps/details?id=org.popapp.WordsRu2");
-				break;
+                break;
 
-			default:
-				break;
+            default:
+                break;
         }
         break;
 
@@ -101,10 +101,10 @@ void AdRandomizer::OpenURL_private(BWrapper::OS OSCode, Apps AppId)
 
             case BWrapper::OS::AndroidOS:
                 BWrapper::OpenURL("https://play.google.com/store/apps/details?id=org.popapp.sostav_slova_iz_bukv");
-				break;
+                break;
 
-			default:
-				break;
+            default:
+                break;
         }
         break;
 
@@ -117,10 +117,10 @@ void AdRandomizer::OpenURL_private(BWrapper::OS OSCode, Apps AppId)
 
             case BWrapper::OS::AndroidOS:
                 BWrapper::OpenURL("https://play.google.com/store/apps/details?id=org.popapp.WordsUS");
-				break;
+                break;
 
-			default:
-				break;
+            default:
+                break;
         }
         break;
 
@@ -134,13 +134,13 @@ void AdRandomizer::OpenURL_private(BWrapper::OS OSCode, Apps AppId)
 
             case BWrapper::OS::AndroidOS:
                 BWrapper::OpenURL("https://play.google.com/store/apps/details?id=org.popapp.color_fcross");
-				break;
+                break;
 
-			default:
-				break;
+            default:
+                break;
         }
         break;
-        
+
     case Apps::Sudoku:
         switch (OSCode)
         {
@@ -152,10 +152,10 @@ void AdRandomizer::OpenURL_private(BWrapper::OS OSCode, Apps AppId)
 
             case BWrapper::OS::AndroidOS:
                 BWrapper::OpenURL("https://play.google.com/store/apps/details?id=org.popapp.sudoku");
-				break;
+                break;
 
-			default:
-				break;
+            default:
+                break;
         }
         break;
     }
@@ -163,19 +163,19 @@ void AdRandomizer::OpenURL_private(BWrapper::OS OSCode, Apps AppId)
 
 void AdRandomizer::OpenURL(Apps AppId)
 {
-	auto DeviceOs = BWrapper::GetDeviceOS();
-	switch (DeviceOs)
-	{
-		// на Windows открываем ссылки по всем платформам
-		case BWrapper::OS::Windows:
-			AdRandomizer::OpenURL_private(BWrapper::OS::AndroidOS, AppId);
-			AdRandomizer::OpenURL_private(BWrapper::OS::iOS, AppId);
-			break;
-			// на остальных платформах открываем согласно текущей платформе
-		default:
-			AdRandomizer::OpenURL_private(DeviceOs, AppId);
-			break;
-	}
+    auto DeviceOs = BWrapper::GetDeviceOS();
+    switch (DeviceOs)
+    {
+        // на Windows открываем ссылки по всем платформам
+        case BWrapper::OS::Windows:
+            AdRandomizer::OpenURL_private(BWrapper::OS::AndroidOS, AppId);
+            AdRandomizer::OpenURL_private(BWrapper::OS::iOS, AppId);
+            break;
+            // на остальных платформах открываем согласно текущей платформе
+        default:
+            AdRandomizer::OpenURL_private(DeviceOs, AppId);
+            break;
+    }
 }
 
 void AdRandomizer::OpenPublisherAppstorePage()

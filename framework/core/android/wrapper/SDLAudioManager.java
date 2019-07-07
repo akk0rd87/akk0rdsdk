@@ -88,7 +88,7 @@ public class SDLAudioManager
             Log.e(TAG, "Attempted to make audio call with uninitialized audio!");
             return;
         }
-        
+
         for (int i = 0; i < buffer.length; ) {
             int result = mAudioTrack.write(buffer, i, buffer.length - i);
             if (result > 0) {

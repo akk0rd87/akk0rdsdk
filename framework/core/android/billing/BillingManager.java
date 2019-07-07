@@ -32,16 +32,16 @@ class BillingManager {
 
     public static final int PURCHASE_RESTORED = 0;
     public static final int PURCHASE_BOUGHT   = 1;
-    
+
     private static BillingClient mBillingClient;
     private static int mBillingClientResponseCode = BILLING_MANAGER_NOT_INITIALIZED;
     private static boolean mIsServiceConnected = false;
-    
+
     private static native void BillingSetupFinished(int ResponseCode);
     private static native void BillingDisconnected();
     private static native void PurchaseQueried(String PurchaseToken, String ProductSKU, int Type);
     private static native void PurchaseConsumed(String PurchaseToken);
-    
+
     private static String DecodeBillingResponse(int billingResponseCode)
     {
         String StringCode = "UNKNOWN";
@@ -57,12 +57,12 @@ class BillingManager {
             case BillingResponse.OK: StringCode = "OK"; break;
             case BillingResponse.SERVICE_DISCONNECTED: StringCode = "SERVICE_DISCONNECTED"; break;
             case BillingResponse.SERVICE_UNAVAILABLE: StringCode = "SERVICE_UNAVAILABLE"; break;
-            case BillingResponse.USER_CANCELED: StringCode = "USER_CANCELED"; break;                    
+            case BillingResponse.USER_CANCELED: StringCode = "USER_CANCELED"; break;
         }
-        
+
         return StringCode;
     }
-    
+
     private static void startServiceConnection(final Runnable executeOnSuccess) {
         try {
             Log.v(TAG, "startServiceConnection");
@@ -94,7 +94,7 @@ class BillingManager {
             Log.e(TAG, e.getMessage());
         }
     }
-    
+
     private static void executeServiceRequest(final Runnable runnable) {
         try {
             Activity ctx = Utils.GetContext();
@@ -114,8 +114,8 @@ class BillingManager {
         {
             Log.e(TAG, e.getMessage());
         }
-    }    
-    
+    }
+
     public static void Initialize()
     {
         try {
@@ -144,17 +144,17 @@ class BillingManager {
                                                                                }
                     ).build();
                     Log.v(TAG, "BillingManager after build");
-            
+
                 /*
-				startServiceConnection(new Runnable() {
+                startServiceConnection(new Runnable() {
                     @Override
                     public void run() {
-                        // Notifying the listener that billing client is ready                             
+                        // Notifying the listener that billing client is ready
                         Log.v(TAG, "Setup successful");
                         //queryPurchases();
                     }
-                });    
-				*/
+                });
+                */
                 }
             });
         }
@@ -163,8 +163,8 @@ class BillingManager {
             Log.e(TAG, e.getMessage());
         }
     }
-    
-    
+
+
     public static void QueryProductDetails(String[] ProdList)
     {
         try {
@@ -201,7 +201,7 @@ class BillingManager {
             Log.e(TAG, e.getMessage());
         }
     }
-    
+
     public static void RestorePurchases()
     {
         try {
@@ -231,7 +231,7 @@ class BillingManager {
             Log.e(TAG, e.getMessage());
         }
     }
-    
+
     public static void PurchaseProdItem(final String ProductSKU)
     {
         try {
@@ -247,7 +247,7 @@ class BillingManager {
             Log.e(TAG, e.getMessage());
         }
     }
-    
+
     public static void ConsumeProductItem(final String PurchaseToken)
     {
         /*
@@ -260,7 +260,7 @@ class BillingManager {
                 Log.v(TAG, "onConsumeResponse code = " + responseCode + " token = " + purchaseToken);
             }
         };
-        */        
+        */
         try {
             executeServiceRequest(new Runnable() {
                 public void run() {
@@ -281,5 +281,5 @@ class BillingManager {
         {
             Log.e(TAG, e.getMessage());
         }
-    }    
+    }
 }

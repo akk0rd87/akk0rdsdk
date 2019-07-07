@@ -40,7 +40,7 @@ IosBillingStateClass IosBillingState;
 + (FSProductStore *)defaultStore
 {
     static FSProductStore *store;
-    
+
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         if (!store)
@@ -75,7 +75,7 @@ IosBillingStateClass IosBillingState;
 - (void)purshaseProdItem:(const char*) ProdItem
 {
     NSString *ProdID = [[NSString alloc] initWithUTF8String:ProdItem];
-    
+
     if(self.products != nullptr)
     {
         for(decltype(self.products.count) i = 0; i < self.products.count; ++i)
@@ -102,7 +102,7 @@ IosBillingStateClass IosBillingState;
                 logError((std::string("Product ") + std::to_string(i) + " is empty").c_str());
             }
         }
-        
+
         logError("Prod ID %s not found", ProdItem);
     }
     else
@@ -154,14 +154,14 @@ IosBillingStateClass IosBillingState;
 {
     // cancel any existing product request (if exists) ...
     [self cancelProductRequest];
-    
+
     // start new  request ...
     //self.completionHandler = completionHandler;
     NSString *values[productIdentifiers.size()];
-    
+
     for(decltype(productIdentifiers.size()) i = 0; i < productIdentifiers.size(); ++i)
         values[i] = [[NSString alloc] initWithUTF8String:productIdentifiers[i].c_str()];
-    
+
     NSArray *ProdsSet = [NSArray arrayWithObjects:values count:productIdentifiers.size()];
     self.currentProductRequest  = [[SKProductsRequest alloc] initWithProductIdentifiers:[NSSet setWithArray:ProdsSet]];
 
@@ -177,7 +177,7 @@ IosBillingStateClass IosBillingState;
     if (_currentProductRequest)
     {
         //DLog(@"cancelling existing request ...");
-        
+
         [_currentProductRequest setDelegate:nil];
         [_currentProductRequest cancel];
     }
@@ -205,9 +205,9 @@ IosBillingStateClass IosBillingState;
     {
         std::string TransactionID = std::string([transaction.transactionIdentifier UTF8String]);
         std::string ProdID = std::string([transaction.payment.productIdentifier UTF8String]);
-        
+
         IosBillingState.Callback(TransactionID.c_str(), ProdID.c_str(), BillingManager::OperAction::Bought);
-        
+
         [[SKPaymentQueue defaultQueue] finishTransaction: transaction];
     }
     else
@@ -220,14 +220,14 @@ IosBillingStateClass IosBillingState;
 {
     //[self recordTransaction:transaction];
     //[self purchaseSuccess:transaction.originalTransaction.payment.productIdentifier];
-    
+
     if(IosBillingState.Callback != nullptr)
     {
         std::string TransactionID = std::string([transaction.originalTransaction.transactionIdentifier UTF8String]);
         std::string ProdID = std::string([transaction.originalTransaction.payment.productIdentifier UTF8String]);
-        
+
         IosBillingState.Callback(TransactionID.c_str(), ProdID.c_str(), BillingManager::OperAction::Restored);
-        
+
         [[SKPaymentQueue defaultQueue] finishTransaction: transaction];
     }
     else
@@ -247,7 +247,7 @@ IosBillingStateClass IosBillingState;
     {
         return; // existing transaction ...
     }
-    
+
     // THIS PART OF THIS METHOD WAS DELETED
 }
 @end
@@ -261,7 +261,7 @@ bool iOSBillingManager::Init()
 {
    // _IosBillingProdRequestDelegate = [[IosBillingProdRequestDelegate alloc] init];
     [[FSProductStore defaultStore] registerObserver];
-    
+
     return true;
 };
 
@@ -285,7 +285,7 @@ bool iOSBillingManager::ConsumeProductItem(const char* PurchaseToken)
 bool iOSBillingManager::QueryProductDetails(const std::vector<std::string>& ProdList)
 {
     [[FSProductStore defaultStore] startProductRequestWithIdentifier:ProdList];
-    
+
     return true;
 };
 

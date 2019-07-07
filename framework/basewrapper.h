@@ -7,8 +7,8 @@
 #include "framework_defines.h"
 #include "core/locale.h"
 
-class AkkordPoint 
-{ 
+class AkkordPoint
+{
     public:
     int x, y;
     AkkordPoint();
@@ -20,7 +20,7 @@ class AkkordRect
 public:
     int x, y, w, h;
     AkkordRect(): x(0), y(0), w(0), h(0) {};
-	AkkordRect(const AkkordRect& Rect) : x(Rect.x), y(Rect.y), w(Rect.w), h(Rect.h) {};
+    AkkordRect(const AkkordRect& Rect) : x(Rect.x), y(Rect.y), w(Rect.w), h(Rect.h) {};
     AkkordRect(int X, int Y, int W, int H) : x(X), y(Y), w(W), h(H) {};
     AkkordRect(const AkkordPoint& Point1, const AkkordPoint& Point2): x(Point1.x), y(Point1.y), w(Point2.x), h(Point2.y) {};
 
@@ -36,19 +36,19 @@ private :
     unsigned int color;
 public:
     AkkordColor();
-	AkkordColor(unsigned int Color) : color(Color) {};
+    AkkordColor(unsigned int Color) : color(Color) {};
     AkkordColor(Uint8 R, Uint8 G, Uint8 B);
     AkkordColor(Uint8 R, Uint8 G, Uint8 B, Uint8 A);
 
     void                 SetInt32(unsigned int Color);
     void                 SetRGB  (Uint8 R, Uint8 G, Uint8 B);
     void                 SetRGBA (Uint8 R, Uint8 G, Uint8 B, Uint8 A);
-    
+
     void                 SetR    (Uint8 R);
     void                 SetG    (Uint8 G);
     void                 SetB    (Uint8 B);
     void                 SetA    (Uint8 A);
-    
+
     unsigned int         GetInt32() const;
     Uint8                GetR    () const;
     Uint8                GetG    () const;
@@ -64,22 +64,22 @@ public:
 };
 
 class BWrapper
-{   
+{
 public:
     // scoped enums:
     enum struct OS                   : unsigned char { iOS, Windows, AndroidOS, /*Mac,  Linux,*/ Unknown };
-    
+
     //enum struct Lang                 : unsigned      { Russian, Ukrainian, Armenian, Belarussian, Uzbek, Kazakh, Azerbaijani, English, Chinese, French, Japanese, Bulgarian, Unknown };
-    
+
     enum struct KeyCodes             : unsigned      { Esc, BackSpace, Back, Enter, Tab, Delete, F1, Help, Home, End, Insert, Find, Copy, PageDown, PageUp, Paste, Pause, PrintScreen, Return, Return2, Space, Left, Right, Up, Down, Uknown, Minus, Plus, Equals, LeftBraket, RightBraket, Comma, Period, Quote,
-													  N0, N1, N2, N3, N4, N5, N6, N7, N8, N9, // main numbers
-													  Numpad0, Numpad1, Numpad2, Numpad3, Numpad4, Numpad5, Numpad6, Numpad7, Numpad8, Numpad9, NumpadPlus, NumpadMinus,
-													  Q,W,E,R,T,Y,U,I,O,P,A,S,D,F,G,H,J,K,L,Z,X,C,V,B,N,M}; 
+                                                      N0, N1, N2, N3, N4, N5, N6, N7, N8, N9, // main numbers
+                                                      Numpad0, Numpad1, Numpad2, Numpad3, Numpad4, Numpad5, Numpad6, Numpad7, Numpad8, Numpad9, NumpadPlus, NumpadMinus,
+                                                      Q,W,E,R,T,Y,U,I,O,P,A,S,D,F,G,H,J,K,L,Z,X,C,V,B,N,M};
     enum struct FileSearchPriority   : unsigned char { Assets, FileSystem };
     enum struct FileOpenMode         : unsigned char { ReadBinary, WriteBinary, AppendBinary /*, WriteText, ReadText*/ }; // http://www.cplusplus.com/reference/cstdio/fopen/
-    enum struct AndroidToastDuration : int           { Short = 0, Long = 1 };        
+    enum struct AndroidToastDuration : int           { Short = 0, Long = 1 };
     enum struct LogPriority          /*withouttype*/ { Verbose = SDL_LOG_PRIORITY_VERBOSE, Debug = SDL_LOG_PRIORITY_DEBUG, Info = SDL_LOG_PRIORITY_INFO, Warning = SDL_LOG_PRIORITY_WARN, Error = SDL_LOG_PRIORITY_ERROR, Critical = SDL_LOG_PRIORITY_CRITICAL }; // https://wiki.libsdl.org/SDL_LogMessage
-    
+
 
     // scoped enum - requieres bitwise or (|) operations
     struct AndroidToastGravity{
@@ -118,13 +118,13 @@ public:
         };
     };
 
-	static std::string         GetAppBuildDateTimeString   ();    
+    static std::string         GetAppBuildDateTimeString   ();
     static std::string         GetSDKVersionInfo           ();
-                                                           
-    // System init-quit functions                          
+
+    // System init-quit functions
     static bool                Init                        (Uint32 flags);
     static void                Quit                        ();
-	static int                 GetCPUCount                 ();
+    static int                 GetCPUCount                 ();
 
     // Windows and Render functions
     static AkkordWindow*       CreateRenderWindow          (const char* Title, int X, int Y, int W, int H, Uint32 Flags);
@@ -134,17 +134,17 @@ public:
     static AkkordWindow*       GetActiveWindow             ();
     static AkkordRenderer*     GetActiveRenderer           ();
     static bool                ClearRenderer               ();
-    static bool                RefreshRenderer             ();        
+    static bool                RefreshRenderer             ();
     static bool                DestroyRenderer             ();
     static bool                DestroyWindow               ();
     static bool                SetWindowResizable          (bool Resizable);
     static bool                SetWindowSize               (int W, int H);
     static AkkordPoint         GetScreenSize               ();
     static int                 GetScreenWidth              ();
-    static int                 GetScreenHeight             ();    
-                                                           
-                                                           
-    // Drawing functions                                      
+    static int                 GetScreenHeight             ();
+
+
+    // Drawing functions
     static bool                SetCurrentColor             (const AkkordColor& Color);
     static bool                DrawRect                    (const AkkordRect& Rect);
     static bool                DrawRect                    (int X, int Y, int W, int H);
@@ -152,9 +152,9 @@ public:
     static bool                FillRect                    (int X, int Y, int W, int H);
     static bool                DrawLine                    (const AkkordPoint& Point1, const AkkordPoint& Point2);
     static bool                DrawLine                    (int P1X, int P1Y, int P2X, int P2Y);
-    static bool                IsPointInRect               (const AkkordPoint& Point,  const AkkordRect& Rect);    
-                                                           
-    // Working with files                                  
+    static bool                IsPointInRect               (const AkkordPoint& Point,  const AkkordRect& Rect);
+
+    // Working with files
     static char*               File2Buffer                 (const char* FileName, BWrapper::FileSearchPriority SearchPriority, unsigned& BufferSize);
     static FILE*               FileOpen                    (const char* FileName, BWrapper::FileSearchPriority SearchPriority, BWrapper::FileOpenMode OpenMode);
     static bool                FileWrite                   (FILE* File, const void* Buffer, size_t Size, size_t Count);
@@ -164,54 +164,54 @@ public:
     static bool                FileDelete                  (const char* FileName);
     static bool                FileRename                  (const char* OldName, const char* NewName);
     static void                FileClose                   (FILE*& File);
-    static void                CloseBuffer                 (char*& buffer);                                                           
-                                                           
-    // Working with directories                            
+    static void                CloseBuffer                 (char*& buffer);
+
+    // Working with directories
     static bool                DirCreate                   (const char* Dir);
-    static bool                DirExists                   (const char* Dir);    
+    static bool                DirExists                   (const char* Dir);
     static bool                DirRemoveRecursive          (const char* Dir);
     static std::string         GetInternalDir              ();
     static std::string         GetInternalWriteDir         ();
-                                                           
-    // Conversion functions                                
+
+    // Conversion functions
     static std::string         Int2Str                     (int Num);
     static unsigned            Str2Num                     (const char* Str);
-                                                           
-    // Event-handling functions                            
-    static BWrapper::KeyCodes  DecodeKey                   (const SDL_Keysym& SDL_Key);    
-                                                           
-    // Logging and debugging functions                     
-    static void                Log                         (BWrapper::LogPriority Priority, const char* File, const char* Function, unsigned Line, SDL_PRINTF_FORMAT_STRING const char *Fmt, ...); 
+
+    // Event-handling functions
+    static BWrapper::KeyCodes  DecodeKey                   (const SDL_Keysym& SDL_Key);
+
+    // Logging and debugging functions
+    static void                Log                         (BWrapper::LogPriority Priority, const char* File, const char* Function, unsigned Line, SDL_PRINTF_FORMAT_STRING const char *Fmt, ...);
     static LogParamsStruct*    GetLogParams                ();
     static void                SetLogPriority              (BWrapper::LogPriority Priority);
     static bool                PrintDirContent             (const char* Path, BWrapper::LogPriority Priority = BWrapper::LogPriority::Debug, bool Recursive = false);
-                                                                                                                      
-    // Random functions                                    
+
+    // Random functions
     static bool                RandomInit                  (); // Starts random generator. It is possible call it multiple times.
     static int                 Random                      (); // Return random nonnegative value
-                                                           
-                                                           
-    // Activity functions                                  
+
+
+    // Activity functions
     static bool                OpenURL                     (const char* url);
-                                                           
-                                                           
-    // Android-specific functions                          
+
+
+    // Android-specific functions
     static int                 AndroidGetApiLevel          ();
     static bool                AndroidShowToast            (const char* Message, BWrapper::AndroidToastDuration Duration, int Gravity = BWrapper::AndroidToastGravity::DO_NOT_USE_SET_GRAVITY_METHOD, int xOffset = 0, int yOffset = 0);
-                                                           
-                                                           
-    // Datetime functions                                  
+
+
+    // Datetime functions
     static time_t              GetTimeSeconds              (); // https://ru.wikipedia.org/wiki/Time.h
     static unsigned            GetTicks                    (); // Returns an unsigned 32 - bit value representing the number of milliseconds since the SDL library initialized
-                                                           
-                                                           
-    // Thread functions                                    
+
+
+    // Thread functions
     static void                Sleep                       (unsigned MilliSeconds);
 
-    // Environment functions                               
-    static Locale::Lang        GetDeviceLanguage           ();    
+    // Environment functions
+    static Locale::Lang        GetDeviceLanguage           ();
     static std::string         GetEnvVariable              (const char* Variable); // Only for windows
-    
+
     // Feature functions
     static void                ShareText                   (const char* Title, const char* Message);
 
@@ -240,69 +240,69 @@ public:
         return true;
     }
 
-	//Запрещаем создавать экземпляр класса BWrapper
-	BWrapper() = delete;
-	~BWrapper() = delete;
-	BWrapper(BWrapper& rhs)  = delete; // Копирующий: конструктор
-	BWrapper(BWrapper&& rhs) = delete; // Перемещающий: конструктор
-	BWrapper& operator= (BWrapper&& rhs) = delete; // Оператор перемещающего присваивания
+    //Запрещаем создавать экземпляр класса BWrapper
+    BWrapper() = delete;
+    ~BWrapper() = delete;
+    BWrapper(BWrapper& rhs)  = delete; // Копирующий: конструктор
+    BWrapper(BWrapper&& rhs) = delete; // Перемещающий: конструктор
+    BWrapper& operator= (BWrapper&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 class AkkordTexture
 {
-private:   
+private:
     SDL_Texture *tex = nullptr;
 public:
     enum struct TextureType : unsigned char { BMP, PNG, JPEG, SVG };
-    struct Flip { enum : unsigned char { None = SDL_FLIP_NONE, Horizontal = SDL_FLIP_HORIZONTAL, Vertical = SDL_FLIP_VERTICAL }; };  
+    struct Flip { enum : unsigned char { None = SDL_FLIP_NONE, Horizontal = SDL_FLIP_HORIZONTAL, Vertical = SDL_FLIP_VERTICAL }; };
     void Destroy();
     //bool LoadFromFile(const char* FileName);
     bool LoadFromFile  (const char* FileName, TextureType Type, const BWrapper::FileSearchPriority SearchPriority = BWrapper::FileSearchPriority::Assets, float Scale = 1.0f);
-	bool LoadFromMemory(const char* Buffer, int Size, TextureType Type, float Scale = 1.0f);
-	bool CreateFromSurface(SDL_Surface* Surface);
+    bool LoadFromMemory(const char* Buffer, int Size, TextureType Type, float Scale = 1.0f);
+    bool CreateFromSurface(SDL_Surface* Surface);
     //int Draw(AkkordRect Rect);
     //int Draw(AkkordRect RectFromAtlas, AkkordRect Rect);
     bool Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas = nullptr, unsigned char Flip = AkkordTexture::Flip::None, double Angle = 0, AkkordPoint* Point = nullptr) const;
     AkkordPoint GetSize() const;
-	bool SetColorMod(Uint8 R, Uint8 G, Uint8 B);
-	bool SetColorMod(const AkkordColor& ModColor);
-	bool SetAlphaMod(Uint8 A);
-	
+    bool SetColorMod(Uint8 R, Uint8 G, Uint8 B);
+    bool SetColorMod(const AkkordColor& ModColor);
+    bool SetAlphaMod(Uint8 A);
+
     AkkordTexture();
     ~AkkordTexture();
 
     SDL_Texture * GetTexture() { return tex;  };
 
-	AkkordTexture(AkkordTexture& rhs) = delete; // Копирующий: конструктор
-	AkkordTexture(AkkordTexture&& tmp); // Перемещающий конструктор объявлен
-	AkkordTexture& operator= (AkkordTexture&& rhs) = delete; // Оператор перемещающего присваивания
+    AkkordTexture(AkkordTexture& rhs) = delete; // Копирующий: конструктор
+    AkkordTexture(AkkordTexture&& tmp); // Перемещающий конструктор объявлен
+    AkkordTexture& operator= (AkkordTexture&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 class DirContentReader
 {
-private:    
+private:
     DirContentElementArray List;
     unsigned Size    = 0;
-    unsigned Pointer = 0;    
+    unsigned Pointer = 0;
 public:
     bool Open(const char* Dir);
     bool Close();
-    bool Next(DirContentElement*& Element);    
-	DirContentReader() {};
-	~DirContentReader();
+    bool Next(DirContentElement*& Element);
+    DirContentReader() {};
+    ~DirContentReader();
 
-	DirContentReader(DirContentReader& rhs) = delete; // Копирующий: конструктор
-	DirContentReader(DirContentReader&& rhs) = delete; // Перемещающий: конструктор
-	DirContentReader& operator= (DirContentReader&& rhs) = delete; // Оператор перемещающего присваивания
+    DirContentReader(DirContentReader& rhs) = delete; // Копирующий: конструктор
+    DirContentReader(DirContentReader&& rhs) = delete; // Перемещающий: конструктор
+    DirContentReader& operator= (DirContentReader&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 class FileReader
-{    
+{
 private:
-     
+
 #ifdef __ANDROID__ // На андроиде с assets придется работать особым способом
-    char* buffer = nullptr;   
-    membuf* sbuf = nullptr;    
+    char* buffer = nullptr;
+    membuf* sbuf = nullptr;
 #endif
     std::filebuf fb;
     std::istream* in = nullptr;
@@ -316,26 +316,26 @@ public:
     bool ReadLine(std::string& Line);
     bool Read(char* Buffer, unsigned MaxSize, unsigned& Readed);
 
-	FileReader(FileReader& rhs) = delete; // Копирующий: конструктор
-	FileReader(FileReader&& rhs) = delete; // Перемещающий: конструктор
-	FileReader& operator= (FileReader&& rhs) = delete; // Оператор перемещающего присваивания
+    FileReader(FileReader& rhs) = delete; // Копирующий: конструктор
+    FileReader(FileReader&& rhs) = delete; // Перемещающий: конструктор
+    FileReader& operator= (FileReader&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 class msgBox
 {
-public:	
-	enum struct Action : int { Cancel = 0, Button1 = 1, Button2 = 2, Button3 = 3 };
-	
-	static void   Show(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2 = nullptr, const char* Button3 = nullptr, Uint32 TimeOutMS = 0);
-	static Uint32 GetEventCode();
-	static void   DecodeEvent(const SDL_Event& Event, int& Code, msgBox::Action& Action);
+public:
+    enum struct Action : int { Cancel = 0, Button1 = 1, Button2 = 2, Button3 = 3 };
 
-	//Запрещаем создавать экземпляр класса msgBox
-	msgBox() = delete;
-	~msgBox() = delete;
-	msgBox(msgBox& rhs) = delete; // Копирующий: конструктор
-	msgBox(msgBox&& rhs) = delete; // Перемещающий: конструктор
-	msgBox& operator= (msgBox&& rhs) = delete; // Оператор перемещающего присваивания
+    static void   Show(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2 = nullptr, const char* Button3 = nullptr, Uint32 TimeOutMS = 0);
+    static Uint32 GetEventCode();
+    static void   DecodeEvent(const SDL_Event& Event, int& Code, msgBox::Action& Action);
+
+    //Запрещаем создавать экземпляр класса msgBox
+    msgBox() = delete;
+    ~msgBox() = delete;
+    msgBox(msgBox& rhs) = delete; // Копирующий: конструктор
+    msgBox(msgBox&& rhs) = delete; // Перемещающий: конструктор
+    msgBox& operator= (msgBox&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 class WAVPlayer
@@ -344,19 +344,19 @@ class WAVPlayer
     Uint8 *wav_buffer = nullptr;      // buffer containing our audio file
     SDL_AudioSpec wav_spec; // the specs of our piece of music
     SDL_AudioDeviceID deviceId = 0;
-    
+
 public:
     bool LoadFromFile(const char* FileName, const BWrapper::FileSearchPriority SearchPriority = BWrapper::FileSearchPriority::Assets);
-	bool LoadFromMemory(const char* Buffer, int Size);
+    bool LoadFromMemory(const char* Buffer, int Size);
     bool Play();
     void Clear();
-    
+
     WAVPlayer(){};
     ~WAVPlayer();
 
-	WAVPlayer(WAVPlayer& rhs) = delete; // Копирующий: конструктор
-	WAVPlayer(WAVPlayer&& rhs) = delete; // Перемещающий: конструктор
-	WAVPlayer& operator= (WAVPlayer&& rhs) = delete; // Оператор перемещающего присваивания
+    WAVPlayer(WAVPlayer& rhs) = delete; // Копирующий: конструктор
+    WAVPlayer(WAVPlayer&& rhs) = delete; // Перемещающий: конструктор
+    WAVPlayer& operator= (WAVPlayer&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 #endif // __AKK0RD_BASE_BASEWRAPPER_H__

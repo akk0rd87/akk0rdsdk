@@ -46,9 +46,9 @@ void adsManager::ChooseAdmobAdBlock()
     logDebug("(currentAdmobUnit = %u; searchUnit = %u", currentAdmobUnit, searchUnit);
     if (currentAdmobUnit != searchUnit)
     {
-        currentAdmobUnit = searchUnit;			
+        currentAdmobUnit = searchUnit;
         logDebug("set adUnit = %s",  AdMobUnits[currentAdmobUnit].Id.c_str());
-        AdMob::InterstitialSetUnitId(AdMobUnits[currentAdmobUnit].Id.c_str());			
+        AdMob::InterstitialSetUnitId(AdMobUnits[currentAdmobUnit].Id.c_str());
     }
 };
 
@@ -69,7 +69,7 @@ void adsManager::SetIntersitialLoadDelay(Uint32 DelaySeconds)
 };
 
 void adsManager::AddAdMobUnit(const std::string& Id, Uint32 TimePriority)
-{		
+{
     AdMobUnits.emplace_back(AdMobUnit(Id, TimePriority));
 }
 
@@ -85,7 +85,7 @@ bool adsManager::InterstitialLoad()
             AdMob::InterstitialLoad();
             AdMobLastLoad = NewTm;
             return true;
-        }; 
+        };
     };
 
     return false;

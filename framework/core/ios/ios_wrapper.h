@@ -11,13 +11,13 @@ class iOSWrapper
     static void             GetInternalWriteDir(std::string& Dir);
     static bool             DirectoryExists    (const char* Dir);
     static bool             FileExists         (const char* FileName);
-    static bool             DirCreate          (const char* Dir);    
-                            
+    static bool             DirCreate          (const char* Dir);
+
     static bool             DirRemoveRecursive (const char* Dir);
-                            
+
     static bool             GetDirContent      (const char* Dir, DirContentElementArray& ArrayList);
     static std::string      GetLanguage        ();
-    
+
     static void             MessageBoxShow     (int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3);
     static void             ShareText(const char* Title, const char* Message);
 };

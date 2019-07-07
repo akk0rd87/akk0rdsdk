@@ -16,8 +16,8 @@ class TestEvent : BaseCustomEvent
 public:
     std::string Name;
     ~TestEvent()
-    { 
-        Name.clear(); 
+    {
+        Name.clear();
         logDebug("Destructor");
     };
 };
@@ -36,7 +36,7 @@ public:
         Event.user.code  = (Sint32)Type;
         Event.user.data1 = Data;
         Event.user.data2 = (void*)1; // ставим константу 1
-        
+
         SDL_PushEvent(&Event);
     };
 
@@ -52,13 +52,13 @@ public:
     };
 
     static CustomEvents::EventLevel GetEventLevel(SDL_Event& Event)
-    {        
+    {
         if (Event.user.type != SDL_USEREVENT)
         {
             logError("Event type is not SDL_USEREVENT [%d]", Event.user.type);
             return EventLevel::Unknown;
         }
-        
+
         if ((void*)1 == Event.user.data2)
             return EventLevel::SDK;
 
@@ -74,15 +74,15 @@ public:
 class CustomEvents
 {
 public:
-	static void MessageBoxCallback(int Code, int Result)
-	{
-		//logDebug("MessageBoxCallback %d %d", Code, Result);
-		SDL_Event Event;
-		Event.user.type = msgBox::GetEventCode();
-		Event.user.code =  (Sint32)Code;
-		Event.user.data1 = (void*)(uintptr_t)Result;
-		SDL_PushEvent(&Event);
-	};
+    static void MessageBoxCallback(int Code, int Result)
+    {
+        //logDebug("MessageBoxCallback %d %d", Code, Result);
+        SDL_Event Event;
+        Event.user.type = msgBox::GetEventCode();
+        Event.user.code =  (Sint32)Code;
+        Event.user.data1 = (void*)(uintptr_t)Result;
+        SDL_PushEvent(&Event);
+    };
 };
 
 #endif // __AKK0RD_CustomEvents_H__

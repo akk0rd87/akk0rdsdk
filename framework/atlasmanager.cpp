@@ -85,10 +85,10 @@ bool AtlasManager::IsValidAtlasIndex(IndexType AtlasIndex)
 AtlasManager::IndexType AtlasManager::GetIndexBySpriteName(IndexType AtlasIndex, const char* Imagename)
 {
     if (IsValidAtlasIndex(AtlasIndex))
-    {        
-        for (decltype(Sprites.size()) i = 0; i < Sprites.size(); ++i)     
+    {
+        for (decltype(Sprites.size()) i = 0; i < Sprites.size(); ++i)
             if (Sprites[i].altasIndex == AtlasIndex && Imagename == Sprites[i].imageName)
-                return i;        
+                return i;
 
         logError("AtlasManager::GetIndexBySpriteName Sprite '%s' with AtlasIndex = %u not found", Imagename, AtlasIndex);
     }
@@ -98,16 +98,16 @@ AtlasManager::IndexType AtlasManager::GetIndexBySpriteName(IndexType AtlasIndex,
 
 AkkordTexture* AtlasManager::GetAtlasBySprite(IndexType SpriteIndex)
 {
-	if (IsValidSpriteIndex(SpriteIndex))
-		return AtlasTextureList[Sprites[SpriteIndex].altasIndex].get();
+    if (IsValidSpriteIndex(SpriteIndex))
+        return AtlasTextureList[Sprites[SpriteIndex].altasIndex].get();
 
-	return nullptr;
+    return nullptr;
 };
 
 void AtlasManager::DrawSprite(IndexType SpriteIndex, const AkkordRect& Rect, unsigned char Flip, double Angle, AkkordPoint* Point)
 {
-    if (IsValidSpriteIndex(SpriteIndex))    
-        AtlasTextureList[Sprites[SpriteIndex].altasIndex]->Draw(Rect, &Sprites[SpriteIndex].rect, Flip, Angle, Point);    
+    if (IsValidSpriteIndex(SpriteIndex))
+        AtlasTextureList[Sprites[SpriteIndex].altasIndex]->Draw(Rect, &Sprites[SpriteIndex].rect, Flip, Angle, Point);
 }
 
 AkkordPoint AtlasManager::GetSpriteSize(IndexType SpriteIndex)
@@ -122,9 +122,9 @@ AkkordPoint AtlasManager::GetSpriteSize(IndexType SpriteIndex)
 
 AkkordRect AtlasManager::GetSpriteRect(IndexType SpriteIndex)
 {
-    if (IsValidSpriteIndex(SpriteIndex))    
+    if (IsValidSpriteIndex(SpriteIndex))
         return Sprites[SpriteIndex].rect;
-    
+
     return AkkordRect(-1, -1, -1, -1);
 }
 
@@ -145,6 +145,6 @@ AtlasManager::~AtlasManager()
 }
 
 void AtlasManager::AddTexture()
-{    
+{
     AtlasTextureList.emplace_back(std::make_unique<AkkordTexture>());
 }

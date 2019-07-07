@@ -48,10 +48,10 @@ private:
     std::string FileName;
     void Destroy();
 
-	//Запрещаем создавать экземпляр класса ConfigManager	
-	ConfigManager(ConfigManager& rhs) = delete; // Копирующий: конструктор
-	ConfigManager(ConfigManager&& rhs) = delete; // Перемещающий: конструктор	
-	ConfigManager& operator= (ConfigManager&& rhs) = delete; // Оператор перемещающего присваивания
+    //Запрещаем создавать экземпляр класса ConfigManager
+    ConfigManager(ConfigManager& rhs) = delete; // Копирующий: конструктор
+    ConfigManager(ConfigManager&& rhs) = delete; // Перемещающий: конструктор
+    ConfigManager& operator= (ConfigManager&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 

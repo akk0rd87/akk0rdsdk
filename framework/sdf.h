@@ -40,28 +40,28 @@ class SDFProgram
     void Clear();
 
 public :
-	struct Attributes 
-	{
-		enum : GLuint 
-		{
-			SDF_ATTRIB_POSITION = 0, // Начинаем не с нуля, чтобы индексы не пересеклись с другими программами			
-			SDF_ATTRIB_UV = 1
-			//SDF_NUM_ATTRIBUTES = 7,
-			//ATTRIB_COLOR = 8
-		};
-	};
+    struct Attributes
+    {
+        enum : GLuint
+        {
+            SDF_ATTRIB_POSITION = 0, // Начинаем не с нуля, чтобы индексы не пересеклись с другими программами
+            SDF_ATTRIB_UV = 1
+            //SDF_NUM_ATTRIBUTES = 7,
+            //ATTRIB_COLOR = 8
+        };
+    };
 
     bool Init();
-    ShaderProgramStruct* GetShaderProgram(bool Outline);    
+    ShaderProgramStruct* GetShaderProgram(bool Outline);
     SDFProgram();
     ~SDFProgram();
 
     static SDFProgram& GetInstance();
 
-	//Запрещаем создавать экземпляр класса SDFProgram	
-	SDFProgram(SDFProgram& rhs) = delete; // Копирующий: конструктор
-	SDFProgram(SDFProgram&& rhs) = delete; // Перемещающий: конструктор	
-	SDFProgram& operator= (SDFProgram&& rhs) = delete; // Оператор перемещающего присваивания
+    //Запрещаем создавать экземпляр класса SDFProgram
+    SDFProgram(SDFProgram& rhs) = delete; // Копирующий: конструктор
+    SDFProgram(SDFProgram&& rhs) = delete; // Перемещающий: конструктор
+    SDFProgram& operator= (SDFProgram&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 class SDFGLTexture
@@ -89,15 +89,15 @@ class SDFTexture
     float Scale, Border;
     bool AutoFlush = false;
     bool Outline = false;
-	float atlasW;
-	float atlasH;
-	void InitAtlasWH();
+    float atlasW;
+    float atlasH;
+    void InitAtlasWH();
 public:
     bool LoadFromFile(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority, int Spread);
     bool LoadFromMemory(const char* Buffer, int Size, int Spread);
     void SetColor(const AkkordColor& Color) { this->Color = Color; };
     void SetOutlineColor(const AkkordColor& OutlineColor) { this->OutlineColor = OutlineColor; };
-    bool Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect = nullptr);    
+    bool Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect = nullptr);
     void Clear();
     bool Flush();
     void SetAutoFlush(bool AutoFlush) { this->AutoFlush = AutoFlush; };
@@ -109,7 +109,7 @@ public:
 class SDFFont
 {
     SDFGLTexture FontAtlas;
-    unsigned int ScaleW, ScaleH, LineHeight, Spread;   
+    unsigned int ScaleW, ScaleH, LineHeight, Spread;
     std::map<unsigned, SDFCharInfo> CharsMap;
 
     bool ParseFNTFile(const char* FNTFile, BWrapper::FileSearchPriority SearchPriority);
@@ -125,7 +125,7 @@ public:
     unsigned int GetAtlasH();
 
     bool Load(const char* FileNameFNT, const char* FileNamePNG,  BWrapper::FileSearchPriority SearchPriority, int Spread);
-	bool Draw(bool Outline, GLsizei Count, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border);
+    bool Draw(bool Outline, GLsizei Count, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border);
     bool GetCharInfo(unsigned Code, SDFCharInfo& ci);
     unsigned GetLineHeight();
 };
@@ -143,13 +143,13 @@ class SDFFontBuffer
     bool outline = false;
 
     SDFFont::AlignH alignH = SDFFont::AlignH::Center;
-    SDFFont::AlignV alignV = SDFFont::AlignV::Center;    
+    SDFFont::AlignV alignV = SDFFont::AlignV::Center;
 
     AkkordColor color, outlineColor;
 
-	std::vector<GLfloat>UV;
-	std::vector<GLfloat>squareVertices;
-	std::vector<GLushort>Indices;
+    std::vector<GLfloat>UV;
+    std::vector<GLfloat>squareVertices;
+    std::vector<GLushort>Indices;
 
     //float offset, contrast, outlineOffset, outlineContrast;
 
@@ -157,7 +157,7 @@ class SDFFontBuffer
 public:
     SDFFontBuffer(SDFFont* Font, unsigned int DigitsCount, const AkkordColor& Color);
 
-    void SetFont(SDFFont* Font);    
+    void SetFont(SDFFont* Font);
     void SetScale(float Scale);
     void SetScale(float ScaleX, float ScaleY);
 
@@ -181,7 +181,7 @@ public:
     void Reserve(unsigned Count);
 
     void Clear();
-    void Flush();    
+    void Flush();
     ~SDFFontBuffer();
     // сейчас это int, возможно для этой функции сделать отдельный тип со float
     AkkordPoint GetTextSize(const char* Text);

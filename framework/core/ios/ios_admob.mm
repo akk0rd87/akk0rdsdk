@@ -62,7 +62,7 @@
     logDebug("interstitialDidReceiveAd");
     AdMob::AdEvent Ad;
     Ad.AdFormat = (int)AdMob::Format::Interstitial;
-    Ad.EventType = (int)AdMob::InterstitialEvent::Loaded;    
+    Ad.EventType = (int)AdMob::InterstitialEvent::Loaded;
     [self SendCallback: &Ad];
 };
 
@@ -227,12 +227,12 @@
     if(self.interstitial != nullptr)
     {
        logDebug("InterstitialLoad 2");
-        
+
        if(self.interstitial.hasBeenUsed)
        {
            [self InterstitialReset];
        }
-        
+
        GADRequest *request = [GADRequest request];
        //request.testDevices = @[ kGADSimulatorID ];
        [self.interstitial loadRequest:request];

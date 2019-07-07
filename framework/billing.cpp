@@ -2,12 +2,12 @@
 
 struct BillingContextStruct
 {
-	int BillingStatus = -1;
+    int BillingStatus = -1;
     decltype(SDL_RegisterEvents(1)) BillingEventCode;
 
 #ifdef __ANDROID__
-	BillingManager::BillingPurchaseUpdatedCallback*  AppPurchaseUpdated  = nullptr;
-	BillingManager::BillingPurchaseConsumedCallback* AppPurchaseConsumed = nullptr;
+    BillingManager::BillingPurchaseUpdatedCallback*  AppPurchaseUpdated  = nullptr;
+    BillingManager::BillingPurchaseConsumedCallback* AppPurchaseConsumed = nullptr;
 #endif
 };
 
@@ -15,7 +15,7 @@ static BillingContextStruct BillingContext;
 
 int BillingManager::GetStatus()
 {
-	return BillingContext.BillingStatus;
+    return BillingContext.BillingStatus;
 };
 
 #ifdef __ANDROID__
@@ -23,8 +23,8 @@ int BillingManager::GetStatus()
 extern "C" {
     JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_BillingSetupFinished(JNIEnv*, jclass, jint);
     JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_BillingDisconnected(JNIEnv*, jclass);
-	JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseQueried(JNIEnv*, jclass, jstring, jstring, jint);
-	JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseConsumed(JNIEnv*, jclass, jstring);
+    JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseQueried(JNIEnv*, jclass, jstring, jstring, jint);
+    JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseConsumed(JNIEnv*, jclass, jstring);
 }
 JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_BillingSetupFinished(JNIEnv*, jclass, jint ResponseCode)
 {
@@ -39,21 +39,21 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_BillingDisconnected(JN
 }
 
 JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseQueried(JNIEnv* env, jclass, jstring PurchaseToken, jstring ProductCode, jint Type)  /* Type: 0 - restored, 1- bought */
-{        
+{
     const char* PToken = env->GetStringUTFChars(PurchaseToken, 0);
     const char* PCode  = env->GetStringUTFChars(ProductCode, 0);
-	int ActionType = (int)Type;
+    int ActionType = (int)Type;
 
-	logDebug("PurchaseQueried %s %s %s", PToken, PCode, (ActionType == 0 ? "restored" : "bought"));
-	 
-	if(BillingContext.AppPurchaseUpdated != nullptr)
-	{
-		BillingContext.AppPurchaseUpdated(PToken, PCode, (BillingManager::OperAction)ActionType);
-	}
-	else
-	{
-		logError("AppPurchaseUpdated is not set");
-	}
+    logDebug("PurchaseQueried %s %s %s", PToken, PCode, (ActionType == 0 ? "restored" : "bought"));
+
+    if(BillingContext.AppPurchaseUpdated != nullptr)
+    {
+        BillingContext.AppPurchaseUpdated(PToken, PCode, (BillingManager::OperAction)ActionType);
+    }
+    else
+    {
+        logError("AppPurchaseUpdated is not set");
+    }
 
     env->ReleaseStringUTFChars(PurchaseToken, PToken);
     env->ReleaseStringUTFChars(ProductCode, PCode);
@@ -61,19 +61,19 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseQueried(JNIEnv
 
 JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseConsumed(JNIEnv* env, jclass, jstring PurchaseToken)
 {
-	const char* PToken = env->GetStringUTFChars(PurchaseToken, 0);
+    const char* PToken = env->GetStringUTFChars(PurchaseToken, 0);
 
-	logDebug("Purchase consumed: %s", PToken);
+    logDebug("Purchase consumed: %s", PToken);
 
-	if (BillingContext.AppPurchaseConsumed != nullptr)
-	{
-		BillingContext.AppPurchaseConsumed(PToken);
-	}
-	else
-	{
-		logError("AppPurchaseConsumed is not set");
-	}
-	env->ReleaseStringUTFChars(PurchaseToken, PToken);
+    if (BillingContext.AppPurchaseConsumed != nullptr)
+    {
+        BillingContext.AppPurchaseConsumed(PToken);
+    }
+    else
+    {
+        logError("AppPurchaseConsumed is not set");
+    }
+    env->ReleaseStringUTFChars(PurchaseToken, PToken);
 }
 #endif
 
@@ -87,7 +87,7 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseConsumed(JNIEn
 
 bool BillingManager::Init()
 {
-	BillingContext.BillingEventCode = SDL_RegisterEvents(1);
+    BillingContext.BillingEventCode = SDL_RegisterEvents(1);
 
 #ifdef __ANDROID__
     return AndroidBillingManager::Init();
@@ -98,7 +98,7 @@ bool BillingManager::Init()
 #endif
 
 #ifdef __WIN32__
-	return true; // будем считать, что на винде все прошло норм
+    return true; // будем считать, что на винде все прошло норм
 #endif
 
     return false;
@@ -106,11 +106,11 @@ bool BillingManager::Init()
 
 bool BillingManager::QueryProductDetails(const std::vector<std::string>& ProdList)
 {
-#ifdef __ANDROID__    
+#ifdef __ANDROID__
     return AndroidBillingManager::QueryProductDetails(ProdList);
 #endif
 
-#ifdef __APPLE__    
+#ifdef __APPLE__
     return iOSBillingManager::QueryProductDetails(ProdList);
 #endif
     return false;
@@ -118,22 +118,22 @@ bool BillingManager::QueryProductDetails(const std::vector<std::string>& ProdLis
 
 bool BillingManager::RestorePurchases()
 {
-#ifdef __ANDROID__    
+#ifdef __ANDROID__
     return AndroidBillingManager::RestorePurchases();
 #endif
 
-#ifdef __APPLE__    
+#ifdef __APPLE__
     return iOSBillingManager::RestorePurchases();
-#endif 
+#endif
     return false;
 }
 
 bool BillingManager::PurchaseProdItem(const char* ProductCode)
 {
-#ifdef __ANDROID__    
+#ifdef __ANDROID__
     return AndroidBillingManager::PurchaseProdItem(ProductCode);
 #endif
-    
+
 #ifdef __APPLE__
     return iOSBillingManager::PurchaseProdItem(ProductCode);
 #endif
@@ -153,9 +153,9 @@ bool BillingManager::ConsumeProductItem(const char* PurchaseToken)
 void BillingManager::SetPurchaseUpdatedCallback(BillingPurchaseUpdatedCallback* Callback)
 {
 #ifdef __ANDROID__
-	BillingContext.AppPurchaseUpdated = Callback;
+    BillingContext.AppPurchaseUpdated = Callback;
 #endif
-    
+
 #ifdef __APPLE__
     iOSBillingManager::SetPurchaseUpdatedCallback(Callback);
 #endif
@@ -170,21 +170,21 @@ void BillingManager::SetPurchaseConsumedCallback(BillingPurchaseConsumedCallback
 
 decltype(SDL_RegisterEvents(1)) BillingManager::GetEventCode()
 {
-	return BillingContext.BillingEventCode;
+    return BillingContext.BillingEventCode;
 };
 
 void BillingManager::DecodeEvent(const SDL_Event& Event, int& Code, int& Result)
 {
-	Code = Event.user.code;
-	Result = (int)(size_t)Event.user.data1;
+    Code = Event.user.code;
+    Result = (int)(size_t)Event.user.data1;
 };
 
 void BillingManager::PushEvent(int Code, int Result)
 {
-	// ѕушим евент в основной поток
-	SDL_Event sdl_Event;
-	sdl_Event.user.type = BillingManager::GetEventCode();
-	sdl_Event.user.code = (Sint32)(Code);
-	sdl_Event.user.data1 = (void*)(uintptr_t)Result;
-	SDL_PushEvent(&sdl_Event);
+    // ѕушим евент в основной поток
+    SDL_Event sdl_Event;
+    sdl_Event.user.type = BillingManager::GetEventCode();
+    sdl_Event.user.code = (Sint32)(Code);
+    sdl_Event.user.data1 = (void*)(uintptr_t)Result;
+    SDL_PushEvent(&sdl_Event);
 };

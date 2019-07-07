@@ -49,7 +49,7 @@ static LogParamsStruct LogParams;
 
 int BWrapper::GetCPUCount()
 {
-	return SDL_GetCPUCount();
+    return SDL_GetCPUCount();
 }
 
 bool BWrapper::Init(Uint32 flags)
@@ -57,7 +57,7 @@ bool BWrapper::Init(Uint32 flags)
     //Если раскомментить нижеприведенную строку, то на винде валится при закрытии окна приложения (не консоли)
     //if (SDL_SetMemoryFunctions(std::malloc, std::calloc, std::realloc, std::free) != 0)
       //  logError("SDL_SetMemoryFunctions error %s", SDL_GetError());
- 
+
 
     if (SDL_Init(flags) != 0)
     {
@@ -69,9 +69,9 @@ bool BWrapper::Init(Uint32 flags)
     SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);
     SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
 
-	CurrentContext.MessageBoxEvent = SDL_RegisterEvents(1);
+    CurrentContext.MessageBoxEvent = SDL_RegisterEvents(1);
 
-	Platforms::Init();
+    Platforms::Init();
 
     return true;
 };
@@ -159,8 +159,8 @@ FILE* BWrapper::FileOpen(const char* FileName, FileSearchPriority SearchPriority
 
     auto File = FileOpen_private(FileName, SearchPriority, OpenMode);
 
-	if (nullptr == File)
-		logError("BWrapper::FileOpen: File %s open error", FileName);
+    if (nullptr == File)
+        logError("BWrapper::FileOpen: File %s open error", FileName);
 
     return File;
 }
@@ -176,13 +176,13 @@ char* BWrapper::File2Buffer(const char* FileName, FileSearchPriority SearchPrior
     {
 #ifdef __ANDROID__ // На андроиде assets читаются особым образом
         buffer = AndroidWrapper::GetAsset2Buffer(Fname.c_str(), BufferSize);
-        
-		if (nullptr == buffer)
-			logError("FileSearchPriority::Assets: File %s [%s] open error", FileName, Fname.c_str());
+
+        if (nullptr == buffer)
+            logError("FileSearchPriority::Assets: File %s [%s] open error", FileName, Fname.c_str());
 
         return buffer;
 #else
-      //Во всех остальных случаях читаем из папки assets        
+      //Во всех остальных случаях читаем из папки assets
         Fname = Platforms::GetInternalAssetsDir() + std::string(FileName);
 #endif
     }
@@ -301,23 +301,23 @@ bool BWrapper::FileRename(const char* OldName, const char* NewName)
 ////////////////////////////////
 
 void ConvertRect2Native(const AkkordRect &Rect, SDL_Rect* sRect)
-{    
-    sRect->x = Rect.x; sRect->y = Rect.y; sRect->w = Rect.w; sRect->h = Rect.h;    
+{
+    sRect->x = Rect.x; sRect->y = Rect.y; sRect->w = Rect.w; sRect->h = Rect.h;
 }
 
 AkkordWindow* BWrapper::CreateRenderWindow(const char* Title, int X, int Y, int W, int H, Uint32 Flags)
 {
     auto wnd = SDL_CreateWindow(Title, X, Y, W, H, Flags/* SDL_WINDOW_SHOWN*/);
-    if(nullptr == wnd) 
-		logError("CreateWindow error = %s", SDL_GetError());
+    if(nullptr == wnd)
+        logError("CreateWindow error = %s", SDL_GetError());
     return wnd;
 };
 
 AkkordRenderer* BWrapper::CreateRenderer(AkkordWindow* window, int index, Uint32 flags)
 {
     auto rnd = SDL_CreateRenderer(window, index, flags);
-    if (nullptr == rnd) 
-		logError("CreateRenderer error = %s", SDL_GetError());
+    if (nullptr == rnd)
+        logError("CreateRenderer error = %s", SDL_GetError());
     return rnd;
 };
 
@@ -356,7 +356,7 @@ bool BWrapper::SetWindowResizable(bool Resizable)
 }
 
 bool BWrapper::DestroyRenderer()
-{    
+{
     CurrentContext.DestroyRenderer();
     return true;
 };
@@ -368,7 +368,7 @@ bool BWrapper::RefreshRenderer()
 };
 
 bool BWrapper::DestroyWindow()
-{    
+{
     CurrentContext.DestroyWindow();
     return true;
 };
@@ -380,107 +380,107 @@ bool BWrapper::SetWindowSize(int W, int H)
 }
 bool AkkordTexture::CreateFromSurface(SDL_Surface* Surface)
 {
-	if (tex != nullptr)
-	{
-		this->Destroy();
-	}
+    if (tex != nullptr)
+    {
+        this->Destroy();
+    }
 
-	tex = SDL_CreateTextureFromSurface(CurrentContext.CurrentRenderer, Surface);
+    tex = SDL_CreateTextureFromSurface(CurrentContext.CurrentRenderer, Surface);
 
-	if (!tex)
-	{
-		logError("Error create texture from surface %s", SDL_GetError());
-		return false;
-	}
-	return true;
+    if (!tex)
+    {
+        logError("Error create texture from surface %s", SDL_GetError());
+        return false;
+    }
+    return true;
 };
 
 bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Type, float Scale)
-{	
-	if (tex != nullptr)
-	{
-		this->Destroy();
-	}
+{
+    if (tex != nullptr)
+    {
+        this->Destroy();
+    }
 
-	if (nullptr == Buffer)
-	{
-		logError("Error load texture from memory: buffer is not specified");
-		return false;
-	}
-	
-	std::unique_ptr<SDL_RWops, void(*)(SDL_RWops*)>io(SDL_RWFromMem((void*)Buffer, Size), [](SDL_RWops* i) {SDL_RWclose(i);});	
-	bool result = false;
+    if (nullptr == Buffer)
+    {
+        logError("Error load texture from memory: buffer is not specified");
+        return false;
+    }
 
-	if (io)
-	{
-		std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)> image (nullptr, SDL_FreeSurface);		
-		switch (Type)
-		{
-			case AkkordTexture::TextureType::BMP:				
-				image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadBMP_RW(io.get()), SDL_FreeSurface);
-				break;
-			case AkkordTexture::TextureType::PNG:				
-				image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadPNG_RW(io.get()), SDL_FreeSurface);
-				break;
-			case AkkordTexture::TextureType::JPEG:				
-				image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadJPG_RW(io.get()), SDL_FreeSurface);
-				break;
-			case AkkordTexture::TextureType::SVG:
-			{				
-				std::unique_ptr<char, void(*)(char*)> data((char *)SDL_LoadFile_RW(io.get(), nullptr, SDL_FALSE), [](char * i) { SDL_free(i); });				
-				if (data.get() == nullptr)
-				{
-					logError("Couldn't parse SVG image %s", SDL_GetError());
-					return result;
-				}
-				std::unique_ptr<NSVGimage, void(*)(NSVGimage*)> svg_image(nsvgParse(data.get(), "px", 96.0f), nsvgDelete);
+    std::unique_ptr<SDL_RWops, void(*)(SDL_RWops*)>io(SDL_RWFromMem((void*)Buffer, Size), [](SDL_RWops* i) {SDL_RWclose(i);});
+    bool result = false;
 
-				if (svg_image.get() == nullptr)
-				{
-					logError("Couldn't parse SVG image %s", SDL_GetError());
-					return result;
-				}
+    if (io)
+    {
+        std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)> image (nullptr, SDL_FreeSurface);
+        switch (Type)
+        {
+            case AkkordTexture::TextureType::BMP:
+                image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadBMP_RW(io.get()), SDL_FreeSurface);
+                break;
+            case AkkordTexture::TextureType::PNG:
+                image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadPNG_RW(io.get()), SDL_FreeSurface);
+                break;
+            case AkkordTexture::TextureType::JPEG:
+                image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadJPG_RW(io.get()), SDL_FreeSurface);
+                break;
+            case AkkordTexture::TextureType::SVG:
+            {
+                std::unique_ptr<char, void(*)(char*)> data((char *)SDL_LoadFile_RW(io.get(), nullptr, SDL_FALSE), [](char * i) { SDL_free(i); });
+                if (data.get() == nullptr)
+                {
+                    logError("Couldn't parse SVG image %s", SDL_GetError());
+                    return result;
+                }
+                std::unique_ptr<NSVGimage, void(*)(NSVGimage*)> svg_image(nsvgParse(data.get(), "px", 96.0f), nsvgDelete);
 
-				std::unique_ptr<NSVGrasterizer, void(*)(NSVGrasterizer*)>rasterizer(nsvgCreateRasterizer(), nsvgDeleteRasterizer);
-				if (rasterizer.get() == nullptr)
-				{
-					logError("Couldn't create SVG rasterizer %s", SDL_GetError());
-					return result;
-				}
+                if (svg_image.get() == nullptr)
+                {
+                    logError("Couldn't parse SVG image %s", SDL_GetError());
+                    return result;
+                }
 
-				image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(					
-					SDL_CreateRGBSurface(SDL_SWSURFACE,
-					(int)(svg_image->width * Scale),
-					(int)(svg_image->height * Scale),
-					32,
-					0x000000FF,
-					0x0000FF00,
-					0x00FF0000,
-					0xFF000000),										
-					SDL_FreeSurface);
+                std::unique_ptr<NSVGrasterizer, void(*)(NSVGrasterizer*)>rasterizer(nsvgCreateRasterizer(), nsvgDeleteRasterizer);
+                if (rasterizer.get() == nullptr)
+                {
+                    logError("Couldn't create SVG rasterizer %s", SDL_GetError());
+                    return result;
+                }
 
-				if (image.get() == nullptr)
-				{
-					logError("Couldn't create SDL_CreateRGBSurface %s", SDL_GetError());
-					return result;
-				}
+                image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(
+                    SDL_CreateRGBSurface(SDL_SWSURFACE,
+                    (int)(svg_image->width * Scale),
+                    (int)(svg_image->height * Scale),
+                    32,
+                    0x000000FF,
+                    0x0000FF00,
+                    0x00FF0000,
+                    0xFF000000),
+                    SDL_FreeSurface);
 
-				nsvgRasterize(rasterizer.get(), svg_image.get(), 0.0f, 0.0f, Scale, (unsigned char *)image->pixels, image->w, image->h, image->pitch);				
-			}
-			break;
-		}
+                if (image.get() == nullptr)
+                {
+                    logError("Couldn't create SDL_CreateRGBSurface %s", SDL_GetError());
+                    return result;
+                }
 
-		if (image.get())
-		{			
-			result = this->CreateFromSurface(image.get());			
-		}
-		else
-		{
-			logError("Error load Image SDL_RWFromMem error=%s",  SDL_GetError());
-		}
-	}
+                nsvgRasterize(rasterizer.get(), svg_image.get(), 0.0f, 0.0f, Scale, (unsigned char *)image->pixels, image->w, image->h, image->pitch);
+            }
+            break;
+        }
 
-	return result;
+        if (image.get())
+        {
+            result = this->CreateFromSurface(image.get());
+        }
+        else
+        {
+            logError("Error load Image SDL_RWFromMem error=%s",  SDL_GetError());
+        }
+    }
+
+    return result;
 };
 
 
@@ -500,14 +500,14 @@ bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const B
         logError("Error load file image = %s, error=%s", FileName, SDL_GetError());
         return result;
     }
-	
-	result = this->LoadFromMemory(buffer, Size, Type, Scale);
+
+    result = this->LoadFromMemory(buffer, Size, Type, Scale);
     BWrapper::CloseBuffer(buffer);
 
-	if (!result)
-	{
-		logError("Error load file %s", FileName);
-	}
+    if (!result)
+    {
+        logError("Error load file %s", FileName);
+    }
 
     return result;
 };
@@ -529,30 +529,30 @@ AkkordTexture::~AkkordTexture()
 AkkordTexture::AkkordTexture(AkkordTexture&& tmp)
 {
     this->tex = tmp.tex;
-    tmp.tex = nullptr;    
+    tmp.tex = nullptr;
 };
 
 bool AkkordTexture::SetColorMod(Uint8 R, Uint8 G, Uint8 B)
 {
-	if (SDL_SetTextureColorMod(tex, R, G, B) == 0)	
-		return true;
-	
-	logError("SDL_SetTextureColorMod error: %s", SDL_GetError());
-	return false;
+    if (SDL_SetTextureColorMod(tex, R, G, B) == 0)
+        return true;
+
+    logError("SDL_SetTextureColorMod error: %s", SDL_GetError());
+    return false;
 }
 
 bool AkkordTexture::SetColorMod(const AkkordColor& ModColor)
 {
-	return SetColorMod(ModColor.GetR(), ModColor.GetG(), ModColor.GetB());
+    return SetColorMod(ModColor.GetR(), ModColor.GetG(), ModColor.GetB());
 };
 
 bool AkkordTexture::SetAlphaMod(Uint8 A)
 {
-	if (SDL_SetTextureAlphaMod(tex, A) == 0)
-		return true;
+    if (SDL_SetTextureAlphaMod(tex, A) == 0)
+        return true;
 
-	logError("SDL_SetTextureAlphaMod error: %s", SDL_GetError());
-	return false;
+    logError("SDL_SetTextureAlphaMod error: %s", SDL_GetError());
+    return false;
 };
 
 bool AkkordTexture::Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas, unsigned char Flip, double Angle, AkkordPoint* Point) const
@@ -654,97 +654,97 @@ bool BWrapper::IsPointInRect(const AkkordPoint& Point, const AkkordRect& Rect)
 
 void AkkordColor::SetInt32(unsigned int Color)
 {
-	color = Color;
+    color = Color;
 }
 
 AkkordColor::AkkordColor(Uint8 R, Uint8 G, Uint8 B) // constructor
 {
-	SetRGB(R, G, B);
+    SetRGB(R, G, B);
 };
 
 AkkordColor::AkkordColor(Uint8 R, Uint8 G, Uint8 B, Uint8 A) // constructor
 {
-	SetRGBA(R, G, B, A);
+    SetRGBA(R, G, B, A);
 };
 
 AkkordColor::AkkordColor()
 {
-	SetRGB(255, 255, 255);
+    SetRGB(255, 255, 255);
 }
 
 void AkkordColor::SetRGB(Uint8 R, Uint8 G, Uint8 B)
 {
-	SetRGBA(R, G, B, 255);
+    SetRGBA(R, G, B, 255);
 };
 
 void AkkordColor::SetRGBA(Uint8 R, Uint8 G, Uint8 B, Uint8 A)
 {
-	color = AkkordColor::RGBA2Int32(R, G, B, A);
+    color = AkkordColor::RGBA2Int32(R, G, B, A);
 };
 
 Uint8 AkkordColor::GetRFromInt32(unsigned int ColorInt32)
 {
-	return (ColorInt32 & 0x000000ff);
+    return (ColorInt32 & 0x000000ff);
 };
 
 Uint8 AkkordColor::GetGFromInt32(unsigned int ColorInt32)
 {
-	return (ColorInt32 & 0x0000ff00) >> 8;
+    return (ColorInt32 & 0x0000ff00) >> 8;
 };
 
 Uint8 AkkordColor::GetBFromInt32(unsigned int ColorInt32)
 {
-	return (ColorInt32 & 0x00ff0000) >> 16;
+    return (ColorInt32 & 0x00ff0000) >> 16;
 };
 
 Uint8 AkkordColor::GetAFromInt32(unsigned int ColorInt32)
 {
-	return (ColorInt32 & 0xff000000) >> 24;
+    return (ColorInt32 & 0xff000000) >> 24;
 };
 
 Uint8 AkkordColor::GetR() const
 {
-	return AkkordColor::GetRFromInt32(color);
+    return AkkordColor::GetRFromInt32(color);
 };
 
 Uint8 AkkordColor::GetG() const
 {
-	return AkkordColor::GetGFromInt32(color);
+    return AkkordColor::GetGFromInt32(color);
 };
 
 Uint8 AkkordColor::GetB() const
 {
-	return AkkordColor::GetBFromInt32(color);
+    return AkkordColor::GetBFromInt32(color);
 };
 
 Uint8 AkkordColor::GetA() const
 {
-	return AkkordColor::GetAFromInt32(color);;
+    return AkkordColor::GetAFromInt32(color);;
 };
 
 unsigned int AkkordColor::GetInt32() const
 {
-	return color;
+    return color;
 };
 
 void AkkordColor::SetR(Uint8 R)
 {
-	SetRGBA(R, GetG(), GetB(), GetA());
+    SetRGBA(R, GetG(), GetB(), GetA());
 };
 
 void AkkordColor::SetG(Uint8 G)
 {
-	SetRGBA(GetR(), G, GetB(), GetA());
+    SetRGBA(GetR(), G, GetB(), GetA());
 };
 
 void AkkordColor::SetB(Uint8 B)
 {
-	SetRGBA(GetR(), GetG(), B, GetA());
+    SetRGBA(GetR(), GetG(), B, GetA());
 };
 
 void AkkordColor::SetA(Uint8 A)
 {
-	SetRGBA(GetR(), GetG(), GetB(), A);
+    SetRGBA(GetR(), GetG(), GetB(), A);
 };
 
 unsigned int AkkordColor::RGBA2Int32(int r, int g, int b, int a)
@@ -820,7 +820,7 @@ BWrapper::KeyCodes BWrapper::DecodeKey(const SDL_Keysym& SDL_Key)
 {
     //enum struct KeyCodes { Esc, BackSpace, Back, Enter, Tab, Delete, F1,
     // Help, Home, Insert, Find, Copy, PageDown, PageUp, Paste, Pause, PrintScreen, Return, Space, Uknown };
-    
+
     switch (SDL_Key.sym)
     {
         case SDLK_ESCAPE: return KeyCodes::Esc;
@@ -853,7 +853,7 @@ BWrapper::KeyCodes BWrapper::DecodeKey(const SDL_Keysym& SDL_Key)
         case SDLK_EQUALS: return KeyCodes::Equals;
         case SDLK_KP_MINUS: return KeyCodes::NumpadMinus;
         case SDLK_KP_PLUS: return KeyCodes::NumpadPlus;
-        
+
         case SDLK_LEFTBRACKET:  return KeyCodes::LeftBraket;
         case SDLK_RIGHTBRACKET: return KeyCodes::RightBraket;
         case SDLK_COMMA:        return KeyCodes::Comma;
@@ -1131,19 +1131,19 @@ void BWrapper::Log(BWrapper::LogPriority Priority, const char* File, const char*
 
 Uint32 msgBox::GetEventCode()
 {
-	return CurrentContext.MessageBoxEvent;
+    return CurrentContext.MessageBoxEvent;
 }
 
 void msgBox::Show(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS)
 {
-	Platforms::MessageBoxShow(Code, Title, Message, Button1, Button2, Button3, TimeOutMS);
+    Platforms::MessageBoxShow(Code, Title, Message, Button1, Button2, Button3, TimeOutMS);
 }
 
 void msgBox::DecodeEvent(const SDL_Event& Event, int& Code, msgBox::Action& Action)
-{	
-	Code = Event.user.code;
-	Action = (msgBox::Action)(int)(size_t)Event.user.data1;
-	
+{
+    Code = Event.user.code;
+    Action = (msgBox::Action)(int)(size_t)Event.user.data1;
+
 }
 
 bool BWrapper::PrintDirContent(const char* Path, BWrapper::LogPriority Priority, bool Recursive)
@@ -1163,7 +1163,7 @@ bool BWrapper::PrintDirContent(const char* Path, BWrapper::LogPriority Priority,
         {
             if (Dc->isDir) ptype = dir;
             else           ptype = file;
-                        
+
             logVA(Priority, "%s %s/%s", ptype, Path, Dc->Name.c_str());
 
             if (Recursive && Dc->isDir)
@@ -1207,8 +1207,8 @@ void BWrapper::Sleep(unsigned MilliSeconds)
 
 std::string BWrapper::GetAppBuildDateTimeString()
 {
-	return std::string(__DATE__) + " " + __TIME__;
-};  
+    return std::string(__DATE__) + " " + __TIME__;
+};
 
 std::string BWrapper::GetSDKVersionInfo()
 {
@@ -1268,7 +1268,7 @@ bool DirContentReader::Open(const char* Dir)
         this->Size = List.size();
         return res;
     }
-    
+
     return false;
 }
 
@@ -1403,7 +1403,7 @@ void WAVPlayer::Clear()
     {
         SDL_CloseAudioDevice(this->deviceId);
         this->deviceId = 0;
-    }    
+    }
 
     if (this->wav_buffer)
     {
@@ -1413,32 +1413,32 @@ void WAVPlayer::Clear()
 };
 
 bool WAVPlayer::LoadFromMemory(const char* Buffer, int Size)
-{	
-	this->Clear();
+{
+    this->Clear();
 
-	if (nullptr == Buffer)
-	{
-		logError("Emptry buffer for wav load");
-		return false;
-	}
+    if (nullptr == Buffer)
+    {
+        logError("Emptry buffer for wav load");
+        return false;
+    }
 
-	bool result = true;
-	auto io = SDL_RWFromMem((void*)Buffer, Size);
-	if (!io)
-	{
-		logError("Error read SDL_RWFromMem %s", SDL_GetError());
-		return false;
-	}
-	SDL_zero(this->wav_spec);
+    bool result = true;
+    auto io = SDL_RWFromMem((void*)Buffer, Size);
+    if (!io)
+    {
+        logError("Error read SDL_RWFromMem %s", SDL_GetError());
+        return false;
+    }
+    SDL_zero(this->wav_spec);
 
-	if (SDL_LoadWAV_RW(io, 1, &this->wav_spec, &this->wav_buffer, &this->wav_length) == nullptr)
-	{
-		logError("error SDL_LoadWAV_RW %s", SDL_GetError());		
-		result = false;
-	}
-		
-	SDL_RWclose(io);
-	return result;
+    if (SDL_LoadWAV_RW(io, 1, &this->wav_spec, &this->wav_buffer, &this->wav_length) == nullptr)
+    {
+        logError("error SDL_LoadWAV_RW %s", SDL_GetError());
+        result = false;
+    }
+
+    SDL_RWclose(io);
+    return result;
 };
 
 bool WAVPlayer::LoadFromFile(const char* FileName, const BWrapper::FileSearchPriority SearchPriority)
@@ -1452,20 +1452,20 @@ bool WAVPlayer::LoadFromFile(const char* FileName, const BWrapper::FileSearchPri
         logError("Error load file = %s, error=%s", FileName, SDL_GetError());
         return false;
     }
-	
-	bool result = this->LoadFromMemory(buffer, Size);
+
+    bool result = this->LoadFromMemory(buffer, Size);
     BWrapper::CloseBuffer(buffer);
 
-	if (result)
-	{
-		this->deviceId = SDL_OpenAudioDevice(nullptr, 0, &this->wav_spec, nullptr, 0);
-		logDebug("deviceId = %d", deviceId);
-	}
-	else
-	{
-		logError("Error load wav file = %s, error=%s", FileName, SDL_GetError());
-	}
-    
+    if (result)
+    {
+        this->deviceId = SDL_OpenAudioDevice(nullptr, 0, &this->wav_spec, nullptr, 0);
+        logDebug("deviceId = %d", deviceId);
+    }
+    else
+    {
+        logError("Error load wav file = %s, error=%s", FileName, SDL_GetError());
+    }
+
     return result;
 };
 
@@ -1484,6 +1484,6 @@ bool WAVPlayer::Play()
 
 WAVPlayer::~WAVPlayer()
 {
-    Clear();    
+    Clear();
 };
 

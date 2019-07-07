@@ -22,14 +22,14 @@ class WindowsWrapper
     //static bool             DirRename       (const char* Old, const char* New);
 
     static bool             GetDirContent  (const char* Dir, DirContentElementArray& ArrayList);
-	static void             MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3);
+    static void             MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3);
 
-	//Запрещаем создавать экземпляр класса WindowsWrapper
-	WindowsWrapper() = delete;
-	~WindowsWrapper() = delete;
-	WindowsWrapper(WindowsWrapper& rhs) = delete; // Копирующий: конструктор
-	WindowsWrapper(WindowsWrapper&& rhs) = delete; // Перемещающий: конструктор
-	WindowsWrapper& operator= (WindowsWrapper&& rhs) = delete; // Оператор перемещающего присваивания
+    //Запрещаем создавать экземпляр класса WindowsWrapper
+    WindowsWrapper() = delete;
+    ~WindowsWrapper() = delete;
+    WindowsWrapper(WindowsWrapper& rhs) = delete; // Копирующий: конструктор
+    WindowsWrapper(WindowsWrapper&& rhs) = delete; // Перемещающий: конструктор
+    WindowsWrapper& operator= (WindowsWrapper&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 
@@ -106,10 +106,10 @@ bool WindowsWrapper::GetDirContent(const char* Dir, DirContentElementArray& Arra
         {
             Path = std::string(fd.cFileName);
             if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY && (Path == ".." || Path == ".")))
-            {                
-				ArrayList.emplace_back(std::make_unique<DirContentElement>());
-				ArrayList.back()->Name = Path;
-				ArrayList.back()->isDir = ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0);
+            {
+                ArrayList.emplace_back(std::make_unique<DirContentElement>());
+                ArrayList.back()->Name = Path;
+                ArrayList.back()->isDir = ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0);
             }
         } while (FindNextFile(Handle, &fd) != 0);
     }
@@ -160,39 +160,39 @@ bool WindowsWrapper::DirRemove(const char* Dir)
 }
 
 void WindowsWrapper::MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3)
-{	
-//	const SDL_MessageBoxButtonData buttons[] = {
+{
+//    const SDL_MessageBoxButtonData buttons[] = {
 //        { /* .flags, .buttonid, .text */        0, 0, "Ok" },
 //        { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "yes" },
 //        { SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 2, "cancel" },
 //    };
 
-	SDL_MessageBoxButtonData buttons[3];
-	int buttonCnt = 1;
+    SDL_MessageBoxButtonData buttons[3];
+    int buttonCnt = 1;
 
-	buttons[0].buttonid = 0;
-	buttons[0].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
-	buttons[0].text = Button1;
+    buttons[0].buttonid = 0;
+    buttons[0].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
+    buttons[0].text = Button1;
 
-	// Если есть вторая кнопка
-	if (Button2 != nullptr && Button2[0] != '\0')
-	{
-		++buttonCnt;
-		buttons[1].buttonid = 1;
-		buttons[1].flags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
-		buttons[1].text = Button2;
-	}
+    // Если есть вторая кнопка
+    if (Button2 != nullptr && Button2[0] != '\0')
+    {
+        ++buttonCnt;
+        buttons[1].buttonid = 1;
+        buttons[1].flags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
+        buttons[1].text = Button2;
+    }
 
-	// Если есть третья кнопка
-	if (Button3 != nullptr && Button3[0] != '\0')
-	{
-		++buttonCnt;
-		buttons[2].buttonid = 2;
-		buttons[2].flags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
-		buttons[2].text = Button3;
+    // Если есть третья кнопка
+    if (Button3 != nullptr && Button3[0] != '\0')
+    {
+        ++buttonCnt;
+        buttons[2].buttonid = 2;
+        buttons[2].flags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
+        buttons[2].text = Button3;
 
-		buttons[1].flags = 0;
-	}
+        buttons[1].flags = 0;
+    }
 
     const SDL_MessageBoxColorScheme colorScheme = {
         { /* .colors (.r, .g, .b) */
@@ -213,30 +213,30 @@ void WindowsWrapper::MessageBoxShow(int Code, const char* Title, const char* Mes
         SDL_MESSAGEBOX_INFORMATION, /* .flags */
         //NULL, /* .window */
         //CurrentContext.CurrentWindow,
-		BWrapper::GetActiveWindow(),
+        BWrapper::GetActiveWindow(),
         //NULL,
-		Title, /* .title */
+        Title, /* .title */
         Message, /* .message */
-		buttonCnt, /* .numbuttons */
+        buttonCnt, /* .numbuttons */
         buttons, /* .buttons */
         &colorScheme /* .colorScheme */
     };
 
     int buttonid;
 
-    if (SDL_ShowMessageBox(&messageboxdata, &buttonid) < 0) {        
-		logError("error displaying message box");
-		return;
+    if (SDL_ShowMessageBox(&messageboxdata, &buttonid) < 0) {
+        logError("error displaying message box");
+        return;
     }
 
     if (buttonid == -1)
-	{
+    {
         logDebug("no selection");
-		CustomEvents::MessageBoxCallback(Code, 0); // 0 - Cancel
+        CustomEvents::MessageBoxCallback(Code, 0); // 0 - Cancel
     }
-    else 
-	{        
-		CustomEvents::MessageBoxCallback(Code, buttonid + 1); // msgBox::Action Button[n]
+    else
+    {
+        CustomEvents::MessageBoxCallback(Code, buttonid + 1); // msgBox::Action Button[n]
     }
 };
 

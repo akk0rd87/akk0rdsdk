@@ -14,14 +14,14 @@ bool iOSWrapper::OpenURL(const char* url)
     {
         //NSLog(@"URL=%s", url);
         __block bool Result = false;
-        
+
         UIApplication *app = [UIApplication sharedApplication];
         NSURL *nsurl = [NSURL URLWithString:@(url)];
-    
+
         //if ([app canOpenURL:nsurl]) NSLog(@"Can open");
         //else NSLog(@"Cant't open");
-        
-    
+
+
         if([app respondsToSelector:@selector(openURL:options:completionHandler:)])
         {
             //NSLog(@"1");
@@ -36,7 +36,7 @@ bool iOSWrapper::OpenURL(const char* url)
             if ([app canOpenURL:nsurl])
             {
                 [app openURL:nsurl];
-                Result = true; 
+                Result = true;
             }
         }
         return Result;
@@ -53,38 +53,38 @@ void iOSWrapper::GetInternalWriteDir(std::string& Dir)
 {
     NSArray *docdirs = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *documents = docdirs[0];
-    
+
     Dir = std::string([documents UTF8String]);
 }
 
 bool iOSWrapper::DirectoryExists(const char* Dir)
 {
     NSString *path = [[NSString alloc] initWithUTF8String:Dir];
-    
-    BOOL isDir;       
+
+    BOOL isDir;
     BOOL exists = [[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDir];
-    
+
     [path release];
-    
+
     if(exists)
         if(isDir)
             return true;
-    
+
     return false;
 }
 
 bool iOSWrapper::FileExists(const char* FileName)
 {
     NSString *path = [[NSString alloc] initWithUTF8String:FileName];
-    
-    BOOL isDir;       
+
+    BOOL isDir;
     BOOL exists = [[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDir];
-    
+
     [path release];
-    
+
     if(exists)
     {
-        if(isDir)          
+        if(isDir)
         {
             return false;
         }
@@ -93,7 +93,7 @@ bool iOSWrapper::FileExists(const char* FileName)
             return true;
         }
     }
-    
+
     return false;
 }
 
@@ -101,31 +101,31 @@ bool iOSWrapper::DirCreate (const char* Dir)
 {
     if (DirectoryExists(Dir))
         return true;
-    
+
     bool res = false;
     NSError *error;
     NSString *dataPath = [[NSString alloc] initWithUTF8String:Dir];
     if (![[NSFileManager defaultManager] fileExistsAtPath:dataPath])
-    
+
     if([[NSFileManager defaultManager] createDirectoryAtPath:dataPath withIntermediateDirectories:YES attributes:nil error:&error] == YES)
     {
         res = true;
     }
 
     [dataPath release];
-    
+
     return res;
 }
 
 bool iOSWrapper::GetDirContent      (const char* Dir, DirContentElementArray& ArrayList)
 {
     NSURL *DirURL = [NSURL URLWithString:@(Dir)];
-    
+
     NSError *error;
     NSURL* URL;
     NSArray* dirContent = [[NSFileManager defaultManager] contentsOfDirectoryAtURL:DirURL includingPropertiesForKeys:[NSArray arrayWithObjects:NSURLNameKey, NSURLIsDirectoryKey, nil] options:NSDirectoryEnumerationSkipsHiddenFiles error:&error];
-    
-    
+
+
     NSUInteger count;
     for(count = 0; count < [dirContent count]; ++count)
     {
@@ -138,11 +138,11 @@ bool iOSWrapper::GetDirContent      (const char* Dir, DirContentElementArray& Ar
             if (success && [isDirectory boolValue])
                 ArrayList.back()->isDir = true;
         }
-        ArrayList.back()->Name = std::string([URL.pathComponents[URL.pathComponents.count - 1] UTF8String]);        
+        ArrayList.back()->Name = std::string([URL.pathComponents[URL.pathComponents.count - 1] UTF8String]);
     }
-    
+
     [dirContent release];
-    
+
     return true;
 }
 
@@ -152,15 +152,15 @@ bool iOSWrapper::DirRemoveRecursive (const char* Dir)
     {
         NSError *error;
         NSString *path = [[NSString alloc] initWithUTF8String:Dir];
-        
+
         BOOL res = [[NSFileManager defaultManager] removeItemAtPath:path error:&error];
-        
+
         [path release];
-        
+
         if(res) return true;
         else    return false;
     }
-    
+
     return true;
 }
 
@@ -178,11 +178,11 @@ void iOSWrapper::ShareText(const char* Title, const char* Message)
    //NSString *textToShare = @"Look at this awesome website for aspiring iOS Developers!";
 //    NSString *sTitle = [[NSString alloc] initWithUTF8String:Title];
     NSString *sMessage = [[NSString alloc] initWithUTF8String:Message];
-    
+
     NSArray *objectsToShare = @[sMessage];
-    
+
     UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:objectsToShare applicationActivities:nil];
-    
+
 
     NSArray *excludeActivities = @[UIActivityTypeAirDrop,
                                    UIActivityTypePrint,
@@ -192,11 +192,11 @@ void iOSWrapper::ShareText(const char* Title, const char* Message)
                                    UIActivityTypePostToFlickr,
                                    UIActivityTypePostToVimeo];
     activityVC.excludedActivityTypes = excludeActivities;
-    
+
     auto appDelegate = [[UIApplication sharedApplication] delegate];
     activityVC.popoverPresentationController.sourceView = appDelegate.window.rootViewController.view;
     [appDelegate.window.rootViewController presentViewController:activityVC animated:YES completion:nil];
-    
+
 //    [sTitle release];
     [sMessage release];
 };
@@ -206,17 +206,17 @@ void iOSWrapper::MessageBoxShow (int Code, const char* Title, const char* Messag
     NSString *sTitle = [[NSString alloc] initWithUTF8String:Title];
     NSString *sMessage = [[NSString alloc] initWithUTF8String:Message];
 
-    
+
     UIAlertController* alert = [UIAlertController alertControllerWithTitle:sTitle
                                                                    message:sMessage
                                                             preferredStyle:UIAlertControllerStyleAlert];
-    
+
     [sTitle release];
     [sMessage release];
-    
+
     bool button2, button3;
     button2 = button3 = false;
-   
+
     { // Button 1
         NSString *sButton1 = [[NSString alloc] initWithUTF8String:Button1];
         UIAlertAction *defaultAction = [UIAlertAction actionWithTitle:sButton1 style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
@@ -226,20 +226,20 @@ void iOSWrapper::MessageBoxShow (int Code, const char* Title, const char* Messag
         [alert addAction:defaultAction];
         [sButton1 release];
     }
-    
+
     if(Button2 != nullptr && Button2[0] != '\0')
         button2 = true;
-    
+
     if(Button3 != nullptr && Button3[0] != '\0')
         button3 = true;
-    
+
     if(button2)
     {
         auto button2Style = UIAlertActionStyleCancel;
-        
+
         if(button3)
             button2Style = UIAlertActionStyleDefault;
-        
+
         {
             // Button 2
             NSString *sButton2 = [[NSString alloc] initWithUTF8String:Button2];
@@ -250,7 +250,7 @@ void iOSWrapper::MessageBoxShow (int Code, const char* Title, const char* Messag
             [alert addAction:button2Action];
             [sButton2 release];
         }
-        
+
         if(button3)
         {
             // Button 3
@@ -263,10 +263,10 @@ void iOSWrapper::MessageBoxShow (int Code, const char* Title, const char* Messag
             [sButton3 release];
         }
     }
-    
+
     //UIViewController *controller = [UIApplication sharedApplication].keyWindow.rootViewController;
     //[controller presentViewController:alert animated:YES completion:nil];
-    
+
     auto appDelegate = [[UIApplication sharedApplication] delegate];
     [appDelegate.window.rootViewController dismissViewControllerAnimated:YES completion:nil];
     [appDelegate.window.rootViewController presentViewController:alert animated:YES completion:nil];

@@ -10,7 +10,7 @@ unsigned ConfigManager::GetConfigIndex(const char* Key)
             return i;
         ++i;
     };
-    
+
     return (std::numeric_limits<unsigned>::max)();
 }
 
@@ -88,20 +88,20 @@ bool ConfigManager::Save()
     {
         logError("ConfigManager::Save(): Asset config file save is not allowed %s", this->FileName.c_str());
         return false;
-    }    
+    }
 
     {// создаем директорию для файла, если она еще не существует
         decltype(FileName.rfind("/")) s1 = this->FileName.rfind("/");
         decltype(FileName.rfind("/")) s2 = this->FileName.rfind("\\");
-        
+
         decltype(s1) res = 0;
-        
+
         if(s1 != std::string::npos)
             res = s1;
-        
+
         if (s2 != std::string::npos && res < s2)
             res = s2;
-        
+
         if(res)
         {
             std::string dir = std::string(this->FileName, 0, res);
