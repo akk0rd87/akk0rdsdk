@@ -1418,8 +1418,6 @@ bool WAVPlayer::LoadFromMemory(const char* Buffer, int Size)
         logError("error SDL_LoadWAV_RW %s", SDL_GetError());
         result = false;
     }
-
-    SDL_RWclose(io);
     return result;
 };
 
