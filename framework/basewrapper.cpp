@@ -413,17 +413,17 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
 
 	if (io)
 	{
-		SDL_Surface *image = nullptr;
+		std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)> image (nullptr, SDL_FreeSurface);		
 		switch (Type)
 		{
-			case AkkordTexture::TextureType::BMP:
-				image = IMG_LoadBMP_RW(io);
+			case AkkordTexture::TextureType::BMP:				
+				image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadBMP_RW(io), SDL_FreeSurface);
 				break;
-			case AkkordTexture::TextureType::PNG:
-				image = IMG_LoadPNG_RW(io);
+			case AkkordTexture::TextureType::PNG:				
+				image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadPNG_RW(io), SDL_FreeSurface);
 				break;
-			case AkkordTexture::TextureType::JPEG:
-				image = IMG_LoadJPG_RW(io);
+			case AkkordTexture::TextureType::JPEG:				
+				image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadJPG_RW(io), SDL_FreeSurface);
 				break;
 			case AkkordTexture::TextureType::SVG:
 			{
@@ -449,15 +449,18 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
 					goto end;
 				}
 
-				image = SDL_CreateRGBSurface(SDL_SWSURFACE,
+				image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(					
+					SDL_CreateRGBSurface(SDL_SWSURFACE,
 					(int)(svg_image->width * Scale),
 					(int)(svg_image->height * Scale),
 					32,
 					0x000000FF,
 					0x0000FF00,
 					0x00FF0000,
-					0xFF000000);
-				if (image == nullptr)
+					0xFF000000),										
+					SDL_FreeSurface);
+
+				if (image.get() == nullptr)
 				{
 					nsvgDeleteRasterizer(rasterizer);					
 					goto end;
@@ -469,10 +472,9 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
 			break;
 		}
 
-		if (image)
+		if (image.get())
 		{			
-			result = this->CreateFromSurface(image);
-			SDL_FreeSurface(image);
+			result = this->CreateFromSurface(image.get());			
 		}
 		else
 		{
