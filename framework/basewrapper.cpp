@@ -431,21 +431,21 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
 				if (data.get() == nullptr)
 				{
 					logError("Couldn't parse SVG image %s", SDL_GetError());
-					goto end;
+					return result;
 				}
 				std::unique_ptr<NSVGimage, void(*)(NSVGimage*)> svg_image(nsvgParse(data.get(), "px", 96.0f), nsvgDelete);
 
 				if (svg_image.get() == nullptr)
 				{
 					logError("Couldn't parse SVG image %s", SDL_GetError());
-					goto end;
+					return result;
 				}
 
 				std::unique_ptr<NSVGrasterizer, void(*)(NSVGrasterizer*)>rasterizer(nsvgCreateRasterizer(), nsvgDeleteRasterizer);
 				if (rasterizer.get() == nullptr)
 				{
 					logError("Couldn't create SVG rasterizer %s", SDL_GetError());
-					goto end;
+					return result;
 				}
 
 				image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(					
@@ -461,7 +461,8 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
 
 				if (image.get() == nullptr)
 				{
-					goto end;
+					logError("Couldn't create SDL_CreateRGBSurface %s", SDL_GetError());
+					return result;
 				}
 
 				nsvgRasterize(rasterizer.get(), svg_image.get(), 0.0f, 0.0f, Scale, (unsigned char *)image->pixels, image->w, image->h, image->pitch);				
@@ -478,8 +479,6 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
 			logError("Error load Image SDL_RWFromMem error=%s",  SDL_GetError());
 		}
 	}
-
-	end:
 
 	return result;
 };
