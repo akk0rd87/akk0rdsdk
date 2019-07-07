@@ -433,7 +433,7 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
 					logError("Couldn't parse SVG image %s", SDL_GetError());
 					goto end;
 				}
-				auto svg_image = std::unique_ptr<NSVGimage, void(*)(NSVGimage*)>(nsvgParse(data, "px", 96.0f), [](NSVGimage* i) { nsvgDelete(i); });
+				std::unique_ptr<NSVGimage, void(*)(NSVGimage*)> svg_image(nsvgParse(data, "px", 96.0f), nsvgDelete);
 				SDL_free(data);
 
 				if (svg_image.get() == nullptr)
