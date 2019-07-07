@@ -9,9 +9,6 @@
 #define NANOSVGRAST_IMPLEMENTATION
 #include "../libraries/nanosvg/nanosvgrast.h"
 
-//#include <stdio.h>
-//#include <stdlib.h>
-
 class CurrentContextStruct
 {
 public:
