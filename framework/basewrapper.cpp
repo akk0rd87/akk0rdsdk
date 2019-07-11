@@ -55,7 +55,6 @@ bool BWrapper::Init(Uint32 flags)
     //if (SDL_SetMemoryFunctions(std::malloc, std::calloc, std::realloc, std::free) != 0)
       //  logError("SDL_SetMemoryFunctions error %s", SDL_GetError());
 
-
     if (SDL_Init(flags) != 0)
     {
         logError("BWrapper::Init: Error %s", SDL_GetError());
@@ -96,27 +95,27 @@ FILE* FileOpen_private(const char* Filename, BWrapper::FileSearchPriority Search
 
     switch (OpenMode)
     {
-        case BWrapper::FileOpenMode::ReadBinary:
-            mode = "rb";
-            break;
-        case BWrapper::FileOpenMode::WriteBinary:
-            mode = "wb";
-            break;
-        case BWrapper::FileOpenMode::AppendBinary:
-            mode = "ab";
-            break;
-            /*
-        case BWrapper::FileOpenMode::ReadText:
-            strcpy(mode, "r");
-            break;
-        case BWrapper::FileOpenMode::WriteText:
-            strcpy(mode, "w");
-            break;
-            */
-        default:
-            logError("Fopen_private %s: FileOpenMode is not supported", Filename);
-            return nullptr;
-            break;
+    case BWrapper::FileOpenMode::ReadBinary:
+        mode = "rb";
+        break;
+    case BWrapper::FileOpenMode::WriteBinary:
+        mode = "wb";
+        break;
+    case BWrapper::FileOpenMode::AppendBinary:
+        mode = "ab";
+        break;
+        /*
+    case BWrapper::FileOpenMode::ReadText:
+        strcpy(mode, "r");
+        break;
+    case BWrapper::FileOpenMode::WriteText:
+        strcpy(mode, "w");
+        break;
+        */
+    default:
+        logError("Fopen_private %s: FileOpenMode is not supported", Filename);
+        return nullptr;
+        break;
     }
 
     return fopen(Filename, mode);
@@ -125,14 +124,14 @@ FILE* FileOpen_private(const char* Filename, BWrapper::FileSearchPriority Search
 char* File2Buffer_private(FILE* File, unsigned& Size)
 {
     Size = 0;
-    if(File)
+    if (File)
     {
         fseek(File, 0, SEEK_END);
         Size = ftell(File);
         rewind(File); // set pointer to beginning
         char* buffer = new char[Size];
         auto readed = fread(buffer, Size, 1, File);
-        if(readed != 1)
+        if (readed != 1)
         {
             BWrapper::CloseBuffer(buffer);
             logError("File2Buffer_private: File read into buffer error. Readed %ld", readed);
@@ -164,7 +163,7 @@ FILE* BWrapper::FileOpen(const char* FileName, FileSearchPriority SearchPriority
 char* BWrapper::File2Buffer(const char* FileName, FileSearchPriority SearchPriority, unsigned& BufferSize)
 {
     char* buffer = nullptr;
-    BufferSize  = 0;
+    BufferSize = 0;
 
     std::string Fname(FileName);
 
@@ -178,14 +177,14 @@ char* BWrapper::File2Buffer(const char* FileName, FileSearchPriority SearchPrior
 
         return buffer;
 #else
-      //Во всех остальных случаях читаем из папки assets
+        //Во всех остальных случаях читаем из папки assets
         Fname = Platforms::GetInternalAssetsDir() + std::string(FileName);
 #endif
     }
 
     std::unique_ptr<FILE, int(*)(FILE*)> File(FileOpen_private(Fname.c_str(), SearchPriority, BWrapper::FileOpenMode::ReadBinary), fclose);
 
-    if(nullptr == File)
+    if (nullptr == File)
     {
         logError("BWrapper::File2Buffer: File %s open error", FileName, Fname.c_str());
     }
@@ -197,7 +196,6 @@ char* BWrapper::File2Buffer(const char* FileName, FileSearchPriority SearchPrior
     }
     return buffer;
 }
-
 
 bool BWrapper::FileExists(const char* FileName, BWrapper::FileSearchPriority SearchPriority)
 {
@@ -217,7 +215,7 @@ bool BWrapper::FileExists(const char* FileName, BWrapper::FileSearchPriority Sea
 
     auto File = FileOpen_private(FileName, SearchPriority, BWrapper::FileOpenMode::ReadBinary);
 
-    if(File != nullptr)
+    if (File != nullptr)
     {
         FileClose(File);
         return true;
@@ -225,12 +223,11 @@ bool BWrapper::FileExists(const char* FileName, BWrapper::FileSearchPriority Sea
     return false;
 }
 
-
 void BWrapper::CloseBuffer(char*& buffer)
 {
     if (buffer != nullptr)
     {
-        delete [] buffer;
+        delete[] buffer;
     }
     buffer = nullptr;
 }
@@ -292,7 +289,7 @@ bool BWrapper::FileRename(const char* OldName, const char* NewName)
 /////////
 ////////////////////////////////
 
-void ConvertRect2Native(const AkkordRect &Rect, SDL_Rect* sRect)
+void inline ConvertRect2Native(const AkkordRect &Rect, SDL_Rect* sRect)
 {
     sRect->x = Rect.x; sRect->y = Rect.y; sRect->w = Rect.w; sRect->h = Rect.h;
 }
@@ -300,7 +297,7 @@ void ConvertRect2Native(const AkkordRect &Rect, SDL_Rect* sRect)
 AkkordWindow* BWrapper::CreateRenderWindow(const char* Title, int X, int Y, int W, int H, Uint32 Flags)
 {
     auto wnd = SDL_CreateWindow(Title, X, Y, W, H, Flags/* SDL_WINDOW_SHOWN*/);
-    if(nullptr == wnd)
+    if (nullptr == wnd)
         logError("CreateWindow error = %s", SDL_GetError());
     return wnd;
 };
@@ -400,66 +397,66 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
         return false;
     }
 
-    std::unique_ptr<SDL_RWops, void(*)(SDL_RWops*)>io(SDL_RWFromMem((void*)Buffer, Size), [](SDL_RWops* i) {SDL_RWclose(i);});
+    std::unique_ptr<SDL_RWops, void(*)(SDL_RWops*)>io(SDL_RWFromMem((void*)Buffer, Size), [](SDL_RWops* i) {SDL_RWclose(i); });
     bool result = false;
 
     if (io)
     {
-        std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)> image (nullptr, SDL_FreeSurface);
+        std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)> image(nullptr, SDL_FreeSurface);
         switch (Type)
         {
-            case AkkordTexture::TextureType::BMP:
-                image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadBMP_RW(io.get()), SDL_FreeSurface);
-                break;
-            case AkkordTexture::TextureType::PNG:
-                image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadPNG_RW(io.get()), SDL_FreeSurface);
-                break;
-            case AkkordTexture::TextureType::JPEG:
-                image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadJPG_RW(io.get()), SDL_FreeSurface);
-                break;
-            case AkkordTexture::TextureType::SVG:
+        case AkkordTexture::TextureType::BMP:
+            image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadBMP_RW(io.get()), SDL_FreeSurface);
+            break;
+        case AkkordTexture::TextureType::PNG:
+            image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadPNG_RW(io.get()), SDL_FreeSurface);
+            break;
+        case AkkordTexture::TextureType::JPEG:
+            image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadJPG_RW(io.get()), SDL_FreeSurface);
+            break;
+        case AkkordTexture::TextureType::SVG:
+        {
+            std::unique_ptr<char, void(*)(char*)> data((char *)SDL_LoadFile_RW(io.get(), nullptr, SDL_FALSE), [](char * i) { SDL_free(i); });
+            if (data.get() == nullptr)
             {
-                std::unique_ptr<char, void(*)(char*)> data((char *)SDL_LoadFile_RW(io.get(), nullptr, SDL_FALSE), [](char * i) { SDL_free(i); });
-                if (data.get() == nullptr)
-                {
-                    logError("Couldn't parse SVG image %s", SDL_GetError());
-                    return result;
-                }
-                std::unique_ptr<NSVGimage, void(*)(NSVGimage*)> svg_image(nsvgParse(data.get(), "px", 96.0f), nsvgDelete);
+                logError("Couldn't parse SVG image %s", SDL_GetError());
+                return result;
+            }
+            std::unique_ptr<NSVGimage, void(*)(NSVGimage*)> svg_image(nsvgParse(data.get(), "px", 96.0f), nsvgDelete);
 
-                if (svg_image.get() == nullptr)
-                {
-                    logError("Couldn't parse SVG image %s", SDL_GetError());
-                    return result;
-                }
+            if (svg_image.get() == nullptr)
+            {
+                logError("Couldn't parse SVG image %s", SDL_GetError());
+                return result;
+            }
 
-                std::unique_ptr<NSVGrasterizer, void(*)(NSVGrasterizer*)>rasterizer(nsvgCreateRasterizer(), nsvgDeleteRasterizer);
-                if (rasterizer.get() == nullptr)
-                {
-                    logError("Couldn't create SVG rasterizer %s", SDL_GetError());
-                    return result;
-                }
+            std::unique_ptr<NSVGrasterizer, void(*)(NSVGrasterizer*)>rasterizer(nsvgCreateRasterizer(), nsvgDeleteRasterizer);
+            if (rasterizer.get() == nullptr)
+            {
+                logError("Couldn't create SVG rasterizer %s", SDL_GetError());
+                return result;
+            }
 
-                image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(
-                    SDL_CreateRGBSurface(SDL_SWSURFACE,
-                    (int)(svg_image->width * Scale),
+            image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(
+                SDL_CreateRGBSurface(SDL_SWSURFACE,
+                (int)(svg_image->width * Scale),
                     (int)(svg_image->height * Scale),
                     32,
                     0x000000FF,
                     0x0000FF00,
                     0x00FF0000,
                     0xFF000000),
-                    SDL_FreeSurface);
+                SDL_FreeSurface);
 
-                if (image.get() == nullptr)
-                {
-                    logError("Couldn't create SDL_CreateRGBSurface %s", SDL_GetError());
-                    return result;
-                }
-
-                nsvgRasterize(rasterizer.get(), svg_image.get(), 0.0f, 0.0f, Scale, (unsigned char *)image->pixels, image->w, image->h, image->pitch);
+            if (image.get() == nullptr)
+            {
+                logError("Couldn't create SDL_CreateRGBSurface %s", SDL_GetError());
+                return result;
             }
-            break;
+
+            nsvgRasterize(rasterizer.get(), svg_image.get(), 0.0f, 0.0f, Scale, (unsigned char *)image->pixels, image->w, image->h, image->pitch);
+        }
+        break;
         }
 
         if (image.get())
@@ -468,13 +465,12 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
         }
         else
         {
-            logError("Error load Image SDL_RWFromMem error=%s",  SDL_GetError());
+            logError("Error load Image SDL_RWFromMem error=%s", SDL_GetError());
         }
     }
 
     return result;
 };
-
 
 bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const BWrapper::FileSearchPriority SearchPriority, float Scale)
 {
@@ -547,9 +543,32 @@ bool AkkordTexture::SetAlphaMod(Uint8 A)
     return false;
 };
 
+bool AkkordTexture::Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas) const
+{
+    SDL_Rect  NativeDstRect, NativeSrcRect;
+    SDL_Rect* NativeSrcRect_ptr = nullptr;
+
+    ConvertRect2Native(Rect, &NativeDstRect); // Rect must be always set
+
+    if (RectFromAtlas)
+    {
+        ConvertRect2Native(*RectFromAtlas, &NativeSrcRect);
+        NativeSrcRect_ptr = &NativeSrcRect;
+    }
+
+    auto res = SDL_RenderCopy(CurrentContext.CurrentRenderer, tex, NativeSrcRect_ptr, &NativeDstRect);
+
+    if (res != 0)
+    {
+        logError("Error draw image %s", SDL_GetError());
+        return false;
+    }
+
+    return true;
+};
+
 bool AkkordTexture::Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas, unsigned char Flip, double Angle, AkkordPoint* Point) const
 {
-    std::string Format;
     SDL_Rect NativeDstRect;
     ConvertRect2Native(Rect, &NativeDstRect); // Rect must be always set
 
@@ -580,7 +599,7 @@ bool AkkordTexture::Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas
 
     if (res != 0)
     {
-        logError(std::string(Format + "Error draw image %s").c_str(), SDL_GetError());
+        logError("Error draw image %s", SDL_GetError());
         return false;
     }
 
@@ -739,7 +758,7 @@ unsigned int AkkordColor::RGBA2Int32(int r, int g, int b, int a)
 
 bool BWrapper::SetCurrentColor(const AkkordColor& Color)
 {
-    if(SDL_SetRenderDrawColor(CurrentContext.CurrentRenderer, Color.GetR(), Color.GetG(), Color.GetB(), Color.GetA()) == 0) return true;
+    if (SDL_SetRenderDrawColor(CurrentContext.CurrentRenderer, Color.GetR(), Color.GetG(), Color.GetB(), Color.GetA()) == 0) return true;
     logError("Draw error %s", SDL_GetError());
     return false;
 }
@@ -805,93 +824,93 @@ BWrapper::KeyCodes BWrapper::DecodeKey(const SDL_Keysym& SDL_Key)
 
     switch (SDL_Key.sym)
     {
-        case SDLK_ESCAPE: return KeyCodes::Esc;
-        case SDLK_AC_BACK: return KeyCodes::Back;
-        case SDLK_BACKSPACE: return KeyCodes::BackSpace;
-        case SDLK_KP_ENTER: return KeyCodes::Enter;
-        case SDLK_KP_TAB: return KeyCodes::Tab;
-        case SDLK_DELETE: return KeyCodes::Delete;
-        case SDLK_F1: return KeyCodes::F1;
-        case SDLK_HELP: return KeyCodes::Help;
-        case SDLK_HOME: return KeyCodes::Home;
-        case SDLK_END: return KeyCodes::End;
-        case SDLK_INSERT: return KeyCodes::Insert;
-        case SDLK_FIND: return KeyCodes::Find;
-        case SDLK_COPY: return KeyCodes::Copy;
-        case SDLK_PAGEDOWN: return KeyCodes::PageDown;
-        case SDLK_PAGEUP: return KeyCodes::PageUp;
-        case SDLK_PASTE: return KeyCodes::Paste;
-        case SDLK_PAUSE: return KeyCodes::Pause;
-        case SDLK_PRINTSCREEN: return KeyCodes::PrintScreen;
-        case SDLK_RETURN: return KeyCodes::Return;
-        case SDLK_RETURN2: return KeyCodes::Return2;
-        case SDLK_SPACE: return KeyCodes::Space;
-        case SDLK_LEFT: return KeyCodes::Left;
-        case SDLK_RIGHT: return KeyCodes::Right;
-        case SDLK_UP: return KeyCodes::Up;
-        case SDLK_DOWN: return KeyCodes::Down;
-        case SDLK_MINUS: return KeyCodes::Minus;
-        case SDLK_PLUS: return KeyCodes::Plus;
-        case SDLK_EQUALS: return KeyCodes::Equals;
-        case SDLK_KP_MINUS: return KeyCodes::NumpadMinus;
-        case SDLK_KP_PLUS: return KeyCodes::NumpadPlus;
+    case SDLK_ESCAPE: return KeyCodes::Esc;
+    case SDLK_AC_BACK: return KeyCodes::Back;
+    case SDLK_BACKSPACE: return KeyCodes::BackSpace;
+    case SDLK_KP_ENTER: return KeyCodes::Enter;
+    case SDLK_KP_TAB: return KeyCodes::Tab;
+    case SDLK_DELETE: return KeyCodes::Delete;
+    case SDLK_F1: return KeyCodes::F1;
+    case SDLK_HELP: return KeyCodes::Help;
+    case SDLK_HOME: return KeyCodes::Home;
+    case SDLK_END: return KeyCodes::End;
+    case SDLK_INSERT: return KeyCodes::Insert;
+    case SDLK_FIND: return KeyCodes::Find;
+    case SDLK_COPY: return KeyCodes::Copy;
+    case SDLK_PAGEDOWN: return KeyCodes::PageDown;
+    case SDLK_PAGEUP: return KeyCodes::PageUp;
+    case SDLK_PASTE: return KeyCodes::Paste;
+    case SDLK_PAUSE: return KeyCodes::Pause;
+    case SDLK_PRINTSCREEN: return KeyCodes::PrintScreen;
+    case SDLK_RETURN: return KeyCodes::Return;
+    case SDLK_RETURN2: return KeyCodes::Return2;
+    case SDLK_SPACE: return KeyCodes::Space;
+    case SDLK_LEFT: return KeyCodes::Left;
+    case SDLK_RIGHT: return KeyCodes::Right;
+    case SDLK_UP: return KeyCodes::Up;
+    case SDLK_DOWN: return KeyCodes::Down;
+    case SDLK_MINUS: return KeyCodes::Minus;
+    case SDLK_PLUS: return KeyCodes::Plus;
+    case SDLK_EQUALS: return KeyCodes::Equals;
+    case SDLK_KP_MINUS: return KeyCodes::NumpadMinus;
+    case SDLK_KP_PLUS: return KeyCodes::NumpadPlus;
 
-        case SDLK_LEFTBRACKET:  return KeyCodes::LeftBraket;
-        case SDLK_RIGHTBRACKET: return KeyCodes::RightBraket;
-        case SDLK_COMMA:        return KeyCodes::Comma;
-        case SDLK_PERIOD:       return KeyCodes::Period;
-        case SDLK_QUOTE:        return KeyCodes::Quote;
+    case SDLK_LEFTBRACKET:  return KeyCodes::LeftBraket;
+    case SDLK_RIGHTBRACKET: return KeyCodes::RightBraket;
+    case SDLK_COMMA:        return KeyCodes::Comma;
+    case SDLK_PERIOD:       return KeyCodes::Period;
+    case SDLK_QUOTE:        return KeyCodes::Quote;
 
-        case SDLK_KP_0: return KeyCodes::Numpad0;
-        case SDLK_KP_1: return KeyCodes::Numpad1;
-        case SDLK_KP_2: return KeyCodes::Numpad2;
-        case SDLK_KP_3: return KeyCodes::Numpad3;
-        case SDLK_KP_4: return KeyCodes::Numpad4;
-        case SDLK_KP_5: return KeyCodes::Numpad5;
-        case SDLK_KP_6: return KeyCodes::Numpad6;
-        case SDLK_KP_7: return KeyCodes::Numpad7;
-        case SDLK_KP_8: return KeyCodes::Numpad8;
-        case SDLK_KP_9: return KeyCodes::Numpad9;
+    case SDLK_KP_0: return KeyCodes::Numpad0;
+    case SDLK_KP_1: return KeyCodes::Numpad1;
+    case SDLK_KP_2: return KeyCodes::Numpad2;
+    case SDLK_KP_3: return KeyCodes::Numpad3;
+    case SDLK_KP_4: return KeyCodes::Numpad4;
+    case SDLK_KP_5: return KeyCodes::Numpad5;
+    case SDLK_KP_6: return KeyCodes::Numpad6;
+    case SDLK_KP_7: return KeyCodes::Numpad7;
+    case SDLK_KP_8: return KeyCodes::Numpad8;
+    case SDLK_KP_9: return KeyCodes::Numpad9;
 
-        case SDLK_0: return KeyCodes::N0;
-        case SDLK_1: return KeyCodes::N1;
-        case SDLK_2: return KeyCodes::N2;
-        case SDLK_3: return KeyCodes::N3;
-        case SDLK_4: return KeyCodes::N4;
-        case SDLK_5: return KeyCodes::N5;
-        case SDLK_6: return KeyCodes::N6;
-        case SDLK_7: return KeyCodes::N7;
-        case SDLK_8: return KeyCodes::N8;
-        case SDLK_9: return KeyCodes::N9;
+    case SDLK_0: return KeyCodes::N0;
+    case SDLK_1: return KeyCodes::N1;
+    case SDLK_2: return KeyCodes::N2;
+    case SDLK_3: return KeyCodes::N3;
+    case SDLK_4: return KeyCodes::N4;
+    case SDLK_5: return KeyCodes::N5;
+    case SDLK_6: return KeyCodes::N6;
+    case SDLK_7: return KeyCodes::N7;
+    case SDLK_8: return KeyCodes::N8;
+    case SDLK_9: return KeyCodes::N9;
 
-        case SDLK_a: return KeyCodes::A;
-        case SDLK_b: return KeyCodes::B;
-        case SDLK_c: return KeyCodes::C;
-        case SDLK_d: return KeyCodes::D;
-        case SDLK_e: return KeyCodes::E;
-        case SDLK_f: return KeyCodes::F;
-        case SDLK_g: return KeyCodes::G;
-        case SDLK_h: return KeyCodes::H;
-        case SDLK_i: return KeyCodes::I;
-        case SDLK_j: return KeyCodes::J;
-        case SDLK_k: return KeyCodes::K;
-        case SDLK_l: return KeyCodes::L;
-        case SDLK_m: return KeyCodes::M;
-        case SDLK_n: return KeyCodes::N;
-        case SDLK_o: return KeyCodes::O;
-        case SDLK_p: return KeyCodes::P;
-        case SDLK_q: return KeyCodes::Q;
-        case SDLK_r: return KeyCodes::R;
-        case SDLK_s: return KeyCodes::S;
-        case SDLK_t: return KeyCodes::T;
-        case SDLK_u: return KeyCodes::U;
-        case SDLK_v: return KeyCodes::V;
-        case SDLK_w: return KeyCodes::W;
-        case SDLK_x: return KeyCodes::X;
-        case SDLK_y: return KeyCodes::Y;
-        case SDLK_z: return KeyCodes::Z;
+    case SDLK_a: return KeyCodes::A;
+    case SDLK_b: return KeyCodes::B;
+    case SDLK_c: return KeyCodes::C;
+    case SDLK_d: return KeyCodes::D;
+    case SDLK_e: return KeyCodes::E;
+    case SDLK_f: return KeyCodes::F;
+    case SDLK_g: return KeyCodes::G;
+    case SDLK_h: return KeyCodes::H;
+    case SDLK_i: return KeyCodes::I;
+    case SDLK_j: return KeyCodes::J;
+    case SDLK_k: return KeyCodes::K;
+    case SDLK_l: return KeyCodes::L;
+    case SDLK_m: return KeyCodes::M;
+    case SDLK_n: return KeyCodes::N;
+    case SDLK_o: return KeyCodes::O;
+    case SDLK_p: return KeyCodes::P;
+    case SDLK_q: return KeyCodes::Q;
+    case SDLK_r: return KeyCodes::R;
+    case SDLK_s: return KeyCodes::S;
+    case SDLK_t: return KeyCodes::T;
+    case SDLK_u: return KeyCodes::U;
+    case SDLK_v: return KeyCodes::V;
+    case SDLK_w: return KeyCodes::W;
+    case SDLK_x: return KeyCodes::X;
+    case SDLK_y: return KeyCodes::Y;
+    case SDLK_z: return KeyCodes::Z;
 
-        default: return KeyCodes::Uknown;
+    default: return KeyCodes::Uknown;
     }
 }
 
@@ -984,7 +1003,6 @@ Locale::Lang BWrapper::GetDeviceLanguage()
     //return Locale::Lang::Unknown;
 };
 
-
 //BWrapper::OS BWrapper::GetDeviceOS()
 //{
 //    return Platforms::GetDeviceOS();
@@ -1051,7 +1069,7 @@ void BWrapper::Log(BWrapper::LogPriority Priority, const char* File, const char*
         unsigned pos = 0;
         const char* p = File;
         for (unsigned i = 0; (*p); ++p, ++i)
-            if((*p) == '/' || (*p) == '\\')
+            if ((*p) == '/' || (*p) == '\\')
                 pos = i + 1;
 
         std::string sFile = std::string(File, pos, std::string::npos);
@@ -1093,12 +1111,12 @@ void BWrapper::Log(BWrapper::LogPriority Priority, const char* File, const char*
     int len = 0;
     switch (Priority)
     {
-        case BWrapper::LogPriority::Verbose : len = 7; break;
-        case BWrapper::LogPriority::Debug   : len = 5; break;
-        case BWrapper::LogPriority::Info    : len = 4; break;
-        case BWrapper::LogPriority::Warning : len = 4; break; /* base WARN*/
-        case BWrapper::LogPriority::Error   : len = 5; break;
-        case BWrapper::LogPriority::Critical: len = 8; break;
+    case BWrapper::LogPriority::Verbose: len = 7; break;
+    case BWrapper::LogPriority::Debug: len = 5; break;
+    case BWrapper::LogPriority::Info: len = 4; break;
+    case BWrapper::LogPriority::Warning: len = 4; break; /* base WARN*/
+    case BWrapper::LogPriority::Error: len = 5; break;
+    case BWrapper::LogPriority::Critical: len = 8; break;
     }
 
     Format = Format + Fmt;
@@ -1125,7 +1143,6 @@ void msgBox::DecodeEvent(const SDL_Event& Event, int& Code, msgBox::Action& Acti
 {
     Code = Event.user.code;
     Action = (msgBox::Action)(int)(size_t)Event.user.data1;
-
 }
 
 bool BWrapper::PrintDirContent(const char* Path, BWrapper::LogPriority Priority, bool Recursive)
@@ -1133,7 +1150,7 @@ bool BWrapper::PrintDirContent(const char* Path, BWrapper::LogPriority Priority,
     bool result = false;
 
     const char* file = "[file]";
-    const char* dir  = "[dir ]";
+    const char* dir = "[dir ]";
     const char* ptype;
     DirContentReader Dr;
     DirContentElement* Dc;
@@ -1170,7 +1187,6 @@ int BWrapper::Random()
 {
     return std::rand();
 };
-
 
 decltype(time(NULL)) BWrapper::GetTimeSeconds()
 {
@@ -1209,9 +1225,8 @@ bool BWrapper::DirExists(const char* Dir)
     return Platforms::DirExists(Dir);
 }
 
-std::string BWrapper::GetInternalDir()      { return Platforms::GetInternalDir(); };
+std::string BWrapper::GetInternalDir() { return Platforms::GetInternalDir(); };
 std::string BWrapper::GetInternalWriteDir() { return Platforms::GetInternalWriteDir(); };
-
 
 //
 bool DirContentReader::Close()
@@ -1466,4 +1481,3 @@ WAVPlayer::~WAVPlayer()
 {
     Clear();
 };
-

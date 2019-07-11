@@ -262,7 +262,8 @@ public:
     bool CreateFromSurface(SDL_Surface* Surface);
     //int Draw(AkkordRect Rect);
     //int Draw(AkkordRect RectFromAtlas, AkkordRect Rect);
-    bool Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas = nullptr, unsigned char Flip = AkkordTexture::Flip::None, double Angle = 0, AkkordPoint* Point = nullptr) const;
+    bool Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas = nullptr) const;
+    bool Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas, unsigned char Flip, double Angle, AkkordPoint* Point) const;
     AkkordPoint GetSize() const;
     bool SetColorMod(Uint8 R, Uint8 G, Uint8 B);
     bool SetColorMod(const AkkordColor& ModColor);
