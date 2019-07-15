@@ -46,4 +46,4 @@ EOF
 fi
 
 # If there are whitespace errors, print the offending file names and fail.
-exec git diff-index --check --cached $against -- '*.cpp' '*.h' '*.java' '*.c' '*.json' '*.plist' '*.m' '*.mm' '*.gitignore' 'AndroidManifest.xml' '*.gradle' '*.mk' '*.bat'
+exec git diff-index --check --cached $against -- '.gitignore' '*.cpp' '*.h' '*.java' '*.c' '*.json' '*.plist' '*.m' '*.mm' '*.gitignore' 'AndroidManifest.xml' '*.gradle' '*.mk' '*.bat'
