@@ -1188,9 +1188,9 @@ int BWrapper::Random()
     return std::rand();
 };
 
-decltype(time(NULL)) BWrapper::GetTimeSeconds()
+decltype(time(nullptr)) BWrapper::GetTimeSeconds()
 {
-    return time(NULL);
+    return time(nullptr);
 }
 
 unsigned BWrapper::GetTicks()
