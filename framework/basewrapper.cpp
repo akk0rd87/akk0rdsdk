@@ -1179,7 +1179,7 @@ bool BWrapper::PrintDirContent(const char* Path, BWrapper::LogPriority Priority,
 bool BWrapper::RandomInit()
 {
     // https://ru.cppreference.com/w/cpp/numeric/random/rand
-    std::srand(unsigned(std::time(0)));
+    std::srand(unsigned(std::time(nullptr)));
     return true;
 };
 
