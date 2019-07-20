@@ -158,6 +158,24 @@ void AdRandomizer::OpenURL_private(BWrapper::OS OSCode, Apps AppId)
                 break;
         }
         break;
+
+    case Apps::DotLines:
+        switch (OSCode)
+        {
+        case BWrapper::OS::iOS:
+            //if (Language == Locale::Lang::Russian) BWrapper::OpenURL("https://itunes.apple.com/ru/app/id1147212126");
+            //else                                   BWrapper::OpenURL("https://itunes.apple.com/app/id1147212126");
+            //BWrapper::OpenURL("");
+            break;
+
+        case BWrapper::OS::AndroidOS:
+            BWrapper::OpenURL("https://play.google.com/store/apps/details?id=org.akk0rdsdk.dotlines");
+            break;
+
+        default:
+            break;
+        }
+        break;
     }
 }
 
