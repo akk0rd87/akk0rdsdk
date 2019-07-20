@@ -33,10 +33,10 @@ public:
 class AkkordColor
 {
 private :
-    unsigned int color;
+    Uint32 color;
 public:
     AkkordColor();
-    AkkordColor(unsigned int Color) : color(Color) {};
+    AkkordColor(Uint32 Color) : color(Color) {};
     AkkordColor(Uint8 R, Uint8 G, Uint8 B);
     AkkordColor(Uint8 R, Uint8 G, Uint8 B, Uint8 A);
 
@@ -55,10 +55,10 @@ public:
     Uint8                GetB    () const;
     Uint8                GetA    () const;
 
-    static Uint8 GetRFromInt32(unsigned int ColorInt32);
-    static Uint8 GetGFromInt32(unsigned int ColorInt32);
-    static Uint8 GetBFromInt32(unsigned int ColorInt32);
-    static Uint8 GetAFromInt32(unsigned int ColorInt32);
+    static Uint8 GetRFromInt32(Uint32 ColorInt32);
+    static Uint8 GetGFromInt32(Uint32 ColorInt32);
+    static Uint8 GetBFromInt32(Uint32 ColorInt32);
+    static Uint8 GetAFromInt32(Uint32 ColorInt32);
 
     static unsigned int RGBA2Int32(int r, int g, int b, int a);
 };

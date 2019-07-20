@@ -683,22 +683,22 @@ void AkkordColor::SetRGBA(Uint8 R, Uint8 G, Uint8 B, Uint8 A)
     color = AkkordColor::RGBA2Int32(R, G, B, A);
 };
 
-Uint8 AkkordColor::GetRFromInt32(unsigned int ColorInt32)
+Uint8 AkkordColor::GetRFromInt32(Uint32 ColorInt32)
 {
     return (ColorInt32 & 0x000000ff);
 };
 
-Uint8 AkkordColor::GetGFromInt32(unsigned int ColorInt32)
+Uint8 AkkordColor::GetGFromInt32(Uint32 ColorInt32)
 {
     return (ColorInt32 & 0x0000ff00) >> 8;
 };
 
-Uint8 AkkordColor::GetBFromInt32(unsigned int ColorInt32)
+Uint8 AkkordColor::GetBFromInt32(Uint32 ColorInt32)
 {
     return (ColorInt32 & 0x00ff0000) >> 16;
 };
 
-Uint8 AkkordColor::GetAFromInt32(unsigned int ColorInt32)
+Uint8 AkkordColor::GetAFromInt32(Uint32 ColorInt32)
 {
     return (ColorInt32 & 0xff000000) >> 24;
 };
