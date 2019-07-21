@@ -1,128 +1,79 @@
-apply plugin: 'com.android.model.application'
+apply plugin: 'com.android.application'
 
-def akkord_sdk_path = System.getenv('AKKORD_SDK_HOME')
+def akkord_sdk_path        = System.getenv('AKKORD_SDK_HOME')
+def proGuardParamsFile     = System.getenv('AKKORD_SDK_HOME') + "/framework/core/android/proguard/proguard-rules.pro"
 
-gradle.projectsEvaluated {
-        tasks.withType(JavaCompile) {
-            options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+android {
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    defaultConfig {
+        minSdkVersion    = 14
+        targetSdkVersion = 26
+
+        versionName '1.0.4'
+        versionCode 7
+    }
+    externalNativeBuild {
+        ndkBuild {
+            // Tells Gradle to find the root ndk-build script in the same
+            // directory as the module's build.gradle file. Gradle requires this
+            // build script to add your ndk-build project as a build dependency and
+            // pull your native sources into your Android project.
+            buildStagingDirectory "../main/lib"
+            path "../main/Android.mk"
+
+            //cppFlags.addAll(["-std=c++11"])
         }
     }
-
-model {
-    repositories {
-        libs(PrebuiltLibraries) {
-//            SDL2 {
-//                headers.srcDir "${akkord_sdk_path}/libraries/SDL/SDL/include"
-//                binaries.withType(SharedLibraryBinary) {
-//                    sharedLibraryFile = file("${akkord_sdk_path}/libraries/SDL/android/lib/${targetPlatform.getName()}/libSDL2.so")
-//                }
-//            }
-
-//            SDL2_image {
-//                headers.srcDir "${akkord_sdk_path}/libraries/SDLLibs/SDL2_image/include"
-//                binaries.withType(SharedLibraryBinary) {
-//                    sharedLibraryFile = file("${akkord_sdk_path}/libraries/SDLLibs/android/libs/SDL2_image/${targetPlatform.getName()}/libSDL2_image.so")
-//                }
-//            }
-
-            main {
-                binaries.withType(SharedLibraryBinary) {
-                    sharedLibraryFile = file("../main/lib/${targetPlatform.getName()}/libmain.so")
-                }
-            }
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+            manifest.srcFile '../AndroidManifest.xml'
+            java.srcDir "${akkord_sdk_path}/framework/core/android/wrapper/"
+         // java.srcDir "${akkord_sdk_path}/framework/core/android/admob/"
+         // java.srcDir "${akkord_sdk_path}/framework/core/android/billing/"
+            java.srcDir '../java'
+            res.srcDirs = ['../res']
+            assets.srcDir '../../assets'
         }
     }
-
-    android {
-        compileSdkVersion = rootProject.ext.compileSdkVersion
-        buildToolsVersion = rootProject.ext.buildToolsVersion
-
-        defaultConfig {
-
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), file(proGuardParamsFile).absolutePath
         }
-        sources {
-            main {
-                jni {
-                    dependencies {
-                        project ':main'      linkage 'shared'
-                        //library 'SDL2'       linkage 'shared'
-                        //library 'SDL2_image' linkage 'shared'
-                    }
-                }
-                jniLibs {
-                    source {
-                        srcDir "../main/lib"
-                    }
-                }
-                java {
-                    source {
-                        srcDir "${akkord_sdk_path}/framework/core/android/wrapper/"
-                        //srcDir "${akkord_sdk_path}/framework/core/android/admob/"
-                    }
-                }
-//                manifest {
-//                    source {
-//                        srcDir "../main/lib"
-//                    }
-//                }
-                assets {
-                     source {
-                         srcDir "../../assets/"
-                         srcDir "${akkord_sdk_path}/resources/adimages/"
-                     }
-                }
-            }
-        }
-
-        buildTypes {
-            release {
-                minifyEnabled = false
-                proguardFiles.add(file('proguard-rules.txt'))
-                signingConfig = $("android.signingConfigs.myConfig")
-            }
-        }
-        productFlavors {
-            // for detailed abiFilter descriptions, refer to "Supported ABIs" @
-            // https://developer.android.com/ndk/guides/abis.html#sa
-//            create("arm") {
-//                ndk.abiFilters.add("armeabi")
-//            }
-//            create("arm7") {
-//                ndk.abiFilters.add("armeabi-v7a")
-//            }
-//            create("arm8") { // на этом падает с ошибкой что не может загрузить SDL library
-//                ndk.abiFilters.add("arm64-v8a")
-//            }
-//            create("x86") {
-//                ndk.abiFilters.add("x86")
-//            }
-//            create("x86-64") {
-//                ndk.abiFilters.add("x86_64")
-//            }
-//            create("mips") {
-//                ndk.abiFilters.add("mips")
-//            }
-//            create("mips-64") {
-//                ndk.abiFilters.add("mips64")
-//            }
-            // To include all cpu architectures, leaves abiFilters empty
-            create("all")
+        debug {
         }
     }
+    splits {
 
-    android.signingConfigs {
-        create("myConfig") {
-            storeFile "C:/Instruments/Android/WordsRuFree.keystore"
-            storePassword "android"
-            keyAlias "androiddebugkey"
-            keyPassword "android"
-            storeType "jks"
+        // Configures multiple APKs based on ABI.
+        abi {
+
+            // Enables building multiple APKs per ABI.
+            enable false
+
+            // By default all ABIs are included, so use reset() and include to specify that we only
+            // want APKs for x86 and x86_64.
+
+            // Resets the list of ABIs that Gradle should create APKs for to none.
+            //reset()
+
+            // Specifies a list of ABIs that Gradle should create APKs for.
+            //include "x86", "armeabi", "armeabi-v7a", "armeabi-v8a", "x86_64", "arm64-v8a"
+            //include "armeabi", "armeabi-v7a", "armeabi-v8a"
+            //include "x86", "armeabi", "armeabi-v7a", "armeabi-v8a", "x86_64", "arm64-v8a", "armeabi", "mips", "mips64"
+            //include  "x86_64"
+            //include "armeabi-v7a"
+            //include "x86"
+            //include "armeabi-v7a"
+            //include "x86"
+
+            // generate a universal APK that includes all ABIs.
+            universalApk false
         }
     }
 }
 
-tasks.whenTaskAdded { task ->
-    if (task.name.contains('compile')) {
-        task.dependsOn ':main:distributeLib'
-    }
+dependencies {
+    implementation 'com.getkeepsafe.relinker:relinker:1.3.1'
 }

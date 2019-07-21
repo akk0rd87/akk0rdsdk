@@ -78,7 +78,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="$(AKKORD_SDK_HOME)\framework\basewrapper.cpp" />
-    <ClCompile Include="$(AKKORD_SDK_HOME)\framework\admob.cpp" />
     <ClCompile Include="$(AKKORD_SDK_HOME)\framework\atlasmanager.cpp" />
     <ClCompile Include="..\src\main.cpp" />
   </ItemGroup>

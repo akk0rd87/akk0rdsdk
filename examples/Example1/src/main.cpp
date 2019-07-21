@@ -37,7 +37,7 @@ bool Init()
 {
     if (!BWrapper::Init(SDL_INIT_VIDEO)) return false;
 
-	auto Window = BWrapper::CreateRenderWindow("Hello World!", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | (BWrapper::GetDeviceOS() == BWrapper::OS::Windows ? 0 : SDL_WINDOW_BORDERLESS));
+    auto Window = BWrapper::CreateRenderWindow("Hello World!", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | (BWrapper::GetDeviceOS() == BWrapper::OS::Windows ? 0 : SDL_WINDOW_BORDERLESS));
 
     if (!Window) return false;
 
@@ -63,16 +63,11 @@ bool UpdateOnClick(int X, int Y)
 void ReDraw()
 {
     auto ScreenHeight = BWrapper::GetScreenHeight();
-    auto ScreenWidth  = BWrapper::GetScreenWidth();
+    auto ScreenWidth = BWrapper::GetScreenWidth();
     BWrapper::SetCurrentColor(AkkordColor(255, 255, 255));
 
     BWrapper::ClearRenderer();
-
     Background.Draw(AkkordRect(0, 0, ScreenWidth, ScreenHeight));
-
-    auto x   = (ScreenWidth - 400 - 10) / 3;
-    auto psx = ScreenWidth / 2;
-
     ZombiePosition.w = 430;
     ZombiePosition.h = 519;
 
@@ -96,7 +91,7 @@ void ReDraw()
         dx += 128;
     }
 
-    AtlasMgr.DrawSprite(ZombieVector[ZombieIndex], ZombiePosition, Flip);    
+    AtlasMgr.DrawSprite(ZombieVector[ZombieIndex], ZombiePosition, Flip);
 
     BWrapper::RefreshRenderer();
 }
@@ -120,11 +115,10 @@ void LoadZombies()
     }
 }
 
-int main(int, char**){
-
+int main(int, char**) {
     BWrapper::SetLogPriority(BWrapper::LogPriority::Debug);
     auto LogParams = BWrapper::GetLogParams();
-    LogParams->lenFile = 20;    
+    LogParams->lenFile = 20;
     SDL_Event event;
     if (!Init())
     {
@@ -134,8 +128,8 @@ int main(int, char**){
 
     logDebug(BWrapper::GetSDKVersionInfo().c_str());
 
-	SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
-	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+    SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 
     LoadZombies();
     ZombiePosition.x = BWrapper::GetScreenWidth() / 2;
@@ -152,64 +146,67 @@ int main(int, char**){
         {
             switch (event.type)
             {
-                case SDL_QUIT:
+            case SDL_QUIT:
+                goto end;
+                break;
+
+            case SDL_WINDOWEVENT:
+            {
+                switch (event.window.event)
+                {
+                case SDL_WINDOWEVENT_FOCUS_LOST:
+                    logDebug("SDL_WINDOWEVENT_FOCUS_LOST event");
+                    break;
+
+                case SDL_WINDOWEVENT_MINIMIZED:
+                    logDebug("SDL_WINDOWEVENT_MINIMIZED event");
+                    break;
+                }
+                break;
+            }
+
+            case SDL_APP_WILLENTERBACKGROUND:
+            {
+                logDebug("SDL_APP_WILLENTERBACKGROUND event");
+                break;
+            }
+
+            case SDL_APP_DIDENTERBACKGROUND:
+            {
+                logDebug("SDL_APP_DIDENTERBACKGROUND event");
+                break;
+            }
+
+            case SDL_MOUSEBUTTONDOWN:
+            {
+                UpdateOnClick(event.button.x, event.button.y);
+                break;
+            }
+
+            case SDL_KEYDOWN:
+            {
+                switch (BWrapper::DecodeKey(event.key.keysym))
+                {
+                case BWrapper::KeyCodes::Back:
+                case BWrapper::KeyCodes::BackSpace:
+                case BWrapper::KeyCodes::Esc:
                     goto end;
                     break;
 
-                case SDL_WINDOWEVENT:
-                {
-                    switch (event.window.event) 
-                    {
-                        case SDL_WINDOWEVENT_FOCUS_LOST:
-                            logDebug("SDL_WINDOWEVENT_FOCUS_LOST event");
-                            break;
-
-                        case SDL_WINDOWEVENT_MINIMIZED:
-                            logDebug("SDL_WINDOWEVENT_MINIMIZED event");
-                            break;
-                    }
+                case BWrapper::KeyCodes::Left:
+                    Flip = AkkordTexture::Flip::Horizontal;
                     break;
-                }
 
-                case SDL_APP_WILLENTERBACKGROUND:
-                {
-                    logDebug("SDL_APP_WILLENTERBACKGROUND event");
+                case BWrapper::KeyCodes::Right:
+                    Flip = AkkordTexture::Flip::None;
                     break;
-                }
 
-                case SDL_APP_DIDENTERBACKGROUND:
-                {
-                    logDebug("SDL_APP_DIDENTERBACKGROUND event");
-                    break;
-                }
-
-                case SDL_MOUSEBUTTONDOWN:
-                {
-                    UpdateOnClick(event.button.x, event.button.y);
-                    break;
-                }
-
-                case SDL_KEYDOWN:
-                {
-                    switch (BWrapper::DecodeKey(event.key.keysym))
-                    {
-                        case BWrapper::KeyCodes::Back:
-                        case BWrapper::KeyCodes::BackSpace:
-                        case BWrapper::KeyCodes::Esc:
-                            goto end;
-                            break;
-
-						case BWrapper::KeyCodes::Left:
-							Flip = AkkordTexture::Flip::Horizontal;
-							break;
-
-						case BWrapper::KeyCodes::Right:
-							Flip = AkkordTexture::Flip::None;
-							break;
-                    }
-                }
                 default:
                     break;
+                }
+            }
+            default:
+                break;
             }
         }
 
