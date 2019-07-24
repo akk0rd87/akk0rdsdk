@@ -78,9 +78,9 @@ public class SDLActivity extends Activity {
         } else {
             library = "libmain.so";
         }
-        return library;
+        //return library;
         // http://hg.libsdl.org/SDL/rev/d9e69bf4c6d4
-        //return getContext().getApplicationInfo().nativeLibraryDir + "/" + library;
+        return getContext().getApplicationInfo().nativeLibraryDir + "/" + library;
     }
 
     /**
