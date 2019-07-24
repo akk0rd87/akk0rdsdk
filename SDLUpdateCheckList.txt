@@ -1,1 +1,2 @@
 1. В SDLActivity убрать mSurface.enableSensor(Sensor.TYPE_ACCELEROMETER, true), который постоянно дергает onSensorChanged.
+2. В SDLActivity должен возвращать library без полного пути, а только имя библиотеки, которая потом идет на вход dlopen в nativeRunMain
