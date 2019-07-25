@@ -63,9 +63,4 @@ public class AkkordActivity extends SDLActivity {
           akkord_loadLibrary(lib);
        }
     }
-
-    @Override
-    protected String getMainSharedObject() {
-        return "libmain.so";
-    }
 }
