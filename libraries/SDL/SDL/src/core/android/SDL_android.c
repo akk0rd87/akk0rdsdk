@@ -426,6 +426,7 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv* env, jclass cls,
     if(!library_handle) {
         /* When deploying android app bundle format uncompressed native libs may not extract from apk to filesystem.
            In this case we should use lib name without path.
+           https://bugzilla.libsdl.org/show_bug.cgi?id=4739
         */
         const char* library_name = strrchr(library_file, '/');
         if(library_name && (*library_name) && (*(library_name + 1))) {
