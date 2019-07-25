@@ -836,33 +836,36 @@ AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text)
     return pt;
 };
 
-AkkordPoint SDFFontBuffer::GetWrappedTextSize(const char* Text, std::string& ResultString)
+AkkordPoint SDFFontBuffer::GetWrappedTextSize(const char* Text, std::string& ResultString, float ScaleMutiplier)
 {
-    ResultString.clear();
-    auto GetNextWord = [&Text]() {
+    auto usedScale = scaleX;
+    auto font_line_height = sdfFont->GetLineHeight();
+    const char* textPtr;
+
+    auto GetNextWord = [&textPtr]() {
         std::string res;
-        for (; Text && (*Text) && (*Text) != ' ' && (*Text) != '\n'; ++Text)
-            res += (*Text);
+        for (; textPtr && (*textPtr) && (*textPtr) != ' ' && (*textPtr) != '\n'; ++textPtr)
+            res += (*textPtr);
         return res;
     };
 
     unsigned lines_cnt = 0, max_line_len = 0, x_pos = 0;
 
-    //auto spaceLen = sdfFont->GetCharInfo(a, charParams);
     SDFCharInfo charParams;
     unsigned space_len;
-    {
-        sdfFont->GetCharInfo(32 /* space */, charParams);
-        space_len = static_cast<decltype(space_len)>(scaleX * (charParams.xadvance + charParams.xoffset));
-    }
 
     std::string word;
-    std::vector<unsigned> VecSize;
+
+repeat_again:
+    ResultString.clear();
+    textPtr = Text;
+    lines_cnt = max_line_len = x_pos = 0;
+    sdfFont->GetCharInfo(32 /* space */, charParams);
+    space_len = static_cast<decltype(space_len)>(usedScale * (charParams.xadvance + charParams.xoffset));
     do
     {
         auto word = GetNextWord();
         //logDebug("Words: %s", word.c_str());
-        VecSize.clear();
 
         int xSize = 0;
         {
@@ -876,7 +879,14 @@ AkkordPoint SDFFontBuffer::GetWrappedTextSize(const char* Text, std::string& Res
                 xSize += charParams.xadvance;
                 xSize += charParams.xoffset;
             } while (true);
-            xSize = xSize * scaleX;
+            xSize = xSize * usedScale;
+        }
+
+        // провеить, не вышли ли за диапазон по ширине
+        if (xSize > rectW)
+        {
+            usedScale *= ScaleMutiplier;
+            goto repeat_again;
         }
 
         // если в строке уже есть слово
@@ -893,6 +903,14 @@ AkkordPoint SDFFontBuffer::GetWrappedTextSize(const char* Text, std::string& Res
             else // если новое уже не помещается в текущую строку
             {
                 ++lines_cnt;
+
+                // проверить, не вышли ли за диапазон по высоте
+                if (static_cast<int>(usedScale * font_line_height * (lines_cnt + 1) > rectH))
+                {
+                    usedScale *= ScaleMutiplier;
+                    goto repeat_again;
+                }
+
                 ResultString += '\n';
                 ResultString += word;
                 x_pos = xSize;
@@ -907,22 +925,28 @@ AkkordPoint SDFFontBuffer::GetWrappedTextSize(const char* Text, std::string& Res
         }
 
         // пропускаем ненужные пробелы
-        while (' ' == *Text)
-            ++Text;
+        while (' ' == *textPtr)
+            ++textPtr;
 
         // если конец строки, выходим
-        if ('\0' == *Text)
+        if ('\0' == *textPtr)
             break;
 
-        while ('\n' == *Text)
+        while ('\n' == *textPtr)
         {
             // переход к след строке
-            ++Text;
             ++lines_cnt;
+            // проверить, не вышли ли за диапазон по высоте
+            if (static_cast<int>(usedScale * font_line_height * (lines_cnt + 1) > rectH))
+            {
+                usedScale *= ScaleMutiplier;
+                goto repeat_again;
+            }
+            ++textPtr;
             x_pos = 0;
             ResultString += '\n';
         }
     } while (!word.size());
 
-    return AkkordPoint(max_line_len, static_cast<int>(scaleY * sdfFont->GetLineHeight() * (lines_cnt + 1)));
+    return AkkordPoint(max_line_len, static_cast<int>(usedScale * font_line_height * (lines_cnt + 1)));
 };

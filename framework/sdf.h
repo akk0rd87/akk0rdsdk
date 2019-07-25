@@ -184,7 +184,7 @@ public:
     ~SDFFontBuffer();
     // сейчас это int, возможно для этой функции сделать отдельный тип со float
     AkkordPoint GetTextSize(const char* Text);
-    AkkordPoint GetWrappedTextSize(const char* Text, std::string& ResultString);
+    AkkordPoint GetWrappedTextSize(const char* Text, std::string& ResultString, float ScaleMutiplier);
     AkkordPoint DrawText(int X, int Y, const char* Text);
 };
 
