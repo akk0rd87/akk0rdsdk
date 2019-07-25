@@ -13,7 +13,6 @@ Call stack:
 2) SDFAtlas -> SDFTexture
 */
 
-
 /*
 https://github.com/libgdx/libgdx/wiki/Hiero
 "java -cp gdx.jar;gdx-natives.jar;gdx-backend-lwjgl.jar;gdx-backend-lwjgl-natives.jar;extensions\gdx-freetype\gdx-freetype.jar;extensions\gdx-freetype\gdx-freetype-natives.jar;extensions\gdx-tools\gdx-tools.jar com.badlogic.gdx.tools.hiero.Hiero"
@@ -39,7 +38,7 @@ class SDFProgram
 
     void Clear();
 
-public :
+public:
     struct Attributes
     {
         enum : GLuint
@@ -124,7 +123,7 @@ public:
     unsigned int GetAtlasW();
     unsigned int GetAtlasH();
 
-    bool Load(const char* FileNameFNT, const char* FileNamePNG,  BWrapper::FileSearchPriority SearchPriority, int Spread);
+    bool Load(const char* FileNameFNT, const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority, int Spread);
     bool Draw(bool Outline, GLsizei Count, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border);
     bool GetCharInfo(unsigned Code, SDFCharInfo& ci);
     unsigned GetLineHeight();
@@ -185,6 +184,7 @@ public:
     ~SDFFontBuffer();
     // сейчас это int, возможно для этой функции сделать отдельный тип со float
     AkkordPoint GetTextSize(const char* Text);
+    AkkordPoint GetWrappedTextSize(const char* Text, std::string& ResultString);
     AkkordPoint DrawText(int X, int Y, const char* Text);
 };
 
