@@ -1148,10 +1148,6 @@ void msgBox::DecodeEvent(const SDL_Event& Event, int& Code, msgBox::Action& Acti
 bool BWrapper::PrintDirContent(const char* Path, BWrapper::LogPriority Priority, bool Recursive)
 {
     bool result = false;
-
-    const char* file = "[file]";
-    const char* dir = "[dir ]";
-    const char* ptype;
     DirContentReader Dr;
     DirContentElement* Dc;
 
@@ -1160,11 +1156,6 @@ bool BWrapper::PrintDirContent(const char* Path, BWrapper::LogPriority Priority,
         result = true;
         while (Dr.Next(Dc))
         {
-            if (Dc->isDir) ptype = dir;
-            else           ptype = file;
-
-            logVA(Priority, "%s %s/%s", ptype, Path, Dc->Name.c_str());
-
             if (Recursive && Dc->isDir)
             {
                 std::string p = std::string(Path) + "/" + Dc->Name;
