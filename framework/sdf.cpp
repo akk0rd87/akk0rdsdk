@@ -838,5 +838,78 @@ AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text)
 
 AkkordPoint SDFFontBuffer::GetWrappedTextSize(const char* Text, std::string& ResultString)
 {
-    return AkkordPoint(1, 1);
+    ResultString.clear();
+    auto GetNextWord = [&Text]() {
+        std::string res;
+        for (; Text && (*Text) && (*Text) != ' ' && (*Text) != '\n'; ++Text)
+            res += (*Text);
+        return res;
+    };
+
+    unsigned lines_cnt = 0, max_line_len = 0, x_pos = 0;
+
+    //auto spaceLen = sdfFont->GetCharInfo(a, charParams);
+    unsigned space_len;
+    {
+        SDFCharInfo charParams;
+        sdfFont->GetCharInfo(32 /* space */, charParams);
+        space_len = static_cast<decltype(space_len)>(scaleX * (charParams.xadvance + charParams.xoffset));
+    }
+
+    std::string word;
+    std::vector<unsigned> VecSize;
+    do
+    {
+        auto word = GetNextWord();
+        logDebug("Words: %s", word.c_str());
+        VecSize.clear();
+
+        auto xSize = GetTextSizeByLine(word.c_str(), VecSize).x;
+
+        // если в строке уже есть слово
+        if (x_pos != 0)
+        {
+            // если новое еще помещается в текущую строку
+            if (x_pos + space_len + xSize <= rectW)
+            {
+                x_pos += (space_len + xSize);
+                ResultString += " ";
+                ResultString += word;
+                max_line_len = std::max(max_line_len, x_pos);
+            }
+            else // если новое уже не помещается в текущую строку
+            {
+                ++lines_cnt;
+                ResultString += '\n';
+                ResultString += word;
+                x_pos = xSize;
+                max_line_len = std::max(max_line_len, x_pos);
+            }
+        }
+        else // 0 == x_pos
+        {
+            x_pos += xSize;
+            ResultString += word;
+            max_line_len = std::max(max_line_len, x_pos);
+        }
+
+        // пропускаем ненужные пробелы
+        while (' ' == *Text)
+            ++Text;
+
+        // если конец строки, выходим
+        if ('\0' == *Text)
+            break;
+
+        while ('\n' == *Text)
+        {
+            // переход к след строке
+            ++Text;
+            ++lines_cnt;
+            x_pos = 0;
+            ResultString += '\n';
+        }
+    } while (!word.size());
+
+    return AkkordPoint(max_line_len, static_cast<int>(scaleY * sdfFont->GetLineHeight() * (lines_cnt + 1)));
 };
