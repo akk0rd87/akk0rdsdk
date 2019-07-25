@@ -849,9 +849,9 @@ AkkordPoint SDFFontBuffer::GetWrappedTextSize(const char* Text, std::string& Res
     unsigned lines_cnt = 0, max_line_len = 0, x_pos = 0;
 
     //auto spaceLen = sdfFont->GetCharInfo(a, charParams);
+    SDFCharInfo charParams;
     unsigned space_len;
     {
-        SDFCharInfo charParams;
         sdfFont->GetCharInfo(32 /* space */, charParams);
         space_len = static_cast<decltype(space_len)>(scaleX * (charParams.xadvance + charParams.xoffset));
     }
@@ -861,10 +861,23 @@ AkkordPoint SDFFontBuffer::GetWrappedTextSize(const char* Text, std::string& Res
     do
     {
         auto word = GetNextWord();
-        logDebug("Words: %s", word.c_str());
+        //logDebug("Words: %s", word.c_str());
         VecSize.clear();
 
-        auto xSize = GetTextSizeByLine(word.c_str(), VecSize).x;
+        int xSize = 0;
+        {
+            auto txt = word.c_str();
+            unsigned int i = 0, a = 0;
+            do {
+                a = UTF2Unicode(txt, i);
+                if (!a)
+                    break;
+                sdfFont->GetCharInfo(a, charParams);
+                xSize += charParams.xadvance;
+                xSize += charParams.xoffset;
+            } while (true);
+            xSize = xSize * scaleX;
+        }
 
         // если в строке уже есть слово
         if (x_pos != 0)
