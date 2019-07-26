@@ -881,7 +881,7 @@ void SDFFontBuffer::WrapText(const char* Text, float ScaleMutiplier, std::string
         auto word = GetNextWord();
         int xSize = GetWordSize(sdfFont, word.c_str());
 
-        while(xSize * UsedScale >= rectW)
+        while (xSize * UsedScale >= rectW)
             UsedScale *= ScaleMutiplier;
 
         // пропускаем ненужные пробелы и переходы на новой строку
@@ -891,7 +891,7 @@ void SDFFontBuffer::WrapText(const char* Text, float ScaleMutiplier, std::string
         // если конец строки, выходим
         if ('\0' == *textPtr)
             break;
-    }while(1);
+    } while (1);
 
 repeat_again:
     ResultString.clear();
