@@ -836,17 +836,35 @@ AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text)
     return pt;
 };
 
-AkkordPoint SDFFontBuffer::GetWrappedTextSize(const char* Text, std::string& ResultString, float ScaleMutiplier)
+void SDFFontBuffer::WrapText(const char* Text, float ScaleMutiplier, std::string& ResultString, float& UsedScale, AkkordPoint& Size)
 {
-    auto usedScale = scaleX;
+    UsedScale = scaleX;
     auto font_line_height = sdfFont->GetLineHeight();
     const char* textPtr;
 
+    // лямбда для поиска нового слова
     auto GetNextWord = [&textPtr]() {
         std::string res;
         for (; textPtr && (*textPtr) && (*textPtr) != ' ' && (*textPtr) != '\n'; ++textPtr)
             res += (*textPtr);
         return res;
+    };
+
+    // лямбда для определения размера слова в единицах шрифта
+    auto GetWordSize = [](SDFFont* sdfFont, const char* Word)
+    {
+        SDFCharInfo charParams;
+        int xSize = 0;
+        unsigned int i = 0, a = 0;
+        do {
+            a = UTF2Unicode(Word, i);
+            if (!a)
+                break;
+            sdfFont->GetCharInfo(a, charParams);
+            xSize += charParams.xadvance;
+            xSize += charParams.xoffset;
+        } while (true);
+        return xSize;
     };
 
     unsigned lines_cnt = 0, max_line_len = 0, x_pos = 0;
@@ -856,36 +874,41 @@ AkkordPoint SDFFontBuffer::GetWrappedTextSize(const char* Text, std::string& Res
 
     std::string word;
 
+    // сначала пробегаем по всем словам, и делаем так, чтобы каждое слово было меньше ширины выделенного под текст прямоугольника
+    textPtr = Text;
+    do
+    {
+        auto word = GetNextWord();
+        int xSize = GetWordSize(sdfFont, word.c_str());
+
+        while(xSize * UsedScale >= rectW)
+            UsedScale *= ScaleMutiplier;
+
+        // пропускаем ненужные пробелы и переходы на новой строку
+        while (' ' == *textPtr || '\n' == *textPtr)
+            ++textPtr;
+
+        // если конец строки, выходим
+        if ('\0' == *textPtr)
+            break;
+    }while(1);
+
 repeat_again:
     ResultString.clear();
     textPtr = Text;
     lines_cnt = max_line_len = x_pos = 0;
     sdfFont->GetCharInfo(32 /* space */, charParams);
-    space_len = static_cast<decltype(space_len)>(usedScale * (charParams.xadvance + charParams.xoffset));
+    space_len = static_cast<decltype(space_len)>(UsedScale * (charParams.xadvance + charParams.xoffset));
     do
     {
         auto word = GetNextWord();
         //logDebug("Words: %s", word.c_str());
-
-        int xSize = 0;
-        {
-            auto txt = word.c_str();
-            unsigned int i = 0, a = 0;
-            do {
-                a = UTF2Unicode(txt, i);
-                if (!a)
-                    break;
-                sdfFont->GetCharInfo(a, charParams);
-                xSize += charParams.xadvance;
-                xSize += charParams.xoffset;
-            } while (true);
-            xSize = xSize * usedScale;
-        }
+        int xSize = GetWordSize(sdfFont, word.c_str()) * UsedScale;
 
         // провеить, не вышли ли за диапазон по ширине
         if (xSize > rectW)
         {
-            usedScale *= ScaleMutiplier;
+            UsedScale *= ScaleMutiplier;
             goto repeat_again;
         }
 
@@ -905,9 +928,9 @@ repeat_again:
                 ++lines_cnt;
 
                 // проверить, не вышли ли за диапазон по высоте
-                if (static_cast<int>(usedScale * font_line_height * (lines_cnt + 1) > rectH))
+                if (static_cast<int>(UsedScale * font_line_height * (lines_cnt + 1) > rectH))
                 {
-                    usedScale *= ScaleMutiplier;
+                    UsedScale *= ScaleMutiplier;
                     goto repeat_again;
                 }
 
@@ -937,16 +960,16 @@ repeat_again:
             // переход к след строке
             ++lines_cnt;
             // проверить, не вышли ли за диапазон по высоте
-            if (static_cast<int>(usedScale * font_line_height * (lines_cnt + 1) > rectH))
+            if (static_cast<int>(UsedScale * font_line_height * (lines_cnt + 1) > rectH))
             {
-                usedScale *= ScaleMutiplier;
+                UsedScale *= ScaleMutiplier;
                 goto repeat_again;
             }
             ++textPtr;
             x_pos = 0;
             ResultString += '\n';
         }
-    } while (!word.size());
+    } while (1);
 
-    return AkkordPoint(max_line_len, static_cast<int>(usedScale * font_line_height * (lines_cnt + 1)));
+    Size = AkkordPoint(max_line_len, static_cast<int>(UsedScale * font_line_height * (lines_cnt + 1)));
 };
