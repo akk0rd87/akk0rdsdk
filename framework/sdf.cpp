@@ -856,14 +856,14 @@ void SDFFontBuffer::WrapText(const char* Text, float ScaleMutiplier, std::string
         SDFCharInfo charParams;
         int xSize = 0;
         unsigned int i = 0, a = 0;
-        do {
+        while(1) {
             a = UTF2Unicode(Word, i);
             if (!a)
                 break;
             sdfFont->GetCharInfo(a, charParams);
             xSize += charParams.xadvance;
             xSize += charParams.xoffset;
-        } while (true);
+        };
         return xSize;
     };
 
@@ -876,8 +876,7 @@ void SDFFontBuffer::WrapText(const char* Text, float ScaleMutiplier, std::string
 
     // сначала пробегаем по всем словам, и делаем так, чтобы каждое слово было меньше ширины выделенного под текст прямоугольника
     textPtr = Text;
-    do
-    {
+    while(1) {
         auto word = GetNextWord();
         int xSize = GetWordSize(sdfFont, word.c_str());
 
@@ -891,7 +890,7 @@ void SDFFontBuffer::WrapText(const char* Text, float ScaleMutiplier, std::string
         // если конец строки, выходим
         if ('\0' == *textPtr)
             break;
-    } while (1);
+    };
 
 repeat_again:
     ResultString.clear();
@@ -899,7 +898,7 @@ repeat_again:
     lines_cnt = max_line_len = x_pos = 0;
     sdfFont->GetCharInfo(32 /* space */, charParams);
     space_len = static_cast<decltype(space_len)>(UsedScale * (charParams.xadvance + charParams.xoffset));
-    do
+    while(1)
     {
         auto word = GetNextWord();
         //logDebug("Words: %s", word.c_str());
@@ -969,7 +968,7 @@ repeat_again:
             x_pos = 0;
             ResultString += '\n';
         }
-    } while (1);
+    };
 
     Size = AkkordPoint(max_line_len, static_cast<int>(UsedScale * font_line_height * (lines_cnt + 1)));
 };
