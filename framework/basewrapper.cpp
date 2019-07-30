@@ -973,12 +973,11 @@ void BWrapper::MessageBoxSetColorScheme(MessageBoxColorScheme& Scheme)
 //    return 0; // Заглушка
 //}
 
-/*
-int BWrapper::GetDisplayDPI(float* Ddpi, float* Hdpi, float* Vdpi)
+
+int BWrapper::GetDisplayDPI(int DisplayIndex, float* Ddpi, float* Hdpi, float* Vdpi)
 {
-    return SDL_GetDisplayDPI(0 Display Index , Ddpi, Hdpi, Vdpi);
+    return SDL_GetDisplayDPI(DisplayIndex, Ddpi, Hdpi, Vdpi);
 }
-*/
 
 void BWrapper::Quit()
 {

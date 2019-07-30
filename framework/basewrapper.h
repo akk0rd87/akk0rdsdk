@@ -153,6 +153,7 @@ public:
     static bool                DrawLine                    (const AkkordPoint& Point1, const AkkordPoint& Point2);
     static bool                DrawLine                    (int P1X, int P1Y, int P2X, int P2Y);
     static bool                IsPointInRect               (const AkkordPoint& Point,  const AkkordRect& Rect);
+    static int                 GetDisplayDPI               (int DisplayIndex, float* Ddpi, float* Hdpi, float* Vdpi);
 
     // Working with files
     static char*               File2Buffer                 (const char* FileName, BWrapper::FileSearchPriority SearchPriority, unsigned& BufferSize);
