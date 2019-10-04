@@ -353,7 +353,7 @@ public:
     bool Play();
     void Clear();
 
-    WAVPlayer(){};
+    WAVPlayer() :wav_length(0), wav_buffer(nullptr), deviceId(0) {};
     ~WAVPlayer();
 
     WAVPlayer(WAVPlayer& rhs) = delete; // Копирующий: конструктор

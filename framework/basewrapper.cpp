@@ -1433,6 +1433,11 @@ bool WAVPlayer::LoadFromMemory(const char* Buffer, int Size)
         logError("error SDL_LoadWAV_RW %s", SDL_GetError());
         result = false;
     }
+    else
+    {
+        this->deviceId = SDL_OpenAudioDevice(nullptr, 0, &this->wav_spec, nullptr, 0);
+        logDebug("deviceId = %d", deviceId);
+    }
     return result;
 };
 
@@ -1451,12 +1456,7 @@ bool WAVPlayer::LoadFromFile(const char* FileName, const BWrapper::FileSearchPri
     bool result = this->LoadFromMemory(buffer, Size);
     BWrapper::CloseBuffer(buffer);
 
-    if (result)
-    {
-        this->deviceId = SDL_OpenAudioDevice(nullptr, 0, &this->wav_spec, nullptr, 0);
-        logDebug("deviceId = %d", deviceId);
-    }
-    else
+    if (!result)
     {
         logError("Error load wav file = %s, error=%s", FileName, SDL_GetError());
     }
