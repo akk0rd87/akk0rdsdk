@@ -10,3 +10,5 @@ set SUPPORT_MP3_MPG123=FALSE
 rd /s/q lib
 call %ANDROID_NDK_HOME%/ndk-build -e clean
 call %ANDROID_NDK_HOME%/ndk-build -e
+
+del /s /q %AKKORD_SDK_HOME%\libraries\SDL_mixer\android\lib\libSDL2.so
