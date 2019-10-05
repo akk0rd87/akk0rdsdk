@@ -10,3 +10,5 @@ set SUPPORT_WEBP=FALSE
 rd /s/q lib
 call %ANDROID_NDK_HOME%/ndk-build -e clean
 call %ANDROID_NDK_HOME%/ndk-build -e
+
+del /s /q %AKKORD_SDK_HOME%\libraries\SDL_image\android\lib\libSDL2.so

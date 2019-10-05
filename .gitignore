@@ -35,7 +35,12 @@ libraries/SDL/SDL/libs/*
 
 libraries/SDL_image/SDL_image/obj/*
 libraries/SDL_image/SDL_image/libs/*
+libraries/SDL_mixer/SDL_mixer/obj/*
+libraries/SDL_mixer/SDL_mixer/libs/*
 
+libraries/SDL_mixer/SDL_mixer/VisualC/Win32
+libraries/SDL_mixer/SDL_mixer/VisualC/.vs
+libraries/SDL_mixer/SDL_mixer/VisualC/**/*.user
 libraries/SDL_image/SDL_image/VisualC/Win32
 
 libraries/SDL_ttf/SDL_ttf/VisualC/Win32/Debug
