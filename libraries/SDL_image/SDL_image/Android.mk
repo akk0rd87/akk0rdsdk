@@ -40,7 +40,7 @@ LOCAL_PATH := $(MY_LOCAL_PATH)
 ####### INCLUDE SDL2 - Added by myself
 include $(CLEAR_VARS)
 LOCAL_MODULE := SDL2
-LOCAL_SRC_FILES := $(AKKORD_SDK_HOME)/libraries/SDL/SDL/libs/$(TARGET_ARCH_ABI)/libSDL2.so
+LOCAL_SRC_FILES := $(AKKORD_SDK_HOME)/libraries/SDL/android/lib/$(TARGET_ARCH_ABI)/libSDL2.so
 LOCAL_EXPORT_C_INCLUDES := $(AKKORD_SDK_HOME)/libraries/SDL/SDL/include
 include $(PREBUILT_SHARED_LIBRARY)
 #######
