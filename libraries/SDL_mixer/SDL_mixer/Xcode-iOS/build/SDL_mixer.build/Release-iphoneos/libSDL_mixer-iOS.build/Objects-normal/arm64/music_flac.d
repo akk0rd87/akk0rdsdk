@@ -1,0 +1,25 @@
+dependencies: \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/music_flac.c \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/SDL_assert.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/SDL_config.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/SDL_platform.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/begin_code.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/close_code.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/SDL_config_iphoneos.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/SDL_loadso.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/SDL_stdinc.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/SDL_error.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/music_flac.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/music.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/SDL_mixer.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/SDL_rwops.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/SDL_audio.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/SDL_endian.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/SDL_mutex.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/SDL_thread.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/SDL_atomic.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/SDL_version.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/include/FLAC/stream_decoder.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/include/FLAC/export.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/include/FLAC/format.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/include/FLAC/ordinals.h

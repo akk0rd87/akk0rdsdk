@@ -1277,6 +1277,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_1)",
 					"$(HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_2)",
+					/Users/Shared/akk0rdsdk/libraries/SDL/SDL/include,
 				);
 				HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_1 = "\"$(SRCROOT)/../../SDL/include\"";
 				HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_2 = "\"$(SRCROOT)/../external/libmodplug-0.8.9.0/src\" \"$(SRCROOT)/../external/libmodplug-0.8.9.0/src/libmodplug\" \"$(SRCROOT)/../external/libvorbisidec-1.2.1\" \"$(SRCROOT)/../external/libogg-1.3.2/include\" \"$(SRCROOT)/../external/flac-1.3.2/include\" \"$(SRCROOT)/../external/flac-1.3.2/src/libFLAC/include\"";
@@ -1336,6 +1337,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_1)",
 					"$(HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_2)",
+					/Users/Shared/akk0rdsdk/libraries/SDL/SDL/include,
 				);
 				HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_1 = "\"$(SRCROOT)/../../SDL/include\"";
 				HEADER_SEARCH_PATHS_QUOTED_FOR_PROJECT_2 = "\"$(SRCROOT)/../external/libmodplug-0.8.9.0/src\" \"$(SRCROOT)/../external/libmodplug-0.8.9.0/src/libmodplug\" \"$(SRCROOT)/../external/libvorbisidec-1.2.1\" \"$(SRCROOT)/../external/libogg-1.3.2/include\" \"$(SRCROOT)/../external/flac-1.3.2/include\" \"$(SRCROOT)/../external/flac-1.3.2/src/libFLAC/include\"";
