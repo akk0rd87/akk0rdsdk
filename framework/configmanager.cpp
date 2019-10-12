@@ -86,8 +86,7 @@ bool ConfigManager::Save()
 
         if (res)
         {
-            std::string dir = std::string(this->FileName, 0, res);
-            BWrapper::DirCreate(dir.c_str());
+            BWrapper::DirCreate(std::string(this->FileName, 0, res).c_str());
         }
     }
 
