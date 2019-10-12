@@ -12,7 +12,7 @@ public:
     bool         Save();
     void         Clear();
 
-    bool         SetFile    (const char* FileName, BWrapper::FileSearchPriority SearchPriority);
+    bool         SetFile(const char* FileName, BWrapper::FileSearchPriority SearchPriority);
 
     bool         SetIntValue(const char* Key, int         Value);
     bool         SetStrValue(const char* Key, const char* Value);
@@ -31,6 +31,8 @@ private:
     public:
         std::string Key;
         std::string Value;
+        ConfigStruct() {}
+        ConfigStruct(const char* Key, const char* Value) : Key(Key), Value(Value) {}
         ~ConfigStruct()
         {
             Key.clear();
@@ -40,8 +42,6 @@ private:
 
     // список пар Key-Value
     std::vector<ConfigStruct> ConfigVector;
-
-    unsigned GetConfigIndex(const char* Key);
     void SetValue(const char* Key, const char* Value);
 
     BWrapper::FileSearchPriority FSearchPriority = BWrapper::FileSearchPriority::FileSystem;
@@ -52,7 +52,8 @@ private:
     ConfigManager(ConfigManager& rhs) = delete; // Копирующий: конструктор
     ConfigManager(ConfigManager&& rhs) = delete; // Перемещающий: конструктор
     ConfigManager& operator= (ConfigManager&& rhs) = delete; // Оператор перемещающего присваивания
-};
 
+    std::vector<ConfigStruct>::iterator GetConfigIt(const char* Key);
+};
 
 #endif // __AKK0RD_CONFIG_MANAGER_H__

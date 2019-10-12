@@ -1,34 +1,25 @@
+#include <fstream>
 #include "configmanager.h"
 
-unsigned ConfigManager::GetConfigIndex(const char* Key)
-{
-    unsigned i = 0;
-
-    for(const auto& v : ConfigVector)
-    {
-        if (Key == v.Key)
-            return i;
-        ++i;
-    };
-
-    return (std::numeric_limits<unsigned>::max)();
-}
+std::vector<ConfigManager::ConfigStruct>::iterator ConfigManager::GetConfigIt(const char* Key) {
+    auto it = std::find_if(ConfigVector.begin(), ConfigVector.end(), [&Key](const ConfigStruct& CFG) {
+        if (CFG.Key == std::string(Key))
+            return true;
+        return false;
+    });
+    return it;
+};
 
 void ConfigManager::SetValue(const char* Key, const char* Value)
 {
-    auto index = GetConfigIndex(Key);
-
-    if (index < ConfigVector.size())
+    auto it = GetConfigIt(Key);
+    if (it != ConfigVector.cend())
     {
-        ConfigVector[index].Value = std::string(Value);
+        it->Value = std::string(Value);
     }
     else
     {
-        ConfigStruct str;
-        ConfigVector.push_back(str);
-        auto idx = ConfigVector.size() - 1;
-        ConfigVector[idx].Key = std::string(Key);
-        ConfigVector[idx].Value = std::string(Value);
+        ConfigVector.emplace_back(Key, Value);
     }
 }
 
@@ -43,28 +34,19 @@ bool ConfigManager::SetFile(const char* FileName, BWrapper::FileSearchPriority S
 bool ConfigManager::Load()
 {
     this->Destroy();
-
-    ConfigStruct str;
-
     FileReader fr;
     if (fr.Open(FileName.c_str(), FSearchPriority))
     {
         std::string line;
-        decltype(line.find('='))      pos = 0;
-        decltype(ConfigVector.size()) idx = 0;
-
+        decltype(line.find('=')) pos = 0;
         while (fr.ReadLine(line))
         {
             if (line.size() > 0)
             {
                 pos = line.find('=');
-                if (pos > 0 && pos < (std::numeric_limits<decltype(pos)>::max()))
+                if (pos != std::string::npos)
                 {
-                    ConfigVector.push_back(str);
-                    idx = ConfigVector.size() - 1;
-
-                    ConfigVector[idx].Key = std::string(line, 0, pos);
-                    ConfigVector[idx].Value = std::string(line, pos + 1);
+                    ConfigVector.emplace_back(std::string(line, 0, pos).c_str(), std::string(line, pos + 1).c_str());
                 }
             }
         }
@@ -96,29 +78,25 @@ bool ConfigManager::Save()
 
         decltype(s1) res = 0;
 
-        if(s1 != std::string::npos)
+        if (s1 != std::string::npos)
             res = s1;
 
         if (s2 != std::string::npos && res < s2)
             res = s2;
 
-        if(res)
+        if (res)
         {
             std::string dir = std::string(this->FileName, 0, res);
             BWrapper::DirCreate(dir.c_str());
         }
     }
 
-    auto file = BWrapper::FileOpen(this->FileName.c_str(), FSearchPriority, BWrapper::FileOpenMode::WriteBinary);
-    if (file)
-    {
-        for (decltype(ConfigVector.size()) i = 0; i < ConfigVector.size(); i++)
-            BWrapper::FileWriteFormatted(file, "%s=%s\n", ConfigVector[i].Key.c_str(), ConfigVector[i].Value.c_str());
+    std::ofstream ofs(this->FileName.c_str(), std::ofstream::binary | std::ofstream::out);
+    for (const auto& v : ConfigVector)
+        ofs << v.Key << "=" << v.Value << "\n";
 
-        BWrapper::FileClose(file);
-        return true;
-    }
-    return false;
+    ofs.close();
+    return true;
 }
 
 bool ConfigManager::SetIntValue(const char* Key, int Value)
@@ -135,24 +113,22 @@ bool ConfigManager::SetStrValue(const char* Key, const char* Value)
 
 int  ConfigManager::GetIntValue(const char* Key, int DefaultValue)
 {
-    auto index = GetConfigIndex(Key);
-
-    if (index < ConfigVector.size())
+    auto it = GetConfigIt(Key);
+    if (it != ConfigVector.end())
     {
-        return std::stoi(ConfigVector[index].Value);
+        return std::stoi(it->Value);
     }
     else
     {
         return DefaultValue;
     }
 }
-std::string  ConfigManager::GetStrValue(const char* Key, const char* DefaultValue)
+std::string ConfigManager::GetStrValue(const char* Key, const char* DefaultValue)
 {
-    auto index = GetConfigIndex(Key);
-
-    if (index < ConfigVector.size())
+    auto it = GetConfigIt(Key);
+    if (it != ConfigVector.end())
     {
-        return ConfigVector[index].Value;
+        return it->Value;
     }
     else
     {
