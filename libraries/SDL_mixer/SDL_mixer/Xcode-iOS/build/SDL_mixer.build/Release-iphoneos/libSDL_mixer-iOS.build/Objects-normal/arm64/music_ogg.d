@@ -1,0 +1,24 @@
+dependencies: \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/music_ogg.c \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/SDL_loadso.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/SDL_stdinc.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/SDL_config.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/SDL_platform.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/begin_code.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/close_code.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/SDL_config_iphoneos.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/SDL_error.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/music_ogg.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/music.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/SDL_mixer.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/SDL_rwops.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/SDL_audio.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/SDL_endian.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/SDL_mutex.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/SDL_thread.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/SDL_atomic.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL/SDL/include/SDL_version.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/libvorbisidec-1.2.1/ivorbisfile.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/libvorbisidec-1.2.1/ivorbiscodec.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/libogg-1.3.2/include/ogg/ogg.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/libogg-1.3.2/include/ogg/os_types.h

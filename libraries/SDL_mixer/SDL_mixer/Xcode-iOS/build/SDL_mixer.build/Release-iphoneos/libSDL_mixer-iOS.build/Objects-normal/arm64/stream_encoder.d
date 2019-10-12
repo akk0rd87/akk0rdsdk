@@ -1,0 +1,31 @@
+dependencies: \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/src/libFLAC/stream_encoder.c \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/include/share/compat.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/include/FLAC/assert.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/include/FLAC/stream_decoder.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/include/FLAC/export.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/include/FLAC/format.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/include/FLAC/ordinals.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/src/libFLAC/include/protected/stream_encoder.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/include/FLAC/stream_encoder.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/src/libFLAC/include/private/ogg_encoder_aspect.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/libogg-1.3.2/include/ogg/ogg.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/libogg-1.3.2/include/ogg/os_types.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/src/libFLAC/include/private/float.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/src/libFLAC/include/private/bitwriter.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/src/libFLAC/include/private/bitmath.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/src/libFLAC/include/private/crc.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/src/libFLAC/include/private/cpu.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/src/libFLAC/include/private/fixed.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/src/libFLAC/include/private/format.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/src/libFLAC/include/private/lpc.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/src/libFLAC/include/private/md5.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/src/libFLAC/include/private/memory.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/src/libFLAC/include/private/macros.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/src/libFLAC/include/private/ogg_helper.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/src/libFLAC/include/private/ogg_mapping.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/src/libFLAC/include/private/stream_encoder.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/src/libFLAC/include/private/stream_encoder_framing.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/src/libFLAC/include/private/window.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/include/share/alloc.h \
+  /Users/Shared/akk0rdsdk/libraries/SDL_mixer/SDL_mixer/external/flac-1.3.2/include/share/private.h
