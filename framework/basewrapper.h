@@ -35,7 +35,7 @@ class AkkordColor
 private :
     Uint32 color;
 public:
-    AkkordColor();
+    AkkordColor(): color{0} {};
     AkkordColor(Uint32 Color) : color(Color) {};
     AkkordColor(Uint8 R, Uint8 G, Uint8 B) { SetRGB(R, G, B); };
     AkkordColor(Uint8 R, Uint8 G, Uint8 B, Uint8 A) { SetRGBA(R, G, B, A); };
