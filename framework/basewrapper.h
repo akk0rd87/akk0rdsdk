@@ -41,13 +41,13 @@ public:
     AkkordColor(Uint8 R, Uint8 G, Uint8 B, Uint8 A) { SetRGBA(R, G, B, A); };
 
     void                 SetInt32(Uint32 Color) { color = Color; };
-    void                 SetRGB  (Uint8 R, Uint8 G, Uint8 B) { SetRGBA(R, G, B, 255); };
+    void                 SetRGB  (Uint8 R, Uint8 G, Uint8 B) { SetRGBA(R, G, B, static_cast<Uint8>(255)); };
     void                 SetRGBA (Uint8 R, Uint8 G, Uint8 B, Uint8 A) { color = AkkordColor::RGBA2Int32(R, G, B, A); };
 
-    void                 SetR    (Uint8 R) { SetRGBA(R, GetG(), GetB(), GetA()); };
-    void                 SetG    (Uint8 G) { SetRGBA(GetR(), G, GetB(), GetA()); };
-    void                 SetB    (Uint8 B) { SetRGBA(GetR(), GetG(), B, GetA()); };
-    void                 SetA    (Uint8 A) { SetRGBA(GetR(), GetG(), GetB(), A); };
+    void                 SetR    (Uint8 R) { color &= static_cast<Uint32>(0xffffff00); color |= static_cast<Uint32>(R);                             };
+    void                 SetG    (Uint8 G) { color &= static_cast<Uint32>(0xffff00ff); color |= (static_cast<Uint32>(G) << 8); };
+    void                 SetB    (Uint8 B) { color &= static_cast<Uint32>(0xff00ffff); color |= (static_cast<Uint32>(B) << 16);};
+    void                 SetA    (Uint8 A) { color &= static_cast<Uint32>(0x00ffffff); color |= (static_cast<Uint32>(A) << 24);};
 
     Uint32               GetInt32() const { return color; };
     Uint8                GetR    () const { return AkkordColor::GetRFromInt32(color); };
@@ -55,10 +55,10 @@ public:
     Uint8                GetB    () const { return AkkordColor::GetBFromInt32(color); };
     Uint8                GetA    () const { return AkkordColor::GetAFromInt32(color); };
 
-    static Uint8         GetRFromInt32(Uint32 ColorInt32) {return (ColorInt32 & 0x000000ff); };
-    static Uint8         GetGFromInt32(Uint32 ColorInt32) {return (ColorInt32 & 0x0000ff00) >> 8; };
-    static Uint8         GetBFromInt32(Uint32 ColorInt32) {return (ColorInt32 & 0x00ff0000) >> 16; };
-    static Uint8         GetAFromInt32(Uint32 ColorInt32) {return (ColorInt32 & 0xff000000) >> 24; };
+    static Uint8         GetRFromInt32(Uint32 ColorInt32) {return static_cast<Uint8>((ColorInt32 & static_cast<Uint32>(0x000000ff))); };
+    static Uint8         GetGFromInt32(Uint32 ColorInt32) {return static_cast<Uint8>((ColorInt32 & static_cast<Uint32>(0x0000ff00)) >> 8); };
+    static Uint8         GetBFromInt32(Uint32 ColorInt32) {return static_cast<Uint8>((ColorInt32 & static_cast<Uint32>(0x00ff0000)) >> 16); };
+    static Uint8         GetAFromInt32(Uint32 ColorInt32) {return static_cast<Uint8>((ColorInt32 & static_cast<Uint32>(0xff000000)) >> 24); };
 
     static Uint32        RGBA2Int32(int r, int g, int b, int a) { return r + g * 256 + b * 256 * 256 + a * 256 * 256 * 256; };
 };
