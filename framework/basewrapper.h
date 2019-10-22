@@ -44,7 +44,7 @@ public:
     void                 SetRGB  (Uint8 R, Uint8 G, Uint8 B) { SetRGBA(R, G, B, static_cast<Uint8>(255)); };
     void                 SetRGBA (Uint8 R, Uint8 G, Uint8 B, Uint8 A) { color = AkkordColor::RGBA2Int32(R, G, B, A); };
 
-    void                 SetR    (Uint8 R) { color &= static_cast<Uint32>(0xffffff00); color |= static_cast<Uint32>(R);                             };
+    void                 SetR    (Uint8 R) { color &= static_cast<Uint32>(0xffffff00); color |= static_cast<Uint32>(R);};
     void                 SetG    (Uint8 G) { color &= static_cast<Uint32>(0xffff00ff); color |= (static_cast<Uint32>(G) << 8); };
     void                 SetB    (Uint8 B) { color &= static_cast<Uint32>(0xff00ffff); color |= (static_cast<Uint32>(B) << 16);};
     void                 SetA    (Uint8 A) { color &= static_cast<Uint32>(0x00ffffff); color |= (static_cast<Uint32>(A) << 24);};
