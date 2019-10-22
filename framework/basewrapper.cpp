@@ -46,11 +46,6 @@ public:
 static CurrentContextStruct CurrentContext;
 static LogParamsStruct LogParams;
 
-int BWrapper::GetCPUCount()
-{
-    return SDL_GetCPUCount();
-}
-
 bool BWrapper::Init(Uint32 flags)
 {
     //Если раскомментить нижеприведенную строку, то на винде валится при закрытии окна приложения (не консоли)
@@ -502,26 +497,6 @@ bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const B
     return result;
 };
 
-void AkkordTexture::Destroy()
-{
-    if (tex)
-    {
-        SDL_DestroyTexture(tex);
-    }
-    tex = nullptr;
-}
-
-AkkordTexture::~AkkordTexture()
-{
-    Destroy();
-}
-
-AkkordTexture::AkkordTexture(AkkordTexture&& tmp)
-{
-    this->tex = tmp.tex;
-    tmp.tex = nullptr;
-};
-
 bool AkkordTexture::SetColorMod(Uint8 R, Uint8 G, Uint8 B)
 {
     if (SDL_SetTextureColorMod(tex, R, G, B) == 0)
@@ -530,11 +505,6 @@ bool AkkordTexture::SetColorMod(Uint8 R, Uint8 G, Uint8 B)
     logError("SDL_SetTextureColorMod error: %s", SDL_GetError());
     return false;
 }
-
-bool AkkordTexture::SetColorMod(const AkkordColor& ModColor)
-{
-    return SetColorMod(ModColor.GetR(), ModColor.GetG(), ModColor.GetB());
-};
 
 bool AkkordTexture::SetAlphaMod(Uint8 A)
 {
@@ -608,11 +578,6 @@ bool AkkordTexture::Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas
     return true;
 };
 
-AkkordTexture::AkkordTexture()
-{
-    tex = nullptr;
-}
-
 AkkordPoint AkkordTexture::GetSize() const
 {
     AkkordPoint Point(-1, -1);
@@ -636,16 +601,6 @@ AkkordPoint BWrapper::GetScreenSize()
     return WSize;
 };
 
-int BWrapper::GetScreenWidth()
-{
-    return GetScreenSize().x;
-};
-
-int BWrapper::GetScreenHeight()
-{
-    return GetScreenSize().y;
-};
-
 bool BWrapper::IsPointInRect(const AkkordPoint& Point, const AkkordRect& Rect)
 {
     if (Rect.x <= Point.x && Point.x <= Rect.x + Rect.w)
@@ -653,109 +608,6 @@ bool BWrapper::IsPointInRect(const AkkordPoint& Point, const AkkordRect& Rect)
             return true;
 
     return false;
-}
-
-void AkkordColor::SetInt32(unsigned int Color)
-{
-    color = Color;
-}
-
-AkkordColor::AkkordColor(Uint8 R, Uint8 G, Uint8 B) // constructor
-{
-    SetRGB(R, G, B);
-};
-
-AkkordColor::AkkordColor(Uint8 R, Uint8 G, Uint8 B, Uint8 A) // constructor
-{
-    SetRGBA(R, G, B, A);
-};
-
-AkkordColor::AkkordColor()
-{
-    SetRGB(255, 255, 255);
-}
-
-void AkkordColor::SetRGB(Uint8 R, Uint8 G, Uint8 B)
-{
-    SetRGBA(R, G, B, 255);
-};
-
-void AkkordColor::SetRGBA(Uint8 R, Uint8 G, Uint8 B, Uint8 A)
-{
-    color = AkkordColor::RGBA2Int32(R, G, B, A);
-};
-
-Uint8 AkkordColor::GetRFromInt32(Uint32 ColorInt32)
-{
-    return (ColorInt32 & 0x000000ff);
-};
-
-Uint8 AkkordColor::GetGFromInt32(Uint32 ColorInt32)
-{
-    return (ColorInt32 & 0x0000ff00) >> 8;
-};
-
-Uint8 AkkordColor::GetBFromInt32(Uint32 ColorInt32)
-{
-    return (ColorInt32 & 0x00ff0000) >> 16;
-};
-
-Uint8 AkkordColor::GetAFromInt32(Uint32 ColorInt32)
-{
-    return (ColorInt32 & 0xff000000) >> 24;
-};
-
-Uint8 AkkordColor::GetR() const
-{
-    return AkkordColor::GetRFromInt32(color);
-};
-
-Uint8 AkkordColor::GetG() const
-{
-    return AkkordColor::GetGFromInt32(color);
-};
-
-Uint8 AkkordColor::GetB() const
-{
-    return AkkordColor::GetBFromInt32(color);
-};
-
-Uint8 AkkordColor::GetA() const
-{
-    return AkkordColor::GetAFromInt32(color);;
-};
-
-unsigned int AkkordColor::GetInt32() const
-{
-    return color;
-};
-
-void AkkordColor::SetR(Uint8 R)
-{
-    SetRGBA(R, GetG(), GetB(), GetA());
-};
-
-void AkkordColor::SetG(Uint8 G)
-{
-    SetRGBA(GetR(), G, GetB(), GetA());
-};
-
-void AkkordColor::SetB(Uint8 B)
-{
-    SetRGBA(GetR(), GetG(), B, GetA());
-};
-
-void AkkordColor::SetA(Uint8 A)
-{
-    SetRGBA(GetR(), GetG(), GetB(), A);
-};
-
-unsigned int AkkordColor::RGBA2Int32(int r, int g, int b, int a)
-{
-    return r
-        + g * 256
-        + b * 256 * 256
-        + a * 256 * 256 * 256;
 }
 
 bool BWrapper::SetCurrentColor(const AkkordColor& Color)
@@ -1018,12 +870,6 @@ bool BWrapper::AndroidShowToast(const char* Message, BWrapper::AndroidToastDurat
     return Platforms::AndroidShowToast(Message, Duration, Gravity, xOffset, yOffset);
 }
 
-void BWrapper::SetLogPriority(BWrapper::LogPriority Priority)
-{
-    SDL_LogPriority sev = (SDL_LogPriority)Priority;
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, sev);
-}
-
 LogParamsStruct* BWrapper::GetLogParams()
 {
     return &LogParams;
@@ -1193,21 +1039,6 @@ decltype(time(nullptr)) BWrapper::GetTimeSeconds()
     return time(nullptr);
 }
 
-unsigned BWrapper::GetTicks()
-{
-    return SDL_GetTicks();
-}
-
-void BWrapper::Sleep(unsigned MilliSeconds)
-{
-    SDL_Delay(MilliSeconds);
-}
-
-std::string BWrapper::GetAppBuildDateTimeString()
-{
-    return std::string(__DATE__) + " " + __TIME__;
-};
-
 std::string BWrapper::GetSDKVersionInfo()
 {
     std::string VersionString;
@@ -1227,21 +1058,6 @@ bool BWrapper::DirExists(const char* Dir)
 
 std::string BWrapper::GetInternalDir() { return Platforms::GetInternalDir(); };
 std::string BWrapper::GetInternalWriteDir() { return Platforms::GetInternalWriteDir(); };
-
-//
-bool DirContentReader::Close()
-{
-    List.clear();
-    this->Pointer = 0;
-    this->Size = 0;
-
-    return true;
-}
-
-DirContentReader::~DirContentReader()
-{
-    Close();
-}
 
 bool DirContentReader::Next(DirContentElement*& Element)
 {
@@ -1342,21 +1158,6 @@ void FileReader::Close()
     sbuf = nullptr;
 #endif
 };
-
-FileReader::FileReader()
-{
-    Close();
-};
-
-FileReader::~FileReader()
-{
-    Close();
-};
-
-bool FileReader::IsOpen() const
-{
-    return opened;
-}
 
 bool FileReader::ReadLine(std::string& Line)
 {
@@ -1475,9 +1276,4 @@ bool WAVPlayer::Play()
     }
     logError("Error play wav: wav_length = 0");
     return false;
-};
-
-WAVPlayer::~WAVPlayer()
-{
-    Clear();
 };

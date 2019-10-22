@@ -37,30 +37,30 @@ private :
 public:
     AkkordColor();
     AkkordColor(Uint32 Color) : color(Color) {};
-    AkkordColor(Uint8 R, Uint8 G, Uint8 B);
-    AkkordColor(Uint8 R, Uint8 G, Uint8 B, Uint8 A);
+    AkkordColor(Uint8 R, Uint8 G, Uint8 B) { SetRGB(R, G, B); };
+    AkkordColor(Uint8 R, Uint8 G, Uint8 B, Uint8 A) { SetRGBA(R, G, B, A); };
 
-    void                 SetInt32(unsigned int Color);
-    void                 SetRGB  (Uint8 R, Uint8 G, Uint8 B);
-    void                 SetRGBA (Uint8 R, Uint8 G, Uint8 B, Uint8 A);
+    void                 SetInt32(Uint32 Color) { color = Color; };
+    void                 SetRGB  (Uint8 R, Uint8 G, Uint8 B) { SetRGBA(R, G, B, 255); };
+    void                 SetRGBA (Uint8 R, Uint8 G, Uint8 B, Uint8 A) { color = AkkordColor::RGBA2Int32(R, G, B, A); };
 
-    void                 SetR    (Uint8 R);
-    void                 SetG    (Uint8 G);
-    void                 SetB    (Uint8 B);
-    void                 SetA    (Uint8 A);
+    void                 SetR    (Uint8 R) { SetRGBA(R, GetG(), GetB(), GetA()); };
+    void                 SetG    (Uint8 G) { SetRGBA(GetR(), G, GetB(), GetA()); };
+    void                 SetB    (Uint8 B) { SetRGBA(GetR(), GetG(), B, GetA()); };
+    void                 SetA    (Uint8 A) { SetRGBA(GetR(), GetG(), GetB(), A); };
 
-    unsigned int         GetInt32() const;
-    Uint8                GetR    () const;
-    Uint8                GetG    () const;
-    Uint8                GetB    () const;
-    Uint8                GetA    () const;
+    Uint32               GetInt32() const { return color; };
+    Uint8                GetR    () const { return AkkordColor::GetRFromInt32(color); };
+    Uint8                GetG    () const { return AkkordColor::GetGFromInt32(color); };
+    Uint8                GetB    () const { return AkkordColor::GetBFromInt32(color); };
+    Uint8                GetA    () const { return AkkordColor::GetAFromInt32(color); };
 
-    static Uint8 GetRFromInt32(Uint32 ColorInt32);
-    static Uint8 GetGFromInt32(Uint32 ColorInt32);
-    static Uint8 GetBFromInt32(Uint32 ColorInt32);
-    static Uint8 GetAFromInt32(Uint32 ColorInt32);
+    static Uint8         GetRFromInt32(Uint32 ColorInt32) {return (ColorInt32 & 0x000000ff); };
+    static Uint8         GetGFromInt32(Uint32 ColorInt32) {return (ColorInt32 & 0x0000ff00) >> 8; };
+    static Uint8         GetBFromInt32(Uint32 ColorInt32) {return (ColorInt32 & 0x00ff0000) >> 16; };
+    static Uint8         GetAFromInt32(Uint32 ColorInt32) {return (ColorInt32 & 0xff000000) >> 24; };
 
-    static unsigned int RGBA2Int32(int r, int g, int b, int a);
+    static Uint32        RGBA2Int32(int r, int g, int b, int a) { return r + g * 256 + b * 256 * 256 + a * 256 * 256 * 256; };
 };
 
 class BWrapper
@@ -68,9 +68,6 @@ class BWrapper
 public:
     // scoped enums:
     enum struct OS                   : unsigned char { iOS, Windows, AndroidOS, /*Mac,  Linux,*/ Unknown };
-
-    //enum struct Lang                 : unsigned      { Russian, Ukrainian, Armenian, Belarussian, Uzbek, Kazakh, Azerbaijani, English, Chinese, French, Japanese, Bulgarian, Unknown };
-
     enum struct KeyCodes             : unsigned      { Esc, BackSpace, Back, Enter, Tab, Delete, F1, Help, Home, End, Insert, Find, Copy, PageDown, PageUp, Paste, Pause, PrintScreen, Return, Return2, Space, Left, Right, Up, Down, Uknown, Minus, Plus, Equals, LeftBraket, RightBraket, Comma, Period, Quote,
                                                       N0, N1, N2, N3, N4, N5, N6, N7, N8, N9, // main numbers
                                                       Numpad0, Numpad1, Numpad2, Numpad3, Numpad4, Numpad5, Numpad6, Numpad7, Numpad8, Numpad9, NumpadPlus, NumpadMinus,
@@ -118,13 +115,13 @@ public:
         };
     };
 
-    static std::string         GetAppBuildDateTimeString   ();
+    static std::string         GetAppBuildDateTimeString   () { return std::string(__DATE__) + " " + __TIME__;};
     static std::string         GetSDKVersionInfo           ();
 
     // System init-quit functions
     static bool                Init                        (Uint32 flags);
     static void                Quit                        ();
-    static int                 GetCPUCount                 ();
+    static int                 GetCPUCount                 () { return SDL_GetCPUCount(); };
 
     // Windows and Render functions
     static AkkordWindow*       CreateRenderWindow          (const char* Title, int X, int Y, int W, int H, Uint32 Flags);
@@ -140,8 +137,8 @@ public:
     static bool                SetWindowResizable          (bool Resizable);
     static bool                SetWindowSize               (int W, int H);
     static AkkordPoint         GetScreenSize               ();
-    static int                 GetScreenWidth              ();
-    static int                 GetScreenHeight             ();
+    static int                 GetScreenWidth              () { return GetScreenSize().x; };
+    static int                 GetScreenHeight             () { return GetScreenSize().y; };
 
 
     // Drawing functions
@@ -184,7 +181,7 @@ public:
     // Logging and debugging functions
     static void                Log                         (BWrapper::LogPriority Priority, const char* File, const char* Function, unsigned Line, SDL_PRINTF_FORMAT_STRING const char *Fmt, ...);
     static LogParamsStruct*    GetLogParams                ();
-    static void                SetLogPriority              (BWrapper::LogPriority Priority);
+    static void                SetLogPriority              (BWrapper::LogPriority Priority) { SDL_LogPriority sev = (SDL_LogPriority)Priority; SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, sev); };
     static bool                PrintDirContent             (const char* Path, BWrapper::LogPriority Priority = BWrapper::LogPriority::Debug, bool Recursive = false);
 
     // Random functions
@@ -203,11 +200,11 @@ public:
 
     // Datetime functions
     static time_t              GetTimeSeconds              (); // https://ru.wikipedia.org/wiki/Time.h
-    static unsigned            GetTicks                    (); // Returns an unsigned 32 - bit value representing the number of milliseconds since the SDL library initialized
+    static Uint32              GetTicks                    () { return SDL_GetTicks(); }; // Returns an unsigned 32 - bit value representing the number of milliseconds since the SDL library initialized
 
 
     // Thread functions
-    static void                Sleep                       (unsigned MilliSeconds);
+    static void                Sleep                       (unsigned MilliSeconds) { SDL_Delay(MilliSeconds); };
 
     // Environment functions
     static Locale::Lang        GetDeviceLanguage           ();
@@ -256,7 +253,7 @@ private:
 public:
     enum struct TextureType : unsigned char { BMP, PNG, JPEG, SVG };
     struct Flip { enum : unsigned char { None = SDL_FLIP_NONE, Horizontal = SDL_FLIP_HORIZONTAL, Vertical = SDL_FLIP_VERTICAL }; };
-    void Destroy();
+    void Destroy() { if(tex) { SDL_DestroyTexture(tex); }; tex = nullptr; };
     //bool LoadFromFile(const char* FileName);
     bool LoadFromFile  (const char* FileName, TextureType Type, const BWrapper::FileSearchPriority SearchPriority = BWrapper::FileSearchPriority::Assets, float Scale = 1.0f);
     bool LoadFromMemory(const char* Buffer, int Size, TextureType Type, float Scale = 1.0f);
@@ -267,16 +264,16 @@ public:
     bool Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas, unsigned char Flip, double Angle, AkkordPoint* Point) const;
     AkkordPoint GetSize() const;
     bool SetColorMod(Uint8 R, Uint8 G, Uint8 B);
-    bool SetColorMod(const AkkordColor& ModColor);
+    bool SetColorMod(const AkkordColor& ModColor) { return SetColorMod(ModColor.GetR(), ModColor.GetG(), ModColor.GetB()); };
     bool SetAlphaMod(Uint8 A);
 
-    AkkordTexture();
-    ~AkkordTexture();
+    AkkordTexture(): tex(nullptr) {};
+    ~AkkordTexture() { Destroy(); };
 
-    SDL_Texture * GetTexture() { return tex;  };
+    SDL_Texture * GetTexture() { return tex; };
 
     AkkordTexture(AkkordTexture& rhs) = delete; // Копирующий: конструктор
-    AkkordTexture(AkkordTexture&& tmp); // Перемещающий конструктор объявлен
+    AkkordTexture(AkkordTexture&& tmp) { this->tex = tmp.tex; tmp.tex = nullptr; }; // Перемещающий конструктор объявлен
     AkkordTexture& operator= (AkkordTexture&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
@@ -288,10 +285,10 @@ private:
     unsigned Pointer = 0;
 public:
     bool Open(const char* Dir);
-    bool Close();
+    bool Close() { List.clear(); this->Size = this->Pointer = 0; return true; };
     bool Next(DirContentElement*& Element);
-    DirContentReader() {};
-    ~DirContentReader();
+    DirContentReader(): Size(0), Pointer(0)  {};
+    ~DirContentReader() { Close(); };
 
     DirContentReader(DirContentReader& rhs) = delete; // Копирующий: конструктор
     DirContentReader(DirContentReader&& rhs) = delete; // Перемещающий: конструктор
@@ -312,9 +309,9 @@ private:
 public:
     bool Open(const char *Fname, BWrapper::FileSearchPriority SearchPriority);
     void Close();
-    FileReader();
-    ~FileReader();
-    bool IsOpen() const;
+    FileReader() { Close(); };
+    ~FileReader() { Close(); };
+    bool IsOpen() const { return opened; };
     bool ReadLine(std::string& Line);
     bool Read(char* Buffer, unsigned MaxSize, unsigned& Readed);
 
@@ -354,7 +351,7 @@ public:
     void Clear();
 
     WAVPlayer() :wav_length(0), wav_buffer(nullptr), deviceId(0) {};
-    ~WAVPlayer();
+    ~WAVPlayer() { Clear(); };
 
     WAVPlayer(WAVPlayer& rhs) = delete; // Копирующий: конструктор
     WAVPlayer(WAVPlayer&& rhs) = delete; // Перемещающий: конструктор
