@@ -156,12 +156,10 @@ void SDFProgram::Clear()
 bool SDFProgram::Init()
 {
     const char* Outline = "#define SDF_OUTLINE \n";
-    std::string regVertex, regFragment, outVertex, outFragment;
-
-    regVertex   = SDF_vertexSource;
-    regFragment = SDF_fragmentSource;
-    outVertex   = std::string(Outline) + SDF_vertexSource;
-    outFragment = std::string(Outline) + SDF_fragmentSource;
+    std::string regVertex   = SDF_vertexSource;
+    std::string regFragment = SDF_fragmentSource;
+    std::string outVertex   = std::string(Outline) + SDF_vertexSource;
+    std::string outFragment = std::string(Outline) + SDF_fragmentSource;
 
     // на винде работаем на openGL 2.1, поэтому нужно явно указать номер версии OpenGL Shading Language https://en.wikipedia.org/wiki/OpenGL_Shading_Language
     // на всем остальном работаем на openGLES 2.0
