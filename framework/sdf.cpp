@@ -184,56 +184,6 @@ bool SDFProgram::Init()
     return false;
 };
 
-ShaderProgramStruct* SDFProgram::GetShaderProgram(bool Outline)
-{
-    if (Outline)
-        return &ShaderProgramOutline;
-
-    return &ShaderProgram;
-};
-
-SDFProgram::SDFProgram()
-{
-    //logDebug("SDFProgram constructor");
-}
-
-SDFProgram::~SDFProgram()
-{
-    logDebug("SDFProgram destructor");
-    Clear();
-}
-
-/*
-class SDFGLTexture
-{
-    AkkordTexture akkordTexture;
-public:
-    void Clear();
-    bool Load(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority);
-    bool Draw(bool Outline, GLsizei Count, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border, int Spread);
-    AkkordPoint GetSize();
-    ~SDFGLTexture();
-};
-*/
-
-void SDFGLTexture::Clear()
-{
-}
-
-bool SDFGLTexture::LoadFromFile(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority)
-{
-    this->Clear();
-    akkordTexture.LoadFromFile(FileNamePNG, AkkordTexture::TextureType::PNG, SearchPriority);
-    return true;
-}
-
-bool SDFGLTexture::LoadFromMemory(const char* Buffer, int Size)
-{
-    this->Clear();
-    akkordTexture.LoadFromMemory(Buffer, Size, AkkordTexture::TextureType::PNG);
-    return true;
-};
-
 bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border, int Spread)
 {
     GLint oldProgramId;
@@ -324,52 +274,6 @@ bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColo
         if (VertexParams.attr_3_enabled != GL_FALSE) { Driver.glEnableVertexAttribArray((GLuint)3); CheckGLESError(); }
     }
 
-    return true;
-};
-
-AkkordPoint SDFGLTexture::GetSize()
-{
-    return akkordTexture.GetSize();
-};
-
-SDFGLTexture::~SDFGLTexture()
-{
-    Clear();
-}
-
-void SDFTexture::Clear()
-{
-    UV.clear();
-    squareVertices.clear();
-    Indices.clear();
-}
-
-SDFTexture::~SDFTexture()
-{
-    Clear();
-    Texture.Clear();
-};
-
-void SDFTexture::InitAtlasWH()
-{
-    auto size = Texture.GetSize();
-    atlasW = static_cast<float>(size.x);
-    atlasH = static_cast<float>(size.y);
-};
-
-bool SDFTexture::LoadFromFile(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority, int Spread)
-{
-    this->Spread = Spread;
-    Texture.LoadFromFile(FileNamePNG, SearchPriority);
-    InitAtlasWH();
-    return true;
-}
-
-bool SDFTexture::LoadFromMemory(const char* Buffer, int Size, int Spread)
-{
-    this->Spread = Spread;
-    Texture.LoadFromMemory(Buffer, Size);
-    InitAtlasWH();
     return true;
 };
 
@@ -564,48 +468,11 @@ bool SDFFont::ParseFNTFile(const char* FNTFile, BWrapper::FileSearchPriority Sea
     return true;
 }
 
-void SDFFont::Clear()
-{
-    CharsMap.clear();
-    FontAtlas.Clear();
-};
-
-SDFFont::~SDFFont()
-{
-    Clear();
-}
-
-unsigned int SDFFont::GetAtlasW() { return ScaleW; }
-unsigned int SDFFont::GetAtlasH() { return ScaleH; }
-
-bool SDFFont::Load(const char* FileNameFNT, const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority, int Spread)
-{
-    this->Clear();
-    this->Spread = Spread;
-    FontAtlas.LoadFromFile(FileNamePNG, SearchPriority);
-    ParseFNTFile(FileNameFNT, BWrapper::FileSearchPriority::Assets);
-    return true;
-};
-
 bool SDFFont::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border)
 {
     FontAtlas.Draw(Outline, Count, FontColor, OutlineColor, UV, squareVertices, Indices, Scale, Border, Spread);
     return true;
 };
-
-bool SDFFont::GetCharInfo(unsigned Code, SDFCharInfo& ci)
-{
-    auto res = CharsMap.find(Code);
-    if (res != CharsMap.end())
-    {
-        ci = res->second;
-        return true;
-    }
-    logError("Char with id=%u not found", Code);
-    return false;
-};
-
-unsigned SDFFont::GetLineHeight() { return LineHeight; }
 
 // Для рисования всегда указывать левую верхнюю точку (удобно для разгаданных слов в "составь слова")
 
@@ -657,49 +524,6 @@ AkkordPoint SDFFontBuffer::GetTextSizeByLine(const char* Text, std::vector<unsig
     return pt;
 }
 
-SDFFontBuffer::SDFFontBuffer(SDFFont* Font, unsigned int DigitsCount, const AkkordColor& Color)
-{
-    this->Clear();
-    sdfFont = Font;
-    color = Color;
-    Reserve(DigitsCount);
-}
-
-void SDFFontBuffer::SetFont(SDFFont* Font) { sdfFont = Font; };
-void SDFFontBuffer::SetScale(float Scale) { scaleX = scaleY = Scale; }
-void SDFFontBuffer::SetScale(float ScaleX, float ScaleY) { scaleX = ScaleX; scaleY = ScaleY; }
-
-void SDFFontBuffer::SetColor(const AkkordColor& Color) { color = Color; };
-void SDFFontBuffer::SetOutline(bool Outline) { outline = Outline; }
-void SDFFontBuffer::SetOutlineColor(const AkkordColor& OutlineColor) { outlineColor = OutlineColor; };
-void SDFFontBuffer::SetBorder(float BorderWidth) { this->Border = BorderWidth; }
-
-float SDFFontBuffer::GetScaleX() { return scaleX; }
-float SDFFontBuffer::GetScaleY() { return scaleY; }
-
-void SDFFontBuffer::SetRect(int W, int H) { rectW = W; rectH = H; }
-
-void SDFFontBuffer::SetAlignment(SDFFont::AlignH AlignH, SDFFont::AlignV AlignV) { alignH = AlignH; alignV = AlignV; }
-void SDFFontBuffer::SetAlignmentH(SDFFont::AlignH AlignH) { alignH = AlignH; }
-void SDFFontBuffer::SetAlignmentV(SDFFont::AlignV AlignV) { alignV = AlignV; }
-
-SDFFont::AlignH SDFFontBuffer::GetAlignH() { return alignH; }
-SDFFont::AlignV SDFFontBuffer::GetAlignV() { return alignV; }
-
-void SDFFontBuffer::Reserve(unsigned Count)
-{
-    UV.reserve(Count * 4);
-    squareVertices.reserve(Count * 4);
-    Indices.reserve(Count * 6);
-}
-
-void SDFFontBuffer::Clear()
-{
-    UV.clear();
-    squareVertices.clear();
-    Indices.clear();
-};
-
 void SDFFontBuffer::Flush()
 {
     if (Indices.size() > 0)
@@ -707,21 +531,6 @@ void SDFFontBuffer::Flush()
         sdfFont->Draw(this->outline, (GLsizei)Indices.size(), this->color, this->outlineColor, &UV.front(), &squareVertices.front(), &Indices.front(), (GLfloat)this->scaleX, (GLfloat)this->Border);
     }
     Clear();
-};
-
-SDFFontBuffer::~SDFFontBuffer()
-{
-    Clear();
-    sdfFont = nullptr;
-};
-
-// сейчас это int, возможно для этой функции сделать отдельный тип со float
-AkkordPoint SDFFontBuffer::GetTextSize(const char* Text)
-{
-    std::vector<unsigned> VecSize;
-    AkkordPoint pt(1, 1);
-    pt = GetTextSizeByLine(Text, VecSize);
-    return pt;
 };
 
 AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text)

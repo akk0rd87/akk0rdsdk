@@ -51,9 +51,9 @@ public:
     };
 
     bool Init();
-    ShaderProgramStruct* GetShaderProgram(bool Outline);
-    SDFProgram();
-    ~SDFProgram();
+    ShaderProgramStruct* GetShaderProgram(bool Outline) { return (Outline ? &ShaderProgramOutline : &ShaderProgram); };
+    SDFProgram() {};
+    ~SDFProgram() { Clear(); };
 
     static SDFProgram& GetInstance();
 
@@ -67,12 +67,21 @@ class SDFGLTexture
 {
     AkkordTexture akkordTexture;
 public:
-    void Clear();
-    bool LoadFromFile(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority);
-    bool LoadFromMemory(const char* Buffer, int Size);
+    void Clear() {};
+    bool LoadFromFile(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority) {
+        this->Clear();
+        akkordTexture.LoadFromFile(FileNamePNG, AkkordTexture::TextureType::PNG, SearchPriority);
+        return true;
+    };
+
+    bool LoadFromMemory(const char* Buffer, int Size) {
+        this->Clear();
+        akkordTexture.LoadFromMemory(Buffer, Size, AkkordTexture::TextureType::PNG);
+        return true;
+    };
     bool Draw(bool Outline, GLsizei Count, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border, int Spread);
-    AkkordPoint GetSize();
-    ~SDFGLTexture();
+    AkkordPoint GetSize() { return akkordTexture.GetSize(); };
+    ~SDFGLTexture() { Clear(); };
 };
 
 class SDFTexture
@@ -90,19 +99,40 @@ class SDFTexture
     bool Outline = false;
     float atlasW;
     float atlasH;
-    void InitAtlasWH();
+    void InitAtlasWH(){
+        auto size = Texture.GetSize();
+        atlasW = static_cast<float>(size.x);
+        atlasH = static_cast<float>(size.y);
+    };
 public:
-    bool LoadFromFile(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority, int Spread);
-    bool LoadFromMemory(const char* Buffer, int Size, int Spread);
+    bool LoadFromFile(const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority, int Spread) {
+        this->Spread = Spread;
+        Texture.LoadFromFile(FileNamePNG, SearchPriority);
+        InitAtlasWH();
+        return true;
+    };
+    bool LoadFromMemory(const char* Buffer, int Size, int Spread) {
+        this->Spread = Spread;
+        Texture.LoadFromMemory(Buffer, Size);
+        InitAtlasWH();
+        return true;
+    };
     void SetColor(const AkkordColor& Color) { this->Color = Color; };
     void SetOutlineColor(const AkkordColor& OutlineColor) { this->OutlineColor = OutlineColor; };
     bool Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect = nullptr);
-    void Clear();
     bool Flush();
     void SetAutoFlush(bool AutoFlush) { this->AutoFlush = AutoFlush; };
     void SetOutline(bool Outline) { this->Outline = Outline; };
     void SetBorder(float Border) { this->Border = Border; };
-    ~SDFTexture();
+    void Clear() {
+        UV.clear();
+        squareVertices.clear();
+        Indices.clear();
+    };
+    ~SDFTexture() {
+        Clear();
+        Texture.Clear();
+    };
 };
 
 class SDFFont
@@ -112,21 +142,39 @@ class SDFFont
     std::map<unsigned, SDFCharInfo> CharsMap;
 
     bool ParseFNTFile(const char* FNTFile, BWrapper::FileSearchPriority SearchPriority);
-    void Clear();
-
+    void Clear(){
+        CharsMap.clear();
+        FontAtlas.Clear();
+    };
 public:
     enum struct AlignV : unsigned char { Top, Center, Bottom };
     enum struct AlignH : unsigned char { Left, Center, Right };
 
-    ~SDFFont();
+    ~SDFFont() { Clear(); };
 
-    unsigned int GetAtlasW();
-    unsigned int GetAtlasH();
+    unsigned int GetAtlasW() { return ScaleW; };
+    unsigned int GetAtlasH() { return ScaleH; };
 
-    bool Load(const char* FileNameFNT, const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority, int Spread);
+    bool Load(const char* FileNameFNT, const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority, int Spread) {
+        this->Clear();
+        this->Spread = Spread;
+        FontAtlas.LoadFromFile(FileNamePNG, SearchPriority);
+        ParseFNTFile(FileNameFNT, BWrapper::FileSearchPriority::Assets);
+        return true;
+    };
+
     bool Draw(bool Outline, GLsizei Count, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border);
-    bool GetCharInfo(unsigned Code, SDFCharInfo& ci);
-    unsigned GetLineHeight();
+    bool GetCharInfo(unsigned Code, SDFCharInfo& ci) {
+        auto res = CharsMap.find(Code);
+        if (res != CharsMap.end())
+        {
+            ci = res->second;
+            return true;
+        }
+        logError("Char with id=%u not found", Code);
+        return false;
+    };
+    unsigned GetLineHeight() { return LineHeight; };
 };
 
 // Для рисования всегда указывать левую верхнюю точку (удобно для разгаданных слов в "составь слова")
@@ -154,36 +202,57 @@ class SDFFontBuffer
 
     AkkordPoint GetTextSizeByLine(const char* Text, std::vector<unsigned>& VecSize);
 public:
-    SDFFontBuffer(SDFFont* Font, unsigned int DigitsCount, const AkkordColor& Color);
+    SDFFontBuffer(SDFFont* Font, unsigned int DigitsCount, const AkkordColor& Color) {
+        this->Clear();
+        sdfFont = Font;
+        color = Color;
+        Reserve(DigitsCount);
+    };
 
-    void SetFont(SDFFont* Font);
-    void SetScale(float Scale);
-    void SetScale(float ScaleX, float ScaleY);
+    void SetFont(SDFFont* Font){ this->sdfFont = Font; };
+    void SetScale(float Scale){ this->scaleX = this->scaleY = Scale; };
+    void SetScale(float ScaleX, float ScaleY){ this->scaleX = ScaleX; this->scaleY = ScaleY; };
 
-    void SetColor(const AkkordColor& Color);
-    void SetOutline(bool Outline);
-    void SetOutlineColor(const AkkordColor& OutlineColor);
-    void SetBorder(float BorderWidth);
+    void SetColor(const AkkordColor& Color){ this->color = Color; };
+    void SetOutline(bool Outline){ this->outline = Outline; };
+    void SetOutlineColor(const AkkordColor& OutlineColor){ this->outlineColor = OutlineColor; };
+    void SetBorder(float BorderWidth){ this->Border = BorderWidth; };
 
-    float GetScaleX();
-    float GetScaleY();
+    float GetScaleX(){ return this->scaleX; };
+    float GetScaleY(){ return this->scaleY; };
 
-    void SetRect(int W, int H);
+    void SetRect(int W, int H){ this->rectW = W; this->rectH = H; };
 
-    void SetAlignment(SDFFont::AlignH AlignH, SDFFont::AlignV AlignV);
-    void SetAlignmentH(SDFFont::AlignH AlignH);
-    void SetAlignmentV(SDFFont::AlignV AlignV);
+    void SetAlignment(SDFFont::AlignH AlignH, SDFFont::AlignV AlignV){ this->alignH = AlignH; this->alignV = AlignV; };
+    void SetAlignmentH(SDFFont::AlignH AlignH){ this->alignH = AlignH; };
+    void SetAlignmentV(SDFFont::AlignV AlignV){ this->alignV = AlignV; };
 
-    SDFFont::AlignH GetAlignH();
-    SDFFont::AlignV GetAlignV();
+    SDFFont::AlignH GetAlignH(){ return this->alignH; };
+    SDFFont::AlignV GetAlignV(){ return this->alignV; };
 
-    void Reserve(unsigned Count);
+    void Reserve(unsigned Count) {
+        UV.reserve(Count * 4);
+        squareVertices.reserve(Count * 4);
+        Indices.reserve(Count * 6);
+    };
 
-    void Clear();
+    void Clear() {
+        UV.clear();
+        squareVertices.clear();
+        Indices.clear();
+    };
     void Flush();
-    ~SDFFontBuffer();
+    ~SDFFontBuffer() {
+        Clear();
+        sdfFont = nullptr;
+    };
     // сейчас это int, возможно для этой функции сделать отдельный тип со float
-    AkkordPoint GetTextSize(const char* Text);
+    AkkordPoint GetTextSize(const char* Text) {
+        std::vector<unsigned> VecSize;
+        AkkordPoint pt(1, 1);
+        pt = GetTextSizeByLine(Text, VecSize);
+        return pt;
+    };
     void        WrapText(const char* Text, float ScaleMutiplier, std::string& ResultString, float& UsedScale, AkkordPoint& Size);
     AkkordPoint DrawText(int X, int Y, const char* Text);
 };
