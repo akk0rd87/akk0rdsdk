@@ -202,6 +202,7 @@ class SDFFontBuffer
 
     AkkordPoint GetTextSizeByLine(const char* Text, std::vector<unsigned>& VecSize);
 public:
+    SDFFontBuffer() : sdfFont {nullptr} {};
     SDFFontBuffer(SDFFont* Font, unsigned int DigitsCount, const AkkordColor& Color) {
         this->Clear();
         sdfFont = Font;
