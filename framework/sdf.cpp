@@ -155,7 +155,29 @@ void SDFProgram::Clear()
 
 bool SDFProgram::Init()
 {
-    if (this->CompileProgram(&ShaderProgram, SDF_vertexSource, SDF_fragmentSource) && this->CompileProgram(&ShaderProgramOutline, (std::string("#define SDF_OUTLINE \n") + SDF_vertexSource).c_str(), (std::string("#define SDF_OUTLINE \n") + SDF_fragmentSource).c_str()))
+    const char* Outline = "#define SDF_OUTLINE \n";
+    std::string regVertex, regFragment, outVertex, outFragment;
+    switch(BWrapper::GetDeviceOS())
+    {
+        case BWrapper::OS::Windows: // на винде работаем на openGL 2.1, поэтому нужно явно указать номер версии OpenGL Shading Language https://en.wikipedia.org/wiki/OpenGL_Shading_Language
+        {
+            const char* Version = "#version 120 \n";
+            regVertex   = std::string(Version) + SDF_vertexSource;
+            regFragment = std::string(Version) + SDF_fragmentSource;
+            outVertex   = std::string(Version) + Outline + SDF_vertexSource;
+            outFragment = std::string(Version) + Outline + SDF_fragmentSource;
+        }
+        break;
+
+        default: // на всем остальном работаем на openGLES 2.0
+            regVertex   = SDF_vertexSource;
+            regFragment = SDF_fragmentSource;
+            outVertex   = std::string(Outline) + SDF_vertexSource;
+            outFragment = std::string(Outline) + SDF_fragmentSource;
+        break;
+    }
+
+    if (this->CompileProgram(&ShaderProgram, regVertex.c_str(), regFragment.c_str()) && this->CompileProgram(&ShaderProgramOutline, outVertex.c_str(), outFragment.c_str()))
     {
         return true;
     }
