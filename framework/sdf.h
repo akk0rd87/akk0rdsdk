@@ -250,9 +250,7 @@ public:
     // сейчас это int, возможно для этой функции сделать отдельный тип со float
     AkkordPoint GetTextSize(const char* Text) {
         std::vector<unsigned> VecSize;
-        AkkordPoint pt(1, 1);
-        pt = GetTextSizeByLine(Text, VecSize);
-        return pt;
+        return GetTextSizeByLine(Text, VecSize);
     };
     void        WrapText(const char* Text, float ScaleMutiplier, std::string& ResultString, float& UsedScale, AkkordPoint& Size);
     AkkordPoint DrawText(int X, int Y, const char* Text);
