@@ -12,7 +12,7 @@ public:
     bool         Save();
     void         Clear();
 
-    bool         SetFile(const char* FileName, BWrapper::FileSearchPriority SearchPriority);
+    void         SetFile(const std::string& FileName, BWrapper::FileSearchPriority SearchPriority) { this->FileName = FileName; this->FSearchPriority = SearchPriority; };
 
     bool         SetIntValue(const char* Key, int         Value);
     bool         SetStrValue(const char* Key, const char* Value);

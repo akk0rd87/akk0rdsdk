@@ -23,14 +23,6 @@ void ConfigManager::SetValue(const char* Key, const char* Value)
     }
 }
 
-bool ConfigManager::SetFile(const char* FileName, BWrapper::FileSearchPriority SearchPriority)
-{
-    this->FileName = std::string(FileName);
-    this->FSearchPriority = SearchPriority;
-
-    return true;
-}
-
 bool ConfigManager::Load()
 {
     this->Destroy();
