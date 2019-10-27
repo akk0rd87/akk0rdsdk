@@ -1,7 +1,12 @@
 #include <atomic>
 #include "admob.h"
+#include <chrono>
 
-static const decltype(BWrapper::GetTicks()) LoadDelay = 5; // 5 секунд
+static inline auto getTicks() {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+};
+
+static const decltype(getTicks()) LoadDelay = 5; // 5 секунд
 
 // Класс, в котором хранится состояние статусов рекламных блоков
 class AdContextClass
@@ -13,7 +18,7 @@ private:
     Uint32           AdMobEventCode;
 public:
 
-    decltype(BWrapper::GetTicks()) InterstitialLastLoadRequestTime, RewardedLastLoadRequestTime; // время последних запросов на загрузку в секундах [чтобы джаву не дергать часто]
+    decltype(getTicks()) InterstitialLastLoadRequestTime, RewardedLastLoadRequestTime; // время последних запросов на загрузку в секундах [чтобы джаву не дергать часто]
 
     AdMob::InterstitialStatus InterstitialGetStatus()
     {
@@ -40,12 +45,12 @@ public:
         InterstitialSetStatus(AdMob::InterstitialStatus::NotInited);
         RewardedVideoSetStatus(AdMob::RewardedVideoStatus::NotInited);
 
-        InterstitialLastLoadRequestTime = 0;
-        RewardedLastLoadRequestTime = 0;
+        InterstitialLastLoadRequestTime = static_cast<decltype(getTicks())>(0);
+        RewardedLastLoadRequestTime = static_cast<decltype(getTicks())>(0);
     }
 
-    Uint32 GetAdMobEventCode(){ return AdMobEventCode; }
-    void   SetAdMobEventCode(){ AdMobEventCode = SDL_RegisterEvents(1); }
+    Uint32 GetAdMobEventCode() { return AdMobEventCode; }
+    void   SetAdMobEventCode() { AdMobEventCode = SDL_RegisterEvents(1); }
 };
 
 static AdContextClass AdContext;
@@ -56,29 +61,29 @@ bool AdMob_ProcessInterstitialAdEvent(const AdMob::AdEvent* Event)
     auto EventType = (AdMob::InterstitialEvent)Event->EventType;
     switch (EventType)
     {
-        case AdMob::InterstitialEvent::Closed:
-        case AdMob::InterstitialEvent::Failed:
-        case AdMob::InterstitialEvent::LeftApplication:
-            AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::Inited);
-            //logDebug("Interstitial Inited");
-            return true;
+    case AdMob::InterstitialEvent::Closed:
+    case AdMob::InterstitialEvent::Failed:
+    case AdMob::InterstitialEvent::LeftApplication:
+        AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::Inited);
+        //logDebug("Interstitial Inited");
+        return true;
 
-        case AdMob::InterstitialEvent::Loaded:
-            AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::Loaded);
-            //logDebug("Interstitial Loaded");
-            return true;
-            break;
+    case AdMob::InterstitialEvent::Loaded:
+        AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::Loaded);
+        //logDebug("Interstitial Loaded");
+        return true;
+        break;
 
-        case AdMob::InterstitialEvent::Opened:
-            AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::Opened);
-            //logDebug("Interstitial Opened");
-            return true;
-            break;
+    case AdMob::InterstitialEvent::Opened:
+        AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::Opened);
+        //logDebug("Interstitial Opened");
+        return true;
+        break;
 
-        default:
-            logDebug("Interstitial Something else");
-            return false;
-            break;
+    default:
+        logDebug("Interstitial Something else");
+        return false;
+        break;
     }
     return false;
 }
@@ -90,32 +95,32 @@ bool AdMob_ProcessRewardedVideoAdEvent(const AdMob::AdEvent* Event)
 
     switch (EventType)
     {
-        case AdMob::RewardedVideoEvent::Closed:
-        case AdMob::RewardedVideoEvent::Failed:
-        case AdMob::RewardedVideoEvent::LeftApplication:
-        case AdMob::RewardedVideoEvent::Rewarded:
-            AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::Inited);
-            return true;
-            break;
+    case AdMob::RewardedVideoEvent::Closed:
+    case AdMob::RewardedVideoEvent::Failed:
+    case AdMob::RewardedVideoEvent::LeftApplication:
+    case AdMob::RewardedVideoEvent::Rewarded:
+        AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::Inited);
+        return true;
+        break;
 
-        case AdMob::RewardedVideoEvent::Loaded:
-            AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::Loaded);
-            return true;
-            break;
+    case AdMob::RewardedVideoEvent::Loaded:
+        AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::Loaded);
+        return true;
+        break;
 
-        case AdMob::RewardedVideoEvent::Opened:
-            AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::Opened);
-            return true;
-            break;
+    case AdMob::RewardedVideoEvent::Opened:
+        AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::Opened);
+        return true;
+        break;
 
-        case AdMob::RewardedVideoEvent::Started:
-            AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::Started);
-            return true;
-            break;
+    case AdMob::RewardedVideoEvent::Started:
+        AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::Started);
+        return true;
+        break;
 
-        default:
-            return false;
-            break;
+    default:
+        return false;
+        break;
     }
 
     return false;
@@ -127,17 +132,17 @@ bool AdMob_ProcessAdEvent(const AdMob::AdEvent* Event)
     logDebug("AdMob_ProcessAdEvent");
     switch (Event->AdFormat)
     {
-        case AdMob::Format::Interstitial:
-            AdMob_ProcessInterstitialAdEvent(Event);
-            break;
+    case AdMob::Format::Interstitial:
+        AdMob_ProcessInterstitialAdEvent(Event);
+        break;
 
-        case AdMob::Format::RewardedVideo:
-            AdMob_ProcessRewardedVideoAdEvent(Event);
-            break;
+    case AdMob::Format::RewardedVideo:
+        AdMob_ProcessRewardedVideoAdEvent(Event);
+        break;
 
-        default:
-            logError("Unsupported ad format type %u", Event->AdFormat);
-            break;
+    default:
+        logError("Unsupported ad format type %u", Event->AdFormat);
+        break;
     }
 
     {
@@ -212,8 +217,8 @@ bool AdMob::Init(const char* AdMobAppID, int Formats)
     AdContext.SetAdMobEventCode();
     bool inited = false;
 
-    AdContext.InterstitialLastLoadRequestTime = 0;
-    AdContext.RewardedLastLoadRequestTime     = 0;
+    AdContext.InterstitialLastLoadRequestTime = static_cast<decltype(AdContext.InterstitialLastLoadRequestTime)>(0);
+    AdContext.RewardedLastLoadRequestTime = static_cast<decltype(AdContext.RewardedLastLoadRequestTime)>(0);
     AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::NotInited);
     AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::NotInited);
 
@@ -270,7 +275,7 @@ bool AdMob::InterstitialLoad()
         return false;
     }
 
-    auto newTime = BWrapper::GetTicks() / 1000;
+    auto newTime = getTicks() / 1000;
     if (newTime - AdContext.InterstitialLastLoadRequestTime < LoadDelay)
     {
         logDebug("Interstitial load acquired too early");
@@ -333,7 +338,7 @@ bool AdMob::RewardedVideoLoad()
         return false;
     }
 
-    auto newTime = BWrapper::GetTicks() / 1000;
+    auto newTime = getTicks() / 1000;
     if (newTime - AdContext.RewardedLastLoadRequestTime < LoadDelay)
     {
         logDebug("Rewarded load acquired too early");

@@ -1,22 +1,10 @@
 #include "adsmanager.h"
 
-// время в секундах с момента старта
-Uint32 adsManager::GetSeconds()
-{
-    return BWrapper::GetTicks() / 1000;
-}
-
-Uint32 adsManager::GetInterstitialNextShowTime()
-{
-    if (LastShowed == 0) return ShowDelay / 2;
-    else                 return LastShowed + ShowDelay;
-}
-
 // выбираем подходящий по времени Unit
 void adsManager::ChooseAdmobAdBlock()
 {
     auto CurrentTm = GetSeconds();
-    auto NextTm    = GetInterstitialNextShowTime();
+    auto NextTm = GetInterstitialNextShowTime();
 
     decltype(AdMobUnits.size()) searchUnit = std::numeric_limits<std::vector<AdMobUnit>::size_type>::max();
 
@@ -47,31 +35,10 @@ void adsManager::ChooseAdmobAdBlock()
     if (currentAdmobUnit != searchUnit)
     {
         currentAdmobUnit = searchUnit;
-        logDebug("set adUnit = %s",  AdMobUnits[currentAdmobUnit].Id.c_str());
+        logDebug("set adUnit = %s", AdMobUnits[currentAdmobUnit].Id.c_str());
         AdMob::InterstitialSetUnitId(AdMobUnits[currentAdmobUnit].Id.c_str());
     }
 };
-
-void adsManager::Init()
-{
-    AdMobUnits.clear();
-    currentAdmobUnit = std::numeric_limits<std::vector<AdMobUnit>::size_type>::max();
-}
-
-void adsManager::SetIntersitialShowDelay(Uint32 DelaySeconds)
-{
-    this->ShowDelay = DelaySeconds;
-};
-
-void adsManager::SetIntersitialLoadDelay(Uint32 DelaySeconds)
-{
-    this->LoadDelay = DelaySeconds;
-};
-
-void adsManager::AddAdMobUnit(const std::string& Id, Uint32 TimePriority)
-{
-    AdMobUnits.emplace_back(AdMobUnit(Id, TimePriority));
-}
 
 bool adsManager::InterstitialLoad()
 {
@@ -110,12 +77,7 @@ bool adsManager::InterstitialShow()
 void adsManager::ShowAdUnits()
 {
 #ifdef __AKK0RD_DEBUG_MACRO__ // пришлось поставить условную компиляцию, а то в release-сборке компилятор ругается на неиспользованную переменную v
-        for (auto &v : AdMobUnits)
-            logDebug("Ad Unit %s %u", v.Id.c_str(), v.TimePriority);
+    for (auto &v : AdMobUnits)
+        logDebug("Ad Unit %s %u", v.Id.c_str(), v.TimePriority);
 #endif
-}
-
-void adsManager::Clear()
-{
-    AdMobUnits.clear();
 }
