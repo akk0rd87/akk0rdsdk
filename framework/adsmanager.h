@@ -16,23 +16,20 @@ class adsManager
     {
         std::string Id;           // id блока
         timeMS      TimePriority; // время, когда на него переключаться
-        AdMobUnit(const std::string& Id, timeMS TimePriority) :Id(Id), TimePriority(TimePriority) {}
+        AdMobUnit(const std::string& Id, timeMS TimePriority) :Id(Id), TimePriority(TimePriority) {};
     };
 
     // список AdUnit-ов
     std::vector<AdMobUnit> AdMobUnits;
 
-    timeMS                            ShowDelay = 3 * 60; // 3 минуты  секундах
-    timeMS                            LoadDelay = 3;      // 3 секунды
-    timeMS                            LastShowed = 0;
-    timeMS                            AdMobLastLoad = 0;
-    std::vector<AdMobUnit>::size_type currentAdmobUnit = std::numeric_limits<std::vector<AdMobUnit>::size_type>::max();
+    timeMS ShowDelay, LoadDelay, Inited, LastShowed, AdMobLastLoad;
+    std::vector<AdMobUnit>::size_type currentAdmobUnit;
 
     // время в секундах с начала эры
     timeMS GetSeconds() { return adsManager::getTicks() / 1000; };
 
     timeMS GetInterstitialNextShowTime() {
-        return (LastShowed == static_cast<decltype(LastShowed)>(0) ? ShowDelay / static_cast <decltype(ShowDelay)>(2) : LastShowed + ShowDelay);
+        return (LastShowed == static_cast<decltype(LastShowed)>(0) ? Inited + ShowDelay / static_cast <decltype(ShowDelay)>(2) : LastShowed + ShowDelay);
     };
 
     // выбираем подходящий по времени Unit
@@ -42,9 +39,12 @@ public:
     void Init()
     {
         this->AdMobUnits.clear();
+        this->Inited = GetSeconds();
         this->LastShowed = static_cast<decltype(LastShowed)>(0);
         this->AdMobLastLoad = static_cast<decltype(AdMobLastLoad)>(0);
         this->currentAdmobUnit = std::numeric_limits<std::vector<AdMobUnit>::size_type>::max();
+        this->ShowDelay = 3 * 60; // 3 минуты в секундах
+        this->LoadDelay = 3;      // 3 секунды
     };
 
     void Clear() { AdMobUnits.clear(); };
