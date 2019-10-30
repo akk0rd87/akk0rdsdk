@@ -59,6 +59,7 @@ ut/**/*.db
 ut/**/Release/*
 ut/**/Debug/*
 ut/**/data-ram/*
+ut/src/.vscode
 
 tools/**/*.ilk
 tools/**/*.exe

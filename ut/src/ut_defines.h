@@ -1,4 +1,3 @@
-#pragma once
 #ifndef __AKK0RD_TEST_DEFINES_MANAGER_H__
 #define __AKK0RD_TEST_DEFINES_MANAGER_H__
 
