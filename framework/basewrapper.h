@@ -55,10 +55,10 @@ public:
     Uint8                GetB    () const { return AkkordColor::GetBFromInt32(color); };
     Uint8                GetA    () const { return AkkordColor::GetAFromInt32(color); };
 
-    static Uint8         GetRFromInt32(Uint32 ColorInt32) {return static_cast<Uint8>((ColorInt32 & static_cast<Uint32>(0x000000ff))); };
-    static Uint8         GetGFromInt32(Uint32 ColorInt32) {return static_cast<Uint8>((ColorInt32 & static_cast<Uint32>(0x0000ff00)) >> 8); };
-    static Uint8         GetBFromInt32(Uint32 ColorInt32) {return static_cast<Uint8>((ColorInt32 & static_cast<Uint32>(0x00ff0000)) >> 16); };
-    static Uint8         GetAFromInt32(Uint32 ColorInt32) {return static_cast<Uint8>((ColorInt32 & static_cast<Uint32>(0xff000000)) >> 24); };
+    static constexpr Uint8 GetRFromInt32(Uint32 ColorInt32) {return static_cast<Uint8>((ColorInt32 & static_cast<Uint32>(0x000000ff))); };
+    static constexpr Uint8 GetGFromInt32(Uint32 ColorInt32) {return static_cast<Uint8>((ColorInt32 & static_cast<Uint32>(0x0000ff00)) >> 8); };
+    static constexpr Uint8 GetBFromInt32(Uint32 ColorInt32) {return static_cast<Uint8>((ColorInt32 & static_cast<Uint32>(0x00ff0000)) >> 16); };
+    static constexpr Uint8 GetAFromInt32(Uint32 ColorInt32) {return static_cast<Uint8>((ColorInt32 & static_cast<Uint32>(0xff000000)) >> 24); };
 
     static Uint32        RGBA2Int32(int r, int g, int b, int a) { return r + g * 256 + b * 256 * 256 + a * 256 * 256 * 256; };
 };
