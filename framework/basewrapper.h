@@ -60,7 +60,8 @@ public:
     static constexpr Uint8 GetBFromInt32(Uint32 ColorInt32) {return static_cast<Uint8>((ColorInt32 & static_cast<Uint32>(0x00ff0000)) >> 16); };
     static constexpr Uint8 GetAFromInt32(Uint32 ColorInt32) {return static_cast<Uint8>((ColorInt32 & static_cast<Uint32>(0xff000000)) >> 24); };
 
-    static constexpr Uint32 RGBA2Int32(int r, int g, int b, int a) { return r + g * 256 + b * 256 * 256 + a * 256 * 256 * 256; };
+    //static constexpr Uint32 RGBA2Int32(int r, int g, int b, int a) { return r + g * 256 + b * 256 * 256 + a * 256 * 256 * 256; };
+    static constexpr Uint32 RGBA2Int32(int r, int g, int b, int a) { return static_cast<Uint32>(r) | static_cast<Uint32>(g) << 8 | static_cast<Uint32>(b) << 16 | static_cast<Uint32>(a) << 24; };
 };
 
 class BWrapper
