@@ -68,7 +68,7 @@ void main() \n\
 }\n";
 
 // https://habrahabr.ru/post/282191/
-static inline unsigned int UTF2Unicode(const /*unsigned*/ char *txt, unsigned &i) {
+static inline unsigned int UTF2Unicode(const /*unsigned*/ char* txt, unsigned& i) {
     unsigned int a = txt[i++];
     if ((a & 0x80) == 0)return a;
     if ((a & 0xE0) == 0xC0) {
@@ -156,19 +156,19 @@ void SDFProgram::Clear()
 bool SDFProgram::Init()
 {
     const char* Outline = "#define SDF_OUTLINE \n";
-    std::string regVertex   = SDF_vertexSource;
+    std::string regVertex = SDF_vertexSource;
     std::string regFragment = SDF_fragmentSource;
-    std::string outVertex   = std::string(Outline) + SDF_vertexSource;
+    std::string outVertex = std::string(Outline) + SDF_vertexSource;
     std::string outFragment = std::string(Outline) + SDF_fragmentSource;
 
     // на винде работаем на openGL 2.1, поэтому нужно явно указать номер версии OpenGL Shading Language https://en.wikipedia.org/wiki/OpenGL_Shading_Language
     // на всем остальном работаем на openGLES 2.0
-    if(BWrapper::GetDeviceOS() == BWrapper::OS::Windows)
+    if (BWrapper::GetDeviceOS() == BWrapper::OS::Windows)
     {
         const char* Version = "#version 120 \n";
-        regVertex   = std::string(Version) + regVertex;
+        regVertex = std::string(Version) + regVertex;
         regFragment = std::string(Version) + regFragment;
-        outVertex   = std::string(Version) + outVertex;
+        outVertex = std::string(Version) + outVertex;
         outFragment = std::string(Version) + outFragment;
     }
 
@@ -362,7 +362,45 @@ bool SDFTexture::Flush()
     return true;
 };
 
-bool SDFFont::ParseFNTFile(const char* FNTFile, BWrapper::FileSearchPriority SearchPriority)
+class MyStream {
+private:
+    const char* pointer;
+    const char* end;
+    std::string line;
+public:
+    MyStream(const char* Pointer, int Size) : pointer(Pointer), end(Pointer + Size) {};
+    bool ReadLine(std::string& line) {
+        constexpr char c13 = 13;
+        constexpr char c10 = 10;
+        line.clear();
+        decltype(pointer) start = nullptr;
+        while (pointer != end)
+        {
+            if (c13 == *pointer || c10 == *pointer)
+            {
+                if (start)
+                {
+                    break;
+                }
+            }
+            else if (!start)
+            {
+                start = pointer;
+            }
+            ++pointer;
+        }
+
+        if (start)
+        {
+            line = std::string(start, pointer - start);
+            return true;
+        }
+        return false;
+    };
+};
+
+template <class myStream>
+bool SDFFont::ParseFontMap(myStream& fonsStream)
 {
     /*
     http://www.angelcode.com/products/bmfont/doc/file_format.html
@@ -370,97 +408,107 @@ bool SDFFont::ParseFNTFile(const char* FNTFile, BWrapper::FileSearchPriority Sea
     https://www.gamedev.net/forums/topic/284560-bmfont-and-how-to-interpret-the-fnt-file/
     */
 
-    FileReader fr;
     std::string line;
-
     decltype(line.find(',')) lpos;
     decltype(lpos)           rpos;
-
     SDFCharInfo sd;
 
+    while (fonsStream.ReadLine(line))
+        if (!line.empty())
+        {
+            if (line.find("char id", 0) != std::string::npos)
+            {
+                lpos = 0;
+                rpos = 0;
+
+                rpos = line.find("id=", lpos) + 3;
+                if (line[rpos] == '\"') ++rpos;
+                auto id = BWrapper::Str2Num(std::string(line, rpos).c_str());
+
+                lpos = rpos;
+                rpos = line.find("x=", lpos) + 2;
+                if (line[rpos] == '\"') ++rpos;
+                auto x = BWrapper::Str2Num(std::string(line, rpos).c_str());
+
+                lpos = rpos;
+                rpos = line.find("y=", lpos) + 2;
+                if (line[rpos] == '\"') ++rpos;
+                auto y = BWrapper::Str2Num(std::string(line, rpos).c_str());
+
+                lpos = rpos;
+                rpos = line.find("width=", lpos) + 6;
+                if (line[rpos] == '\"') ++rpos;
+                auto w = BWrapper::Str2Num(std::string(line, rpos).c_str());
+
+                lpos = rpos;
+                rpos = line.find("height=", lpos) + 7;
+                if (line[rpos] == '\"') ++rpos;
+                auto h = BWrapper::Str2Num(std::string(line, rpos).c_str());
+
+                lpos = rpos;
+                rpos = line.find("xoffset=", lpos) + 8;
+                if (line[rpos] == '\"') ++rpos;
+                auto dx = std::stoi(std::string(line, rpos));
+
+                lpos = rpos;
+                rpos = line.find("yoffset=", lpos) + 8;
+                if (line[rpos] == '\"') ++rpos;
+                auto dy = std::stoi(std::string(line, rpos));
+
+                lpos = rpos;
+                rpos = line.find("xadvance=", lpos) + 9;
+                if (line[rpos] == '\"') ++rpos;
+                auto xa = std::stoi(std::string(line, rpos));
+
+                sd.x = x; sd.y = y; sd.w = w; sd.h = h; sd.xoffset = dx; sd.yoffset = dy; sd.xadvance = xa;
+                CharsMap.emplace(id, sd);
+
+                //logDebug("dx=%d, dy=%d, xa=%d", dx, dy, xa);
+            }
+            /*else if (line.find("chars", 0) != std::string::npos)
+            {
+                //auto cnt = BWrapper::Str2Num(std::string(line, line.find("\"", 0) + 1).c_str());
+                //CharsVector.reserve(cnt);
+            }*/
+            else if (line.find("common", 0) != std::string::npos)
+            {
+                rpos = line.find("lineHeight=", 0) + 11;
+                if (line[rpos] == '\"') ++rpos;
+                LineHeight = BWrapper::Str2Num(std::string(line, rpos).c_str());
+
+                rpos = line.find("scaleW=", 0) + 7;
+                if (line[rpos] == '\"') ++rpos;
+                ScaleW = BWrapper::Str2Num(std::string(line, rpos).c_str());
+
+                rpos = line.find("scaleH=", 0) + 7;
+                if (line[rpos] == '\"') ++rpos;
+                ScaleH = BWrapper::Str2Num(std::string(line, rpos).c_str());
+
+                //logDebug("ScaleW = %d, ScaleH = %d", ScaleW, ScaleH);
+            };
+        };
+    return true;
+};
+
+bool SDFFont::LoadCharMapFromMemory(const char* Buffer, int Size)
+{
+    CharsMap.clear();
+    std::string line;
+    MyStream ms(Buffer, Size);
+    return ParseFontMap(ms);
+};
+
+bool SDFFont::ParseFNTFile(const char* FNTFile, BWrapper::FileSearchPriority SearchPriority)
+{
+    CharsMap.clear();
+    FileReader fr;
     if (fr.Open(FNTFile, SearchPriority))
     {
-        while (fr.ReadLine(line))
-            if (line.size() > 0)
-            {
-                if (line.find("char id", 0) != std::string::npos)
-                {
-                    lpos = 0;
-                    rpos = 0;
-
-                    rpos = line.find("id=", lpos) + 3;
-                    if (line[rpos] == '\"') ++rpos;
-                    auto id = BWrapper::Str2Num(std::string(line, rpos).c_str());
-
-                    lpos = rpos;
-                    rpos = line.find("x=", lpos) + 2;
-                    if (line[rpos] == '\"') ++rpos;
-                    auto x = BWrapper::Str2Num(std::string(line, rpos).c_str());
-
-                    lpos = rpos;
-                    rpos = line.find("y=", lpos) + 2;
-                    if (line[rpos] == '\"') ++rpos;
-                    auto y = BWrapper::Str2Num(std::string(line, rpos).c_str());
-
-                    lpos = rpos;
-                    rpos = line.find("width=", lpos) + 6;
-                    if (line[rpos] == '\"') ++rpos;
-                    auto w = BWrapper::Str2Num(std::string(line, rpos).c_str());
-
-                    lpos = rpos;
-                    rpos = line.find("height=", lpos) + 7;
-                    if (line[rpos] == '\"') ++rpos;
-                    auto h = BWrapper::Str2Num(std::string(line, rpos).c_str());
-
-                    lpos = rpos;
-                    rpos = line.find("xoffset=", lpos) + 8;
-                    if (line[rpos] == '\"') ++rpos;
-                    auto dx = std::stoi(std::string(line, rpos));
-
-                    lpos = rpos;
-                    rpos = line.find("yoffset=", lpos) + 8;
-                    if (line[rpos] == '\"') ++rpos;
-                    auto dy = std::stoi(std::string(line, rpos));
-
-                    lpos = rpos;
-                    rpos = line.find("xadvance=", lpos) + 9;
-                    if (line[rpos] == '\"') ++rpos;
-                    auto xa = std::stoi(std::string(line, rpos));
-
-                    sd.x = x; sd.y = y; sd.w = w; sd.h = h; sd.xoffset = dx; sd.yoffset = dy; sd.xadvance = xa;
-                    CharsMap.emplace(id, sd);
-
-                    //logDebug("dx=%d, dy=%d, xa=%d", dx, dy, xa);
-                }
-                else if (line.find("chars", 0) != std::string::npos)
-                {
-                    //auto cnt = BWrapper::Str2Num(std::string(line, line.find("\"", 0) + 1).c_str());
-                    //CharsVector.reserve(cnt);
-                }
-                else if (line.find("common", 0) != std::string::npos)
-                {
-                    rpos = line.find("lineHeight=", 0) + 11;
-                    if (line[rpos] == '\"') ++rpos;
-                    LineHeight = BWrapper::Str2Num(std::string(line, rpos).c_str());
-
-                    rpos = line.find("scaleW=", 0) + 7;
-                    if (line[rpos] == '\"') ++rpos;
-                    ScaleW = BWrapper::Str2Num(std::string(line, rpos).c_str());
-
-                    rpos = line.find("scaleH=", 0) + 7;
-                    if (line[rpos] == '\"') ++rpos;
-                    ScaleH = BWrapper::Str2Num(std::string(line, rpos).c_str());
-
-                    //logDebug("ScaleW = %d, ScaleH = %d", ScaleW, ScaleH);
-                };
-            };
-    };
-
-    //for (auto v : CharsMap) logDebug("id=%d, x=%d, y=%d, w=%d, h=%d", v.first, v.second.x, v.second.y, v.second.w, v.second.h);
-
-    fr.Close();
-
-    return true;
+        ParseFontMap(fr);
+        fr.Close();
+        return true;
+    }
+    return false;
 }
 
 bool SDFFont::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border)
@@ -682,7 +730,7 @@ void SDFFontBuffer::WrapText(const char* Text, float ScaleMutiplier, std::string
         SDFCharInfo charParams;
         int xSize = 0;
         unsigned int i = 0, a = 0;
-        while(1) {
+        while (1) {
             a = UTF2Unicode(Word, i);
             if (!a)
                 break;
@@ -702,7 +750,7 @@ void SDFFontBuffer::WrapText(const char* Text, float ScaleMutiplier, std::string
 
     // сначала пробегаем по всем словам, и делаем так, чтобы каждое слово было меньше ширины выделенного под текст прямоугольника
     textPtr = Text;
-    while(1) {
+    while (1) {
         auto word = GetNextWord();
         int xSize = GetWordSize(sdfFont, word.c_str());
 
@@ -724,7 +772,7 @@ repeat_again:
     lines_cnt = max_line_len = x_pos = 0;
     sdfFont->GetCharInfo(32 /* space */, charParams);
     space_len = static_cast<decltype(space_len)>(UsedScale * (charParams.xadvance + charParams.xoffset));
-    while(1)
+    while (1)
     {
         auto word = GetNextWord();
         //logDebug("Words: %s", word.c_str());

@@ -99,7 +99,7 @@ class SDFTexture
     bool Outline = false;
     float atlasW;
     float atlasH;
-    void InitAtlasWH(){
+    void InitAtlasWH() {
         auto size = Texture.GetSize();
         atlasW = static_cast<float>(size.x);
         atlasH = static_cast<float>(size.y);
@@ -141,8 +141,11 @@ class SDFFont
     unsigned int ScaleW, ScaleH, LineHeight, Spread;
     std::map<unsigned, SDFCharInfo> CharsMap;
 
+    template <class fntStream>
+    bool ParseFontMap(fntStream& fonsStream);
+
     bool ParseFNTFile(const char* FNTFile, BWrapper::FileSearchPriority SearchPriority);
-    void Clear(){
+    void Clear() {
         CharsMap.clear();
         FontAtlas.Clear();
     };
@@ -162,6 +165,13 @@ public:
         ParseFNTFile(FileNameFNT, BWrapper::FileSearchPriority::Assets);
         return true;
     };
+
+    bool LoadAtlasFromMemory(int Spread, const char* Buffer, int Size) {
+        this->Spread = Spread;
+        return FontAtlas.LoadFromMemory(Buffer, Size);
+    };
+
+    bool LoadCharMapFromMemory(const char* Buffer, int Size);
 
     bool Draw(bool Outline, GLsizei Count, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border);
     bool GetCharInfo(unsigned Code, SDFCharInfo& ci) {
@@ -202,7 +212,7 @@ class SDFFontBuffer
 
     AkkordPoint GetTextSizeByLine(const char* Text, std::vector<unsigned>& VecSize);
 public:
-    SDFFontBuffer() : sdfFont {nullptr} {};
+    SDFFontBuffer() : sdfFont{ nullptr } {};
     SDFFontBuffer(SDFFont* Font, unsigned int DigitsCount, const AkkordColor& Color) {
         this->Clear();
         sdfFont = Font;
@@ -210,26 +220,26 @@ public:
         Reserve(DigitsCount);
     };
 
-    void SetFont(SDFFont* Font){ this->sdfFont = Font; };
-    void SetScale(float Scale){ this->scaleX = this->scaleY = Scale; };
-    void SetScale(float ScaleX, float ScaleY){ this->scaleX = ScaleX; this->scaleY = ScaleY; };
+    void SetFont(SDFFont* Font) { this->sdfFont = Font; };
+    void SetScale(float Scale) { this->scaleX = this->scaleY = Scale; };
+    void SetScale(float ScaleX, float ScaleY) { this->scaleX = ScaleX; this->scaleY = ScaleY; };
 
-    void SetColor(const AkkordColor& Color){ this->color = Color; };
-    void SetOutline(bool Outline){ this->outline = Outline; };
-    void SetOutlineColor(const AkkordColor& OutlineColor){ this->outlineColor = OutlineColor; };
-    void SetBorder(float BorderWidth){ this->Border = BorderWidth; };
+    void SetColor(const AkkordColor& Color) { this->color = Color; };
+    void SetOutline(bool Outline) { this->outline = Outline; };
+    void SetOutlineColor(const AkkordColor& OutlineColor) { this->outlineColor = OutlineColor; };
+    void SetBorder(float BorderWidth) { this->Border = BorderWidth; };
 
-    float GetScaleX(){ return this->scaleX; };
-    float GetScaleY(){ return this->scaleY; };
+    float GetScaleX() { return this->scaleX; };
+    float GetScaleY() { return this->scaleY; };
 
-    void SetRect(int W, int H){ this->rectW = W; this->rectH = H; };
+    void SetRect(int W, int H) { this->rectW = W; this->rectH = H; };
 
-    void SetAlignment(SDFFont::AlignH AlignH, SDFFont::AlignV AlignV){ this->alignH = AlignH; this->alignV = AlignV; };
-    void SetAlignmentH(SDFFont::AlignH AlignH){ this->alignH = AlignH; };
-    void SetAlignmentV(SDFFont::AlignV AlignV){ this->alignV = AlignV; };
+    void SetAlignment(SDFFont::AlignH AlignH, SDFFont::AlignV AlignV) { this->alignH = AlignH; this->alignV = AlignV; };
+    void SetAlignmentH(SDFFont::AlignH AlignH) { this->alignH = AlignH; };
+    void SetAlignmentV(SDFFont::AlignV AlignV) { this->alignV = AlignV; };
 
-    SDFFont::AlignH GetAlignH(){ return this->alignH; };
-    SDFFont::AlignV GetAlignV(){ return this->alignV; };
+    SDFFont::AlignH GetAlignH() { return this->alignH; };
+    SDFFont::AlignV GetAlignV() { return this->alignV; };
 
     void Reserve(unsigned Count) {
         UV.reserve(Count * 4);
