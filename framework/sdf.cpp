@@ -519,7 +519,7 @@ bool SDFFont::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColor, co
 
 // Для рисования всегда указывать левую верхнюю точку (удобно для разгаданных слов в "составь слова")
 
-AkkordPoint SDFFontBuffer::GetTextSizeByLine(const char* Text, std::vector<unsigned>& VecSize)
+AkkordPoint SDFFontBuffer::GetTextSizeByLine(const char* Text, std::vector<int>& VecSize)
 {
     // VecSize - вектор строк (в надписи может быть несколько строк, нужно считать длину каждой строки отдельно - для выравнивания)
 
@@ -563,7 +563,6 @@ AkkordPoint SDFFontBuffer::GetTextSizeByLine(const char* Text, std::vector<unsig
 
     //pt.y += localpoint.y; // надо учесть общую высоту строки
     pt.y = static_cast<decltype(pt.y)>(scaleY * sdfFont->GetLineHeight() * VecSize.size());
-
     return pt;
 }
 
@@ -582,7 +581,7 @@ AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text)
     float px1, px2, py1, py2;
     if (Text != nullptr)
     {
-        std::vector<unsigned> VecSize;
+        std::vector<int> VecSize;
         AkkordPoint size;
         pt = size = GetTextSizeByLine(Text, VecSize);
         decltype(X) x_start, x_current;
@@ -725,7 +724,7 @@ void SDFFontBuffer::WrapText(const char* Text, float ScaleMutiplier, std::string
     };
 
     // лямбда для определения размера слова в единицах шрифта
-    auto GetWordSize = [](SDFFont* sdfFont, const char* Word)
+    auto GetWordSize = [](SDFFont* sdfFont, const char* Word, float uScale)
     {
         SDFCharInfo charParams;
         int xSize = 0;
@@ -735,8 +734,8 @@ void SDFFontBuffer::WrapText(const char* Text, float ScaleMutiplier, std::string
             if (!a)
                 break;
             sdfFont->GetCharInfo(a, charParams);
-            xSize += charParams.xadvance;
-            xSize += charParams.xoffset;
+            xSize += static_cast<decltype(xSize)>(uScale * charParams.xadvance);
+            xSize += static_cast<decltype(xSize)>(uScale * charParams.xoffset);
         };
         return xSize;
     };
@@ -751,11 +750,18 @@ void SDFFontBuffer::WrapText(const char* Text, float ScaleMutiplier, std::string
     // сначала пробегаем по всем словам, и делаем так, чтобы каждое слово было меньше ширины выделенного под текст прямоугольника
     textPtr = Text;
     while (1) {
-        auto word = GetNextWord();
-        int xSize = GetWordSize(sdfFont, word.c_str());
-
-        while (xSize * UsedScale >= rectW)
-            UsedScale *= ScaleMutiplier;
+        const auto word = GetNextWord();
+        while (1) {
+            int xSize = GetWordSize(sdfFont, word.c_str(), UsedScale);
+            if (xSize >= rectW)
+            {
+                UsedScale *= ScaleMutiplier;
+            }
+            else
+            {
+                break;
+            }
+        }
 
         // пропускаем ненужные пробелы и переходы на новой строку
         while (' ' == *textPtr || '\n' == *textPtr)
@@ -771,19 +777,11 @@ repeat_again:
     textPtr = Text;
     lines_cnt = max_line_len = x_pos = 0;
     sdfFont->GetCharInfo(32 /* space */, charParams);
-    space_len = static_cast<decltype(space_len)>(UsedScale * (charParams.xadvance + charParams.xoffset));
+    space_len = static_cast<decltype(space_len)>(UsedScale * charParams.xoffset) + static_cast<decltype(space_len)>(UsedScale * charParams.xadvance);
     while (1)
     {
-        auto word = GetNextWord();
-        //logDebug("Words: %s", word.c_str());
-        int xSize = GetWordSize(sdfFont, word.c_str()) * UsedScale;
-
-        // провеить, не вышли ли за диапазон по ширине
-        if (xSize > rectW)
-        {
-            UsedScale *= ScaleMutiplier;
-            goto repeat_again;
-        }
+        const auto word = GetNextWord();
+        const auto xSize = GetWordSize(sdfFont, word.c_str(), UsedScale);
 
         // если в строке уже есть слово
         if (x_pos != 0)
