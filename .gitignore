@@ -69,7 +69,8 @@ libraries/SDL/SDL/VisualC/SDL/SDL.vcxproj.user
 libraries/SDL/SDL/VisualC/**/*.dat
 libraries/SDL/SDL/VisualC/.vs
 libraries/SDL_image/SDL_image/VisualC/.vs
-
+.vscode
+.vs
 **/proj.codeblocks/*.depend
 **/proj.codeblocks/*.layout
 *.layout
