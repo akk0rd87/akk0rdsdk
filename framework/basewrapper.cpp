@@ -14,8 +14,8 @@ static_assert(CHAR_MIN == 0 && CHAR_MAX == 255, "Char data type must be as unsig
 class CurrentContextStruct
 {
 public:
-    AkkordRenderer*           CurrentRenderer = nullptr;
-    AkkordWindow*             CurrentWindow = nullptr;
+    AkkordRenderer* CurrentRenderer = nullptr;
+    AkkordWindow* CurrentWindow = nullptr;
     Uint32                    MessageBoxEvent;
 
     void DestroyRenderer()
@@ -244,7 +244,7 @@ bool BWrapper::FileWrite(FILE* File, const void* Buffer, size_t Size, size_t Cou
     return false;
 }
 
-bool BWrapper::FileWriteFormatted(FILE* File, const char * Format, ...) // http://www.cplusplus.com/reference/cstdio/vfprintf/
+bool BWrapper::FileWriteFormatted(FILE* File, const char* Format, ...) // http://www.cplusplus.com/reference/cstdio/vfprintf/
 {
     va_list args;
     va_start(args, Format);
@@ -254,7 +254,7 @@ bool BWrapper::FileWriteFormatted(FILE* File, const char * Format, ...) // http:
     return true;
 }
 
-bool BWrapper::FilePutS(FILE* File, const char * String) // http://www.cplusplus.com/reference/cstdio/fputs/
+bool BWrapper::FilePutS(FILE* File, const char* String) // http://www.cplusplus.com/reference/cstdio/fputs/
 {
     if (fputs(String, File) >= 0) return true;
     logError("BWrapper::FilePutS Error");
@@ -286,7 +286,7 @@ bool BWrapper::FileRename(const char* OldName, const char* NewName)
 /////////
 ////////////////////////////////
 
-void inline ConvertRect2Native(const AkkordRect &Rect, SDL_Rect* sRect)
+void inline ConvertRect2Native(const AkkordRect& Rect, SDL_Rect* sRect)
 {
     sRect->x = Rect.x; sRect->y = Rect.y; sRect->w = Rect.w; sRect->h = Rect.h;
 }
@@ -324,7 +324,7 @@ AkkordWindow* BWrapper::GetActiveWindow()
     return CurrentContext.CurrentWindow;
 };
 
-AkkordRenderer*  BWrapper::GetActiveRenderer()
+AkkordRenderer* BWrapper::GetActiveRenderer()
 {
     return CurrentContext.CurrentRenderer;
 };
@@ -350,6 +350,11 @@ bool BWrapper::DestroyRenderer()
 bool BWrapper::RefreshRenderer()
 {
     SDL_RenderPresent(CurrentContext.CurrentRenderer);
+    return true;
+};
+
+bool BWrapper::FlushRenderer() {
+    SDL_RenderFlush(CurrentContext.CurrentRenderer);
     return true;
 };
 
@@ -413,7 +418,7 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
             break;
         case AkkordTexture::TextureType::SVG:
         {
-            std::unique_ptr<char, void(*)(char*)> data((char *)SDL_LoadFile_RW(io.get(), nullptr, SDL_FALSE), [](char * i) { SDL_free(i); });
+            std::unique_ptr<char, void(*)(char*)> data((char*)SDL_LoadFile_RW(io.get(), nullptr, SDL_FALSE), [](char* i) { SDL_free(i); });
             if (data.get() == nullptr)
             {
                 logError("Couldn't parse SVG image %s", SDL_GetError());
@@ -451,7 +456,7 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
                 return result;
             }
 
-            nsvgRasterize(rasterizer.get(), svg_image.get(), 0.0f, 0.0f, Scale, (unsigned char *)image->pixels, image->w, image->h, image->pitch);
+            nsvgRasterize(rasterizer.get(), svg_image.get(), 0.0f, 0.0f, Scale, (unsigned char*)image->pixels, image->w, image->h, image->pitch);
         }
         break;
         }
@@ -875,7 +880,7 @@ LogParamsStruct* BWrapper::GetLogParams()
     return &LogParams;
 }
 
-void BWrapper::Log(BWrapper::LogPriority Priority, const char* File, const char* Function, unsigned Line, SDL_PRINTF_FORMAT_STRING const char *Fmt, ...)
+void BWrapper::Log(BWrapper::LogPriority Priority, const char* File, const char* Function, unsigned Line, SDL_PRINTF_FORMAT_STRING const char* Fmt, ...)
 {
 #ifdef __AKK0RD_DEBUG_MACRO__
     // https://wiki.libsdl.org/CategoryLog
@@ -1111,7 +1116,7 @@ void BWrapper::ShareText(const char* Title, const char* Message)
 //////////////////////////
 /////// FileReader
 //////////////////////////
-bool FileReader::Open(const char *Fname, BWrapper::FileSearchPriority SearchPriority)
+bool FileReader::Open(const char* Fname, BWrapper::FileSearchPriority SearchPriority)
 {
     Close();
     std::string Path;

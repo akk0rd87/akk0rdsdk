@@ -33,6 +33,8 @@ libraries/SDL/SDL/VisualC/tests/**/*.wav
 libraries/SDL/SDL/obj/*
 libraries/SDL/SDL/libs/*
 
+libraries/SDL/win32/**/*.exp
+
 libraries/SDL_image/SDL_image/obj/*
 libraries/SDL_image/SDL_image/libs/*
 libraries/SDL_mixer/SDL_mixer/obj/*
