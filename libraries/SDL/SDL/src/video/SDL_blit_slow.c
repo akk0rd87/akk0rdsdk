@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -56,7 +56,7 @@ SDL_Blit_Slow(SDL_BlitInfo * info)
 
     while (info->dst_h--) {
         Uint8 *src = 0;
-        Uint8 *dst = (Uint8 *) info->dst;
+        Uint8 *dst = info->dst;
         int n = info->dst_w;
         srcx = -1;
         posx = 0x10000L;

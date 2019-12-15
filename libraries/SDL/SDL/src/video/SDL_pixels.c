@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -94,6 +94,7 @@ SDL_GetPixelFormatName(Uint32 format)
     CASE(SDL_PIXELFORMAT_INDEX8)
     CASE(SDL_PIXELFORMAT_RGB332)
     CASE(SDL_PIXELFORMAT_RGB444)
+    CASE(SDL_PIXELFORMAT_BGR444)
     CASE(SDL_PIXELFORMAT_RGB555)
     CASE(SDL_PIXELFORMAT_BGR555)
     CASE(SDL_PIXELFORMAT_ARGB4444)
@@ -321,12 +322,18 @@ SDL_MasksToPixelFormatEnum(int bpp, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask,
             Amask == 0x0000) {
             return SDL_PIXELFORMAT_RGB444;
         }
+        if (Rmask == 0x000F &&
+            Gmask == 0x00F0 &&
+            Bmask == 0x0F00 &&
+            Amask == 0x0000) {
+            return SDL_PIXELFORMAT_BGR444;
+        }
         break;
     case 15:
         if (Rmask == 0) {
             return SDL_PIXELFORMAT_RGB555;
         }
-	/* fallthrough */
+    /* fallthrough */
     case 16:
         if (Rmask == 0) {
             return SDL_PIXELFORMAT_RGB565;

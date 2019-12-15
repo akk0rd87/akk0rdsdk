@@ -133,6 +133,7 @@ public:
     static AkkordRenderer*     GetActiveRenderer           ();
     static bool                ClearRenderer               ();
     static bool                RefreshRenderer             ();
+    static bool                FlushRenderer               ();
     static bool                DestroyRenderer             ();
     static bool                DestroyWindow               ();
     static bool                SetWindowResizable          (bool Resizable);
