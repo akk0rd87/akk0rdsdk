@@ -34,7 +34,7 @@ import android.content.pm.ApplicationInfo;
 /**
     SDL Activity
 */
-public class SDLActivity extends Activity implements View.OnSystemUiVisibilityChangeListener {
+public class SDLActivity extends Activity /*implements View.OnSystemUiVisibilityChangeListener*/ {
     private static final String TAG = "SDL";
 
     public static boolean mIsResumedCalled, mHasFocus;
@@ -260,9 +260,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
         setContentView(mLayout);
 
-        setWindowStyle(false);
+        //setWindowStyle(false);
 
-        getWindow().getDecorView().setOnSystemUiVisibilityChangeListener(this);
+        //getWindow().getDecorView().setOnSystemUiVisibilityChangeListener(this);
 
         // Get filename from "Open with" of another application
         Intent intent = getIntent();
@@ -598,6 +598,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                 }
                 break;
             case COMMAND_CHANGE_WINDOW_STYLE:
+            /*
                 if (Build.VERSION.SDK_INT < 19) {
                     // This version of Android doesn't support the immersive fullscreen mode
                     break;
@@ -627,6 +628,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                 } else {
                     Log.e(TAG, "error handling message, getContext() returned no Activity");
                 }
+            */
                 break;
             case COMMAND_TEXTEDIT_HIDE:
                 if (mTextEdit != null) {
@@ -797,7 +799,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      */
     public static void setWindowStyle(boolean fullscreen) {
         // Called from SDLMain() thread and can't directly affect the view
-        mSingleton.sendCommand(COMMAND_CHANGE_WINDOW_STYLE, fullscreen ? 1 : 0);
+        //mSingleton.sendCommand(COMMAND_CHANGE_WINDOW_STYLE, fullscreen ? 1 : 0);
     }
 
     /**
@@ -1436,6 +1438,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         return dialog;
     }
 
+    /*
     private final Runnable rehideSystemUi = new Runnable() {
         @Override
         public void run() {
@@ -1449,7 +1452,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             SDLActivity.this.getWindow().getDecorView().setSystemUiVisibility(flags);
         }
     };
+    */
 
+    /*
     public void onSystemUiVisibilityChange(int visibility) {
         if (SDLActivity.mFullscreenModeActive && ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0 || (visibility & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0)) {
 
@@ -1461,6 +1466,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
         }
     }
+    */
 
     /**
      * This method is called by SDL using JNI.
