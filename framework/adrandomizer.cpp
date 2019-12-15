@@ -175,6 +175,24 @@ void AdRandomizer::OpenURL_private(BWrapper::OS OSCode, Apps AppId)
             break;
         }
         break;
+
+    case Apps::PirateBomb:
+        switch (OSCode)
+        {
+        case BWrapper::OS::iOS:
+            //if (Language == Locale::Lang::Russian) BWrapper::OpenURL("https://itunes.apple.com/ru/app/id1473846186");
+            //else                                   BWrapper::OpenURL("https://itunes.apple.com/app/id1473846186");
+            //BWrapper::OpenURL("https://itunes.apple.com/app/id1473846186");
+            break;
+
+        case BWrapper::OS::AndroidOS:
+            BWrapper::OpenURL("https://play.google.com/store/apps/details?id=org.akk0rdsdk.PirateBomb");
+            break;
+
+        default:
+            break;
+        }
+        break;
     }
 }
 
