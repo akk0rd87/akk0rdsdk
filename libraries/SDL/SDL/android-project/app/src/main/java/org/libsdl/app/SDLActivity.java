@@ -598,7 +598,6 @@ public class SDLActivity extends Activity /*implements View.OnSystemUiVisibility
                 }
                 break;
             case COMMAND_CHANGE_WINDOW_STYLE:
-            /*
                 if (Build.VERSION.SDK_INT < 19) {
                     // This version of Android doesn't support the immersive fullscreen mode
                     break;
@@ -628,7 +627,6 @@ public class SDLActivity extends Activity /*implements View.OnSystemUiVisibility
                 } else {
                     Log.e(TAG, "error handling message, getContext() returned no Activity");
                 }
-            */
                 break;
             case COMMAND_TEXTEDIT_HIDE:
                 if (mTextEdit != null) {
@@ -799,7 +797,7 @@ public class SDLActivity extends Activity /*implements View.OnSystemUiVisibility
      */
     public static void setWindowStyle(boolean fullscreen) {
         // Called from SDLMain() thread and can't directly affect the view
-        //mSingleton.sendCommand(COMMAND_CHANGE_WINDOW_STYLE, fullscreen ? 1 : 0);
+        mSingleton.sendCommand(COMMAND_CHANGE_WINDOW_STYLE, fullscreen ? 1 : 0);
     }
 
     /**
