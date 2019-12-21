@@ -458,7 +458,7 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
         if ((!refCF) || (!CFStringGetCString(refCF, product_string, sizeof(product_string), kCFStringEncodingUTF8))) {
             SDL_strlcpy(product_string, "Unidentified joystick", sizeof(product_string));
         }
-        for (i = SDL_strlen(manufacturer_string) - 1; i > 0; --i) {
+        for (i = (int)SDL_strlen(manufacturer_string) - 1; i > 0; --i) {
             if (SDL_isspace(manufacturer_string[i])) {
                 manufacturer_string[i] = '\0';
             } else {
@@ -732,6 +732,11 @@ static int
 DARWIN_JoystickGetDevicePlayerIndex(int device_index)
 {
     return -1;
+}
+
+static void
+DARWIN_JoystickSetDevicePlayerIndex(int device_index, int player_index)
+{
 }
 
 static SDL_JoystickGUID
@@ -1033,6 +1038,7 @@ SDL_JoystickDriver SDL_DARWIN_JoystickDriver =
     DARWIN_JoystickDetect,
     DARWIN_JoystickGetDeviceName,
     DARWIN_JoystickGetDevicePlayerIndex,
+    DARWIN_JoystickSetDevicePlayerIndex,
     DARWIN_JoystickGetDeviceGUID,
     DARWIN_JoystickGetDeviceInstanceID,
     DARWIN_JoystickOpen,

@@ -459,7 +459,9 @@ public class SDLActivity extends Activity /*implements View.OnSystemUiVisibility
         }
 
         // Default system back button behavior.
-        super.onBackPressed();
+        if (!isFinishing()) {
+            super.onBackPressed();
+        }
     }
 
     // Called by JNI from SDL.
@@ -472,7 +474,9 @@ public class SDLActivity extends Activity /*implements View.OnSystemUiVisibility
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                SDLActivity.this.superOnBackPressed();
+                if (!SDLActivity.this.isFinishing()) {
+                    SDLActivity.this.superOnBackPressed();
+                }
             }
         });
     }
@@ -639,6 +643,8 @@ public class SDLActivity extends Activity /*implements View.OnSystemUiVisibility
                     imm.hideSoftInputFromWindow(mTextEdit.getWindowToken(), 0);
 
                     mScreenKeyboardShown = false;
+
+                    mSurface.requestFocus();
                 }
                 break;
             case COMMAND_SET_KEEP_SCREEN_ON:
