@@ -34,7 +34,7 @@ import android.content.pm.ApplicationInfo;
 /**
     SDL Activity
 */
-public class SDLActivity extends Activity /*implements View.OnSystemUiVisibilityChangeListener*/ {
+public class SDLActivity extends Activity implements View.OnSystemUiVisibilityChangeListener {
     private static final String TAG = "SDL";
 
     public static boolean mIsResumedCalled, mHasFocus;
@@ -137,7 +137,7 @@ public class SDLActivity extends Activity /*implements View.OnSystemUiVisibility
      */
     protected String[] getLibraries() {
         return new String[] {
-            //"hidapi",
+            "hidapi",
             "SDL2",
             // "SDL2_image",
             // "SDL2_mixer",
@@ -262,7 +262,7 @@ public class SDLActivity extends Activity /*implements View.OnSystemUiVisibility
 
         //setWindowStyle(false);
 
-        //getWindow().getDecorView().setOnSystemUiVisibilityChangeListener(this);
+        getWindow().getDecorView().setOnSystemUiVisibilityChangeListener(this);
 
         // Get filename from "Open with" of another application
         Intent intent = getIntent();
@@ -1442,7 +1442,6 @@ public class SDLActivity extends Activity /*implements View.OnSystemUiVisibility
         return dialog;
     }
 
-    /*
     private final Runnable rehideSystemUi = new Runnable() {
         @Override
         public void run() {
@@ -1456,9 +1455,7 @@ public class SDLActivity extends Activity /*implements View.OnSystemUiVisibility
             SDLActivity.this.getWindow().getDecorView().setSystemUiVisibility(flags);
         }
     };
-    */
 
-    /*
     public void onSystemUiVisibilityChange(int visibility) {
         if (SDLActivity.mFullscreenModeActive && ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0 || (visibility & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0)) {
 
@@ -1470,7 +1467,6 @@ public class SDLActivity extends Activity /*implements View.OnSystemUiVisibility
 
         }
     }
-    */
 
     /**
      * This method is called by SDL using JNI.
