@@ -31,7 +31,7 @@
       <Filter>Framework\Source</Filter>
     </ClCompile>
     <ClCompile Include="$(AKKORD_SDK_HOME)\framework\atlasmanager.cpp">
-      <Filter>Source</Filter>
+      <Filter>Framework\Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
