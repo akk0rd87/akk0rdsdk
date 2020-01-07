@@ -151,7 +151,7 @@ public:
     static bool                FillRect                    (int X, int Y, int W, int H);
     static bool                DrawLine                    (const AkkordPoint& Point1, const AkkordPoint& Point2);
     static bool                DrawLine                    (int P1X, int P1Y, int P2X, int P2Y);
-    static bool                IsPointInRect               (const AkkordPoint& Point,  const AkkordRect& Rect);
+    static bool                IsPointInRect               (const AkkordPoint& Point, const AkkordRect& Rect) { return (Rect.x <= Point.x && Point.x <= Rect.x + Rect.w) && (Rect.y <= Point.y && Point.y <= Rect.y + Rect.h); };
     static int                 GetDisplayDPI               (int DisplayIndex, float* Ddpi, float* Hdpi, float* Vdpi);
 
     // Working with files

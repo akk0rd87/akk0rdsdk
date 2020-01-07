@@ -606,15 +606,6 @@ AkkordPoint BWrapper::GetScreenSize()
     return WSize;
 };
 
-bool BWrapper::IsPointInRect(const AkkordPoint& Point, const AkkordRect& Rect)
-{
-    if (Rect.x <= Point.x && Point.x <= Rect.x + Rect.w)
-        if (Rect.y <= Point.y && Point.y <= Rect.y + Rect.h)
-            return true;
-
-    return false;
-}
-
 bool BWrapper::SetCurrentColor(const AkkordColor& Color)
 {
     if (SDL_SetRenderDrawColor(CurrentContext.CurrentRenderer, Color.GetR(), Color.GetG(), Color.GetB(), Color.GetA()) == 0) return true;
@@ -1144,9 +1135,9 @@ bool FileReader::Open(const char* Fname, BWrapper::FileSearchPriority SearchPrio
     {
         in = new std::istream(&fb);
         opened = true;
-    }
+        }
     return opened;
-};
+    };
 
 void FileReader::Close()
 {
@@ -1170,7 +1161,7 @@ bool FileReader::ReadLine(std::string& Line)
     {
         logError("FileReader is closed");
         return false;
-    }
+}
     if (std::getline(*in, Line))
     {
         auto len = Line.size();
