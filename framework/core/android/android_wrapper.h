@@ -37,6 +37,9 @@ public:
 
     static void              ShareText(const char* Title, const char* Message);
 
+    static int               GetAudioOutputRate();
+    static int               GetAudioOutputBufferSize();
+
     //Запрещаем создавать экземпляр класса AndroidWrapper
     AndroidWrapper() = delete;
     ~AndroidWrapper() = delete;

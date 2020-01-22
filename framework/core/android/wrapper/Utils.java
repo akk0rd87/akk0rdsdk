@@ -23,7 +23,7 @@ import android.app.*;
 import android.content.*;
 import android.text.InputType;
 import android.content.res.AssetManager;
-//import android.support.v4.app.DialogFragment;
+import android.media.AudioManager;
 
 public class Utils {
     private static  final String TAG = "SDL";
@@ -51,6 +51,38 @@ public class Utils {
         long blocks = fs.getFreeBlocks();
         long blsize = fs.getBlockSize();
         return blocks * blsize;
+    }
+
+    public static int getAudioOutputRate() { // https://developer.android.com/ndk/guides/audio/audio-latency
+        int sampleRate = 0;
+        try {
+            AudioManager am = (AudioManager) _context.getSystemService(Context.AUDIO_SERVICE);
+            sampleRate = Integer.parseInt(am.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE));
+        }
+        catch(Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+
+        if (sampleRate == 0) {
+            return 44100; // Use a default value if property not found
+        }
+        return sampleRate;
+    }
+
+    public static int getAudioOutputBufferSize() { // https://developer.android.com/ndk/guides/audio/audio-latency
+        int framesPerBufferInt = 0;
+        try {
+            AudioManager am = (AudioManager) _context.getSystemService(Context.AUDIO_SERVICE);
+            framesPerBufferInt = Integer.parseInt(am.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER));
+        }
+        catch(Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+
+        if (framesPerBufferInt == 0) {
+            return 256; // Use a default
+        }
+        return framesPerBufferInt;
     }
 
     public static AssetManager GetAssetManager(){

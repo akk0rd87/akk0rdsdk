@@ -215,6 +215,9 @@ public:
     // Feature functions
     static void                ShareText                   (const char* Title, const char* Message);
 
+    static int                 GetAudioOutputRate          (); // only for Android
+    static int                 GetAudioOutputBufferSize    (); // only for Android
+
     static constexpr BWrapper::OS GetDeviceOS()
     {
 #ifdef __APPLE__

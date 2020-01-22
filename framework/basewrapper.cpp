@@ -1055,6 +1055,14 @@ bool BWrapper::DirExists(const char* Dir)
 std::string BWrapper::GetInternalDir() { return Platforms::GetInternalDir(); };
 std::string BWrapper::GetInternalWriteDir() { return Platforms::GetInternalWriteDir(); };
 
+int BWrapper::GetAudioOutputRate() {
+    return Platforms::GetAudioOutputRate();
+}
+
+int BWrapper::GetAudioOutputBufferSize() {
+    return Platforms::GetAudioOutputBufferSize();
+}
+
 bool DirContentReader::Next(DirContentElement*& Element)
 {
     if (0 < Size && Pointer < Size)

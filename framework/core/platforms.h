@@ -61,6 +61,9 @@ public:
 
     static void                     MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS);
     static void                     ShareText(const char* Title, const char* Message);
+
+    static int                      GetAudioOutputRate();       // only for Android
+    static int                      GetAudioOutputBufferSize(); // only for Android
 };
 
 /////////////////////////////////////////
@@ -320,5 +323,21 @@ bool Platforms::Init()
 
     return true;
 };
+
+int Platforms::GetAudioOutputRate() { // only for Android
+#ifdef __ANDROID__
+    return AndroidWrapper::GetAudioOutputRate();
+#endif
+
+    return -1;
+}
+
+int Platforms::GetAudioOutputBufferSize() { // only for Android
+#ifdef __ANDROID__
+    return AndroidWrapper::GetAudioOutputBufferSize();
+#endif
+
+    return -1;
+}
 
 #endif // __AKK0RD_PLATFORMS_H__
