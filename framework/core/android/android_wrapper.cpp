@@ -105,9 +105,9 @@ bool AndroidWrapper::private_DirRemove(const char* Dir, bool Recursive)
 {
     JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
     //jclass activity = FindAkkordClassUtils(env);
-    logDebug("GetStaticMethodID before");
+    //logDebug("GetStaticMethodID before");
     //jmethodID DirRemove = env->GetStaticMethodID(activity, "DirectoryDelete", "(Ljava/lang/String;I)I");
-    logDebug("GetStaticMethodID after");
+    //logDebug("GetStaticMethodID after");
     if(!AndroidWrapperState.midDirectoryDelete)
     {
         logError("AndroidWrapper: DirectoryDelete Java method not Found");
@@ -116,7 +116,7 @@ bool AndroidWrapper::private_DirRemove(const char* Dir, bool Recursive)
 
     jstring url_jstring = (jstring)env->NewStringUTF(Dir);
     int Recurs = ((Recursive == true) ? (1) : (0));
-    logDebug("Call Method");
+    //logDebug("Call Method");
     jint value = env->CallStaticIntMethod(AndroidWrapperState.globalUtils, AndroidWrapperState.midDirectoryDelete, url_jstring, Recurs);
     env->DeleteLocalRef(url_jstring);
     //env->DeleteLocalRef(activity);
@@ -166,15 +166,15 @@ bool AndroidWrapper::DirectoryExists(const char* Dir)
 bool AndroidWrapper::OpenURL(const char* url)
 {
     JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-    logDebug("GetStaticMethodID before");
-    logDebug("GetStaticMethodID after");
+    //logDebug("GetStaticMethodID before");
+    //logDebug("GetStaticMethodID after");
     if(!AndroidWrapperState.midOpenURL)
     {
         logError("AndroidWrapper: OpenURL Java method not Found");
         return false;
     }
     jstring url_jstring = (jstring)env->NewStringUTF(url);
-    logDebug("Call Method");
+    //logDebug("Call Method");
     env->CallStaticVoidMethod(AndroidWrapperState.globalUtils, AndroidWrapperState.midOpenURL, url_jstring);
     env->DeleteLocalRef(url_jstring);
     return true;
@@ -211,15 +211,15 @@ bool AndroidWrapper::ShowToast(const char* Message, BWrapper::AndroidToastDurati
     // http://developer.alexanderklimov.ru/android/toast.php
 
     JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-    logDebug("GetStaticMethodID before");
-    logDebug("GetStaticMethodID after");
+    //logDebug("GetStaticMethodID before");
+    //logDebug("GetStaticMethodID after");
     if(!AndroidWrapperState.midShowToast)
     {
         logError("AndroidWrapper::ShowToast Java method not Found");
         return false;
     }
     jstring url_jstring = (jstring)env->NewStringUTF(Message);
-    logDebug("Call Method");
+    //logDebug("Call Method");
     env->CallStaticVoidMethod(AndroidWrapperState.globalUtils, AndroidWrapperState.midShowToast, url_jstring, Duration, Gravity, xOffset, yOffset);
     env->DeleteLocalRef(url_jstring);
     return true;
@@ -254,7 +254,7 @@ bool AndroidWrapper::DirCreate(const char* Path)
     }
 
     jstring url_jstring = (jstring)env->NewStringUTF(Path);
-    logDebug("Call Method");
+    //logDebug("Call Method");
     jint value = env->CallStaticIntMethod(AndroidWrapperState.globalUtils, AndroidWrapperState.midMkDir, url_jstring);
     env->DeleteLocalRef(url_jstring);
     int retval = (int)value;
@@ -307,16 +307,16 @@ void AndroidWrapper::InitAssetsManager()
     {
         JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
         //jclass activity = FindAkkordClassUtils(env);
-        logDebug("GetStaticMethodID before");
+        //logDebug("GetStaticMethodID before");
         //jmethodID GetAssetManager = env->GetStaticMethodID(activity, "GetAssetManager", "()Landroid/content/res/AssetManager;");
-        logDebug("GetStaticMethodID after");
+        //logDebug("GetStaticMethodID after");
         if(!AndroidWrapperState.midGetAssetManager)
         {
             logError("AndroidWrapper GetAssetManager Java method not Found");
             return;
         }
 
-        logDebug("Call Method");
+        //logDebug("Call Method");
         jobject jAssetsMgr = (jobject)env->CallStaticObjectMethod(AndroidWrapperState.globalUtils, AndroidWrapperState.midGetAssetManager);
         AndroidWrapperState.AssetMgr = AAssetManager_fromJava(env, jAssetsMgr);
     }
@@ -398,7 +398,7 @@ void AndroidWrapper::MessageBoxShow(int Code, const char* Title, const char* Mes
 
     Uint64 tm = static_cast<Uint64>(TimeOutMS);
 
-    logDebug("Call Method");
+    //logDebug("Call Method");
     env->CallStaticVoidMethod(AndroidWrapperState.globalUtils, AndroidWrapperState.midShowMessageBox, Code, jstring_Title, jstring_Message, jstring_Button1, jstring_Button2, jstring_Button3, tm);
 
     env->DeleteLocalRef(jstring_Title  );
@@ -432,7 +432,7 @@ int AndroidWrapper::GetAudioOutputRate() {
         return -1; // return default value
     }
     jint value = env->CallStaticIntMethod(AndroidWrapperState.globalUtils, AndroidWrapperState.midGetAudioOutputRate);
-    logDebug("outputRate %d", static_cast<int>(value));
+    //logDebug("outputRate %d", static_cast<int>(value));
     return static_cast<int>(value);
 };
 
@@ -443,7 +443,7 @@ int AndroidWrapper::GetAudioOutputBufferSize() {
         return -1; // return default value
     }
     jint value = env->CallStaticIntMethod(AndroidWrapperState.globalUtils, AndroidWrapperState.midGetAudioOutputBufferSize);
-    logDebug("outputBufferSize %d", static_cast<int>(value));
+    //logDebug("outputBufferSize %d", static_cast<int>(value));
     return static_cast<int>(value);
 };
 
