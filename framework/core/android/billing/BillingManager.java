@@ -26,7 +26,9 @@ import java.util.Set;
 import java.util.Arrays;
 
 
-class BillingManager {
+class BillingManager implements PurchasesUpdatedListener, SkuDetailsResponseListener, ConsumeResponseListener  {
+    private static BillingManager billingManager = new BillingManager();
+
     private static String TAG = "SDL";
     public static final int BILLING_MANAGER_NOT_INITIALIZED  = -1;
 
@@ -125,36 +127,10 @@ class BillingManager {
             ctx.runOnUiThread(new Runnable() {
                 public void run() {
                     Log.v(TAG, "BillingManager runOnUiThread");
-                    mBillingClient = BillingClient.newBuilder(ctx).setListener(new PurchasesUpdatedListener() {
-                                                                                   @Override
-                                                                                   public void onPurchasesUpdated(int responseCode, List<Purchase> purchases) {
-                                                                                       // тут приходит одна покупка или несколько?
-
-                                                                                       if (BillingResponse.OK == responseCode) {
-                                                                                           if (purchases != null)
-                                                                                               for (Purchase purchase : purchases) {
-                                                                                                   Log.v(TAG, "Purchase was Bought = " + purchase.getPurchaseToken() + " " + purchase.getSku() + "Order:" + purchase.getOrderId());
-                                                                                                   PurchaseQueried(purchase.getPurchaseToken(), purchase.getSku(), PURCHASE_BOUGHT);
-                                                                                               }
-                                                                                       } else {
-                                                                                           Log.v(TAG, "QueryPurchases error, response = " + DecodeBillingResponse(responseCode));
-                                                                                       }
-
-                                                                                   }
-                                                                               }
-                    ).build();
+                    mBillingClient = BillingClient.newBuilder(ctx)
+                    .setListener(billingManager) // PurchasesUpdatedListener
+                    .build();
                     Log.v(TAG, "BillingManager after build");
-
-                /*
-                startServiceConnection(new Runnable() {
-                    @Override
-                    public void run() {
-                        // Notifying the listener that billing client is ready
-                        Log.v(TAG, "Setup successful");
-                        //queryPurchases();
-                    }
-                });
-                */
                 }
             });
         }
@@ -179,20 +155,7 @@ class BillingManager {
                     // Query the purchase async
                     SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
                     params.setSkusList(skuList).setType(SkuType.INAPP);
-                    mBillingClient.querySkuDetailsAsync(params.build(),
-                            new SkuDetailsResponseListener() {
-                                @Override
-                                public void onSkuDetailsResponse(int responseCode,
-                                                                 List<SkuDetails> skuDetailsList) {
-                                    if (BillingResponse.OK == responseCode)
-                                        if (skuDetailsList != null)
-                                            for (int i = 0; i < skuDetailsList.size(); i++) {
-                                                // Need to set Java Native Callback
-                                                //SkuDetails sku = skuDetailsList.get(i);
-                                                //Log.v(TAG, sku.getSku() + "-" + sku.getPrice() + "-" + sku.getPriceCurrencyCode());
-                                            }
-                                }
-                            });
+                    mBillingClient.querySkuDetailsAsync(params.build(), billingManager);
                 }
             });
         }
@@ -250,36 +213,60 @@ class BillingManager {
 
     public static void ConsumeProductItem(final String PurchaseToken)
     {
-        /*
-        Log.v(TAG, "ConsumeProductItem started");
-        // Generating Consume Response listener
-        final ConsumeResponseListener onConsumeListener = new ConsumeResponseListener() {
-            @Override
-            public void onConsumeResponse(@BillingResponse int responseCode, String purchaseToken) {
-                Log.v(TAG, "onConsumeResponse");
-                Log.v(TAG, "onConsumeResponse code = " + responseCode + " token = " + purchaseToken);
-            }
-        };
-        */
         try {
             executeServiceRequest(new Runnable() {
                 public void run() {
                     Log.v(TAG, "ConsumeResponse: " + PurchaseToken);
-                    mBillingClient.consumeAsync(PurchaseToken, new ConsumeResponseListener() {
-                        @Override
-                        public void onConsumeResponse(int responseCode, String purchaseToken) {
-                            Log.v(TAG, "onConsumeResponse Result: " + DecodeBillingResponse(responseCode) + " Token:" + PurchaseToken);
-                            if (responseCode == BillingResponse.OK) {
-                                PurchaseConsumed(purchaseToken);
-                            }
-                        }
-                    });
+                    mBillingClient.consumeAsync(PurchaseToken, billingManager);
                 }
             });
         }
         catch(Exception e)
         {
             Log.e(TAG, e.getMessage());
+        }
+    }
+
+    /////////////////////////////////////
+    // PurchasesUpdatedListener Callbacks
+    /////////////////////////////////////
+    @Override
+    public void onPurchasesUpdated(int responseCode, List<Purchase> purchases) {
+        // тут приходит одна покупка или несколько?
+        if (BillingResponse.OK == responseCode) {
+            if (purchases != null)
+                for (Purchase purchase : purchases) {
+                    Log.v(TAG, "Purchase was Bought = " + purchase.getPurchaseToken() + " " + purchase.getSku() + "Order:" + purchase.getOrderId());
+                    PurchaseQueried(purchase.getPurchaseToken(), purchase.getSku(), PURCHASE_BOUGHT);
+                }
+        } else {
+            Log.v(TAG, "QueryPurchases error, response = " + DecodeBillingResponse(responseCode));
+        }
+    }
+
+    ///////////////////////////////////////
+    // SkuDetailsResponseListener Callbacks
+    ///////////////////////////////////////
+    @Override
+    public void onSkuDetailsResponse(int responseCode,
+                                        List<SkuDetails> skuDetailsList) {
+        if (BillingResponse.OK == responseCode)
+            if (skuDetailsList != null)
+                for (int i = 0; i < skuDetailsList.size(); i++) {
+                    // Need to set Java Native Callback
+                    //SkuDetails sku = skuDetailsList.get(i);
+                    //Log.v(TAG, sku.getSku() + "-" + sku.getPrice() + "-" + sku.getPriceCurrencyCode());
+                }
+    }
+
+    ////////////////////////////////////
+    // ConsumeResponseListener Callbacks
+    ////////////////////////////////////
+    @Override
+    public void onConsumeResponse(int responseCode, String purchaseToken) {
+        Log.v(TAG, "onConsumeResponse Result: " + DecodeBillingResponse(responseCode) + " Token:" + purchaseToken);
+        if (responseCode == BillingResponse.OK) {
+            PurchaseConsumed(purchaseToken);
         }
     }
 }
