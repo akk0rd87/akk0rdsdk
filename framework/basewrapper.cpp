@@ -218,7 +218,7 @@ bool BWrapper::FileExists(const char* FileName, BWrapper::FileSearchPriority Sea
         return true;
     }
     return false;
-    }
+}
 
 void BWrapper::CloseBuffer(char*& buffer)
 {
@@ -910,7 +910,7 @@ void BWrapper::Log(BWrapper::LogPriority Priority, const char* File, const char*
     {
         auto pos = std::string(File).find_last_of("\\/");
         if (pos != std::string::npos) {
-            std::string sFile{ std::string(File).substr(pos + 1, LogParams.lenFile) };
+            std::string sFile{ std::string(File, pos + 1, LogParams.lenFile) };
 
             auto len = sFile.length();
             if (len < LogParams.lenFile)
@@ -924,7 +924,7 @@ void BWrapper::Log(BWrapper::LogPriority Priority, const char* File, const char*
     // Add function info
     if (LogParams.showFunction)
     {
-        std::string sFunction{ std::string(Function).substr(0, LogParams.lenFunction) };
+        std::string sFunction{ std::string(Function, 0, LogParams.lenFunction) };
 
         auto len = sFunction.length();
         if (len < LogParams.lenFunction)
@@ -1142,7 +1142,7 @@ bool FileReader::Open(const char* Fname, BWrapper::FileSearchPriority SearchPrio
         opened = true;
     }
     return opened;
-    };
+};
 
 void FileReader::Close()
 {
