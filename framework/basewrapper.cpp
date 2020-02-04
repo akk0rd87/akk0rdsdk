@@ -914,7 +914,7 @@ void BWrapper::Log(BWrapper::LogPriority Priority, const char* File, const char*
             if ((*p) == '/' || (*p) == '\\')
                 pos = i + 1;
 
-        std::string sFile = std::string(File, pos, std::string::npos);
+        std::string sFile{ std::string(File, pos, std::string::npos).substr(0, LogParams.lenFile) };
 
         auto len = sFile.length();
         if (len < LogParams.lenFile)
@@ -927,7 +927,7 @@ void BWrapper::Log(BWrapper::LogPriority Priority, const char* File, const char*
     // Add function info
     if (LogParams.showFunction)
     {
-        std::string sFunction = std::string(Function);
+        std::string sFunction{ std::string(Function).substr(0, LogParams.lenFunction) };
 
         auto len = sFunction.length();
         if (len < LogParams.lenFunction)
@@ -1143,9 +1143,9 @@ bool FileReader::Open(const char* Fname, BWrapper::FileSearchPriority SearchPrio
     {
         in = new std::istream(&fb);
         opened = true;
-        }
+    }
     return opened;
-    };
+};
 
 void FileReader::Close()
 {
@@ -1169,7 +1169,7 @@ bool FileReader::ReadLine(std::string& Line)
     {
         logError("FileReader is closed");
         return false;
-}
+    }
     if (std::getline(*in, Line))
     {
         auto len = Line.size();
