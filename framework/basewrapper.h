@@ -13,6 +13,7 @@ class AkkordPoint
     int x, y;
     AkkordPoint() : x(0), y(0) {};
     AkkordPoint(int X, int Y) : x(X), y(Y) {};
+    AkkordPoint(const AkkordPoint& Point) : x(Point.x), y(Point.y) {};
 };
 
 class AkkordRect
