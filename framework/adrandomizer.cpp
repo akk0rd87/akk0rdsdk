@@ -1,6 +1,6 @@
 #include "adrandomizer.h"
 
-void AdRandomizer::OpenURL_private(BWrapper::OS OSCode, Apps AppId)
+void AdRandomizer::OpenURL(BWrapper::OS OSCode, Apps AppId)
 {
     logVerbose("Open URL OSCode=%d, %d", (int)OSCode, (int)AppId);
 
@@ -203,12 +203,12 @@ void AdRandomizer::OpenURL(Apps AppId)
     {
         // на Windows открываем ссылки по всем платформам
     case BWrapper::OS::Windows:
-        AdRandomizer::OpenURL_private(BWrapper::OS::AndroidOS, AppId);
-        AdRandomizer::OpenURL_private(BWrapper::OS::iOS, AppId);
+        AdRandomizer::OpenURL(BWrapper::OS::AndroidOS, AppId);
+        AdRandomizer::OpenURL(BWrapper::OS::iOS, AppId);
         break;
         // на остальных платформах открываем согласно текущей платформе
     default:
-        AdRandomizer::OpenURL_private(DeviceOs, AppId);
+        AdRandomizer::OpenURL(DeviceOs, AppId);
         break;
     }
 }
