@@ -182,7 +182,7 @@ void AdRandomizer::OpenURL(BWrapper::OS OSCode, Apps AppId)
         case BWrapper::OS::iOS:
             //if (Language == Locale::Lang::Russian) BWrapper::OpenURL("https://itunes.apple.com/ru/app/id1473846186");
             //else                                   BWrapper::OpenURL("https://itunes.apple.com/app/id1473846186");
-            //BWrapper::OpenURL("https://itunes.apple.com/app/id1473846186");
+            BWrapper::OpenURL("https://itunes.apple.com/app/id1482437026");
             break;
 
         case BWrapper::OS::AndroidOS:
