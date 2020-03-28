@@ -165,7 +165,7 @@ bool SDFProgram::Init()
     // на всем остальном работаем на openGLES 2.0
     if (BWrapper::GetDeviceOS() == BWrapper::OS::Windows)
     {
-        const char* Version = "#version 120 \n";
+        const char* Version = "#version 130 \n";
         regVertex = std::string(Version) + regVertex;
         regFragment = std::string(Version) + regFragment;
         outVertex = std::string(Version) + outVertex;
