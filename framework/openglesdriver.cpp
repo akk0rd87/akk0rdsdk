@@ -1,5 +1,7 @@
 #include "openglesdriver.h"
 
+static GLESDriver Driver;
+
 void GLESDriver::Init()
 {
 #define SDL_PROC(ret,func,params) func = (func##_fnc)SDL_GL_GetProcAddress(#func); if(func) logVerbose("GLESDriver:: " #func " pointer was loaded successfully"); else logError("GLESDriver:: " #func " pointer was not loaded");
@@ -90,6 +92,5 @@ void GLESDriver::PrintShaderSource(GLuint Shader)
 
 GLESDriver& GLESDriver::GetInstance()
 {
-    static GLESDriver Driver;
     return Driver;
 }

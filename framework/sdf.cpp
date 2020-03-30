@@ -2,6 +2,8 @@
 #include "SDL_image.h"
 #include"openglesdriver.h"
 
+static SDFProgram sdfProgram;
+
 /*
 https://github.com/libgdx/libgdx/wiki/Hiero
 "java -cp gdx.jar;gdx-natives.jar;gdx-backend-lwjgl.jar;gdx-backend-lwjgl-natives.jar;extensions\gdx-freetype\gdx-freetype.jar;extensions\gdx-freetype\gdx-freetype-natives.jar;extensions\gdx-tools\gdx-tools.jar com.badlogic.gdx.tools.hiero.Hiero"
@@ -99,7 +101,6 @@ static const GLfloat SDF_Mat[] =
 
 SDFProgram& SDFProgram::GetInstance()
 {
-    static SDFProgram sdfProgram;
     return sdfProgram;
 };
 
