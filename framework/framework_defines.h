@@ -13,10 +13,13 @@
 
 // Макросы дебага
 #if defined(_DEBUG) && defined(__WIN32__) || defined(__ANDROID__) && !defined(NDEBUG) || defined(__APPLE__) && defined(__DEBUG__) || defined(__CODEBLOCKS)
-    #define __AKK0RD_DEBUG_MACRO__ 1
+#define __AKK0RD_DEBUG_MACRO__ 1
 #endif
 
-#define VALUE_BETWEEN(Val, Begin, End) (Begin <= Val && Val <= End ? true : false)
+template <class T>
+bool VALUE_BETWEEN(T Val, T Begin, T End) {
+    return (Begin <= Val && Val <= End ? true : false);
+}
 
 typedef SDL_Window   AkkordWindow;
 typedef SDL_Renderer AkkordRenderer;
@@ -37,9 +40,9 @@ struct DirContentElement
 typedef std::vector<std::unique_ptr<DirContentElement>> DirContentElementArray;
 
 #ifdef __AKK0RD_DEBUG_MACRO__
-    #define logVA(LogPriority, fmt, ...)  BWrapper::Log(LogPriority, __FILE__, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
+#define logVA(LogPriority, fmt, ...)  BWrapper::Log(LogPriority, __FILE__, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
 #else
-    #define logVA(LogPriority, fmt, ...)
+#define logVA(LogPriority, fmt, ...)
 #endif
 
 #define logVerbose(fmt, ...)  logVA(BWrapper::LogPriority::Verbose , fmt, ##__VA_ARGS__)
