@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,7 +24,7 @@
 #include "SDL_sysjoystick_c.h"
 
 /* needed for SDL_IPHONE_MAX_GFORCE macro */
-#include "SDL_config_iphoneos.h"
+#include "../../../include/SDL_config_iphoneos.h"
 
 #include "SDL_assert.h"
 #include "SDL_events.h"
@@ -125,13 +125,15 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
         name = "MFi Gamepad";
     }
 
-    device->name = SDL_strdup(name);
+    device->name = SDL_CreateJoystickName(0, 0, NULL, name);
 
     if (controller.extendedGamepad) {
         GCExtendedGamepad *gamepad = controller.extendedGamepad;
         BOOL is_xbox = [controller.vendorName containsString: @"Xbox"];
         BOOL is_ps4 = [controller.vendorName containsString: @"DUALSHOCK"];
+#if TARGET_OS_TV
         BOOL is_MFi = (!is_xbox && !is_ps4);
+#endif
         int nbuttons = 0;
 
         /* These buttons are part of the original MFi spec */
@@ -211,7 +213,6 @@ IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controlle
     }
 #if TARGET_OS_TV
     else if (controller.microGamepad) {
-        GCMicroGamepad *gamepad = controller.microGamepad;
         int nbuttons = 0;
 
         device->button_mask |= (1 << SDL_CONTROLLER_BUTTON_A);
@@ -757,7 +758,7 @@ IOS_MFIJoystickUpdate(SDL_Joystick * joystick)
 }
 
 static int
-IOS_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+IOS_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     return SDL_Unsupported();
 }

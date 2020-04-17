@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -243,7 +243,7 @@ SDL_bool UIKit_Vulkan_CreateSurface(_THIS,
 
 void UIKit_Vulkan_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h)
 {
-    UIKit_Metal_GetDrawableSize(window, w, h);
+    UIKit_Metal_GetDrawableSize(_this, window, w, h);
 }
 
 #endif

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -88,27 +88,42 @@ static time_t last_input_dir_mtime;
     (((1UL << ((nr) % (sizeof(long) * 8))) & ((addr)[(nr) / (sizeof(long) * 8)])) != 0)
 #define NBITS(x) ((((x)-1)/(sizeof(long) * 8))+1)
 
-static int
-PrefixMatch(const char *a, const char *b)
+static void
+FixupDeviceInfoForMapping(int fd, struct input_id *inpid)
 {
-    int matchlen = 0;
-    while (*a && *b) {
-        if (*a++ == *b++) {
-            ++matchlen;
-        } else {
-            break;
+    if (inpid->vendor == 0x045e && inpid->product == 0x0b05 && inpid->version == 0x0903) {
+        /* This is a Microsoft Xbox One Elite Series 2 controller */
+        unsigned long keybit[NBITS(KEY_MAX)] = { 0 };
+
+        /* The first version of the firmware duplicated all the inputs */
+        if ((ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(keybit)), keybit) >= 0) &&
+            test_bit(0x2c0, keybit)) {
+            /* Change the version to 0x0902, so we can map it differently */
+            inpid->version = 0x0902;
         }
     }
-    return matchlen;
 }
 
+#ifdef SDL_JOYSTICK_HIDAPI
+static SDL_bool
+IsVirtualJoystick(Uint16 vendor, Uint16 product, Uint16 version, const char *name)
+{
+    if (vendor == USB_VENDOR_MICROSOFT && product == USB_PRODUCT_XBOX_ONE_S && version == 0 &&
+        SDL_strcmp(name, "Xbox One S Controller") == 0) {
+        /* This is the virtual device created by the xow driver */
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}
+#endif /* SDL_JOYSTICK_HIDAPI */
+
 static int
-IsJoystick(int fd, char *namebuf, const size_t namebuflen, SDL_JoystickGUID *guid)
+IsJoystick(int fd, char **name_return, SDL_JoystickGUID *guid)
 {
     struct input_id inpid;
     Uint16 *guid16 = (Uint16 *)guid->data;
-    const char *name;
-    const char *spot;
+    char *name;
+    char product_string[128];
 
 #if !SDL_USE_LIBUDEV
     /* When udev is enabled we only get joystick devices here, so there's no need to test them */
@@ -132,33 +147,28 @@ IsJoystick(int fd, char *namebuf, const size_t namebuflen, SDL_JoystickGUID *gui
         return 0;
     }
 
-    name = SDL_GetCustomJoystickName(inpid.vendor, inpid.product);
-    if (name) {
-        SDL_strlcpy(namebuf, name, namebuflen);
-    } else {
-        if (ioctl(fd, EVIOCGNAME(namebuflen), namebuf) < 0) {
-            return 0;
-        }
+    if (ioctl(fd, EVIOCGNAME(sizeof(product_string)), product_string) < 0) {
+        return 0;
+    }
 
-        /* Remove duplicate manufacturer in the name */
-        for (spot = namebuf + 1; *spot; ++spot) {
-            int matchlen = PrefixMatch(namebuf, spot);
-            if (matchlen > 0 && spot[matchlen - 1] == ' ') {
-                SDL_memmove(namebuf, spot, SDL_strlen(spot)+1);
-                break;
-            }
-        }
+    name = SDL_CreateJoystickName(inpid.vendor, inpid.product, NULL, product_string);
+    if (!name) {
+        return 0;
     }
 
 #ifdef SDL_JOYSTICK_HIDAPI
-    if (HIDAPI_IsDevicePresent(inpid.vendor, inpid.product, inpid.version, namebuf)) {
+    if (!IsVirtualJoystick(inpid.vendor, inpid.product, inpid.version, name) &&
+        HIDAPI_IsDevicePresent(inpid.vendor, inpid.product, inpid.version, name)) {
         /* The HIDAPI driver is taking care of this device */
+        SDL_free(name);
         return 0;
     }
 #endif
 
+    FixupDeviceInfoForMapping(fd, &inpid);
+
 #ifdef DEBUG_JOYSTICK
-    printf("Joystick: %s, bustype = %d, vendor = 0x%.4x, product = 0x%.4x, version = %d\n", namebuf, inpid.bustype, inpid.vendor, inpid.product, inpid.version);
+    printf("Joystick: %s, bustype = %d, vendor = 0x%.4x, product = 0x%.4x, version = %d\n", name, inpid.bustype, inpid.vendor, inpid.product, inpid.version);
 #endif
 
     SDL_memset(guid->data, 0, sizeof(guid->data));
@@ -176,12 +186,14 @@ IsJoystick(int fd, char *namebuf, const size_t namebuflen, SDL_JoystickGUID *gui
         *guid16++ = SDL_SwapLE16(inpid.version);
         *guid16++ = 0;
     } else {
-        SDL_strlcpy((char*)guid16, namebuf, sizeof(guid->data) - 4);
+        SDL_strlcpy((char*)guid16, name, sizeof(guid->data) - 4);
     }
 
-    if (SDL_ShouldIgnoreJoystick(namebuf, *guid)) {
+    if (SDL_ShouldIgnoreJoystick(name, *guid)) {
+        SDL_free(name);
         return 0;
     }
+    *name_return = name;
     return 1;
 }
 
@@ -217,7 +229,7 @@ MaybeAddDevice(const char *path)
     struct stat sb;
     int fd = -1;
     int isstick = 0;
-    char namebuf[128];
+    char *name = NULL;
     SDL_JoystickGUID guid;
     SDL_joylist_item *item;
 
@@ -245,7 +257,7 @@ MaybeAddDevice(const char *path)
     printf("Checking %s\n", path);
 #endif
 
-    isstick = IsJoystick(fd, namebuf, sizeof (namebuf), &guid);
+    isstick = IsJoystick(fd, &name, &guid);
     close(fd);
     if (!isstick) {
         return -1;
@@ -259,7 +271,7 @@ MaybeAddDevice(const char *path)
     SDL_zerop(item);
     item->devnum = sb.st_rdev;
     item->path = SDL_strdup(path);
-    item->name = SDL_strdup(namebuf);
+    item->name = name;
     item->guid = guid;
 
     if ((item->path == NULL) || (item->name == NULL)) {
@@ -708,7 +720,7 @@ ConfigJoystick(SDL_Joystick * joystick, int fd)
                        absinfo.value, absinfo.minimum, absinfo.maximum,
                        absinfo.fuzz, absinfo.flat);
 #endif /* DEBUG_INPUT_EVENTS */
-                joystick->hwdata->hats_indices[joystick->nhats++] = hat_index;
+                joystick->hwdata->hats_indices[hat_index] = joystick->nhats++;
             }
         }
         if (test_bit(REL_X, relbit) || test_bit(REL_Y, relbit)) {
@@ -804,7 +816,7 @@ LINUX_JoystickOpen(SDL_Joystick * joystick, int device_index)
 }
 
 static int
-LINUX_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+LINUX_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     struct input_event event;
 
@@ -812,7 +824,7 @@ LINUX_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint1
         struct ff_effect *effect = &joystick->hwdata->effect;
 
         effect->type = FF_RUMBLE;
-        effect->replay.length = SDL_min(duration_ms, 32767);
+        effect->replay.length = SDL_MAX_RUMBLE_DURATION_MS;
         effect->u.rumble.strong_magnitude = low_frequency_rumble;
         effect->u.rumble.weak_magnitude = high_frequency_rumble;
     } else if (joystick->hwdata->ff_sine) {
@@ -821,7 +833,7 @@ LINUX_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint1
         struct ff_effect *effect = &joystick->hwdata->effect;
 
         effect->type = FF_PERIODIC;
-        effect->replay.length = SDL_min(duration_ms, 32767);
+        effect->replay.length = SDL_MAX_RUMBLE_DURATION_MS;
         effect->u.periodic.waveform = FF_SINE;
         effect->u.periodic.magnitude = magnitude;
     } else {
@@ -829,7 +841,11 @@ LINUX_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint1
     }
 
     if (ioctl(joystick->hwdata->fd, EVIOCSFF, &joystick->hwdata->effect) < 0) {
-        return SDL_SetError("Couldn't update rumble effect: %s", strerror(errno));
+        /* The kernel may have lost this effect, try to allocate a new one */
+        joystick->hwdata->effect.id = -1;
+        if (ioctl(joystick->hwdata->fd, EVIOCSFF, &joystick->hwdata->effect) < 0) {
+            return SDL_SetError("Couldn't update rumble effect: %s", strerror(errno));
+        }
     }
 
     event.type = EV_FF;

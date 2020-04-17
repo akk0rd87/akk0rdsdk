@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -64,7 +64,8 @@ typedef enum
     SDL_CONTROLLER_TYPE_XBOXONE,
     SDL_CONTROLLER_TYPE_PS3,
     SDL_CONTROLLER_TYPE_PS4,
-    SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO
+    SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO,
+    SDL_CONTROLLER_TYPE_VIRTUAL
 } SDL_GameControllerType;
 
 typedef enum

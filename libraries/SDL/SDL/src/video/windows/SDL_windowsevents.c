@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -75,6 +75,9 @@
 #ifndef WM_MOUSEHWHEEL
 #define WM_MOUSEHWHEEL 0x020E
 #endif
+#ifndef WM_POINTERUPDATE
+#define WM_POINTERUPDATE 0x0245
+#endif
 #ifndef WM_UNICHAR
 #define WM_UNICHAR 0x0109
 #endif
@@ -86,6 +89,11 @@ VKeytoScancode(WPARAM vkey)
 /* Windows generates this virtual keycode for Keypad 5 when NumLock is off.
     case VK_CLEAR: return SDL_SCANCODE_CLEAR;
 */
+    case VK_LEFT: return SDL_SCANCODE_LEFT;
+    case VK_UP: return SDL_SCANCODE_UP;
+    case VK_RIGHT: return SDL_SCANCODE_RIGHT;
+    case VK_DOWN: return SDL_SCANCODE_DOWN;
+
     case VK_MODECHANGE: return SDL_SCANCODE_MODE;
     case VK_SELECT: return SDL_SCANCODE_SELECT;
     case VK_EXECUTE: return SDL_SCANCODE_EXECUTE;
@@ -518,12 +526,19 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         returnCode = 0;
         break;
 
+    case WM_POINTERUPDATE:
+        {
+            data->last_pointer_update = lParam;
+            break;
+        }
+
     case WM_MOUSEMOVE:
         {
             SDL_Mouse *mouse = SDL_GetMouse();
             if (!mouse->relative_mode || mouse->relative_mode_warp) {
                 /* Only generate mouse events for real mouse */
-                if (GetMouseMessageSource() != SDL_MOUSE_EVENT_SOURCE_TOUCH) {
+                if (GetMouseMessageSource() != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
+                    lParam != data->last_pointer_update) {
                     SDL_SendMouseMotion(data->window, 0, 0, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
                     if (isWin10FCUorNewer && mouse->relative_mode_warp) {
                         /* To work around #3931, Win10 bug introduced in Fall Creators Update, where
@@ -537,6 +552,9 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         SDL_SendMouseMotion(data->window, 0, 0, center_x, center_y);
                     }
                 }
+            } else {
+                /* We still need to update focus */
+                SDL_SetMouseFocus(data->window);
             }
         }
         /* don't break here, fall through to check the wParam like the button presses */
@@ -555,7 +573,8 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         {
             SDL_Mouse *mouse = SDL_GetMouse();
             if (!mouse->relative_mode || mouse->relative_mode_warp) {
-                if (GetMouseMessageSource() != SDL_MOUSE_EVENT_SOURCE_TOUCH) {
+                if (GetMouseMessageSource() != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
+                    lParam != data->last_pointer_update) {
                     WIN_CheckWParamMouseButtons(wParam, data, 0);
                 }
             }
@@ -581,7 +600,8 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             /* Mouse data (ignoring synthetic mouse events generated for touchscreens) */
             if (inp.header.dwType == RIM_TYPEMOUSE) {
-                if (GetMouseMessageSource() == SDL_MOUSE_EVENT_SOURCE_TOUCH) {
+                if (GetMouseMessageSource() == SDL_MOUSE_EVENT_SOURCE_TOUCH ||
+                    (GetMessageExtraInfo() & 0x82) == 0x82) {
                     break;
                 }
                 if (isRelative) {
@@ -589,7 +609,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
                     if ((rawmouse->usFlags & 0x01) == MOUSE_MOVE_RELATIVE) {
                         SDL_SendMouseMotion(data->window, 0, 1, (int)rawmouse->lLastX, (int)rawmouse->lLastY);
-                    } else {
+                    } else if (rawmouse->lLastX || rawmouse->lLastY) {
                         /* synthesize relative moves from the abs position */
                         static SDL_Point lastMousePoint;
                         SDL_bool virtual_desktop = (rawmouse->usFlags & MOUSE_VIRTUAL_DESKTOP) ? SDL_TRUE : SDL_FALSE;

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -281,6 +281,8 @@ struct SDL_VideoDevice
      */
     SDL_MetalView (*Metal_CreateView) (_THIS, SDL_Window * window);
     void (*Metal_DestroyView) (_THIS, SDL_MetalView view);
+    void *(*Metal_GetLayer) (_THIS, SDL_MetalView view);
+    void (*Metal_GetDrawableSize) (_THIS, SDL_Window * window, int *w, int *h);
 
     /* * * */
     /*
@@ -373,6 +375,11 @@ struct SDL_VideoDevice
     SDL_TLSID current_glwin_tls;
     SDL_TLSID current_glctx_tls;
 
+    /* Flag that stores whether it's allowed to call SDL_GL_MakeCurrent()
+     * with a NULL window, but a non-NULL context. (Not allowed in most cases,
+     * except on EGL under some circumstances.) */
+    SDL_bool gl_allow_no_surface;
+
     /* * * */
     /* Data used by the Vulkan drivers */
     struct
@@ -461,13 +468,6 @@ extern SDL_Window * SDL_GetFocusWindow(void);
 extern SDL_bool SDL_ShouldAllowTopmost(void);
 
 extern float SDL_ComputeDiagonalDPI(int hpix, int vpix, float hinches, float vinches);
-
-extern void SDL_OnApplicationWillTerminate(void);
-extern void SDL_OnApplicationDidReceiveMemoryWarning(void);
-extern void SDL_OnApplicationWillResignActive(void);
-extern void SDL_OnApplicationDidEnterBackground(void);
-extern void SDL_OnApplicationWillEnterForeground(void);
-extern void SDL_OnApplicationDidBecomeActive(void);
 
 extern void SDL_ToggleDragAndDropSupport(void);
 

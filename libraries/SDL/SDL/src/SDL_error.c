@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,6 @@
 
 /* Simple error handling in SDL */
 
-#include "SDL_log.h"
 #include "SDL_error.h"
 #include "SDL_error_c.h"
 
@@ -38,8 +37,6 @@ SDL_LookupString(const char *key)
 }
 
 /* Public functions */
-
-static char *SDL_GetErrorMsg(char *errstr, int maxlen);
 
 int
 SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
@@ -192,7 +189,7 @@ main(int argc, char *argv[])
 /* This function has a bit more overhead than most error functions
    so that it supports internationalization and thread-safe errors.
 */
-static char *
+char *
 SDL_GetErrorMsg(char *errstr, int maxlen)
 {
     SDL_error *error;

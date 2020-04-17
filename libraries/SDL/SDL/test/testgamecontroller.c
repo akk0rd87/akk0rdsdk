@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -114,11 +114,6 @@ loop(void *arg)
         case SDL_CONTROLLERBUTTONDOWN:
         case SDL_CONTROLLERBUTTONUP:
             SDL_Log("Controller button %s %s\n", SDL_GameControllerGetStringForButton((SDL_GameControllerButton)event.cbutton.button), event.cbutton.state ? "pressed" : "released");
-            /* First button triggers a 0.5 second full strength rumble */
-            if (event.type == SDL_CONTROLLERBUTTONDOWN &&
-                event.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
-                SDL_GameControllerRumble(gamecontroller, 0xFFFF, 0xFFFF, 500);
-            }
             break;
         case SDL_KEYDOWN:
             if (event.key.keysym.sym != SDLK_ESCAPE) {
@@ -153,6 +148,13 @@ loop(void *arg)
             const double angle = axis_positions[i].angle + 180.0;
             SDL_RenderCopyEx(screen, axis, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
         }
+    }
+
+    /* Update rumble based on trigger state */
+    {
+        Uint16 low_frequency_rumble = SDL_GameControllerGetAxis(gamecontroller, SDL_CONTROLLER_AXIS_TRIGGERLEFT) * 2;
+        Uint16 high_frequency_rumble = SDL_GameControllerGetAxis(gamecontroller, SDL_CONTROLLER_AXIS_TRIGGERRIGHT) * 2;
+        SDL_GameControllerRumble(gamecontroller, low_frequency_rumble, high_frequency_rumble, 250);
     }
 
     SDL_RenderPresent(screen);
@@ -307,6 +309,9 @@ main(int argc, char *argv[])
                 break;
             case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO:
                 description = "Nintendo Switch Pro Controller";
+                break;
+            case SDL_CONTROLLER_TYPE_VIRTUAL:
+                description = "Virtual Game Controller";
                 break;
             default:
                 description = "Game Controller";

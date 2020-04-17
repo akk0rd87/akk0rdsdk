@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -137,8 +137,9 @@
 #define SDL_HAPTIC_DUMMY 1
 
 /* Enable MFi joystick support */
-#define SDL_JOYSTICK_MFI 1
 /*#define SDL_JOYSTICK_HIDAPI 1*/
+#define SDL_JOYSTICK_MFI 1
+#define SDL_JOYSTICK_VIRTUAL    1
 
 #ifdef __TVOS__
 #define SDL_SENSOR_DUMMY    1

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,10 +26,10 @@
 
 #include "SDL_assert.h"
 #include "SDL_hints.h"
-#include "SDL_log.h"
 #include "SDL_timer.h"
 #include "SDL_windowsjoystick_c.h"
 #include "SDL_xinputjoystick_c.h"
+#include "SDL_rawinputjoystick_c.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
 
 /*
@@ -71,10 +71,10 @@ SDL_XINPUT_JoystickInit(void)
     return 0;
 }
 
-static char *
+static const char *
 GetXInputName(const Uint8 userid, BYTE SubType)
 {
-    char name[32];
+    static char name[32];
 
     if (SDL_XInputUseOldJoystickMapping()) {
         SDL_snprintf(name, sizeof(name), "X360 Controller #%u", 1 + userid);
@@ -111,7 +111,7 @@ GetXInputName(const Uint8 userid, BYTE SubType)
             break;
         }
     }
-    return SDL_strdup(name);
+    return name;
 }
 
 /* We can't really tell what device is being used for XInput, but we can guess
@@ -220,7 +220,6 @@ AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
     Uint16 vendor = 0;
     Uint16 product = 0;
     Uint16 version = 0;
-    const char *name;
     JoyStick_DeviceData *pPrevJoystick = NULL;
     JoyStick_DeviceData *pNewJoystick = *pContext;
 
@@ -274,13 +273,7 @@ AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
     }
     pNewJoystick->SubType = SubType;
     pNewJoystick->XInputUserId = userid;
-
-    name = SDL_GetCustomJoystickName(vendor, product);
-    if (name) {
-        pNewJoystick->joystickname = SDL_strdup(name);
-    } else {
-        pNewJoystick->joystickname = GetXInputName(userid, SubType);
-    }
+    pNewJoystick->joystickname = SDL_CreateJoystickName(vendor, product, NULL, GetXInputName(userid, SubType));
     if (!pNewJoystick->joystickname) {
         SDL_free(pNewJoystick);
         return; /* better luck next time? */
@@ -294,6 +287,14 @@ AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
 #ifdef SDL_JOYSTICK_HIDAPI
     if (HIDAPI_IsDevicePresent(vendor, product, version, pNewJoystick->joystickname)) {
         /* The HIDAPI driver is taking care of this device */
+        SDL_free(pNewJoystick);
+        return;
+    }
+#endif
+
+#ifdef SDL_JOYSTICK_RAWINPUT
+    if (RAWINPUT_IsDevicePresent(vendor, product, version)) {
+        /* The RAWINPUT driver is taking care of this device */
         SDL_free(pNewJoystick);
         return;
     }
@@ -325,6 +326,18 @@ SDL_XINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
         const Uint8 userid = (Uint8)iuserid;
         XINPUT_CAPABILITIES capabilities;
         if (XINPUTGETCAPABILITIES(userid, XINPUT_FLAG_GAMEPAD, &capabilities) == ERROR_SUCCESS) {
+            /* Adding a new device, must handle all removes first, or GuessXInputDevice goes terribly wrong (returns
+              a product/vendor ID that is not even attached to the system) when we get a remove and add on the same tick
+              (e.g. when disconnecting a device and the OS reassigns which userid an already-attached controller is)
+            */
+            int iuserid2;
+            for (iuserid2 = iuserid - 1; iuserid2 >= 0; iuserid2--) {
+                const Uint8 userid2 = (Uint8)iuserid2;
+                XINPUT_CAPABILITIES capabilities2;
+                if (XINPUTGETCAPABILITIES(userid2, XINPUT_FLAG_GAMEPAD, &capabilities2) != ERROR_SUCCESS) {
+                    DelXInputDevice(userid2);
+                }
+            }
             AddXInputDevice(userid, capabilities.SubType, pContext);
         } else {
             DelXInputDevice(userid);
@@ -343,8 +356,6 @@ SDL_XINPUT_JoystickOpen(SDL_Joystick * joystick, JoyStick_DeviceData *joystickde
     SDL_assert(XINPUTGETCAPABILITIES);
     SDL_assert(XINPUTSETSTATE);
     SDL_assert(userId < XUSER_MAX_COUNT);
-
-    joystick->player_index = userId;
 
     joystick->hwdata->bXInputDevice = SDL_TRUE;
 
@@ -467,7 +478,7 @@ UpdateXInputJoystickState(SDL_Joystick * joystick, XINPUT_STATE_EX *pXInputState
 }
 
 int
-SDL_XINPUT_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+SDL_XINPUT_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     XINPUT_VIBRATION XVibration;
 
@@ -479,12 +490,6 @@ SDL_XINPUT_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, 
     XVibration.wRightMotorSpeed = high_frequency_rumble;
     if (XINPUTSETSTATE(joystick->hwdata->userid, &XVibration) != ERROR_SUCCESS) {
         return SDL_SetError("XInputSetState() failed");
-    }
-
-    if ((low_frequency_rumble || high_frequency_rumble) && duration_ms) {
-        joystick->hwdata->rumble_expiration = SDL_GetTicks() + duration_ms;
-    } else {
-        joystick->hwdata->rumble_expiration = 0;
     }
     return 0;
 }
@@ -517,13 +522,6 @@ SDL_XINPUT_JoystickUpdate(SDL_Joystick * joystick)
             UpdateXInputJoystickState(joystick, &XInputState, &XBatteryInformation);
         }
         joystick->hwdata->dwPacketNumber = XInputState.dwPacketNumber;
-    }
-
-    if (joystick->hwdata->rumble_expiration) {
-        Uint32 now = SDL_GetTicks();
-        if (SDL_TICKS_PASSED(now, joystick->hwdata->rumble_expiration)) {
-            SDL_XINPUT_JoystickRumble(joystick, 0, 0, 0);
-        }
     }
 }
 
@@ -567,7 +565,7 @@ SDL_XINPUT_JoystickOpen(SDL_Joystick * joystick, JoyStick_DeviceData *joystickde
 }
 
 int
-SDL_XINPUT_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+SDL_XINPUT_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     return SDL_Unsupported();
 }

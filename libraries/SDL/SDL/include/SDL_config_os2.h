@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -31,7 +31,6 @@
 #define SDL_POWER_DISABLED  1
 #define SDL_JOYSTICK_DISABLED 1
 #define SDL_HAPTIC_DISABLED 1
-/*#undef SDL_JOYSTICK_HIDAPI */
 
 #define SDL_SENSOR_DUMMY 1
 #define SDL_VIDEO_DRIVER_DUMMY 1
