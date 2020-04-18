@@ -14,6 +14,9 @@
 
 #define OPENGLES2_FUCNTION_LIST \
 DEFINE_glShaderSource \
+SDL_PROC(void, glBufferData, (GLenum, GLsizeiptr, const GLvoid *, GLenum)) \
+SDL_PROC(void, glBufferSubData, (GLenum, GLintptr, GLsizeiptr, const GLvoid *)) \
+SDL_PROC(void, glGenBuffers, (GLsizei, GLuint *)) \
 SDL_PROC(void, glBindBuffer, (GLenum, GLuint)) \
 SDL_PROC(void, glBlendFunc, (GLenum, GLenum)) \
 SDL_PROC(void, glGetShaderSource, (GLuint, GLsizei, GLsizei*, GLchar*)) \

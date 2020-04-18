@@ -79,7 +79,7 @@ public:
         akkordTexture.LoadFromMemory(Buffer, Size, AkkordTexture::TextureType::PNG);
         return true;
     };
-    bool Draw(bool Outline, GLsizei Count, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border, int Spread);
+    bool Draw(bool Outline, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const std::vector<GLfloat>& UV, const std::vector<GLfloat>& squareVertices, const std::vector <GLushort>& Indices, GLfloat Scale, GLfloat Border, int Spread);
     AkkordPoint GetSize() { return akkordTexture.GetSize(); };
     ~SDFGLTexture() { Clear(); };
 };
@@ -173,7 +173,7 @@ public:
 
     bool LoadCharMapFromMemory(const char* Buffer, int Size);
 
-    bool Draw(bool Outline, GLsizei Count, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border);
+    bool Draw(bool Outline, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const std::vector<GLfloat>& UV, const std::vector<GLfloat>& squareVertices, const std::vector <GLushort>& Indices, GLfloat Scale, GLfloat Border);
     bool GetCharInfo(unsigned Code, SDFCharInfo& ci) {
         auto res = CharsMap.find(Code);
         if (res != CharsMap.end())

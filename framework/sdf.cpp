@@ -3,6 +3,7 @@
 #include"openglesdriver.h"
 
 static SDFProgram sdfProgram;
+GLuint ArrayBuffer, ElementBuffer;
 
 /*
 https://github.com/libgdx/libgdx/wiki/Hiero
@@ -110,6 +111,9 @@ bool SDFProgram::CompileProgram(ShaderProgramStruct* Program, const char* Vertex
 
     auto& Driver = GLESDriver::GetInstance();
 
+    Driver.glGenBuffers(1, &ArrayBuffer);
+    Driver.glGenBuffers(1, &ElementBuffer);
+
     // Create and compile the fragment shader
     GLuint vertexShader = Driver.glCreateShader(GL_VERTEX_SHADER); CheckGLESError(); PrintGLESShaderLog(vertexShader);
     Driver.glShaderSource(vertexShader, 1, &VertextShader, NULL); CheckGLESError(); PrintGLESShaderLog(vertexShader);
@@ -143,8 +147,9 @@ bool SDFProgram::CompileProgram(ShaderProgramStruct* Program, const char* Vertex
     Driver.glUniformMatrix4fv(mat, 1, GL_FALSE, SDF_Mat);    CheckGLESError();
     Driver.glUniform1i(base_texture, 0);
 
-    if (oldProgramId > 0)
+    if (oldProgramId > 0) {
         Driver.glUseProgram(oldProgramId);
+    }
 
     //logDebug("sdf_outline_color = %d; sdf_params = %d; mat = %d, base_texture = %d, font_color = %d", Program->sdf_outline_color, Program->sdf_params, mat, base_texture, Program->font_color);
     return true;
@@ -180,19 +185,35 @@ bool SDFProgram::Init()
     return false;
 };
 
-bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border, int Spread)
+bool SDFGLTexture::Draw(bool Outline, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const std::vector<GLfloat>& UV, const std::vector<GLfloat>& squareVertices, const std::vector <GLushort>& Indices, GLfloat Scale, GLfloat Border, int Spread)
 {
+    // GLsizei Count,
     GLint oldProgramId;
 
-    struct VertextAttrParamsStruct
-    {
+    struct VertextAttrParamsStruct {
         GLint attr_0_enabled, attr_1_enabled, attr_2_enabled, attr_3_enabled;
     } VertexParams;
     VertexParams.attr_0_enabled = VertexParams.attr_1_enabled = VertexParams.attr_2_enabled = VertexParams.attr_3_enabled = GL_FALSE;
 
     auto shaderProgram = SDFProgram::GetInstance().GetShaderProgram(Outline);
     auto& Driver = GLESDriver::GetInstance();
-    Driver.glBindBuffer(GL_ARRAY_BUFFER, static_cast <GLuint>(0));
+
+    std::vector<GLfloat> Data; // TO DO оптимизировать заполнение вектора
+    for (auto& v : UV) {
+        Data.push_back(v);
+    }
+
+    for (auto& v : squareVertices) {
+        Data.push_back(v);
+    }
+
+    {   // TO DO использовать SUBDATA, если нет переполнения
+        Driver.glBindBuffer(GL_ARRAY_BUFFER, ArrayBuffer);
+        Driver.glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(Data.size() * sizeof(GLfloat)), &Data.front(), GL_STREAM_DRAW); // верно ли указан размер (второй параметр)
+        Driver.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ElementBuffer);
+        Driver.glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(Indices.size() * sizeof(GLushort)), &Indices.front(), GL_STREAM_DRAW); // верно ли указан размер (второй параметр)
+    }
+
     Driver.glGetIntegerv((GLenum)GL_CURRENT_PROGRAM, &oldProgramId); CheckGLESError();
 
     {
@@ -210,53 +231,43 @@ bool SDFGLTexture::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColo
         if (VertexParams.attr_3_enabled != GL_FALSE) { Driver.glDisableVertexAttribArray((GLuint)3); CheckGLESError(); }
     }
 
-    if (oldProgramId != shaderProgram->shaderProgram)
-    {
+    if (oldProgramId != shaderProgram->shaderProgram) {
         Driver.glUseProgram(shaderProgram->shaderProgram); CheckGLESError(); PrintGLESProgamLog(shaderProgram->shaderProgram);
     }
 
-    //Driver.glBindTexture((GLenum)GL_TEXTURE_2D, GLTexture); CheckGLESError();
     SDL_GL_BindTexture(akkordTexture.GetTexture(), nullptr, nullptr);
 
-    Driver.glVertexAttribPointer(SDFProgram::Attributes::SDF_ATTRIB_POSITION, (GLint)2, (GLenum)GL_FLOAT, (GLboolean)GL_FALSE, (GLsizei)0, squareVertices); CheckGLESError();
-    Driver.glVertexAttribPointer(SDFProgram::Attributes::SDF_ATTRIB_UV, (GLint)2, (GLenum)GL_FLOAT, (GLboolean)GL_FALSE, (GLsizei)0, UV); CheckGLESError();
+    Driver.glVertexAttribPointer(SDFProgram::Attributes::SDF_ATTRIB_POSITION, (GLint)2, (GLenum)GL_FLOAT, (GLboolean)GL_FALSE, (GLsizei)0, (const GLvoid*)(UV.size() * sizeof(GLfloat))); CheckGLESError();
+    Driver.glVertexAttribPointer(SDFProgram::Attributes::SDF_ATTRIB_UV, (GLint)2, (GLenum)GL_FLOAT, (GLboolean)GL_FALSE, (GLsizei)0, nullptr); CheckGLESError();
 
     Driver.glUniform4f(shaderProgram->font_color, GLfloat(FontColor.GetR()) / 255.0f, GLfloat(FontColor.GetG()) / 255.0f, GLfloat(FontColor.GetB()) / 255.0f, GLfloat(FontColor.GetA()) / 255.0f); CheckGLESError();
 
-    GLfloat smoothness = std::min(0.3f, 0.25f / (GLfloat)Spread / Scale * 1.5f) * 850.0f / 255.f / 3.333f;
-
-    //0.25f / (float)Spread / Scale*/*smoothfact*/1.5)*850.0f
+    const GLfloat smoothness = std::min(0.3f, 0.25f / (GLfloat)Spread / Scale * 1.5f) * 850.0f / 255.f / 3.333f;
 
     Driver.glUniform1f(shaderProgram->smooth, smoothness); CheckGLESError();
 
-    if (Outline)
-    {
-        if (shaderProgram->sdf_outline_color >= 0)
-        {
+    if (Outline) {
+        if (shaderProgram->sdf_outline_color >= 0) {
             Driver.glUniform4f(shaderProgram->sdf_outline_color, GLfloat(OutlineColor.GetR()) / 255.0f, GLfloat(OutlineColor.GetG()) / 255.0f, GLfloat(OutlineColor.GetB()) / 255.0f, GLfloat(OutlineColor.GetA()) / 255.0f); CheckGLESError();
         }
-        else
-        {
+        else {
             logError("shaderProgram->sdf_outline_color error %d", shaderProgram->sdf_outline_color);
         }
 
-        if (shaderProgram->border >= 0)
-        {
+        if (shaderProgram->border >= 0) {
             Driver.glUniform1f(shaderProgram->border, Border / 6.666f); CheckGLESError();
         }
-        else
-        {
+        else {
             logError("shaderProgram->border error %d", shaderProgram->border);
         }
     }
 
-    Driver.glDrawElements((GLenum)GL_TRIANGLES, Count, (GLenum)GL_UNSIGNED_SHORT, Indices); CheckGLESError();
+    Driver.glDrawElements((GLenum)GL_TRIANGLES, static_cast<GLsizei>(Indices.size()), (GLenum)GL_UNSIGNED_SHORT, nullptr); CheckGLESError();
 
     // unbind texture
     SDL_GL_UnbindTexture(akkordTexture.GetTexture());
 
-    if (shaderProgram->shaderProgram != oldProgramId && oldProgramId > 0)
-    {
+    if (shaderProgram->shaderProgram != oldProgramId && oldProgramId > 0) {
         Driver.glUseProgram(oldProgramId); CheckGLESError();
     }
 
@@ -277,8 +288,7 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
     auto ScreenSize = BWrapper::GetScreenSize();
 
     // если целевое размещение не попадает на экран, не рисуем его
-    if (DestRect.x > ScreenSize.x || DestRect.x + DestRect.w < 0 || DestRect.y > ScreenSize.y || DestRect.y + DestRect.h < 0)
-    {
+    if (DestRect.x > ScreenSize.x || DestRect.x + DestRect.w < 0 || DestRect.y > ScreenSize.y || DestRect.y + DestRect.h < 0) {
         return false;
     }
 
@@ -288,15 +298,13 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
     struct FloatRect { float x, y, w, h; };
     FloatRect Src, Dest;
 
-    if (SourceRect != nullptr)
-    {
+    if (SourceRect != nullptr) {
         Src.x = static_cast<float>(SourceRect->x);
         Src.y = static_cast<float>(SourceRect->y);
         Src.w = static_cast<float>(SourceRect->w);
         Src.h = static_cast<float>(SourceRect->h);
     }
-    else
-    {
+    else {
         Src.x = Src.y = 0.0f;
         Src.w = atlasW;
         Src.h = atlasH;
@@ -354,9 +362,8 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
 
 bool SDFTexture::Flush()
 {
-    if (Indices.size() > 0)
-    {
-        Texture.Draw(Outline, (GLsizei)Indices.size(), this->Color, this->OutlineColor, &UV.front(), &squareVertices.front(), &Indices.front(), Scale, (GLfloat)Border, Spread);
+    if (Indices.size() > 0) {
+        Texture.Draw(Outline, this->Color, this->OutlineColor, UV, squareVertices, Indices, Scale, (GLfloat)Border, Spread);
     }
     Clear();
     return true;
@@ -376,22 +383,18 @@ public:
         decltype(pointer) start = nullptr;
         while (pointer != end)
         {
-            if (c13 == *pointer || c10 == *pointer)
-            {
-                if (start)
-                {
+            if (c13 == *pointer || c10 == *pointer) {
+                if (start) {
                     break;
                 }
             }
-            else if (!start)
-            {
+            else if (!start) {
                 start = pointer;
             }
             ++pointer;
         }
 
-        if (start)
-        {
+        if (start) {
             line = std::string(start, pointer - start);
             return true;
         }
@@ -511,9 +514,9 @@ bool SDFFont::ParseFNTFile(const char* FNTFile, BWrapper::FileSearchPriority Sea
     return false;
 }
 
-bool SDFFont::Draw(bool Outline, GLsizei Count, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLfloat Scale, GLfloat Border)
+bool SDFFont::Draw(bool Outline, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const std::vector<GLfloat>& UV, const std::vector<GLfloat>& squareVertices, const std::vector <GLushort>& Indices, GLfloat Scale, GLfloat Border)
 {
-    FontAtlas.Draw(Outline, Count, FontColor, OutlineColor, UV, squareVertices, Indices, Scale, Border, Spread);
+    FontAtlas.Draw(Outline, FontColor, OutlineColor, UV, squareVertices, Indices, Scale, Border, Spread);
     return true;
 };
 
@@ -568,9 +571,8 @@ AkkordPoint SDFFontBuffer::GetTextSizeByLine(const char* Text, std::vector<int>&
 
 void SDFFontBuffer::Flush()
 {
-    if (Indices.size() > 0)
-    {
-        sdfFont->Draw(this->outline, (GLsizei)Indices.size(), this->color, this->outlineColor, &UV.front(), &squareVertices.front(), &Indices.front(), (GLfloat)this->scaleX, (GLfloat)this->Border);
+    if (Indices.size() > 0) {
+        sdfFont->Draw(this->outline, this->color, this->outlineColor, UV, squareVertices, Indices, (GLfloat)this->scaleX, (GLfloat)this->Border);
     }
     Clear();
 };
