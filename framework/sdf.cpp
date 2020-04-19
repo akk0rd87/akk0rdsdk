@@ -5,6 +5,18 @@
 static SDFProgram sdfProgram;
 GLuint ArrayBuffer, ElementBuffer;
 
+constexpr GLsizei constBufferSize = 8;
+
+static struct {
+    GLuint ArrayBufferID[constBufferSize]{ 0 };   // ID буфферов для работы с openglES
+    GLuint ElementBufferID[constBufferSize]{ 0 }; // ID буфферов для работы с openglES
+
+    GLsizeiptr ArrayBufferSize[constBufferSize]{ 0 };   // размеры соответствующих буферов
+    GLsizeiptr ElementBufferSize[constBufferSize]{ 0 }; // размеры соответствующих буферов
+
+    GLsizei CurentBuffer{ 0 };
+} VBO;
+
 /*
 https://github.com/libgdx/libgdx/wiki/Hiero
 "java -cp gdx.jar;gdx-natives.jar;gdx-backend-lwjgl.jar;gdx-backend-lwjgl-natives.jar;extensions\gdx-freetype\gdx-freetype.jar;extensions\gdx-freetype\gdx-freetype-natives.jar;extensions\gdx-tools\gdx-tools.jar com.badlogic.gdx.tools.hiero.Hiero"
@@ -111,9 +123,6 @@ bool SDFProgram::CompileProgram(ShaderProgramStruct* Program, const char* Vertex
 
     auto& Driver = GLESDriver::GetInstance();
 
-    Driver.glGenBuffers(1, &ArrayBuffer);
-    Driver.glGenBuffers(1, &ElementBuffer);
-
     // Create and compile the fragment shader
     GLuint vertexShader = Driver.glCreateShader(GL_VERTEX_SHADER); CheckGLESError(); PrintGLESShaderLog(vertexShader);
     Driver.glShaderSource(vertexShader, 1, &VertextShader, NULL); CheckGLESError(); PrintGLESShaderLog(vertexShader);
@@ -161,6 +170,10 @@ void SDFProgram::Clear()
 
 bool SDFProgram::Init()
 {
+    auto& Driver = GLESDriver::GetInstance();
+    Driver.glGenBuffers(constBufferSize, &VBO.ArrayBufferID[0]); CheckGLESError();
+    Driver.glGenBuffers(constBufferSize, &VBO.ElementBufferID[0]); CheckGLESError();
+
     const char* Outline = "#define SDF_OUTLINE \n";
     std::string regVertex = SDF_vertexSource;
     std::string regFragment = SDF_fragmentSource;
@@ -169,8 +182,7 @@ bool SDFProgram::Init()
 
     // на винде работаем на openGL 2.1, поэтому нужно явно указать номер версии OpenGL Shading Language https://en.wikipedia.org/wiki/OpenGL_Shading_Language
     // на всем остальном работаем на openGLES 2.0
-    if (BWrapper::GetDeviceOS() == BWrapper::OS::Windows)
-    {
+    if (BWrapper::GetDeviceOS() == BWrapper::OS::Windows) {
         const char* Version = "#version 130 \n";
         regVertex = std::string(Version) + regVertex;
         regFragment = std::string(Version) + regFragment;
@@ -178,8 +190,7 @@ bool SDFProgram::Init()
         outFragment = std::string(Version) + outFragment;
     }
 
-    if (this->CompileProgram(&ShaderProgram, regVertex.c_str(), regFragment.c_str()) && this->CompileProgram(&ShaderProgramOutline, outVertex.c_str(), outFragment.c_str()))
-    {
+    if (this->CompileProgram(&ShaderProgram, regVertex.c_str(), regFragment.c_str()) && this->CompileProgram(&ShaderProgramOutline, outVertex.c_str(), outFragment.c_str())) {
         return true;
     }
     return false;
@@ -198,16 +209,35 @@ bool SDFGLTexture::Draw(bool Outline, const AkkordColor& FontColor, const Akkord
     auto shaderProgram = SDFProgram::GetInstance().GetShaderProgram(Outline);
     auto& Driver = GLESDriver::GetInstance();
 
-    // TO DO использовать SUBDATA, если нет переполнения
+    // Высчитываем размеры для буфера
     const auto uvSize = static_cast<GLsizeiptr>(UV.size() * sizeof(UV.front()));
     const auto svSize = static_cast<GLsizeiptr>(squareVertices.size() * sizeof(squareVertices.front()));
-    Driver.glBindBuffer(GL_ARRAY_BUFFER, ArrayBuffer);
-    Driver.glBufferData(GL_ARRAY_BUFFER, uvSize + svSize, nullptr, GL_STREAM_DRAW); // верно ли указан размер (второй параметр)
-    Driver.glBufferSubData(GL_ARRAY_BUFFER, 0, uvSize, &UV.front());
-    Driver.glBufferSubData(GL_ARRAY_BUFFER, uvSize, svSize, &squareVertices.front());
+    const auto bufSize = uvSize + svSize;
+    const auto indSize = static_cast<GLsizeiptr>(Indices.size() * sizeof(decltype(Indices.front())));
 
-    Driver.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ElementBuffer);
-    Driver.glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(Indices.size() * sizeof(decltype(Indices.front()))), &Indices.front(), GL_STREAM_DRAW); // верно ли указан размер (второй параметр)
+    // работаем c GL_ARRAY_BUFFER
+    Driver.glBindBuffer(GL_ARRAY_BUFFER, VBO.ArrayBufferID[VBO.CurentBuffer]); CheckGLESError();
+    if (VBO.ArrayBufferSize[VBO.CurentBuffer] < bufSize) { // размера недостаточно и нужно выделить память
+        Driver.glBufferData(GL_ARRAY_BUFFER, bufSize, nullptr, GL_STREAM_DRAW); CheckGLESError();
+        VBO.ArrayBufferSize[VBO.CurentBuffer] = bufSize;
+    }
+    Driver.glBufferSubData(GL_ARRAY_BUFFER, 0, uvSize, &UV.front()); CheckGLESError();
+    Driver.glBufferSubData(GL_ARRAY_BUFFER, uvSize, svSize, &squareVertices.front()); CheckGLESError();
+
+    // работаем c GL_ELEMENT_ARRAY_BUFFER
+    Driver.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, VBO.ElementBufferID[VBO.CurentBuffer]); CheckGLESError();
+    if (VBO.ElementBufferSize[VBO.CurentBuffer] < indSize) { // размера недостаточно и нужно выделить память
+        Driver.glBufferData(GL_ELEMENT_ARRAY_BUFFER, indSize, &Indices.front(), GL_STREAM_DRAW); CheckGLESError();
+        VBO.ElementBufferSize[VBO.CurentBuffer] = indSize;
+    }
+    else { // если размера хватает, заполняем текущее подмножество
+        Driver.glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indSize, &Indices.front()); CheckGLESError();
+    }
+
+    // переходим к следующему буфферу, который будет использоваться при следующем обращении
+    if (++VBO.CurentBuffer >= constBufferSize) {
+        VBO.CurentBuffer = 0;
+    }
 
     Driver.glGetIntegerv((GLenum)GL_CURRENT_PROGRAM, &oldProgramId); CheckGLESError();
 
