@@ -199,15 +199,15 @@ bool SDFGLTexture::Draw(bool Outline, const AkkordColor& FontColor, const Akkord
     auto& Driver = GLESDriver::GetInstance();
 
     // TO DO использовать SUBDATA, если нет переполнения
-    const auto uvSize = static_cast<GLsizeiptr>(UV.size() * sizeof(GLfloat));
-    const auto svSize = static_cast<GLsizeiptr>(squareVertices.size() * sizeof(GLfloat));
+    const auto uvSize = static_cast<GLsizeiptr>(UV.size() * sizeof(UV.front()));
+    const auto svSize = static_cast<GLsizeiptr>(squareVertices.size() * sizeof(squareVertices.front()));
     Driver.glBindBuffer(GL_ARRAY_BUFFER, ArrayBuffer);
     Driver.glBufferData(GL_ARRAY_BUFFER, uvSize + svSize, nullptr, GL_STREAM_DRAW); // верно ли указан размер (второй параметр)
     Driver.glBufferSubData(GL_ARRAY_BUFFER, 0, uvSize, &UV.front());
     Driver.glBufferSubData(GL_ARRAY_BUFFER, uvSize, svSize, &squareVertices.front());
 
     Driver.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ElementBuffer);
-    Driver.glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(Indices.size() * sizeof(GLushort)), &Indices.front(), GL_STREAM_DRAW); // верно ли указан размер (второй параметр)
+    Driver.glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(Indices.size() * sizeof(decltype(Indices.front()))), &Indices.front(), GL_STREAM_DRAW); // верно ли указан размер (второй параметр)
 
     Driver.glGetIntegerv((GLenum)GL_CURRENT_PROGRAM, &oldProgramId); CheckGLESError();
 
