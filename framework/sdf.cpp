@@ -198,21 +198,16 @@ bool SDFGLTexture::Draw(bool Outline, const AkkordColor& FontColor, const Akkord
     auto shaderProgram = SDFProgram::GetInstance().GetShaderProgram(Outline);
     auto& Driver = GLESDriver::GetInstance();
 
-    std::vector<GLfloat> Data; // TO DO оптимизировать заполнение вектора
-    for (auto& v : UV) {
-        Data.push_back(v);
-    }
+    // TO DO использовать SUBDATA, если нет переполнения
+    const auto uvSize = static_cast<GLsizeiptr>(UV.size() * sizeof(GLfloat));
+    const auto svSize = static_cast<GLsizeiptr>(squareVertices.size() * sizeof(GLfloat));
+    Driver.glBindBuffer(GL_ARRAY_BUFFER, ArrayBuffer);
+    Driver.glBufferData(GL_ARRAY_BUFFER, uvSize + svSize, nullptr, GL_STREAM_DRAW); // верно ли указан размер (второй параметр)
+    Driver.glBufferSubData(GL_ARRAY_BUFFER, 0, uvSize, &UV.front());
+    Driver.glBufferSubData(GL_ARRAY_BUFFER, uvSize, svSize, &squareVertices.front());
 
-    for (auto& v : squareVertices) {
-        Data.push_back(v);
-    }
-
-    {   // TO DO использовать SUBDATA, если нет переполнения
-        Driver.glBindBuffer(GL_ARRAY_BUFFER, ArrayBuffer);
-        Driver.glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(Data.size() * sizeof(GLfloat)), &Data.front(), GL_STREAM_DRAW); // верно ли указан размер (второй параметр)
-        Driver.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ElementBuffer);
-        Driver.glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(Indices.size() * sizeof(GLushort)), &Indices.front(), GL_STREAM_DRAW); // верно ли указан размер (второй параметр)
-    }
+    Driver.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ElementBuffer);
+    Driver.glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(Indices.size() * sizeof(GLushort)), &Indices.front(), GL_STREAM_DRAW); // верно ли указан размер (второй параметр)
 
     Driver.glGetIntegerv((GLenum)GL_CURRENT_PROGRAM, &oldProgramId); CheckGLESError();
 
@@ -237,7 +232,7 @@ bool SDFGLTexture::Draw(bool Outline, const AkkordColor& FontColor, const Akkord
 
     SDL_GL_BindTexture(akkordTexture.GetTexture(), nullptr, nullptr);
 
-    Driver.glVertexAttribPointer(SDFProgram::Attributes::SDF_ATTRIB_POSITION, (GLint)2, (GLenum)GL_FLOAT, (GLboolean)GL_FALSE, (GLsizei)0, (const GLvoid*)(UV.size() * sizeof(GLfloat))); CheckGLESError();
+    Driver.glVertexAttribPointer(SDFProgram::Attributes::SDF_ATTRIB_POSITION, (GLint)2, (GLenum)GL_FLOAT, (GLboolean)GL_FALSE, (GLsizei)0, (const GLvoid*)uvSize); CheckGLESError();
     Driver.glVertexAttribPointer(SDFProgram::Attributes::SDF_ATTRIB_UV, (GLint)2, (GLenum)GL_FLOAT, (GLboolean)GL_FALSE, (GLsizei)0, nullptr); CheckGLESError();
 
     Driver.glUniform4f(shaderProgram->font_color, GLfloat(FontColor.GetR()) / 255.0f, GLfloat(FontColor.GetG()) / 255.0f, GLfloat(FontColor.GetB()) / 255.0f, GLfloat(FontColor.GetA()) / 255.0f); CheckGLESError();
