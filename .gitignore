@@ -50,6 +50,7 @@ libraries/SDL_ttf/SDL_ttf/VisualC/Win32/Release
 
 libraries/SDL_image/SDL_image/Xcode-iOS/build
 libraries/SDL/SDL/Xcode-iOS/SDL/build
+libraries/SDL_mixer/SDL_mixer/Xcode-iOS/build
 
 ut/**/build/*
 ut/**/lib/*
