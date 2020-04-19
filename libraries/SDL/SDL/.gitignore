@@ -6,6 +6,8 @@ android-project/.settings
 android-project/app/.classpath
 android-project/app/.project
 android-project/app/.settings
+VisualC/tests/testyuv/*.bmp
+VisualC/tests/controllermap/*.bmp
 
 syntax:glob
 aclocal.m4
