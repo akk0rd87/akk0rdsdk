@@ -77,3 +77,7 @@ libraries/SDL_image/SDL_image/VisualC/.vs
 **/proj.codeblocks/*.depend
 **/proj.codeblocks/*.layout
 *.layout
+
+**/.classpath
+**/.project
+**/.settings
