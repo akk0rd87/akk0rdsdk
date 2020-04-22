@@ -1,6 +1,7 @@
 #include "sdf.h"
 #include "SDL_image.h"
 #include"openglesdriver.h"
+#include <array>
 
 static SDFProgram sdfProgram;
 GLuint ArrayBuffer, ElementBuffer;
@@ -8,13 +9,13 @@ GLuint ArrayBuffer, ElementBuffer;
 constexpr GLsizei constBufferSize = 8;
 
 static struct {
-    GLuint ArrayBufferID[constBufferSize]{ 0 };   // ID буфферов для работы с openglES
-    GLuint ElementBufferID[constBufferSize]{ 0 }; // ID буфферов для работы с openglES
+    std::array<GLuint, constBufferSize> ArrayBufferID;
+    std::array<GLuint, constBufferSize> ElementBufferID;
 
-    GLsizeiptr ArrayBufferSize[constBufferSize]{ 0 };   // размеры соответствующих буферов
-    GLsizeiptr ElementBufferSize[constBufferSize]{ 0 }; // размеры соответствующих буферов
+    std::array<GLsizeiptr, constBufferSize> ArrayBufferSize;
+    std::array<GLsizeiptr, constBufferSize> ElementBufferSize;
 
-    GLsizei CurentBuffer{ 0 };
+    GLsizei CurentBuffer;
 } VBO;
 
 /*
@@ -171,8 +172,18 @@ void SDFProgram::Clear()
 bool SDFProgram::Init()
 {
     auto& Driver = GLESDriver::GetInstance();
-    Driver.glGenBuffers(constBufferSize, &VBO.ArrayBufferID[0]); CheckGLESError();
-    Driver.glGenBuffers(constBufferSize, &VBO.ElementBufferID[0]); CheckGLESError();
+
+    {
+        // обнуляем буффера
+        VBO.CurentBuffer = 0;
+        for (auto& v : VBO.ArrayBufferID) v = 0;
+        for (auto& v : VBO.ElementBufferID) v = 0;
+        for (auto& v : VBO.ArrayBufferSize) v = 0;
+        for (auto& v : VBO.ElementBufferSize) v = 0;
+    }
+
+    Driver.glGenBuffers(constBufferSize, &VBO.ArrayBufferID.front()); CheckGLESError();
+    Driver.glGenBuffers(constBufferSize, &VBO.ElementBufferID.front()); CheckGLESError();
 
     const char* Outline = "#define SDF_OUTLINE \n";
     std::string regVertex = SDF_vertexSource;
