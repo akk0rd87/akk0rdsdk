@@ -2,23 +2,21 @@ rem %1 - packageName
 rem %2 - activityName
 rem %3 - 0 or 1 if we need start logcat
 
-FOR /F "skip=1 delims=~" %%x IN ('adb devices -l') DO (
-    for /F "tokens=5* delims=:" %%a in ("%%x") do (
-        call adb -t %%a logcat -c
-    )
+@Echo Off
+
+For /F "Skip=1 delims=~" %%G In ('adb.exe devices -l') Do (Set "DI=%%G"
+    SetLocal EnableDelayedExpansion
+    For /F %%I In ("!DI:*transport_id:=!") Do EndLocal & Echo %%I & call adb -t %%I logcat -c
 )
 
-FOR /F "skip=1 delims=~" %%x IN ('adb devices -l') DO (
-    for /F "tokens=5* delims=:" %%a in ("%%x") do (
-        call adb -t %%a shell am start -n %1/%1.%2
-    )
+For /F "Skip=1 delims=~" %%G In ('adb.exe devices -l') Do (Set "DI=%%G"
+    SetLocal EnableDelayedExpansion
+    For /F %%I In ("!DI:*transport_id:=!") Do EndLocal & Echo %%I & call adb -t %%I shell am start -n %1/%1.%2
 )
-
 
 if 1 == %3 (
-    FOR /F "skip=1 delims=~" %%x IN ('adb devices -l') DO (
-        for /F "tokens=5 delims=:" %%a in ("%%x") do (
-            start %0/../runlogcat.bat %%a %%x
-        )
+    For /F "Skip=1 delims=~" %%G In ('adb.exe devices -l') Do (Set "DI=%%G"
+        SetLocal EnableDelayedExpansion
+        For /F %%I In ("!DI:*transport_id:=!") Do EndLocal & Echo %%I & start %0/../runlogcat.bat %%I %%G
     )
 )
