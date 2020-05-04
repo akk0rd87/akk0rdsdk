@@ -1,1 +1,0 @@
-call adb -s %1 logcat | findstr /i sdl
