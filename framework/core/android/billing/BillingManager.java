@@ -67,11 +67,11 @@ class BillingManager implements PurchasesUpdatedListener, SkuDetailsResponseList
 
     private static void startServiceConnection(final Runnable executeOnSuccess) {
         try {
-            Log.v(TAG, "startServiceConnection");
+            //Log.v(TAG, "startServiceConnection");
             mBillingClient.startConnection(new BillingClientStateListener() {
                 @Override
                 public void onBillingSetupFinished(@BillingResponse int billingResponseCode) {
-                    Log.v(TAG, "Setup finished. Response: " + DecodeBillingResponse(billingResponseCode));
+                    //Log.v(TAG, "Setup finished. Response: " + DecodeBillingResponse(billingResponseCode));
 
                     if (billingResponseCode == BillingResponse.OK) {
                         mIsServiceConnected = true;
@@ -85,7 +85,7 @@ class BillingManager implements PurchasesUpdatedListener, SkuDetailsResponseList
 
                 @Override
                 public void onBillingServiceDisconnected() {
-                    Log.v(TAG, "onBillingServiceDisconnected");
+                    //Log.v(TAG, "onBillingServiceDisconnected");
                     mIsServiceConnected = false;
                     BillingDisconnected();
                 }
@@ -121,16 +121,16 @@ class BillingManager implements PurchasesUpdatedListener, SkuDetailsResponseList
     public static void Initialize()
     {
         try {
-            Log.v(TAG, "BillingManager Initialize start");
+            //Log.v(TAG, "BillingManager Initialize start");
             mIsServiceConnected = false;
             final Activity ctx = Utils.GetContext();
             ctx.runOnUiThread(new Runnable() {
                 public void run() {
-                    Log.v(TAG, "BillingManager runOnUiThread");
+                    //Log.v(TAG, "BillingManager runOnUiThread");
                     mBillingClient = BillingClient.newBuilder(ctx)
                     .setListener(billingManager) // PurchasesUpdatedListener
                     .build();
-                    Log.v(TAG, "BillingManager after build");
+                    //Log.v(TAG, "BillingManager after build");
                 }
             });
         }
@@ -147,7 +147,7 @@ class BillingManager implements PurchasesUpdatedListener, SkuDetailsResponseList
             // https://stackoverflow.com/questions/19591873/get-an-array-of-strings-from-java-to-c-jni
 
             final List<String> skuList = Arrays.asList(ProdList);
-            Log.v(TAG, "GetProductDetails " + skuList.get(1) + " as product");
+            //Log.v(TAG, "GetProductDetails " + skuList.get(1) + " as product");
 
             //Activity ctx = Utils.GetContext();
             executeServiceRequest(new Runnable() {
@@ -170,9 +170,9 @@ class BillingManager implements PurchasesUpdatedListener, SkuDetailsResponseList
         try {
             executeServiceRequest(new Runnable() {
                 public void run() {
-                    Log.v(TAG, "QueryPurchases get purchasesResult before");
+                    //Log.v(TAG, "QueryPurchases get purchasesResult before");
                     PurchasesResult purchasesResult = mBillingClient.queryPurchases(SkuType.INAPP);
-                    Log.v(TAG, "QueryPurchases Response = " + DecodeBillingResponse(purchasesResult.getResponseCode()));
+                    //Log.v(TAG, "QueryPurchases Response = " + DecodeBillingResponse(purchasesResult.getResponseCode()));
 
                     //https://developer.android.com/reference/com/android/billingclient/api/Purchase.html
 
@@ -180,11 +180,11 @@ class BillingManager implements PurchasesUpdatedListener, SkuDetailsResponseList
                         List<Purchase> purchases = purchasesResult.getPurchasesList();
                         for (Purchase purchase : purchases) {
 
-                            Log.v(TAG, "Purchase was Restored = " + purchase.getPurchaseToken() + " " + purchase.getSku() + "Order:" + purchase.getOrderId());
+                            //Log.v(TAG, "Purchase was Restored = " + purchase.getPurchaseToken() + " " + purchase.getSku() + "Order:" + purchase.getOrderId());
                             PurchaseQueried(purchase.getPurchaseToken(), purchase.getSku(), PURCHASE_RESTORED);
                         }
                     } else {
-                        Log.v(TAG, "QueryPurchases error, response = " + DecodeBillingResponse(purchasesResult.getResponseCode()));
+                        //Log.v(TAG, "QueryPurchases error, response = " + DecodeBillingResponse(purchasesResult.getResponseCode()));
                     }
                 }
             });
@@ -216,7 +216,7 @@ class BillingManager implements PurchasesUpdatedListener, SkuDetailsResponseList
         try {
             executeServiceRequest(new Runnable() {
                 public void run() {
-                    Log.v(TAG, "ConsumeResponse: " + PurchaseToken);
+                    //Log.v(TAG, "ConsumeResponse: " + PurchaseToken);
                     mBillingClient.consumeAsync(PurchaseToken, billingManager);
                 }
             });
@@ -236,11 +236,11 @@ class BillingManager implements PurchasesUpdatedListener, SkuDetailsResponseList
         if (BillingResponse.OK == responseCode) {
             if (purchases != null)
                 for (Purchase purchase : purchases) {
-                    Log.v(TAG, "Purchase was Bought = " + purchase.getPurchaseToken() + " " + purchase.getSku() + "Order:" + purchase.getOrderId());
+                    //Log.v(TAG, "Purchase was Bought = " + purchase.getPurchaseToken() + " " + purchase.getSku() + "Order:" + purchase.getOrderId());
                     PurchaseQueried(purchase.getPurchaseToken(), purchase.getSku(), PURCHASE_BOUGHT);
                 }
         } else {
-            Log.v(TAG, "QueryPurchases error, response = " + DecodeBillingResponse(responseCode));
+            //Log.v(TAG, "QueryPurchases error, response = " + DecodeBillingResponse(responseCode));
         }
     }
 
@@ -264,7 +264,7 @@ class BillingManager implements PurchasesUpdatedListener, SkuDetailsResponseList
     ////////////////////////////////////
     @Override
     public void onConsumeResponse(int responseCode, String purchaseToken) {
-        Log.v(TAG, "onConsumeResponse Result: " + DecodeBillingResponse(responseCode) + " Token:" + purchaseToken);
+        //Log.v(TAG, "onConsumeResponse Result: " + DecodeBillingResponse(responseCode) + " Token:" + purchaseToken);
         if (responseCode == BillingResponse.OK) {
             PurchaseConsumed(purchaseToken);
         }

@@ -31,11 +31,11 @@ void adsManager::ChooseAdmobAdBlock()
         searchUnit = 0;
     }
 
-    logDebug("(currentAdmobUnit = %u; searchUnit = %u", currentAdmobUnit, searchUnit);
+    //logDebug("(currentAdmobUnit = %u; searchUnit = %u", currentAdmobUnit, searchUnit);
     if (currentAdmobUnit != searchUnit)
     {
         currentAdmobUnit = searchUnit;
-        logDebug("set adUnit = %s", AdMobUnits[currentAdmobUnit].Id.c_str());
+        //logDebug("set adUnit = %s", AdMobUnits[currentAdmobUnit].Id.c_str());
         AdMob::InterstitialSetUnitId(AdMobUnits[currentAdmobUnit].Id.c_str());
     }
 };

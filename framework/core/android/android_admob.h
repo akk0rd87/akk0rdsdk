@@ -138,7 +138,7 @@ bool AdMobAndroid::InterstitialShow()
     }
     jint value = env->CallStaticIntMethod(AdMobClass, midInterstitialShow);
     int retval = (int)value;
-    logDebug("retval %d", retval);
+    //logDebug("retval %d", retval);
 
     if(retval) return true;
     return false;

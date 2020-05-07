@@ -1238,7 +1238,7 @@ bool WAVPlayer::LoadFromMemory(const char* Buffer, int Size)
     else
     {
         this->deviceId = SDL_OpenAudioDevice(nullptr, 0, &this->wav_spec, nullptr, 0);
-        logDebug("deviceId = %d", deviceId);
+        //logDebug("deviceId = %d", deviceId);
     }
     return result;
 };
@@ -1270,7 +1270,7 @@ bool WAVPlayer::Play()
 {
     if (this->wav_length)
     {
-        logDebug("Play audio");
+        //logDebug("Play audio");
         SDL_QueueAudio(this->deviceId, this->wav_buffer, this->wav_length);
         SDL_PauseAudioDevice(this->deviceId, 0);
         return true;

@@ -29,13 +29,13 @@ extern "C" {
 JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_BillingSetupFinished(JNIEnv*, jclass, jint ResponseCode)
 {
     int Code = (int)ResponseCode;
-    logDebug("BillingSetupFinished %d", Code);
+    //logDebug("BillingSetupFinished %d", Code);
     BillingContext.BillingStatus = Code;
 }
 
 JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_BillingDisconnected(JNIEnv*, jclass)
 {
-    logDebug("BillingDisconnected");
+    //logDebug("BillingDisconnected");
 }
 
 JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseQueried(JNIEnv* env, jclass, jstring PurchaseToken, jstring ProductCode, jint Type)  /* Type: 0 - restored, 1- bought */
@@ -63,7 +63,7 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseConsumed(JNIEn
 {
     const char* PToken = env->GetStringUTFChars(PurchaseToken, 0);
 
-    logDebug("Purchase consumed: %s", PToken);
+    //logDebug("Purchase consumed: %s", PToken);
 
     if (BillingContext.AppPurchaseConsumed != nullptr)
     {
