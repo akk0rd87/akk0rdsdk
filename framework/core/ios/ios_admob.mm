@@ -16,11 +16,12 @@
 -(void)RewardedVideoShow;
 @end
 
-@interface iAdMob() <GADInterstitialDelegate, GADRewardBasedVideoAdDelegate>
+@interface iAdMob() <GADInterstitialDelegate, GADRewardedAdDelegate>
 -(void)InterstitialDestroy;
 -(void)InterstitialReset;
 -(void)SendCallback:(const    AdMob::AdEvent*) Event;
 @property (atomic, strong)    GADInterstitial          *interstitial;
+@property (atomic, strong)    GADRewardedAd            *rewardedAd;
 @property (nonatomic)         AdMob::AdEventCallback   *Callback;
 @property (nonatomic)         std::string               InterstitialUnitID;
 @property (nonatomic)         std::string               RewardedVideoUnitID;
@@ -118,7 +119,7 @@
 ///////  REWARDED VIDEO DELEGATE CALLBACKS
 ///////
 
--(void)rewardBasedVideoAd:(GADRewardBasedVideoAd *)rewardBasedVideoAd didRewardUserWithReward:(GADAdReward *)reward {
+- (void)rewardedAd:(GADRewardedAd *)rewardedAd userDidEarnReward:(GADAdReward *)reward {
     logDebug("Rewarded");
     AdMob::AdEvent Ad;
     Ad.AdFormat = (int)AdMob::Format::RewardedVideo;
@@ -126,15 +127,7 @@
     [self SendCallback: &Ad];
 }
 
-- (void)rewardBasedVideoAdDidReceiveAd:(GADRewardBasedVideoAd *)rewardBasedVideoAd {
-    logDebug("Reward based video ad is received.");
-    AdMob::AdEvent Ad;
-    Ad.AdFormat = (int)AdMob::Format::RewardedVideo;
-    Ad.EventType = (int)AdMob::RewardedVideoEvent::Loaded;
-    [self SendCallback: &Ad];
-}
-
-- (void)rewardBasedVideoAdDidOpen:(GADRewardBasedVideoAd *)rewardBasedVideoAd {
+- (void)rewardedAdDidPresent:(GADRewardedAd *)rewardedAd {
     logDebug("Opened reward based video ad.");
     AdMob::AdEvent Ad;
     Ad.AdFormat = (int)AdMob::Format::RewardedVideo;
@@ -142,53 +135,32 @@
     [self SendCallback: &Ad];
 }
 
-- (void)rewardBasedVideoAdDidStartPlaying:(GADRewardBasedVideoAd *)rewardBasedVideoAd {
-    logDebug("Reward based video ad started playing.");
-    AdMob::AdEvent Ad;
-    Ad.AdFormat = (int)AdMob::Format::RewardedVideo;
-    Ad.EventType = (int)AdMob::RewardedVideoEvent::Started;
-    [self SendCallback: &Ad];
-}
 
-- (void)rewardBasedVideoAdDidCompletePlaying:(GADRewardBasedVideoAd *)rewardBasedVideoAd {
-    logDebug("Reward based video ad has completed.");
-    AdMob::AdEvent Ad;
-    Ad.AdFormat = (int)AdMob::Format::RewardedVideo;
-    Ad.EventType = (int)AdMob::RewardedVideoEvent::Completed;
-    [self SendCallback: &Ad];
-}
-
-- (void)rewardBasedVideoAdDidClose:(GADRewardBasedVideoAd *)rewardBasedVideoAd {
-    logDebug("Reward based video ad is closed.");
+- (void)rewardedAdDidDismiss:(GADRewardedAd *)rewardedAd {
+    logDebug("Reward based video ad is dismissed.");
     AdMob::AdEvent Ad;
     Ad.AdFormat = (int)AdMob::Format::RewardedVideo;
     Ad.EventType = (int)AdMob::RewardedVideoEvent::Closed;
     [self SendCallback: &Ad];
 }
 
-- (void)rewardBasedVideoAdWillLeaveApplication:(GADRewardBasedVideoAd *)rewardBasedVideoAd {
-    logDebug("Reward based video ad will leave application.");
-    AdMob::AdEvent Ad;
-    Ad.AdFormat = (int)AdMob::Format::RewardedVideo;
-    Ad.EventType = (int)AdMob::RewardedVideoEvent::LeftApplication;
-    [self SendCallback: &Ad];
-}
-
-- (void)rewardBasedVideoAd:(GADRewardBasedVideoAd *)rewardBasedVideoAd didFailToLoadWithError:(NSError *)error {
-    logDebug("Reward based video ad failed to load.");
-    AdMob::AdEvent Ad;
-    Ad.AdFormat = (int)AdMob::Format::RewardedVideo;
-    Ad.EventType = (int)AdMob::RewardedVideoEvent::Failed;
-    [self SendCallback: &Ad];
+- (void)rewardedAd:(GADRewardedAd *)rewardedAd didFailToPresentWithError:(NSError *)error {
+    logDebug("Reward ad didFailToPresentWithError");
+//    AdMob::AdEvent Ad;
+//    Ad.AdFormat = (int)AdMob::Format::RewardedVideo;
+//    Ad.EventType = (int)AdMob::RewardedVideoEvent::LeftApplication;
+//    [self SendCallback: &Ad];
 }
 
 // interface API
 
 -(void)Init
 {
+    [[GADMobileAds sharedInstance] startWithCompletionHandler:nil];
     self.interstitial = nullptr;
+    self.rewardedAd = nullptr;
     self.Callback = nullptr;
-    [GADRewardBasedVideoAd sharedInstance].delegate = self;
+//    [GADRewardBasedVideoAd sharedInstance].delegate = self;
 };
 
 -(void)InterstitialDestroy
@@ -274,18 +246,51 @@
 
 -(void)RewardedVideoLoad
 {
+//    NSString *ID = [[NSString alloc] initWithUTF8String:self.RewardedVideoUnitID.c_str()];
+//    [[GADRewardBasedVideoAd sharedInstance] loadRequest:[GADRequest request] withAdUnitID:ID];
+//    [ID release];
+    if(self.rewardedAd) {
+        [self.rewardedAd release];
+        self.rewardedAd = nullptr;
+    };
+    
     NSString *ID = [[NSString alloc] initWithUTF8String:self.RewardedVideoUnitID.c_str()];
-    [[GADRewardBasedVideoAd sharedInstance] loadRequest:[GADRequest request] withAdUnitID:ID];
-    [ID release];
+    self.rewardedAd = [[GADRewardedAd alloc] initWithAdUnitID:ID];
+    
+    if(self.rewardedAd) {
+        GADRequest *request = [GADRequest request];
+        [self.rewardedAd loadRequest:request completionHandler:^(GADRequestError * _Nullable error) {
+          AdMob::AdEvent Ad;
+          Ad.AdFormat = static_cast<int>(AdMob::Format::RewardedVideo);
+          if (error) {
+            // Handle ad failed to load case.
+              logDebug("Rewarded vided load failed");
+              Ad.EventType = static_cast<int>(AdMob::RewardedVideoEvent::Failed);
+          } else {
+            // Ad successfully loaded.
+              logDebug("Rewarded vided ad successfully loaded");
+              Ad.EventType = static_cast<int>(AdMob::RewardedVideoEvent::Loaded);
+          };
+          [self SendCallback: &Ad];
+        }];
+    }
 };
 
 -(void)RewardedVideoShow
 {
+    /*
     if ([[GADRewardBasedVideoAd sharedInstance] isReady])
     {
         //https://stackoverflow.com/questions/12418177/how-to-get-root-view-controller
         UIViewController *controller = [UIApplication sharedApplication].keyWindow.rootViewController;
         [[GADRewardBasedVideoAd sharedInstance] presentFromRootViewController:controller];
+    }
+     */
+    if(self.rewardedAd) {
+        if(self.rewardedAd.isReady) {
+            UIViewController *controller = [UIApplication sharedApplication].keyWindow.rootViewController;
+            [self.rewardedAd presentFromRootViewController:controller delegate:self];
+        }
     }
 };
 
@@ -294,10 +299,6 @@
 
 bool AdMobiOS::Init(const char* AdMobAppID, int Formats)
 {
-    NSString *AppID = [[NSString alloc] initWithUTF8String:AdMobAppID];
-    [GADMobileAds configureWithApplicationID:AppID];
-    //[[iAdMob defaultAdMob] SetEventCallback: Callback];
-    [AppID release];
     [[iAdMob defaultAdMob] Init];
     return true;
 }
