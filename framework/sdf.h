@@ -82,6 +82,11 @@ public:
     bool Draw(bool Outline, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const std::vector<GLfloat>& UV, const std::vector<GLfloat>& squareVertices, const std::vector <GLushort>& Indices, GLfloat Scale, GLfloat Border, int Spread);
     AkkordPoint GetSize() { return akkordTexture.GetSize(); };
     ~SDFGLTexture() { Clear(); };
+
+    SDFGLTexture() {};
+    SDFGLTexture(SDFGLTexture& rhs) = delete; // Копирующий: конструктор
+    SDFGLTexture(SDFGLTexture&& rhs) = delete; // Перемещающий: конструктор
+    SDFGLTexture& operator= (SDFGLTexture&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 class SDFTexture
@@ -133,6 +138,11 @@ public:
         Clear();
         Texture.Clear();
     };
+
+    SDFTexture() {};
+    SDFTexture(SDFTexture& rhs) = delete; // Копирующий: конструктор
+    SDFTexture(SDFTexture&& rhs) = delete; // Перемещающий: конструктор
+    SDFTexture& operator= (SDFTexture&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 class SDFFont
@@ -152,9 +162,6 @@ class SDFFont
 public:
     enum struct AlignV : unsigned char { Top, Center, Bottom };
     enum struct AlignH : unsigned char { Left, Center, Right };
-
-    ~SDFFont() { Clear(); };
-
     unsigned int GetAtlasW() { return ScaleW; };
     unsigned int GetAtlasH() { return ScaleH; };
 
@@ -185,6 +192,12 @@ public:
         return false;
     };
     unsigned GetLineHeight() { return LineHeight; };
+
+    SDFFont() {};
+    ~SDFFont() { Clear(); };
+    SDFFont(SDFFont& rhs) = delete; // Копирующий: конструктор
+    SDFFont(SDFFont&& rhs) = delete; // Перемещающий: конструктор
+    SDFFont& operator= (SDFFont&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 // Для рисования всегда указывать левую верхнюю точку (удобно для разгаданных слов в "составь слова")
@@ -264,6 +277,10 @@ public:
     };
     void        WrapText(const char* Text, float ScaleMutiplier, std::string& ResultString, float& UsedScale, AkkordPoint& Size);
     AkkordPoint DrawText(int X, int Y, const char* Text);
+
+    SDFFontBuffer(SDFFontBuffer& rhs) = delete; // Копирующий: конструктор
+    SDFFontBuffer(SDFFontBuffer&& rhs) = delete; // Перемещающий: конструктор
+    SDFFontBuffer& operator= (SDFFontBuffer&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 #endif // __AKK0RD_SDFFONT_H__
