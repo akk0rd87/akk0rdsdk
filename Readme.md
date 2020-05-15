@@ -1,4 +1,4 @@
-# SDL2 Homepages wrong style
+# SDL2 Homepages
 
 <http://libsdl.org/>
 ***
