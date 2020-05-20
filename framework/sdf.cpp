@@ -778,11 +778,9 @@ void SDFFontBuffer::WrapText(const char* Text, float ScaleMutiplier, std::string
         return xSize;
     };
 
-    unsigned lines_cnt = 0, max_line_len = 0, x_pos = 0;
-
+    unsigned lines_cnt = 0;
+    int x_pos = 0, max_line_len = 0, space_len = 0;
     SDFCharInfo charParams;
-    unsigned space_len;
-
     std::string word;
 
     // сначала пробегаем по всем словам, и делаем так, чтобы каждое слово было меньше ширины выделенного под текст прямоугольника
