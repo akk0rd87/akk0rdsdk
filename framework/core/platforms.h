@@ -61,6 +61,7 @@ public:
 
     static void                     MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS);
     static void                     ShareText(const char* Title, const char* Message);
+    static void                     SharePNG(const char* Title, const char* File);
 
     static int                      GetAudioOutputRate();       // only for Android
     static int                      GetAudioOutputBufferSize(); // only for Android
@@ -312,6 +313,12 @@ void Platforms::ShareText(const char* Title, const char* Message)
 
 #ifdef __APPLE__
     return iOSWrapper::ShareText(Title, Message);
+#endif
+};
+
+void Platforms::SharePNG(const char* Title, const char* File) {
+#ifdef __ANDROID__
+    return AndroidWrapper::SharePNG(Title, File);
 #endif
 };
 

@@ -1109,6 +1109,10 @@ void BWrapper::ShareText(const char* Title, const char* Message)
     Platforms::ShareText(Title, Message);
 };
 
+void BWrapper::SharePNG(const char* Title, const char* File) {
+    Platforms::SharePNG(Title, File);
+};
+
 //////////////////////////
 /////// FileReader
 //////////////////////////

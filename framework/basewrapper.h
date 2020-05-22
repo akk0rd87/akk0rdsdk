@@ -215,6 +215,7 @@ public:
 
     // Feature functions
     static void                ShareText                   (const char* Title, const char* Message);
+    static void                SharePNG                    (const char* Title, const char* File);
 
     static int                 GetAudioOutputRate          (); // only for Android
     static int                 GetAudioOutputBufferSize    (); // only for Android

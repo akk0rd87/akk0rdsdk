@@ -18,6 +18,7 @@ jmethodID midMkDir                    = nullptr;
 jmethodID midShowMessageBox           = nullptr;
 jmethodID midGetAssetManager          = nullptr;
 jmethodID midShareText                = nullptr;
+jmethodID midSharePNG                 = nullptr;
 jmethodID midGetAudioOutputRate       = nullptr;
 jmethodID midGetAudioOutputBufferSize = nullptr;
 
@@ -43,6 +44,7 @@ bool AndroidWrapper::Init()
     AndroidWrapperState.midShowMessageBox            = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "showMessageBox", "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)V");
     AndroidWrapperState.midGetAssetManager           = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "GetAssetManager", "()Landroid/content/res/AssetManager;");
     AndroidWrapperState.midShareText                 = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "shareText", "(Ljava/lang/String;Ljava/lang/String;)V");
+    AndroidWrapperState.midSharePNG                  = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "sharePNG", "(Ljava/lang/String;Ljava/lang/String;)V");
     AndroidWrapperState.midGetAudioOutputRate        = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "getAudioOutputRate", "()I");
     AndroidWrapperState.midGetAudioOutputBufferSize  = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "getAudioOutputBufferSize", "()I");
 
@@ -53,6 +55,7 @@ bool AndroidWrapper::Init()
     if(AndroidWrapperState.midShowMessageBox           == nullptr) { Result = false; logError("midShowMessageBox           Java method not found");}
     if(AndroidWrapperState.midGetAssetManager          == nullptr) { Result = false; logError("midGetAssetManager          Java method not found");}
     if(AndroidWrapperState.midShareText                == nullptr) { Result = false; logError("midShareText                Java method not found");}
+    if(AndroidWrapperState.midSharePNG                 == nullptr) { Result = false; logError("midSharePNG                 Java method not found");}
     if(AndroidWrapperState.midGetAudioOutputRate       == nullptr) { Result = false; logError("midGetAudioOutputRate       Java method not found");}
     if(AndroidWrapperState.midGetAudioOutputBufferSize == nullptr) { Result = false; logError("midGetAudioOutputBufferSize Java method not found");}
 
@@ -445,6 +448,20 @@ int AndroidWrapper::GetAudioOutputBufferSize() {
     jint value = env->CallStaticIntMethod(AndroidWrapperState.globalUtils, AndroidWrapperState.midGetAudioOutputBufferSize);
     //logDebug("outputBufferSize %d", static_cast<int>(value));
     return static_cast<int>(value);
+};
+
+void AndroidWrapper::SharePNG(const char* Title, const char* File){
+    JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
+    if(!AndroidWrapperState.midSharePNG)
+    {
+        logError("AndroidWrapper midSharePNG Java method not Found");
+        return;
+    }
+    jstring jstring_Title = (jstring)env->NewStringUTF(Title);
+    jstring jstring_File  = (jstring)env->NewStringUTF(File);
+    env->CallStaticVoidMethod(AndroidWrapperState.globalUtils, AndroidWrapperState.midSharePNG, jstring_Title, jstring_File);
+    env->DeleteLocalRef(jstring_Title);
+    env->DeleteLocalRef(jstring_File);
 };
 
 extern "C" {

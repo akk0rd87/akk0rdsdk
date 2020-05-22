@@ -14,10 +14,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Locale;
+
+import android.support.v4.content.FileProvider;
 import android.widget.Toast;
 import android.util.Log;
 
-import android.widget.TextView;
 import android.content.pm.ActivityInfo;
 import android.app.*;
 import android.content.*;
@@ -56,8 +57,10 @@ public class Utils {
     public static int getAudioOutputRate() { // https://developer.android.com/ndk/guides/audio/audio-latency
         int sampleRate = 0;
         try {
-            AudioManager am = (AudioManager) _context.getSystemService(Context.AUDIO_SERVICE);
-            sampleRate = Integer.parseInt(am.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE));
+            if (android.os.Build.VERSION.SDK_INT >= 17) { // getProperty requires api level 17
+                AudioManager am = (AudioManager) _context.getSystemService(Context.AUDIO_SERVICE);
+                sampleRate = Integer.parseInt(am.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE));
+            }
         }
         catch(Exception e) {
             Log.e(TAG, e.getMessage());
@@ -72,8 +75,10 @@ public class Utils {
     public static int getAudioOutputBufferSize() { // https://developer.android.com/ndk/guides/audio/audio-latency
         int framesPerBufferInt = 0;
         try {
-            AudioManager am = (AudioManager) _context.getSystemService(Context.AUDIO_SERVICE);
-            framesPerBufferInt = Integer.parseInt(am.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER));
+            if (android.os.Build.VERSION.SDK_INT >= 17) { // getProperty requires api level 17
+                AudioManager am = (AudioManager) _context.getSystemService(Context.AUDIO_SERVICE);
+                framesPerBufferInt = Integer.parseInt(am.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER));
+            }
         }
         catch(Exception e) {
             Log.e(TAG, e.getMessage());
@@ -316,6 +321,43 @@ public class Utils {
         {
             Log.e(TAG, e.getMessage());
         }
+    }
+
+    private static void ShareFile(final String Title, final String Fname, final String MimeType) {
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= 14)
+            {
+                class OneShotTask implements Runnable {
+                    OneShotTask() {}
+
+                    public void run() {
+                        try {
+                            Log.v(TAG, "ShareFile started: " + Fname);
+                            Intent sendIntent = new Intent();
+                            sendIntent.setAction(Intent.ACTION_SEND);
+                            sendIntent.setType(MimeType);
+                            sendIntent.putExtra(Intent.EXTRA_STREAM,
+                                    FileProvider.getUriForFile(
+                                            _context,
+                                            _context.getPackageName() + ".provider",
+                                            new File(Fname))
+                                    );
+                             _context.startActivity(Intent.createChooser(sendIntent, Title));
+                        } catch (Exception e) {
+                            Log.e(TAG, e.getMessage());
+                        }
+                    }
+                };
+                _context.runOnUiThread(new OneShotTask());
+            }
+        }
+        catch(Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+    }
+
+    public static void sharePNG(final String Title, final String Fname) {
+        ShareFile(Title, Fname, "image/png");
     }
 
     public static void showToast(String Msg, int Duration, int Gravity, int xOffset, int yOffset){
