@@ -271,3 +271,7 @@ void iOSWrapper::MessageBoxShow (int Code, const char* Title, const char* Messag
     [appDelegate.window.rootViewController dismissViewControllerAnimated:YES completion:nil];
     [appDelegate.window.rootViewController presentViewController:alert animated:YES completion:nil];
 };
+
+void iOSWrapper::SharePNG(const char* Title, const char* File) {
+
+};

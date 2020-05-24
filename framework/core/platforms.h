@@ -320,6 +320,10 @@ void Platforms::SharePNG(const char* Title, const char* File) {
 #ifdef __ANDROID__
     return AndroidWrapper::SharePNG(Title, File);
 #endif
+
+#ifdef __APPLE__
+    return iOSWrapper::SharePNG(Title, File);
+#endif
 };
 
 bool Platforms::Init()

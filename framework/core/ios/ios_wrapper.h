@@ -20,6 +20,7 @@ class iOSWrapper
 
     static void             MessageBoxShow     (int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3);
     static void             ShareText(const char* Title, const char* Message);
+    static void             SharePNG(const char* Title, const char* File);
 };
 
 #endif // __AKK0RD_IOS_BASEWRAPPER_H__
