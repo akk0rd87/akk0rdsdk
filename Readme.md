@@ -124,6 +124,9 @@ sdkmanager.bat extras;google;google_play_services
      Нужно выставить automatic sign убрать signing-настройках явное указание профайлов ios Developer/ios Distrib
 ***
 
+### Android: How to reset score from Google Play Games leaderboards
+<https://www.myandroidsolutions.com/2015/05/10/android-how-to-reset-score-from-google-play-games-leaderboards/#.Xsq3-DozaHu>
+
 ### **LibGDX SDF Generator**
 
 Download last LibGDX build from <https://libgdx.badlogicgames.com/ci/nightlies/> and set *LIBGDX_HOME* env variable for extracted path
