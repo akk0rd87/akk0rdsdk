@@ -273,5 +273,29 @@ void iOSWrapper::MessageBoxShow (int Code, const char* Title, const char* Messag
 };
 
 void iOSWrapper::SharePNG(const char* Title, const char* File) {
+    NSString *path = [[NSString alloc] initWithUTF8String:File];
+    NSURL* URL = [NSURL fileURLWithPath:path];
+    NSData * imageData = [[NSData alloc] initWithContentsOfURL:URL];
+    UIImage *imgShare = [[UIImage alloc] initWithData:imageData];
+    NSArray *objectsToShare = @[imgShare];
 
+    UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:objectsToShare applicationActivities:nil];
+
+    //this array should add the activities that I don’t want
+    NSArray *excludeActivities = @[UIActivityTypeAirDrop,
+                                   UIActivityTypePrint,
+                                   UIActivityTypeAssignToContact,
+                                   UIActivityTypeSaveToCameraRoll,
+                                   UIActivityTypeAddToReadingList,
+                                   UIActivityTypePostToFlickr,
+                                   UIActivityTypePostToVimeo];
+    activityVC.excludedActivityTypes = excludeActivities;
+
+    auto appDelegate = [[UIApplication sharedApplication] delegate];
+    activityVC.popoverPresentationController.sourceView = appDelegate.window.rootViewController.view;
+    [appDelegate.window.rootViewController presentViewController:activityVC animated:YES completion:nil];
+
+    [path release];
+    [imgShare release];
+    [imageData release];
 };
