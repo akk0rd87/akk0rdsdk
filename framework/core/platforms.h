@@ -318,7 +318,7 @@ void Platforms::ShareText(const char* Title, const char* Message)
 
 void Platforms::SharePNG(const char* Title, const char* File) {
 #ifdef __ANDROID__
-    return AndroidWrapper::SharePNG(Title, File);
+    //return AndroidWrapper::SharePNG(Title, File); // пока комментим, так как для Android требуется FileProvider
 #endif
 
 #ifdef __APPLE__

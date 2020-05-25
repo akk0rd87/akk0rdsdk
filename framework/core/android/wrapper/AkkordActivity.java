@@ -38,7 +38,7 @@ public class AkkordActivity extends SDLActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Utils.Init(this);
+        org.akkord.lib.Utils.Init(this);
     }
 
     @Override

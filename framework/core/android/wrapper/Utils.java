@@ -1,28 +1,19 @@
 package org.akkord.lib;
 
 import android.app.Activity;
-import android.app.AlarmManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.provider.Settings;
-import android.app.PendingIntent;
 import android.os.StatFs;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.Locale;
-
-import android.support.v4.content.FileProvider;
 import android.widget.Toast;
 import android.util.Log;
-
-import android.content.pm.ActivityInfo;
 import android.app.*;
 import android.content.*;
-import android.text.InputType;
 import android.content.res.AssetManager;
 import android.media.AudioManager;
 
@@ -323,6 +314,7 @@ public class Utils {
         }
     }
 
+    /*
     private static void ShareFile(final String Title, final String Fname, final String MimeType) {
         try {
             if (android.os.Build.VERSION.SDK_INT >= 14)
@@ -359,6 +351,7 @@ public class Utils {
     public static void sharePNG(final String Title, final String Fname) {
         ShareFile(Title, Fname, "image/png");
     }
+    */
 
     public static void showToast(String Msg, int Duration, int Gravity, int xOffset, int yOffset){
         try

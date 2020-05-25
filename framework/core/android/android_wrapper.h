@@ -36,7 +36,7 @@ public:
     static void              MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS);
 
     static void              ShareText(const char* Title, const char* Message);
-    static void              SharePNG(const char* Title, const char* File);
+    //static void              SharePNG(const char* Title, const char* File); // пока комментим, так как для Android требуется FileProvider
 
     static int               GetAudioOutputRate();
     static int               GetAudioOutputBufferSize();

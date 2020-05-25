@@ -7,93 +7,107 @@
 
 #include <dirent.h>
 
-struct AndroidWrapperStateStruct {
-jclass    globalUtils             = nullptr;
-AAssetManager *AssetMgr           = nullptr;
-
-jmethodID midDirectoryDelete          = nullptr;
-jmethodID midOpenURL                  = nullptr;
-jmethodID midShowToast                = nullptr;
-jmethodID midMkDir                    = nullptr;
-jmethodID midShowMessageBox           = nullptr;
-jmethodID midGetAssetManager          = nullptr;
-jmethodID midShareText                = nullptr;
-jmethodID midSharePNG                 = nullptr;
-jmethodID midGetAudioOutputRate       = nullptr;
-jmethodID midGetAudioOutputBufferSize = nullptr;
+static struct {
+AAssetManager *AssetMgr               { nullptr };
+jclass    UtilsClass                  { nullptr } ;
+jmethodID midDirectoryDelete          { nullptr };
+jmethodID midOpenURL                  { nullptr };
+jmethodID midShowToast                { nullptr };
+jmethodID midMkDir                    { nullptr };
+jmethodID midShowMessageBox           { nullptr };
+jmethodID midGetAssetManager          { nullptr };
+jmethodID midShareText                { nullptr };
+//jmethodID midSharePNG                 { nullptr };
+jmethodID midGetAudioOutputRate       { nullptr };
+jmethodID midGetAudioOutputBufferSize { nullptr };
 
 std::string sLanguage;
 std::string sInternalDir;
 std::string sInternalWriteDir;
 int         sApiLevel;
-};
-static AndroidWrapperStateStruct AndroidWrapperState;
+} AndroidWrapperState;
+
+static jclass getJavaClass(JNIEnv* Env, const char* ClassName, bool PrintTraceOnError) {
+    jclass localClass = Env->FindClass(ClassName);
+    if (Env->ExceptionCheck()) {
+        logWarning("Java class %s not found", ClassName);
+        if(PrintTraceOnError) {
+            Env->ExceptionDescribe();
+        }
+        Env->ExceptionClear();
+        return nullptr;
+    }
+    jclass globalClass = reinterpret_cast<jclass>(Env->NewGlobalRef(localClass));
+    Env->DeleteLocalRef(localClass);
+    return globalClass;
+}
+
+static jmethodID getJavaStaticMethod(JNIEnv* Env, jclass& JavaClass, const char* MethodName, const char* Signature, bool PrintTraceOnError) {
+    jmethodID method = Env->GetStaticMethodID(JavaClass, MethodName, Signature);
+    if (Env->ExceptionCheck()) {
+        logWarning("Java method %s not found", MethodName);
+        if(PrintTraceOnError) {
+            Env->ExceptionDescribe();
+        }
+        Env->ExceptionClear();
+        return nullptr;
+    }
+    return method;
+}
 
 bool AndroidWrapper::Init()
 {
     bool Result = true;
     JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-    jclass localClass = env->FindClass("org/akkord/lib/Utils");
-    AndroidWrapperState.globalUtils = reinterpret_cast<jclass>(env->NewGlobalRef(localClass));
-    env->DeleteLocalRef(localClass);
+    AndroidWrapperState.UtilsClass = getJavaClass(env, "org/akkord/lib/Utils", true);
+    if(!AndroidWrapperState.UtilsClass) {
+        return false;
+    }
+    AndroidWrapperState.midDirectoryDelete           = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "DirectoryDelete", "(Ljava/lang/String;I)I", true);
+    AndroidWrapperState.midOpenURL                   = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "openURL", "(Ljava/lang/String;)V", true);
+    AndroidWrapperState.midShowToast                 = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "showToast", "(Ljava/lang/String;IIII)V", true);
+    AndroidWrapperState.midMkDir                     = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "MkDir", "(Ljava/lang/String;)I", true);
+    AndroidWrapperState.midShowMessageBox            = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "showMessageBox", "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)V", true);
+    AndroidWrapperState.midGetAssetManager           = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "GetAssetManager", "()Landroid/content/res/AssetManager;", true);
+    AndroidWrapperState.midShareText                 = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "shareText", "(Ljava/lang/String;Ljava/lang/String;)V", true);
+    // пока комментим, так как для Android требуется FileProvider
+    //AndroidWrapperState.midSharePNG                  = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "sharePNG", "(Ljava/lang/String;Ljava/lang/String;)V", true);
 
-    AndroidWrapperState.midDirectoryDelete           = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "DirectoryDelete", "(Ljava/lang/String;I)I");
-    AndroidWrapperState.midOpenURL                   = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "openURL", "(Ljava/lang/String;)V");
-    AndroidWrapperState.midShowToast                 = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "showToast", "(Ljava/lang/String;IIII)V");
-    AndroidWrapperState.midMkDir                     = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "MkDir", "(Ljava/lang/String;)I");
-    AndroidWrapperState.midShowMessageBox            = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "showMessageBox", "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)V");
-    AndroidWrapperState.midGetAssetManager           = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "GetAssetManager", "()Landroid/content/res/AssetManager;");
-    AndroidWrapperState.midShareText                 = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "shareText", "(Ljava/lang/String;Ljava/lang/String;)V");
-    AndroidWrapperState.midSharePNG                  = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "sharePNG", "(Ljava/lang/String;Ljava/lang/String;)V");
-    AndroidWrapperState.midGetAudioOutputRate        = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "getAudioOutputRate", "()I");
-    AndroidWrapperState.midGetAudioOutputBufferSize  = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "getAudioOutputBufferSize", "()I");
-
-    if(AndroidWrapperState.midDirectoryDelete          == nullptr) { Result = false; logError("midDirectoryDelete          Java method not found");}
-    if(AndroidWrapperState.midOpenURL                  == nullptr) { Result = false; logError("midOpenURL                  Java method not found");}
-    if(AndroidWrapperState.midShowToast                == nullptr) { Result = false; logError("midShowToast                Java method not found");}
-    if(AndroidWrapperState.midMkDir                    == nullptr) { Result = false; logError("midMkDir                    Java method not found");}
-    if(AndroidWrapperState.midShowMessageBox           == nullptr) { Result = false; logError("midShowMessageBox           Java method not found");}
-    if(AndroidWrapperState.midGetAssetManager          == nullptr) { Result = false; logError("midGetAssetManager          Java method not found");}
-    if(AndroidWrapperState.midShareText                == nullptr) { Result = false; logError("midShareText                Java method not found");}
-    if(AndroidWrapperState.midSharePNG                 == nullptr) { Result = false; logError("midSharePNG                 Java method not found");}
-    if(AndroidWrapperState.midGetAudioOutputRate       == nullptr) { Result = false; logError("midGetAudioOutputRate       Java method not found");}
-    if(AndroidWrapperState.midGetAudioOutputBufferSize == nullptr) { Result = false; logError("midGetAudioOutputBufferSize Java method not found");}
+    AndroidWrapperState.midGetAudioOutputRate        = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "getAudioOutputRate", "()I", true);
+    AndroidWrapperState.midGetAudioOutputBufferSize  = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "getAudioOutputBufferSize", "()I", true);
 
     // One-time call functions
-    jmethodID GetLanguage         = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "getLanguage", "()Ljava/lang/String;");
-    jmethodID GetApiLevel         = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "GetApiLevel", "()I");
-    jmethodID GetInternalWriteDir = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "GetInternalWriteDir", "()Ljava/lang/String;");
-    jmethodID GetInternalDir      = env->GetStaticMethodID(AndroidWrapperState.globalUtils, "GetInternalDir", "()Ljava/lang/String;");
-
-    if(GetLanguage         == nullptr) { Result = false; logError("GetLanguage         Java method not found");   }
-    if(GetApiLevel         == nullptr) { Result = false; logError("GetApiLevel         Java method not found");   }
-    if(GetInternalWriteDir == nullptr) { Result = false; logError("GetInternalWriteDir Java method not found"); }
-    if(GetInternalDir      == nullptr) { Result = false; logError("GetInternalDir      Java method not found"); }
+    jmethodID GetLanguage         = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "getLanguage", "()Ljava/lang/String;", true);
+    jmethodID GetApiLevel         = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "GetApiLevel", "()I", true);
+    jmethodID GetInternalWriteDir = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "GetInternalWriteDir", "()Ljava/lang/String;", true);
+    jmethodID GetInternalDir      = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "GetInternalDir", "()Ljava/lang/String;", true);
 
     // кешируем язык
-    jstring jstrLang = (jstring)env->CallStaticObjectMethod(AndroidWrapperState.globalUtils, GetLanguage);
+    jstring jstrLang = (jstring)env->CallStaticObjectMethod(AndroidWrapperState.UtilsClass, GetLanguage);
     const char* LangStr = env->GetStringUTFChars(jstrLang, 0);
     // global variable
     AndroidWrapperState.sLanguage = std::string(LangStr);
     env->ReleaseStringUTFChars(jstrLang, LangStr);
 
     // кешируем директорию для записи
-    jstring jstrWriteDir = (jstring)env->CallStaticObjectMethod(AndroidWrapperState.globalUtils, GetInternalWriteDir);
+    jstring jstrWriteDir = (jstring)env->CallStaticObjectMethod(AndroidWrapperState.UtilsClass, GetInternalWriteDir);
     const char* javaWriteDir = env->GetStringUTFChars(jstrWriteDir, 0);
     AndroidWrapperState.sInternalWriteDir = std::string(javaWriteDir);
     env->ReleaseStringUTFChars(jstrWriteDir, javaWriteDir);
-    if(AndroidWrapperState.sInternalWriteDir[AndroidWrapperState.sInternalWriteDir.length() - 1] != '/')
-        AndroidWrapperState.sInternalWriteDir = AndroidWrapperState.sInternalWriteDir + "/";
+    if(AndroidWrapperState.sInternalWriteDir.back() != '/') {
+        AndroidWrapperState.sInternalWriteDir += "/";
+    }
 
     // кешируем внутреннюю директорию
-    jstring jstrDir = (jstring)env->CallStaticObjectMethod(AndroidWrapperState.globalUtils, GetInternalDir);
+    jstring jstrDir = (jstring)env->CallStaticObjectMethod(AndroidWrapperState.UtilsClass, GetInternalDir);
     const char* javaDir = env->GetStringUTFChars(jstrDir, 0);
     AndroidWrapperState.sInternalDir = std::string(javaDir);
     env->ReleaseStringUTFChars(jstrDir, javaDir);
-    if(AndroidWrapperState.sInternalDir[AndroidWrapperState.sInternalDir.length() - 1] != '/')
-        AndroidWrapperState.sInternalDir = AndroidWrapperState.sInternalDir + "/";
+    if(AndroidWrapperState.sInternalDir.back() != '/') {
+        AndroidWrapperState.sInternalDir += "/";
+    }
 
-    jint value = env->CallStaticIntMethod(AndroidWrapperState.globalUtils, GetApiLevel);
+    jint value = env->CallStaticIntMethod(AndroidWrapperState.UtilsClass, GetApiLevel);
     AndroidWrapperState.sApiLevel = (int)value;
 
     return Result;
@@ -120,7 +134,7 @@ bool AndroidWrapper::private_DirRemove(const char* Dir, bool Recursive)
     jstring url_jstring = (jstring)env->NewStringUTF(Dir);
     int Recurs = ((Recursive == true) ? (1) : (0));
     //logDebug("Call Method");
-    jint value = env->CallStaticIntMethod(AndroidWrapperState.globalUtils, AndroidWrapperState.midDirectoryDelete, url_jstring, Recurs);
+    jint value = env->CallStaticIntMethod(AndroidWrapperState.UtilsClass, AndroidWrapperState.midDirectoryDelete, url_jstring, Recurs);
     env->DeleteLocalRef(url_jstring);
     //env->DeleteLocalRef(activity);
 
@@ -178,7 +192,7 @@ bool AndroidWrapper::OpenURL(const char* url)
     }
     jstring url_jstring = (jstring)env->NewStringUTF(url);
     //logDebug("Call Method");
-    env->CallStaticVoidMethod(AndroidWrapperState.globalUtils, AndroidWrapperState.midOpenURL, url_jstring);
+    env->CallStaticVoidMethod(AndroidWrapperState.UtilsClass, AndroidWrapperState.midOpenURL, url_jstring);
     env->DeleteLocalRef(url_jstring);
     return true;
 }
@@ -223,7 +237,7 @@ bool AndroidWrapper::ShowToast(const char* Message, BWrapper::AndroidToastDurati
     }
     jstring url_jstring = (jstring)env->NewStringUTF(Message);
     //logDebug("Call Method");
-    env->CallStaticVoidMethod(AndroidWrapperState.globalUtils, AndroidWrapperState.midShowToast, url_jstring, Duration, Gravity, xOffset, yOffset);
+    env->CallStaticVoidMethod(AndroidWrapperState.UtilsClass, AndroidWrapperState.midShowToast, url_jstring, Duration, Gravity, xOffset, yOffset);
     env->DeleteLocalRef(url_jstring);
     return true;
 }
@@ -258,7 +272,7 @@ bool AndroidWrapper::DirCreate(const char* Path)
 
     jstring url_jstring = (jstring)env->NewStringUTF(Path);
     //logDebug("Call Method");
-    jint value = env->CallStaticIntMethod(AndroidWrapperState.globalUtils, AndroidWrapperState.midMkDir, url_jstring);
+    jint value = env->CallStaticIntMethod(AndroidWrapperState.UtilsClass, AndroidWrapperState.midMkDir, url_jstring);
     env->DeleteLocalRef(url_jstring);
     int retval = (int)value;
 
@@ -320,7 +334,7 @@ void AndroidWrapper::InitAssetsManager()
         }
 
         //logDebug("Call Method");
-        jobject jAssetsMgr = (jobject)env->CallStaticObjectMethod(AndroidWrapperState.globalUtils, AndroidWrapperState.midGetAssetManager);
+        jobject jAssetsMgr = (jobject)env->CallStaticObjectMethod(AndroidWrapperState.UtilsClass, AndroidWrapperState.midGetAssetManager);
         AndroidWrapperState.AssetMgr = AAssetManager_fromJava(env, jAssetsMgr);
     }
 };
@@ -402,7 +416,7 @@ void AndroidWrapper::MessageBoxShow(int Code, const char* Title, const char* Mes
     Uint64 tm = static_cast<Uint64>(TimeOutMS);
 
     //logDebug("Call Method");
-    env->CallStaticVoidMethod(AndroidWrapperState.globalUtils, AndroidWrapperState.midShowMessageBox, Code, jstring_Title, jstring_Message, jstring_Button1, jstring_Button2, jstring_Button3, tm);
+    env->CallStaticVoidMethod(AndroidWrapperState.UtilsClass, AndroidWrapperState.midShowMessageBox, Code, jstring_Title, jstring_Message, jstring_Button1, jstring_Button2, jstring_Button3, tm);
 
     env->DeleteLocalRef(jstring_Title  );
     env->DeleteLocalRef(jstring_Message);
@@ -422,7 +436,7 @@ void AndroidWrapper::ShareText(const char* Title, const char* Message)
 
     jstring jstring_Title   = (jstring)env->NewStringUTF(Title);
     jstring jstring_Message = (jstring)env->NewStringUTF(Message);
-    env->CallStaticVoidMethod(AndroidWrapperState.globalUtils, AndroidWrapperState.midShareText, jstring_Title, jstring_Message);
+    env->CallStaticVoidMethod(AndroidWrapperState.UtilsClass, AndroidWrapperState.midShareText, jstring_Title, jstring_Message);
 
     env->DeleteLocalRef(jstring_Title  );
     env->DeleteLocalRef(jstring_Message);
@@ -434,7 +448,7 @@ int AndroidWrapper::GetAudioOutputRate() {
         logError("AndroidWrapper getAudioOutputRate Java method not Found");
         return -1; // return default value
     }
-    jint value = env->CallStaticIntMethod(AndroidWrapperState.globalUtils, AndroidWrapperState.midGetAudioOutputRate);
+    jint value = env->CallStaticIntMethod(AndroidWrapperState.UtilsClass, AndroidWrapperState.midGetAudioOutputRate);
     //logDebug("outputRate %d", static_cast<int>(value));
     return static_cast<int>(value);
 };
@@ -445,11 +459,12 @@ int AndroidWrapper::GetAudioOutputBufferSize() {
         logError("AndroidWrapper getAudioOutputBufferSize Java method not Found");
         return -1; // return default value
     }
-    jint value = env->CallStaticIntMethod(AndroidWrapperState.globalUtils, AndroidWrapperState.midGetAudioOutputBufferSize);
+    jint value = env->CallStaticIntMethod(AndroidWrapperState.UtilsClass, AndroidWrapperState.midGetAudioOutputBufferSize);
     //logDebug("outputBufferSize %d", static_cast<int>(value));
     return static_cast<int>(value);
 };
 
+/*
 void AndroidWrapper::SharePNG(const char* Title, const char* File){
     JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
     if(!AndroidWrapperState.midSharePNG)
@@ -459,10 +474,11 @@ void AndroidWrapper::SharePNG(const char* Title, const char* File){
     }
     jstring jstring_Title = (jstring)env->NewStringUTF(Title);
     jstring jstring_File  = (jstring)env->NewStringUTF(File);
-    env->CallStaticVoidMethod(AndroidWrapperState.globalUtils, AndroidWrapperState.midSharePNG, jstring_Title, jstring_File);
+    env->CallStaticVoidMethod(AndroidWrapperState.UtilsClass, AndroidWrapperState.midSharePNG, jstring_Title, jstring_File);
     env->DeleteLocalRef(jstring_Title);
     env->DeleteLocalRef(jstring_File);
 };
+*/
 
 extern "C" {
 JNIEXPORT void JNICALL Java_org_akkord_lib_Utils_MessageBoxCallback(JNIEnv*, jclass, jint, jint);
