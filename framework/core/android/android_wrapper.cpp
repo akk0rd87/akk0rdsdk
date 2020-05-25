@@ -57,6 +57,19 @@ static jmethodID getJavaStaticMethod(JNIEnv* Env, jclass& JavaClass, const char*
 
 bool AndroidWrapper::Init()
 {
+    AndroidWrapperState.AssetMgr                    = nullptr;
+    AndroidWrapperState.UtilsClass                  = nullptr;
+    AndroidWrapperState.midDirectoryDelete          = nullptr;
+    AndroidWrapperState.midOpenURL                  = nullptr;
+    AndroidWrapperState.midShowToast                = nullptr;
+    AndroidWrapperState.midMkDir                    = nullptr;
+    AndroidWrapperState.midShowMessageBox           = nullptr;
+    AndroidWrapperState.midGetAssetManager          = nullptr;
+    AndroidWrapperState.midShareText                = nullptr;
+    //AndroidWrapperState.midSharePNG               = nullptr;
+    AndroidWrapperState.midGetAudioOutputRate       = nullptr;
+    AndroidWrapperState.midGetAudioOutputBufferSize = nullptr;
+
     bool Result = true;
     JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
     AndroidWrapperState.UtilsClass = getJavaClass(env, "org/akkord/lib/Utils", true);
