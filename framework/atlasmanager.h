@@ -15,18 +15,25 @@ public:
     };
 
     // Load atlas with list file
-    IndexType LoadAtlas (const char* ListFilename, const char* TextureFilename, AtlasManager::AtlasType Type, BWrapper::FileSearchPriority ListSearchPriority = BWrapper::FileSearchPriority::Assets, BWrapper::FileSearchPriority TextureSearchPriority = BWrapper::FileSearchPriority::Assets); // return the AtlasIndex
+    IndexType LoadAtlas(const char* ListFilename, const char* TextureFilename, AtlasManager::AtlasType Type, BWrapper::FileSearchPriority ListSearchPriority = BWrapper::FileSearchPriority::Assets, BWrapper::FileSearchPriority TextureSearchPriority = BWrapper::FileSearchPriority::Assets); // return the AtlasIndex
 
     // Get Sprite handle
-    IndexType GetIndexBySpriteName (IndexType AtlasIndex, const char* SpriteName);
+    IndexType GetIndexBySpriteName(IndexType AtlasIndex, const char* SpriteName);
 
     // Draw Sprite
-    void DrawSprite                     (IndexType SpriteIndex, const AkkordRect& Rect, unsigned char Flip = AkkordTexture::Flip::None, double Angle = 0, AkkordPoint* Point = nullptr);
+    void DrawSprite(IndexType SpriteIndex, const AkkordRect& Rect, unsigned char Flip = AkkordTexture::Flip::None, double Angle = 0, AkkordPoint* Point = nullptr);
 
     // Return Sprite postion in Atlas
-    AkkordPoint GetSpriteSize           (IndexType SpriteIndex);
-    AkkordRect  GetSpriteRect           (IndexType SpriteIndex);
+    AkkordPoint GetSpriteSize(IndexType SpriteIndex);
+    AkkordRect  GetSpriteRect(IndexType SpriteIndex);
     void        Clear();
+    void        ReserveSprites(std::size_t Count) {
+        Sprites.reserve(Count);
+    };
+
+    void        ReserveAtlases(std::size_t Count) {
+        AtlasTextureList.reserve(Count);
+    }
 
     AkkordTexture* GetAtlasBySprite(IndexType SpriteIndex);
 
@@ -39,11 +46,11 @@ private:
     std::vector<std::unique_ptr<AkkordTexture>> AtlasTextureList;
 
     // структура спрайта
-    struct SpriteStruct{
-        std::string imageName;
-        //int x, y, w, h;
+    struct SpriteStruct {
         AkkordRect rect;
         IndexType altasIndex;
+        std::string imageName;
+        SpriteStruct(IndexType AltasIndex, std::string&& Name) : rect(0, 0, 0, 0), altasIndex{ AltasIndex }, imageName{ std::move(Name) } {}
     };
 
     //список спрайтов в текстурах

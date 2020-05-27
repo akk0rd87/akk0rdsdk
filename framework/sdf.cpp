@@ -453,75 +453,91 @@ bool SDFFont::ParseFontMap(myStream& fonsStream)
     SDFCharInfo sd;
 
     while (fonsStream.ReadLine(line))
-        if (!line.empty())
-        {
-            if (line.find("char id", 0) != std::string::npos)
-            {
+        if (!line.empty()) {
+            auto getUnsignedValue = [](const char* p) {
+                unsigned Value{ 0 };
+                for (; '0' <= *p && *p <= '9'; ++p) {
+                    Value = Value * 10 + static_cast<decltype(Value)>(*p - '0');
+                }
+                return Value;
+            };
+
+            auto getSignedValue = [](const char* p) {
+                int Value{ 0 }, Sign{ 1 };
+                if ('-' == *p) {
+                    Sign = -1;
+                    ++p;
+                }
+                for (; '0' <= *p && *p <= '9'; ++p) {
+                    Value = Value * 10 + static_cast<decltype(Value)>(*p - '0');
+                }
+                return Value * Sign;
+            };
+
+            if (std::strncmp(line.c_str(), "char id", 7) == 0) {
                 lpos = 0;
                 rpos = 0;
 
                 rpos = line.find("id=", lpos) + 3;
                 if (line[rpos] == '\"') ++rpos;
-                auto id = BWrapper::Str2Num(std::string(line, rpos).c_str());
+                auto id = getUnsignedValue(line.c_str() + rpos);
 
                 lpos = rpos;
                 rpos = line.find("x=", lpos) + 2;
                 if (line[rpos] == '\"') ++rpos;
-                auto x = BWrapper::Str2Num(std::string(line, rpos).c_str());
+                sd.x = getUnsignedValue(line.c_str() + rpos);
 
                 lpos = rpos;
                 rpos = line.find("y=", lpos) + 2;
                 if (line[rpos] == '\"') ++rpos;
-                auto y = BWrapper::Str2Num(std::string(line, rpos).c_str());
+                sd.y = getUnsignedValue(line.c_str() + rpos);
 
                 lpos = rpos;
                 rpos = line.find("width=", lpos) + 6;
                 if (line[rpos] == '\"') ++rpos;
-                auto w = BWrapper::Str2Num(std::string(line, rpos).c_str());
+                sd.w = getUnsignedValue(line.c_str() + rpos);
 
                 lpos = rpos;
                 rpos = line.find("height=", lpos) + 7;
                 if (line[rpos] == '\"') ++rpos;
-                auto h = BWrapper::Str2Num(std::string(line, rpos).c_str());
+                sd.h = getUnsignedValue(line.c_str() + rpos);
 
                 lpos = rpos;
                 rpos = line.find("xoffset=", lpos) + 8;
                 if (line[rpos] == '\"') ++rpos;
-                auto dx = std::stoi(std::string(line, rpos));
+                sd.xoffset = getSignedValue(line.c_str() + rpos);
 
                 lpos = rpos;
                 rpos = line.find("yoffset=", lpos) + 8;
                 if (line[rpos] == '\"') ++rpos;
-                auto dy = std::stoi(std::string(line, rpos));
+                sd.yoffset = getSignedValue(line.c_str() + rpos);
 
                 lpos = rpos;
                 rpos = line.find("xadvance=", lpos) + 9;
                 if (line[rpos] == '\"') ++rpos;
-                auto xa = std::stoi(std::string(line, rpos));
+                sd.xadvance = getSignedValue(line.c_str() + rpos);
 
-                sd.x = x; sd.y = y; sd.w = w; sd.h = h; sd.xoffset = dx; sd.yoffset = dy; sd.xadvance = xa;
                 CharsMap.emplace(id, sd);
 
                 //logDebug("dx=%d, dy=%d, xa=%d", dx, dy, xa);
             }
-            /*else if (line.find("chars", 0) != std::string::npos)
-            {
-                //auto cnt = BWrapper::Str2Num(std::string(line, line.find("\"", 0) + 1).c_str());
-                //CharsVector.reserve(cnt);
-            }*/
-            else if (line.find("common", 0) != std::string::npos)
-            {
+            //else if (line.find("chars", 0) != std::string::npos)
+            //{
+            //    auto cnt = BWrapper::Str2Num(std::string(line, line.find("\"", 0) + 1).c_str());
+            //    CharsVector.reserve(cnt);
+            //}
+            if (std::strncmp(line.c_str(), "common", 6) == 0) {
                 rpos = line.find("lineHeight=", 0) + 11;
                 if (line[rpos] == '\"') ++rpos;
-                LineHeight = BWrapper::Str2Num(std::string(line, rpos).c_str());
+                LineHeight = getUnsignedValue(line.c_str() + rpos);
 
                 rpos = line.find("scaleW=", 0) + 7;
                 if (line[rpos] == '\"') ++rpos;
-                ScaleW = BWrapper::Str2Num(std::string(line, rpos).c_str());
+                ScaleW = getUnsignedValue(line.c_str() + rpos);
 
                 rpos = line.find("scaleH=", 0) + 7;
                 if (line[rpos] == '\"') ++rpos;
-                ScaleH = BWrapper::Str2Num(std::string(line, rpos).c_str());
+                ScaleH = getUnsignedValue(line.c_str() + rpos);
 
                 //logDebug("ScaleW = %d, ScaleH = %d", ScaleW, ScaleH);
             };

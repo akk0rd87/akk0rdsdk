@@ -3,15 +3,15 @@
 // выбираем подходящий по времени Unit
 void adsManager::ChooseAdmobAdBlock()
 {
-    auto CurrentTm = GetSeconds();
-    auto NextTm = GetInterstitialNextShowTime();
+    const auto CurrentTm = GetSeconds();
+    const auto NextTm = GetInterstitialNextShowTime();
 
     decltype(AdMobUnits.size()) searchUnit = std::numeric_limits<std::vector<AdMobUnit>::size_type>::max();
 
     // Если новое время еще наступило
     if (NextTm > CurrentTm)
     {
-        auto RemainingTime = NextTm - CurrentTm;
+        const auto RemainingTime = NextTm - CurrentTm;
 
         // ищем подходящий, время должно быть отсортировано по возрастанию
         for (decltype(AdMobUnits.size())i = 0; i < AdMobUnits.size(); ++i)
@@ -45,7 +45,7 @@ bool adsManager::InterstitialLoad()
     if (AdMob::InterstitialGetStatus() == AdMob::InterstitialStatus::Inited)
     {
         //logDebug("Timing current = %u, LastLoad = %u", GetSeconds(), AdMobLastLoad);
-        auto NewTm = GetSeconds(); // время в секундах
+        const auto NewTm = GetSeconds(); // время в секундах
         if (NewTm - AdMobLastLoad > LoadDelay || 0 == AdMobLastLoad)
         {
             ChooseAdmobAdBlock();
@@ -77,7 +77,7 @@ bool adsManager::InterstitialShow()
 void adsManager::ShowAdUnits()
 {
 #ifdef __AKK0RD_DEBUG_MACRO__ // пришлось поставить условную компиляцию, а то в release-сборке компилятор ругается на неиспользованную переменную v
-    for (auto &v : AdMobUnits)
+    for (const auto& v : AdMobUnits)
         logDebug("Ad Unit %s %u", v.Id.c_str(), v.TimePriority);
 #endif
 }

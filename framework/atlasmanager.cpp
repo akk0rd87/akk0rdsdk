@@ -3,39 +3,27 @@
 void AtlasManager::ParseFile_LeshyLabsText(FileReader& fr, IndexType AtlasIndex)
 {
     std::string line;
-    SpriteStruct sprite;
-    while (fr.ReadLine(line))
-    {
-        if (line.size() > 0)
-        {
-            Sprites.push_back(sprite);
-            auto idx = Sprites.size() - 1;
+    while (fr.ReadLine(line)) {
+        if (!line.empty()) {
+            const char* p = line.c_str();
+            while (*p && *p != ',') {
+                ++p;
+            }
+            Sprites.emplace_back(AtlasIndex, std::string(line.c_str(), p - line.c_str()));
+            auto& s = Sprites.back();
 
-            decltype(line.find(',')) lpos = 0;
-            decltype(line.find(',')) rpos = 0;
+            auto getIntValue = [](const char*& p) {
+                int v{ 0 };
+                for (; *(++p) && *p != ',';) {
+                    v = v * 10 + static_cast<decltype(v)>(*p - '0');
+                }
+                return v;
+            };
 
-            rpos = line.find(',', lpos);
-            Sprites[idx].imageName = std::string(line, lpos, rpos);
-
-            lpos = rpos + 1;
-            rpos = line.find(',', lpos);
-            Sprites[idx].rect.x = BWrapper::Str2Num(std::string(line, lpos, rpos).c_str());
-
-            lpos = rpos + 1;
-            rpos = line.find(',', lpos);
-            Sprites[idx].rect.y = BWrapper::Str2Num(std::string(line, lpos, rpos).c_str());
-
-            lpos = rpos + 1;
-            rpos = line.find(',', lpos);
-            Sprites[idx].rect.w = BWrapper::Str2Num(std::string(line, lpos, rpos).c_str());
-
-            lpos = rpos + 1;
-            rpos = line.find(',', lpos);
-            Sprites[idx].rect.h = BWrapper::Str2Num(std::string(line, lpos).c_str());
-
-            Sprites[idx].altasIndex = AtlasIndex;
-
-            logVerbose("LoadAtlas Parse Line: Image = %s, x=%d, y=%d, w=%d, h=%d", Sprites[idx].imageName.c_str(), Sprites[idx].rect.x, Sprites[idx].rect.y, Sprites[idx].rect.w, Sprites[idx].rect.h);
+            s.rect.x = getIntValue(p);
+            s.rect.y = getIntValue(p);
+            s.rect.w = getIntValue(p);
+            s.rect.h = getIntValue(p);
         }
     }
 }
@@ -51,12 +39,12 @@ AtlasManager::IndexType AtlasManager::LoadAtlas(const char* ListFilename, const 
     {
         switch (Type)
         {
-            case AtlasManager::AtlasType::LeshyLabsText:
-                ParseFile_LeshyLabsText(fr, index);
-                break;
-            default:
-                logError("LoadAtlas File = %s Unknown atlas typ ", ListFilename);
-                break;
+        case AtlasManager::AtlasType::LeshyLabsText:
+            ParseFile_LeshyLabsText(fr, index);
+            break;
+        default:
+            logError("LoadAtlas File = %s Unknown atlas typ ", ListFilename);
+            break;
         }
     }
     fr.Close();

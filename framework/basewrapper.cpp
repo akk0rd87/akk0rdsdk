@@ -441,7 +441,7 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
 
             image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(
                 SDL_CreateRGBSurface(SDL_SWSURFACE,
-                (int)(svg_image->width * Scale),
+                    (int)(svg_image->width * Scale),
                     (int)(svg_image->height * Scale),
                     32,
                     0x000000FF,
@@ -1171,15 +1171,7 @@ bool FileReader::ReadLine(std::string& Line)
         logError("FileReader is closed");
         return false;
     }
-    if (std::getline(*in, Line))
-    {
-        auto len = Line.size();
-
-        while (len && (Line[len - 1] == '\n' || Line[len - 1] == '\r'))
-        {
-            Line = std::string(Line, 0, len - 1);
-            len = Line.size();
-        }
+    if (std::getline(*in, Line)) {
         return true;
     }
     return false;

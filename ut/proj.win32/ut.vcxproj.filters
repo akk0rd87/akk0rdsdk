@@ -33,6 +33,9 @@
     <ClCompile Include="$(AKKORD_SDK_HOME)\framework\admob.cpp">
       <Filter>Framework\Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\framework\configmanager.cpp">
+      <Filter>Framework\Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(AKKORD_SDK_HOME)\framework\platforms\windows\windows_wrapper.h">

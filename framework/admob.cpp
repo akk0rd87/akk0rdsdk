@@ -275,7 +275,7 @@ bool AdMob::InterstitialLoad()
         return false;
     }
 
-    auto newTime = getTicks() / 1000;
+    const auto newTime = getTicks() / 1000;
     if (newTime - AdContext.InterstitialLastLoadRequestTime < LoadDelay)
     {
         logDebug("Interstitial load acquired too early");
@@ -338,7 +338,7 @@ bool AdMob::RewardedVideoLoad()
         return false;
     }
 
-    auto newTime = getTicks() / 1000;
+    const auto newTime = getTicks() / 1000;
     if (newTime - AdContext.RewardedLastLoadRequestTime < LoadDelay)
     {
         logDebug("Rewarded load acquired too early");
