@@ -1,7 +1,7 @@
 #ifndef __AKK0RD_SDFFONT_H__
 #define __AKK0RD_SDFFONT_H__
 
-#include <map>
+#include <unordered_map>
 #include "basewrapper.h"
 #include "openglesdriver.h"
 
@@ -149,7 +149,7 @@ class SDFFont
 {
     SDFGLTexture FontAtlas;
     unsigned int ScaleW, ScaleH, LineHeight, Spread;
-    std::map<unsigned, SDFCharInfo> CharsMap;
+    std::unordered_map<unsigned, SDFCharInfo> CharsMap;
 
     template <class fntStream>
     bool ParseFontMap(fntStream& fonsStream);
