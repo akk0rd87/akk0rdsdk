@@ -6,31 +6,15 @@ Statistic statistic;
 
 bool Init()
 {
-    if (!BWrapper::Init(SDL_INIT_VIDEO)) return false;
-
-    /*
-    auto Window = BWrapper::CreateRenderWindow("Hello World!", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_RESIZABLE);
-
-    if (!Window) return false;
-
-    BWrapper::SetActiveWindow(Window);
-    BWrapper::SetWindowResizable(true);
-    auto Renderer = BWrapper::CreateRenderer(Window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-
-    if (!Renderer) return false;
-
-    BWrapper::SetActiveRenderer(Renderer);
-    */
-
+    if (!BWrapper::Init(SDL_INIT_VIDEO)) {
+        return false;
+    }
     return true;
 }
 
-
-
 void ClearAll()
 {
-    //BWrapper::DestroyRenderer();
-    //BWrapper::DestroyWindow();
+
 }
 
 
