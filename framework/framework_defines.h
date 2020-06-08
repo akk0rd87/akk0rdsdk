@@ -54,14 +54,8 @@ typedef std::vector<std::unique_ptr<DirContentElement>> DirContentElementArray;
 
 struct LogParamsStruct
 {
-    bool showFile, showFunction, showLine;
-    unsigned lenFile, lenFunction, lenLine;
-    LogParamsStruct()
-    {
-        showFile = showLine = showFunction = true;
-        lenFile = lenFunction = 30;
-        lenLine = 6;
-    };
+    bool showFile{ true }, showFunction{ true }, showLine{ true };
+    unsigned lenFile{ 30 }, lenFunction{ 30 }, lenLine{ 6 };
 };
 
 #endif // __AKK0RD_PUBLIC_DEFINES__
