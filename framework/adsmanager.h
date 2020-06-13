@@ -59,8 +59,9 @@ public:
     ~adsManager() { Clear(); };
 
     //Запрещаем создавать экземпляр класса adsManager
-    adsManager(adsManager& rhs) = delete; // Копирующий: конструктор
+    adsManager(const adsManager& rhs) = delete; // Копирующий: конструктор
     adsManager(adsManager&& rhs) = delete; // Перемещающий: конструктор
+    adsManager& operator= (const adsManager& rhs) = delete; // Оператор копирующего присваивания
     adsManager& operator= (adsManager&& rhs) = delete; // Оператор перемещающего присваивания
 };
 

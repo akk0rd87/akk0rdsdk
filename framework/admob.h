@@ -47,8 +47,9 @@ public:
     //Запрещаем создавать экземпляр класса AdMob
     AdMob() = delete;
     ~AdMob() = delete;
-    AdMob(AdMob& rhs) = delete; // Копирующий: конструктор
+    AdMob(const AdMob& rhs) = delete; // Копирующий: конструктор
     AdMob(AdMob&& rhs) = delete; // Перемещающий: конструктор
+    AdMob& operator= (const AdMob& rhs) = delete; // Оператор копирующего присваивания
     AdMob& operator= (AdMob&& rhs) = delete; // Оператор перемещающего присваивания
 };
 

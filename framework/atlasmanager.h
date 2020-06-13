@@ -62,8 +62,9 @@ private:
     void AddTexture();
 
     //Запрещаем создавать экземпляр класса AtlasManager
-    AtlasManager(AtlasManager& rhs) = delete; // Копирующий: конструктор
+    AtlasManager(const AtlasManager& rhs) = delete; // Копирующий: конструктор
     AtlasManager(AtlasManager&& rhs) = delete; // Перемещающий: конструктор
+    AtlasManager& operator= (const AtlasManager& rhs) = delete; // Оператор копирующего присваивания
     AtlasManager& operator= (AtlasManager&& rhs) = delete; // Оператор перемещающего присваивания
 };
 

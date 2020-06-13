@@ -76,8 +76,9 @@ public:
     GLESDriver() {};
 
     //Запрещаем создавать экземпляр класса GLESDriver
-    GLESDriver(GLESDriver& rhs) = delete; // Копирующий: конструктор
+    GLESDriver(const GLESDriver& rhs) = delete; // Копирующий: конструктор
     GLESDriver(GLESDriver&& rhs) = delete; // Перемещающий: конструктор
+    GLESDriver& operator= (const GLESDriver& rhs) = delete; // Оператор копирующего присваивания
     GLESDriver& operator= (GLESDriver&& rhs) = delete; // Оператор перемещающего присваивания
 };
 

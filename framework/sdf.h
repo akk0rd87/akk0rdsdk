@@ -58,8 +58,9 @@ public:
     static SDFProgram& GetInstance();
 
     //Запрещаем создавать экземпляр класса SDFProgram
-    SDFProgram(SDFProgram& rhs) = delete; // Копирующий: конструктор
+    SDFProgram(const SDFProgram& rhs) = delete; // Копирующий: конструктор
     SDFProgram(SDFProgram&& rhs) = delete; // Перемещающий: конструктор
+    SDFProgram& operator= (const SDFProgram& rhs) = delete; // Оператор копирующего присваивания
     SDFProgram& operator= (SDFProgram&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
@@ -84,8 +85,9 @@ public:
     ~SDFGLTexture() { Clear(); };
 
     SDFGLTexture() {};
-    SDFGLTexture(SDFGLTexture& rhs) = delete; // Копирующий: конструктор
+    SDFGLTexture(const SDFGLTexture& rhs) = delete; // Копирующий: конструктор
     SDFGLTexture(SDFGLTexture&& rhs) = delete; // Перемещающий: конструктор
+    SDFGLTexture& operator= (const SDFGLTexture& rhs) = delete; // Оператор копирующего присваивания
     SDFGLTexture& operator= (SDFGLTexture&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
@@ -140,8 +142,9 @@ public:
     };
 
     SDFTexture() {};
-    SDFTexture(SDFTexture& rhs) = delete; // Копирующий: конструктор
+    SDFTexture(const SDFTexture& rhs) = delete; // Копирующий: конструктор
     SDFTexture(SDFTexture&& rhs) = delete; // Перемещающий: конструктор
+    SDFTexture& operator= (const SDFTexture& rhs) = delete; // Оператор копирующего присваивания
     SDFTexture& operator= (SDFTexture&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
@@ -195,8 +198,9 @@ public:
 
     SDFFont() {};
     ~SDFFont() { Clear(); };
-    SDFFont(SDFFont& rhs) = delete; // Копирующий: конструктор
+    SDFFont(const SDFFont& rhs) = delete; // Копирующий: конструктор
     SDFFont(SDFFont&& rhs) = delete; // Перемещающий: конструктор
+    SDFFont& operator= (const SDFFont& rhs) = delete; // Оператор копирующего присваивания
     SDFFont& operator= (SDFFont&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
@@ -278,8 +282,9 @@ public:
     void        WrapText(const char* Text, float ScaleMutiplier, std::string& ResultString, float& UsedScale, AkkordPoint& Size);
     AkkordPoint DrawText(int X, int Y, const char* Text);
 
-    SDFFontBuffer(SDFFontBuffer& rhs) = delete; // Копирующий: конструктор
+    SDFFontBuffer(const SDFFontBuffer& rhs) = delete; // Копирующий: конструктор
     SDFFontBuffer(SDFFontBuffer&& rhs) = delete; // Перемещающий: конструктор
+    SDFFontBuffer& operator= (const SDFFontBuffer& rhs) = delete; // Оператор копирующего присваивания
     SDFFontBuffer& operator= (SDFFontBuffer&& rhs) = delete; // Оператор перемещающего присваивания
 };
 

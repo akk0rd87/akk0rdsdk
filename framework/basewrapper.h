@@ -248,8 +248,9 @@ public:
     //Запрещаем создавать экземпляр класса BWrapper
     BWrapper() = delete;
     ~BWrapper() = delete;
-    BWrapper(BWrapper& rhs)  = delete; // Копирующий: конструктор
+    BWrapper(const BWrapper& rhs)  = delete; // Копирующий: конструктор
     BWrapper(BWrapper&& rhs) = delete; // Перемещающий: конструктор
+    BWrapper& operator= (const BWrapper& rhs) = delete; // Оператор копирующего присваивания
     BWrapper& operator= (BWrapper&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
@@ -279,8 +280,9 @@ public:
 
     SDL_Texture * GetTexture() { return tex; };
 
-    AkkordTexture(AkkordTexture& rhs) = delete; // Копирующий: конструктор
+    AkkordTexture(const AkkordTexture& rhs) = delete; // Копирующий: конструктор
     AkkordTexture(AkkordTexture&& tmp) { this->tex = tmp.tex; tmp.tex = nullptr; }; // Перемещающий конструктор объявлен
+    AkkordTexture& operator= (const AkkordTexture& rhs) = delete; // Оператор копирующего присваивания
     AkkordTexture& operator= (AkkordTexture&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
@@ -297,8 +299,9 @@ public:
     DirContentReader(): Size(0), Pointer(0)  {};
     ~DirContentReader() { Close(); };
 
-    DirContentReader(DirContentReader& rhs) = delete; // Копирующий: конструктор
+    DirContentReader(const DirContentReader& rhs) = delete; // Копирующий: конструктор
     DirContentReader(DirContentReader&& rhs) = delete; // Перемещающий: конструктор
+    DirContentReader& operator= (const DirContentReader& rhs) = delete; // Оператор копирующего присваивания
     DirContentReader& operator= (DirContentReader&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
@@ -322,8 +325,9 @@ public:
     bool ReadLine(std::string& Line);
     bool Read(char* Buffer, unsigned MaxSize, unsigned& Readed);
 
-    FileReader(FileReader& rhs) = delete; // Копирующий: конструктор
+    FileReader(const FileReader& rhs) = delete; // Копирующий: конструктор
     FileReader(FileReader&& rhs) = delete; // Перемещающий: конструктор
+    FileReader& operator= (const FileReader& rhs) = delete; // Оператор копирующего присваивания
     FileReader& operator= (FileReader&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
@@ -339,8 +343,9 @@ public:
     //Запрещаем создавать экземпляр класса msgBox
     msgBox() = delete;
     ~msgBox() = delete;
-    msgBox(msgBox& rhs) = delete; // Копирующий: конструктор
+    msgBox(const msgBox& rhs) = delete; // Копирующий: конструктор
     msgBox(msgBox&& rhs) = delete; // Перемещающий: конструктор
+    msgBox& operator= (const msgBox& rhs) = delete; // Оператор копирующего присваивания
     msgBox& operator= (msgBox&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
@@ -360,8 +365,9 @@ public:
     WAVPlayer() :wav_length(0), wav_buffer(nullptr), deviceId(0) {};
     ~WAVPlayer() { Clear(); };
 
-    WAVPlayer(WAVPlayer& rhs) = delete; // Копирующий: конструктор
+    WAVPlayer(const WAVPlayer& rhs) = delete; // Копирующий: конструктор
     WAVPlayer(WAVPlayer&& rhs) = delete; // Перемещающий: конструктор
+    WAVPlayer& operator= (const WAVPlayer& rhs) = delete; // Оператор копирующего присваивания
     WAVPlayer& operator= (WAVPlayer&& rhs) = delete; // Оператор перемещающего присваивания
 };
 

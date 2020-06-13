@@ -31,8 +31,9 @@ public:
     //Запрещаем создавать экземпляр класса BillingManager
     BillingManager() = delete;
     ~BillingManager() = delete;
-    BillingManager(BillingManager& rhs)  = delete; // Копирующий: конструктор
+    BillingManager(const BillingManager& rhs)  = delete; // Копирующий: конструктор
     BillingManager(BillingManager&& rhs) = delete; // Перемещающий: конструктор
+    BillingManager& operator= (const BillingManager& rhs) = delete; // Оператор копирующего присваивания
     BillingManager& operator= (BillingManager&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
