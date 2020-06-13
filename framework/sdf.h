@@ -283,7 +283,7 @@ public:
     AkkordPoint DrawText(int X, int Y, const char* Text);
 
     SDFFontBuffer(const SDFFontBuffer& rhs) = delete; // Копирующий: конструктор
-    SDFFontBuffer(SDFFontBuffer&& rhs) = delete; // Перемещающий: конструктор
+    SDFFontBuffer(SDFFontBuffer&& rhs) = default; // Перемещающий: конструктор
     SDFFontBuffer& operator= (const SDFFontBuffer& rhs) = delete; // Оператор копирующего присваивания
     SDFFontBuffer& operator= (SDFFontBuffer&& rhs) = delete; // Оператор перемещающего присваивания
 };

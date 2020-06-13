@@ -300,7 +300,7 @@ public:
     ~DirContentReader() { Close(); };
 
     DirContentReader(const DirContentReader& rhs) = delete; // Копирующий: конструктор
-    DirContentReader(DirContentReader&& rhs) = delete; // Перемещающий: конструктор
+    DirContentReader(DirContentReader&& rhs) = default; // Перемещающий: конструктор
     DirContentReader& operator= (const DirContentReader& rhs) = delete; // Оператор копирующего присваивания
     DirContentReader& operator= (DirContentReader&& rhs) = delete; // Оператор перемещающего присваивания
 };
