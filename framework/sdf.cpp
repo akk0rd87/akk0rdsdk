@@ -85,11 +85,10 @@ void main() \n\
 
 static const GLchar* Gradient_vertexSource =
 "#version 130 \n \
-uniform highp mat4 u_projection; \n\
 attribute highp vec2 a_position; \
 void main() \
 { \
-gl_Position = u_projection * vec4(a_position, 0.0, 1.0); \n \
+gl_Position = vec4(a_position, 0.0, 1.0); \n \
 }";
 
 static const GLchar* Gradient_fragmentSource =
@@ -209,10 +208,8 @@ bool SDFProgram::CompileGradientProgram(ShaderProgramStruct* Program, const char
     Driver.glGetIntegerv(GL_CURRENT_PROGRAM, &oldProgramId);
     Driver.glUseProgram(Program->shaderProgram); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
 
-    auto mat = Driver.glGetUniformLocation(Program->shaderProgram, "u_projection"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
     Program->font_color = Driver.glGetUniformLocation(Program->shaderProgram, "u_color"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
 
-    Driver.glUniformMatrix4fv(mat, 1, GL_FALSE, SDF_Mat);    CheckGLESError();
     logDebug("CompileGradientProgram");
 
     if (oldProgramId > 0) {
