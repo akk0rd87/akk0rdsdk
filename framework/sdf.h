@@ -32,13 +32,17 @@ struct SDFCharInfo
 
 class SDFProgram
 {
-    ShaderProgramStruct ShaderProgram, ShaderProgramOutline;
+    ShaderProgramStruct ShaderProgram, ShaderProgramOutline, Gradient;
 
     bool CompileProgram(ShaderProgramStruct* Program, const char* VertextShader, const char* FragmentShader);
+    bool CompileGradientProgram(ShaderProgramStruct* Program, const char* VertextShader, const char* FragmentShader);
 
     void Clear();
 
 public:
+
+    void Test();
+
     struct Attributes
     {
         enum : GLuint
