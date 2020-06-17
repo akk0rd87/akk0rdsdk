@@ -83,6 +83,26 @@ void main() \n\
     gl_FragColor = rgba; \n\
 }\n";
 
+static const GLchar* Gradient_vertexSource =
+"#version 130 \n \
+attribute highp vec2 a_position; \
+attribute highp vec4 vertex_color; \
+varying highp vec4 result_color; \
+void main() \
+{ \
+result_color = vertex_color; \
+gl_Position = vec4(a_position, 0.0, 1.0); \n \
+}";
+
+static const GLchar* Gradient_fragmentSource =
+"#version 130 \n \
+    varying highp vec4 result_color; \
+    void main() \
+    { \
+        gl_FragColor = result_color; \
+    } \
+";
+
 // https://habrahabr.ru/post/282191/
 static inline unsigned int UTF2Unicode(const /*unsigned*/ char* txt, unsigned& i) {
     unsigned int a = txt[i++];
@@ -165,6 +185,44 @@ bool SDFProgram::CompileProgram(ShaderProgramStruct* Program, const char* Vertex
     return true;
 }
 
+bool SDFProgram::CompileGradientProgram(ShaderProgramStruct* Program, const char* VertextShader, const char* FragmentShader) {
+    GLint oldProgramId;
+    auto& Driver = GLESDriver::GetInstance();
+
+    // Create and compile the fragment shader
+    GLuint vertexShader = Driver.glCreateShader(GL_VERTEX_SHADER); CheckGLESError(); PrintGLESShaderLog(vertexShader);
+    Driver.glShaderSource(vertexShader, 1, &VertextShader, NULL); CheckGLESError(); PrintGLESShaderLog(vertexShader);
+    Driver.glCompileShader(vertexShader); CheckGLESError(); PrintGLESShaderLog(vertexShader);
+
+    // Create and compile the fragment shader
+    GLuint fragmentShader = Driver.glCreateShader(GL_FRAGMENT_SHADER); CheckGLESError(); PrintGLESShaderLog(fragmentShader);
+    Driver.glShaderSource(fragmentShader, 1, &FragmentShader, NULL); CheckGLESError(); PrintGLESShaderLog(fragmentShader);
+    Driver.glCompileShader(fragmentShader); CheckGLESError(); PrintGLESShaderLog(fragmentShader);
+
+    // Link the vertex and fragment shader into a shader program
+    Program->shaderProgram = Driver.glCreateProgram(); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
+    Driver.glAttachShader(Program->shaderProgram, vertexShader); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
+    Driver.glAttachShader(Program->shaderProgram, fragmentShader); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
+
+    Driver.glBindAttribLocation(Program->shaderProgram, SDFProgram::Attributes::SDF_ATTRIB_UV, "vertex_color"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
+    Driver.glBindAttribLocation(Program->shaderProgram, SDFProgram::Attributes::SDF_ATTRIB_POSITION, "a_position"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
+
+    Driver.glLinkProgram(Program->shaderProgram); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
+
+    Driver.glGetIntegerv(GL_CURRENT_PROGRAM, &oldProgramId);
+    Driver.glUseProgram(Program->shaderProgram); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
+
+    Program->font_color = Driver.glGetUniformLocation(Program->shaderProgram, "u_color"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
+
+    logDebug("CompileGradientProgram");
+
+    if (oldProgramId > 0) {
+        Driver.glUseProgram(oldProgramId);
+    }
+
+    return true;
+}
+
 void SDFProgram::Clear()
 {
 }
@@ -202,10 +260,141 @@ bool SDFProgram::Init()
     }
 
     if (this->CompileProgram(&ShaderProgram, regVertex.c_str(), regFragment.c_str()) && this->CompileProgram(&ShaderProgramOutline, outVertex.c_str(), outFragment.c_str())) {
-        return true;
     }
+
+    this->CompileGradientProgram(&Gradient, Gradient_vertexSource, Gradient_fragmentSource);
+
     return false;
 };
+
+void SDFProgram::Test() {
+    // GLsizei Count,
+    GLint oldProgramId;
+
+    struct VertextAttrParamsStruct {
+        GLint attr_0_enabled, attr_1_enabled, attr_2_enabled, attr_3_enabled;
+    } VertexParams;
+    VertexParams.attr_0_enabled = VertexParams.attr_1_enabled = VertexParams.attr_2_enabled = VertexParams.attr_3_enabled = GL_FALSE;
+
+    struct FloatRect { float x, y, w, h; };
+    FloatRect Dest;
+
+    const auto screenSize = BWrapper::GetScreenSize();
+
+    Dest.x = static_cast<float>(0);
+    Dest.y = static_cast<float>(0);
+    Dest.w = static_cast<float>(screenSize.x);
+    Dest.h = static_cast<float>(screenSize.y);
+
+    std::vector<GLfloat>squareVertices;
+    std::vector<GLushort>Indices;
+    std::vector<GLfloat> UV;
+
+    float ScrenW = static_cast<decltype(ScrenW)>(screenSize.x);
+    float ScrenH = static_cast<decltype(ScrenH)>(screenSize.y);
+
+    UV.insert(UV.end(), {
+        0.0f, 1.0f, 0.0f, 1.0f,
+        0.0f, 1.0f, 0.0f, 1.0f,
+        0.0f, 1.0f, 0.0f, 1.0f,
+        1.0f, 0.0f, 0.0f, 1.0f
+        //static_cast<float>(220) / 255, static_cast<float>(158) / 255, static_cast<float>(177) / 255, 1.0f,
+        //static_cast<float>(220) / 255, static_cast<float>(158) / 255, static_cast<float>(177) / 255, 1.0f,
+        //static_cast<float>(231) / 255, static_cast<float>(176) / 255, static_cast<float>(190) / 255, 1.0f,
+        //static_cast<float>(231) / 255, static_cast<float>(176) / 255, static_cast<float>(190) / 255, 1.0f
+        }
+    );
+
+    squareVertices.insert(squareVertices.cend(),
+        {
+            2.0f * (Dest.x / ScrenW) - 1.0f                  , 2.0f * (ScrenH - Dest.y - (Dest.h)) / ScrenH - 1.0f,
+            2.0f * (Dest.x + (Dest.w - 1.0f)) / ScrenW - 1.0f, 2.0f * (ScrenH - Dest.y - (Dest.h)) / ScrenH - 1.0f,
+            2.0f * (Dest.x / ScrenW) - 1.0f                  , 2.0f * (ScrenH - Dest.y) / ScrenH - 1.0f,
+            2.0f * (Dest.x + (Dest.w - 1.0f)) / ScrenW - 1.0f, 2.0f * (ScrenH - Dest.y) / ScrenH - 1.0f
+        });
+
+    decltype(Indices)::value_type PointsCnt0 = 0;
+    decltype(PointsCnt0) PointsCnt1 = PointsCnt0 + 1;
+    decltype(PointsCnt0) PointsCnt2 = PointsCnt0 + 2;
+    decltype(PointsCnt0) PointsCnt3 = PointsCnt0 + 3;
+
+    Indices.insert(Indices.cend(),
+        {
+            PointsCnt0, PointsCnt1, PointsCnt2,
+            PointsCnt1, PointsCnt2, PointsCnt3
+        });
+
+    const auto uvSize = static_cast<GLsizeiptr>(UV.size() * sizeof(UV.front()));
+    const auto svSize = static_cast<GLsizeiptr>(squareVertices.size() * sizeof(squareVertices.front()));
+    const auto bufSize = uvSize + svSize;
+    const auto indSize = static_cast<GLsizeiptr>(Indices.size() * sizeof(decltype(Indices.front())));
+
+    auto& Driver = GLESDriver::GetInstance();
+    // работаем c GL_ARRAY_BUFFER
+    Driver.glBindBuffer(GL_ARRAY_BUFFER, VBO.ArrayBufferID[VBO.CurentBuffer]); CheckGLESError();
+    if (VBO.ArrayBufferSize[VBO.CurentBuffer] < bufSize) { // размера недостаточно и нужно выделить память
+        Driver.glBufferData(GL_ARRAY_BUFFER, bufSize, nullptr, GL_STREAM_DRAW); CheckGLESError();
+        VBO.ArrayBufferSize[VBO.CurentBuffer] = bufSize;
+    }
+    Driver.glBufferSubData(GL_ARRAY_BUFFER, 0, uvSize, &UV.front()); CheckGLESError();
+    Driver.glBufferSubData(GL_ARRAY_BUFFER, uvSize, svSize, &squareVertices.front()); CheckGLESError();
+
+    // работаем c GL_ELEMENT_ARRAY_BUFFER
+    Driver.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, VBO.ElementBufferID[VBO.CurentBuffer]); CheckGLESError();
+    if (VBO.ElementBufferSize[VBO.CurentBuffer] < indSize) { // размера недостаточно и нужно выделить память
+        Driver.glBufferData(GL_ELEMENT_ARRAY_BUFFER, indSize, &Indices.front(), GL_STREAM_DRAW); CheckGLESError();
+        VBO.ElementBufferSize[VBO.CurentBuffer] = indSize;
+    }
+    else { // если размера хватает, заполняем текущее подмножество
+        Driver.glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indSize, &Indices.front()); CheckGLESError();
+    }
+
+    // переходим к следующему буфферу, который будет использоваться при следующем обращении
+    if (++VBO.CurentBuffer >= constBufferSize) {
+        VBO.CurentBuffer = 0;
+    }
+
+    Driver.glGetIntegerv((GLenum)GL_CURRENT_PROGRAM, &oldProgramId); CheckGLESError();
+
+    {
+        Driver.glGetVertexAttribiv((GLuint)0, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_0_enabled); CheckGLESError();
+        Driver.glGetVertexAttribiv((GLuint)1, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_1_enabled); CheckGLESError();
+        Driver.glGetVertexAttribiv((GLuint)2, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_2_enabled); CheckGLESError();
+        Driver.glGetVertexAttribiv((GLuint)3, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_3_enabled); CheckGLESError();
+
+        // эти два атрибута нужно включить, если они выключены
+        if (VertexParams.attr_0_enabled == GL_FALSE) { Driver.glEnableVertexAttribArray((GLuint)0); CheckGLESError(); }
+        if (VertexParams.attr_1_enabled == GL_FALSE) { Driver.glEnableVertexAttribArray((GLuint)1); CheckGLESError(); }
+
+        // эти атрибуты выключаем всегда, если они включены
+        if (VertexParams.attr_2_enabled != GL_FALSE) { Driver.glDisableVertexAttribArray((GLuint)2); CheckGLESError(); }
+        if (VertexParams.attr_3_enabled != GL_FALSE) { Driver.glDisableVertexAttribArray((GLuint)3); CheckGLESError(); }
+    }
+
+    if (oldProgramId != Gradient.shaderProgram) {
+        Driver.glUseProgram(Gradient.shaderProgram); CheckGLESError(); PrintGLESProgamLog(Gradient.shaderProgram);
+    }
+
+    Driver.glVertexAttribPointer(SDFProgram::Attributes::SDF_ATTRIB_POSITION, (GLint)2, (GLenum)GL_FLOAT, (GLboolean)GL_FALSE, (GLsizei)0, (const GLvoid*)uvSize); CheckGLESError();
+    Driver.glVertexAttribPointer(SDFProgram::Attributes::SDF_ATTRIB_UV, (GLint)4, (GLenum)GL_FLOAT, (GLboolean)GL_FALSE, (GLsizei)0, nullptr); CheckGLESError();
+
+    //Driver.glUniform4f(Gradient.font_color, GLfloat(0) / 255.0f, GLfloat(0) / 255.0f, GLfloat(0) / 255.0f, GLfloat(255) / 255.0f); CheckGLESError();
+
+    Driver.glDrawElements((GLenum)GL_TRIANGLES, static_cast<GLsizei>(Indices.size()), (GLenum)GL_UNSIGNED_SHORT, nullptr); CheckGLESError();
+
+    if (Gradient.shaderProgram != oldProgramId && oldProgramId > 0) {
+        Driver.glUseProgram(oldProgramId); CheckGLESError();
+    }
+
+    { // возвращаем все исходное состояние
+        // в рамках обработки SDF мы включили эти атрибуты. Возвращаем их в исходное состояние
+        if (VertexParams.attr_0_enabled == GL_FALSE) { Driver.glDisableVertexAttribArray((GLuint)0); CheckGLESError(); }
+        if (VertexParams.attr_1_enabled == GL_FALSE) { Driver.glDisableVertexAttribArray((GLuint)1); CheckGLESError(); }
+
+        if (VertexParams.attr_2_enabled != GL_FALSE) { Driver.glEnableVertexAttribArray((GLuint)2); CheckGLESError(); }
+        if (VertexParams.attr_3_enabled != GL_FALSE) { Driver.glEnableVertexAttribArray((GLuint)3); CheckGLESError(); }
+    }
+}
 
 bool SDFGLTexture::Draw(bool Outline, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const std::vector<GLfloat>& UV, const std::vector<GLfloat>& squareVertices, const std::vector <GLushort>& Indices, GLfloat Scale, GLfloat Border, int Spread)
 {
