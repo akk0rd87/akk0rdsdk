@@ -86,17 +86,20 @@ void main() \n\
 static const GLchar* Gradient_vertexSource =
 "#version 130 \n \
 attribute highp vec2 a_position; \
+attribute highp vec4 vertex_color; \
+varying highp vec4 result_color; \
 void main() \
 { \
+result_color = vertex_color; \
 gl_Position = vec4(a_position, 0.0, 1.0); \n \
 }";
 
 static const GLchar* Gradient_fragmentSource =
 "#version 130 \n \
-    uniform highp vec4 u_color; \
+    varying highp vec4 result_color; \
     void main() \
     { \
-        gl_FragColor = u_color; \
+        gl_FragColor = result_color; \
     } \
 ";
 
@@ -201,6 +204,7 @@ bool SDFProgram::CompileGradientProgram(ShaderProgramStruct* Program, const char
     Driver.glAttachShader(Program->shaderProgram, vertexShader); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
     Driver.glAttachShader(Program->shaderProgram, fragmentShader); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
 
+    Driver.glBindAttribLocation(Program->shaderProgram, SDFProgram::Attributes::SDF_ATTRIB_UV, "vertex_color"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
     Driver.glBindAttribLocation(Program->shaderProgram, SDFProgram::Attributes::SDF_ATTRIB_POSITION, "a_position"); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
 
     Driver.glLinkProgram(Program->shaderProgram); CheckGLESError(); PrintGLESProgamLog(Program->shaderProgram);
@@ -275,17 +279,31 @@ void SDFProgram::Test() {
     struct FloatRect { float x, y, w, h; };
     FloatRect Dest;
 
-    Dest.x = static_cast<float>(100);
-    Dest.y = static_cast<float>(50);
-    Dest.w = static_cast<float>(300);
-    Dest.h = static_cast<float>(200);
+    const auto screenSize = BWrapper::GetScreenSize();
+
+    Dest.x = static_cast<float>(0);
+    Dest.y = static_cast<float>(0);
+    Dest.w = static_cast<float>(screenSize.x);
+    Dest.h = static_cast<float>(screenSize.y);
 
     std::vector<GLfloat>squareVertices;
     std::vector<GLushort>Indices;
-    const auto screenSize = BWrapper::GetScreenSize();
+    std::vector<GLfloat> UV;
 
     float ScrenW = static_cast<decltype(ScrenW)>(screenSize.x);
     float ScrenH = static_cast<decltype(ScrenH)>(screenSize.y);
+
+    UV.insert(UV.end(), {
+        0.0f, 1.0f, 0.0f, 1.0f,
+        0.0f, 1.0f, 0.0f, 1.0f,
+        0.0f, 1.0f, 0.0f, 1.0f,
+        1.0f, 0.0f, 0.0f, 1.0f
+        //static_cast<float>(220) / 255, static_cast<float>(158) / 255, static_cast<float>(177) / 255, 1.0f,
+        //static_cast<float>(220) / 255, static_cast<float>(158) / 255, static_cast<float>(177) / 255, 1.0f,
+        //static_cast<float>(231) / 255, static_cast<float>(176) / 255, static_cast<float>(190) / 255, 1.0f,
+        //static_cast<float>(231) / 255, static_cast<float>(176) / 255, static_cast<float>(190) / 255, 1.0f
+        }
+    );
 
     squareVertices.insert(squareVertices.cend(),
         {
@@ -306,19 +324,20 @@ void SDFProgram::Test() {
             PointsCnt1, PointsCnt2, PointsCnt3
         });
 
-    const auto bufSize = static_cast<GLsizeiptr>(squareVertices.size() * sizeof(squareVertices.front()));
+    const auto uvSize = static_cast<GLsizeiptr>(UV.size() * sizeof(UV.front()));
+    const auto svSize = static_cast<GLsizeiptr>(squareVertices.size() * sizeof(squareVertices.front()));
+    const auto bufSize = uvSize + svSize;
     const auto indSize = static_cast<GLsizeiptr>(Indices.size() * sizeof(decltype(Indices.front())));
 
     auto& Driver = GLESDriver::GetInstance();
     // работаем c GL_ARRAY_BUFFER
     Driver.glBindBuffer(GL_ARRAY_BUFFER, VBO.ArrayBufferID[VBO.CurentBuffer]); CheckGLESError();
     if (VBO.ArrayBufferSize[VBO.CurentBuffer] < bufSize) { // размера недостаточно и нужно выделить память
-        Driver.glBufferData(GL_ARRAY_BUFFER, bufSize, &squareVertices.front(), GL_STREAM_DRAW); CheckGLESError();
+        Driver.glBufferData(GL_ARRAY_BUFFER, bufSize, nullptr, GL_STREAM_DRAW); CheckGLESError();
         VBO.ArrayBufferSize[VBO.CurentBuffer] = bufSize;
     }
-    else {
-        Driver.glBufferSubData(GL_ARRAY_BUFFER, 0, bufSize, &squareVertices.front()); CheckGLESError();
-    }
+    Driver.glBufferSubData(GL_ARRAY_BUFFER, 0, uvSize, &UV.front()); CheckGLESError();
+    Driver.glBufferSubData(GL_ARRAY_BUFFER, uvSize, svSize, &squareVertices.front()); CheckGLESError();
 
     // работаем c GL_ELEMENT_ARRAY_BUFFER
     Driver.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, VBO.ElementBufferID[VBO.CurentBuffer]); CheckGLESError();
@@ -344,27 +363,22 @@ void SDFProgram::Test() {
         Driver.glGetVertexAttribiv((GLuint)3, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &VertexParams.attr_3_enabled); CheckGLESError();
 
         // эти два атрибута нужно включить, если они выключены
-        if (VertexParams.attr_0_enabled == GL_FALSE) {
-            Driver.glEnableVertexAttribArray((GLuint)0); CheckGLESError();
-        }
+        if (VertexParams.attr_0_enabled == GL_FALSE) { Driver.glEnableVertexAttribArray((GLuint)0); CheckGLESError(); }
+        if (VertexParams.attr_1_enabled == GL_FALSE) { Driver.glEnableVertexAttribArray((GLuint)1); CheckGLESError(); }
+
         // эти атрибуты выключаем всегда, если они включены
-        if (VertexParams.attr_1_enabled != GL_FALSE) {
-            Driver.glDisableVertexAttribArray((GLuint)1); CheckGLESError();
-        }
-        if (VertexParams.attr_2_enabled != GL_FALSE) {
-            Driver.glDisableVertexAttribArray((GLuint)2); CheckGLESError();
-        }
-        if (VertexParams.attr_3_enabled != GL_FALSE) {
-            Driver.glDisableVertexAttribArray((GLuint)3); CheckGLESError();
-        }
+        if (VertexParams.attr_2_enabled != GL_FALSE) { Driver.glDisableVertexAttribArray((GLuint)2); CheckGLESError(); }
+        if (VertexParams.attr_3_enabled != GL_FALSE) { Driver.glDisableVertexAttribArray((GLuint)3); CheckGLESError(); }
     }
 
     if (oldProgramId != Gradient.shaderProgram) {
         Driver.glUseProgram(Gradient.shaderProgram); CheckGLESError(); PrintGLESProgamLog(Gradient.shaderProgram);
     }
 
-    Driver.glVertexAttribPointer(SDFProgram::Attributes::SDF_ATTRIB_POSITION, (GLint)2, (GLenum)GL_FLOAT, (GLboolean)GL_FALSE, (GLsizei)0, nullptr); CheckGLESError();
-    Driver.glUniform4f(Gradient.font_color, GLfloat(0) / 255.0f, GLfloat(0) / 255.0f, GLfloat(0) / 255.0f, GLfloat(255) / 255.0f); CheckGLESError();
+    Driver.glVertexAttribPointer(SDFProgram::Attributes::SDF_ATTRIB_POSITION, (GLint)2, (GLenum)GL_FLOAT, (GLboolean)GL_FALSE, (GLsizei)0, (const GLvoid*)uvSize); CheckGLESError();
+    Driver.glVertexAttribPointer(SDFProgram::Attributes::SDF_ATTRIB_UV, (GLint)4, (GLenum)GL_FLOAT, (GLboolean)GL_FALSE, (GLsizei)0, nullptr); CheckGLESError();
+
+    //Driver.glUniform4f(Gradient.font_color, GLfloat(0) / 255.0f, GLfloat(0) / 255.0f, GLfloat(0) / 255.0f, GLfloat(255) / 255.0f); CheckGLESError();
 
     Driver.glDrawElements((GLenum)GL_TRIANGLES, static_cast<GLsizei>(Indices.size()), (GLenum)GL_UNSIGNED_SHORT, nullptr); CheckGLESError();
 
@@ -375,8 +389,8 @@ void SDFProgram::Test() {
     { // возвращаем все исходное состояние
         // в рамках обработки SDF мы включили эти атрибуты. Возвращаем их в исходное состояние
         if (VertexParams.attr_0_enabled == GL_FALSE) { Driver.glDisableVertexAttribArray((GLuint)0); CheckGLESError(); }
+        if (VertexParams.attr_1_enabled == GL_FALSE) { Driver.glDisableVertexAttribArray((GLuint)1); CheckGLESError(); }
 
-        if (VertexParams.attr_1_enabled != GL_FALSE) { Driver.glEnableVertexAttribArray((GLuint)1); CheckGLESError(); }
         if (VertexParams.attr_2_enabled != GL_FALSE) { Driver.glEnableVertexAttribArray((GLuint)2); CheckGLESError(); }
         if (VertexParams.attr_3_enabled != GL_FALSE) { Driver.glEnableVertexAttribArray((GLuint)3); CheckGLESError(); }
     }
