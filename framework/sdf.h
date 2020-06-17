@@ -3,7 +3,7 @@
 
 #include <unordered_map>
 #include "basewrapper.h"
-#include "openglesdriver.h"
+#include"openglesdriver.h"
 
 // https://github.com/libgdx/libgdx/wiki/distance-field-fonts
 
@@ -17,56 +17,6 @@ Call stack:
 https://github.com/libgdx/libgdx/wiki/Hiero
 "java -cp gdx.jar;gdx-natives.jar;gdx-backend-lwjgl.jar;gdx-backend-lwjgl-natives.jar;extensions\gdx-freetype\gdx-freetype.jar;extensions\gdx-freetype\gdx-freetype-natives.jar;extensions\gdx-tools\gdx-tools.jar com.badlogic.gdx.tools.hiero.Hiero"
 */
-
-struct ShaderProgramStruct
-{
-    GLuint shaderProgram;
-    GLint sdf_outline_color, font_color, smooth, border;
-};
-
-struct SDFCharInfo
-{
-    unsigned int id, x, y, w, h;
-    int xoffset, yoffset, xadvance;
-};
-
-class SDFProgram
-{
-    ShaderProgramStruct ShaderProgram, ShaderProgramOutline, Gradient;
-
-    bool CompileProgram(ShaderProgramStruct* Program, const char* VertextShader, const char* FragmentShader);
-    bool CompileGradientProgram(ShaderProgramStruct* Program, const char* VertextShader, const char* FragmentShader);
-
-    void Clear();
-
-public:
-
-    void Test();
-
-    struct Attributes
-    {
-        enum : GLuint
-        {
-            SDF_ATTRIB_POSITION = 0, // Начинаем не с нуля, чтобы индексы не пересеклись с другими программами
-            SDF_ATTRIB_UV = 1
-            //SDF_NUM_ATTRIBUTES = 7,
-            //ATTRIB_COLOR = 8
-        };
-    };
-
-    bool Init();
-    ShaderProgramStruct* GetShaderProgram(bool Outline) { return (Outline ? &ShaderProgramOutline : &ShaderProgram); };
-    SDFProgram() {};
-    ~SDFProgram() { Clear(); };
-
-    static SDFProgram& GetInstance();
-
-    //Запрещаем создавать экземпляр класса SDFProgram
-    SDFProgram(const SDFProgram& rhs) = delete; // Копирующий: конструктор
-    SDFProgram(SDFProgram&& rhs) = delete; // Перемещающий: конструктор
-    SDFProgram& operator= (const SDFProgram& rhs) = delete; // Оператор копирующего присваивания
-    SDFProgram& operator= (SDFProgram&& rhs) = delete; // Оператор перемещающего присваивания
-};
 
 class SDFGLTexture
 {
@@ -111,7 +61,7 @@ class SDFTexture
     float atlasW;
     float atlasH;
     void InitAtlasWH() {
-        auto size = Texture.GetSize();
+        const auto size = Texture.GetSize();
         atlasW = static_cast<float>(size.x);
         atlasH = static_cast<float>(size.y);
     };
@@ -154,23 +104,17 @@ public:
 
 class SDFFont
 {
-    SDFGLTexture FontAtlas;
-    unsigned int ScaleW, ScaleH, LineHeight, Spread;
-    std::unordered_map<unsigned, SDFCharInfo> CharsMap;
-
-    template <class fntStream>
-    bool ParseFontMap(fntStream& fonsStream);
-
-    bool ParseFNTFile(const char* FNTFile, BWrapper::FileSearchPriority SearchPriority);
-    void Clear() {
-        CharsMap.clear();
-        FontAtlas.Clear();
-    };
 public:
     enum struct AlignV : unsigned char { Top, Center, Bottom };
     enum struct AlignH : unsigned char { Left, Center, Right };
     unsigned int GetAtlasW() { return ScaleW; };
     unsigned int GetAtlasH() { return ScaleH; };
+
+    struct SDFCharInfo
+    {
+        unsigned int id, x, y, w, h;
+        int xoffset, yoffset, xadvance;
+    };
 
     bool Load(const char* FileNameFNT, const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority, int Spread) {
         this->Clear();
@@ -206,6 +150,19 @@ public:
     SDFFont(SDFFont&& rhs) = delete; // Перемещающий: конструктор
     SDFFont& operator= (const SDFFont& rhs) = delete; // Оператор копирующего присваивания
     SDFFont& operator= (SDFFont&& rhs) = delete; // Оператор перемещающего присваивания
+private:
+    SDFGLTexture FontAtlas;
+    unsigned int ScaleW, ScaleH, LineHeight, Spread;
+    std::unordered_map<unsigned, SDFCharInfo> CharsMap;
+
+    template <class fntStream>
+    bool ParseFontMap(fntStream& fonsStream);
+
+    bool ParseFNTFile(const char* FNTFile, BWrapper::FileSearchPriority SearchPriority);
+    void Clear() {
+        CharsMap.clear();
+        FontAtlas.Clear();
+    };
 };
 
 // Для рисования всегда указывать левую верхнюю точку (удобно для разгаданных слов в "составь слова")
@@ -291,5 +248,28 @@ public:
     SDFFontBuffer& operator= (const SDFFontBuffer& rhs) = delete; // Оператор копирующего присваивания
     SDFFontBuffer& operator= (SDFFontBuffer&& rhs) = delete; // Оператор перемещающего присваивания
 };
+
+class VideoDriver {
+public:
+    enum struct Feature : Uint8 { SDF = 1, Gradient = 2 };
+    static bool Init(const VideoDriver::Feature Features);
+};
+
+inline VideoDriver::Feature operator | (VideoDriver::Feature a, VideoDriver::Feature b) {
+    return static_cast<VideoDriver::Feature>(static_cast<Uint8>(a) | static_cast<Uint8>(b));
+}
+
+inline VideoDriver::Feature operator & (VideoDriver::Feature a, VideoDriver::Feature b) {
+    return static_cast<VideoDriver::Feature>(static_cast<Uint8>(a) & static_cast<Uint8>(b));
+}
+
+inline VideoDriver::Feature& operator |= (VideoDriver::Feature& a, VideoDriver::Feature b) {
+    a = a | b;
+    return a;
+}
+
+inline bool operator!(VideoDriver::Feature a) {
+    return (static_cast<Uint8>(a) == 0);
+}
 
 #endif // __AKK0RD_SDFFONT_H__
