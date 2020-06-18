@@ -49,17 +49,14 @@ class SDFTexture
 {
     SDFGLTexture Texture;
     AkkordColor Color, OutlineColor;
-    int Spread;
+    int Spread = 0;
 
     std::vector<GLfloat>UV;
     std::vector<GLfloat>squareVertices;
     std::vector<GLushort>Indices;
 
-    float Scale, Border;
-    bool AutoFlush = false;
-    bool Outline = false;
-    float atlasW;
-    float atlasH;
+    bool AutoFlush = false, Outline = false;
+    float atlasW = 0.0f, atlasH = 0.0f, Scale = 0.0f, Border = 0.0f;
     void InitAtlasWH() {
         const auto size = Texture.GetSize();
         atlasW = static_cast<float>(size.x);
@@ -110,8 +107,7 @@ public:
     unsigned int GetAtlasW() { return ScaleW; };
     unsigned int GetAtlasH() { return ScaleH; };
 
-    struct SDFCharInfo
-    {
+    struct SDFCharInfo {
         unsigned int id, x, y, w, h;
         int xoffset, yoffset, xadvance;
     };
@@ -132,10 +128,9 @@ public:
     bool LoadCharMapFromMemory(const char* Buffer, int Size);
 
     bool Draw(bool Outline, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const std::vector<GLfloat>& UV, const std::vector<GLfloat>& squareVertices, const std::vector <GLushort>& Indices, GLfloat Scale, GLfloat Border);
-    bool GetCharInfo(unsigned Code, SDFCharInfo& ci) {
-        auto res = CharsMap.find(Code);
-        if (res != CharsMap.end())
-        {
+    bool GetCharInfo(unsigned Code, SDFFont::SDFCharInfo& ci) {
+        const auto res = CharsMap.find(Code);
+        if (res != CharsMap.end()) {
             ci = res->second;
             return true;
         }
@@ -152,8 +147,8 @@ public:
     SDFFont& operator= (SDFFont&& rhs) = delete; // Оператор перемещающего присваивания
 private:
     SDFGLTexture FontAtlas;
-    unsigned int ScaleW, ScaleH, LineHeight, Spread;
-    std::unordered_map<unsigned, SDFCharInfo> CharsMap;
+    unsigned int ScaleW = 0, ScaleH = 0, LineHeight = 0, Spread = 0;
+    std::unordered_map<unsigned, SDFFont::SDFCharInfo> CharsMap;
 
     template <class fntStream>
     bool ParseFontMap(fntStream& fonsStream);
@@ -253,6 +248,7 @@ class VideoDriver {
 public:
     enum struct Feature : Uint8 { SDF = 1, Gradient = 2 };
     static bool Init(const VideoDriver::Feature Features);
+    bool DrawLinearGradientRect(const AkkordRect& Rect, const AkkordColor& X0Y0, const AkkordColor& X1Y0, const AkkordColor& X1Y1, const AkkordColor& X0Y1);
 };
 
 inline VideoDriver::Feature operator | (VideoDriver::Feature a, VideoDriver::Feature b) {
