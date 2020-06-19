@@ -11,7 +11,7 @@ void GLESDriver::Init()
 bool GLESDriver::CheckError(const char* File, const char* Function, unsigned Line)
 {
 #ifdef __AKK0RD_DEBUG_MACRO__
-    auto glErr = this->glGetError();
+    const auto glErr = this->glGetError();
     if (glErr != GL_NO_ERROR)
     {
         std::string ErrorMsg;
@@ -37,16 +37,13 @@ void GLESDriver::PrintProgamLog(GLuint Program, const char* File, const char* Fu
 #ifdef __AKK0RD_DEBUG_MACRO__
     GLint logLength = 0;
     glGetProgramiv(Program, GL_INFO_LOG_LENGTH, &logLength);
-    if (logLength > 0)
-    {
-        GLchar* log = (GLchar*)malloc(logLength);
-        glGetProgramInfoLog(Program, logLength, &logLength, log);
-        if (std::string(log).size() > 0)
-        {
+    if (logLength > 0) {
+        std::string slog(logLength + 1, 0);
+        glGetProgramInfoLog(Program, logLength, &logLength, &slog.front());
+        if (!slog.empty()) {
             // тут именно вызов функции напрямую, а не через макрос, чтбоы не терять информацию о месте возникнования события
-            BWrapper::Log(BWrapper::LogPriority::Debug, File, Function, Line, "Program log [Program=%u]: %s", Program, log);
+            BWrapper::Log(BWrapper::LogPriority::Debug, File, Function, Line, "Program log [Program=%u]: %s", Program, slog.c_str());
         }
-        free(log);
     }
 #endif
 }
@@ -56,16 +53,13 @@ void GLESDriver::PrintShaderLog(GLuint Shader, const char* File, const char* Fun
 #ifdef __AKK0RD_DEBUG_MACRO__
     GLint logLength = 0;
     glGetShaderiv(Shader, GL_INFO_LOG_LENGTH, &logLength);
-    if (logLength > 0)
-    {
-        GLchar* log = (GLchar*)malloc(logLength);
-        glGetShaderInfoLog(Shader, logLength, &logLength, log);
-        if (std::string(log).size() > 0)
-        {
+    if (logLength > 0) {
+        std::string slog(logLength + 1, 0);
+        glGetShaderInfoLog(Shader, logLength, &logLength, &slog.front());
+        if (!slog.empty()) {
             // тут именно вызов функции напрямую, а не через макрос, чтбоы не терять информацию о месте возникнования события
-            BWrapper::Log(BWrapper::LogPriority::Debug, File, Function, Line, "Shader log [Shader=%u]: %s", Shader, log);
+            BWrapper::Log(BWrapper::LogPriority::Debug, File, Function, Line, "Shader log [Shader=%u]: %s", Shader, slog.c_str());
         }
-        free(log);
     }
 #endif
 };
@@ -75,15 +69,12 @@ void GLESDriver::PrintShaderSource(GLuint Shader)
 #ifdef __AKK0RD_DEBUG_MACRO__
     GLint logLength = 0;
     glGetShaderiv(Shader, GL_SHADER_SOURCE_LENGTH, &logLength);
-    if (logLength > 0)
-    {
-        GLchar* log = (GLchar*)malloc(logLength);
-        glGetShaderSource(Shader, logLength, &logLength, log);
-        if (!std::string(log).empty())
-        {
-            logDebug("Shader Source:\n %s\n\n", log);
+    if (logLength > 0) {
+        std::string slog(logLength + 1, 0);
+        glGetShaderSource(Shader, logLength, &logLength, &slog.front());
+        if (!slog.empty()) {
+            logDebug("Shader Source:\n %s\n\n", slog.c_str());
         }
-        free(log);
     }
 #endif
 }

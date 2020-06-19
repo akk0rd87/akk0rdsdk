@@ -1,5 +1,5 @@
-#ifndef __AKK0RD_SDFFONT_H__
-#define __AKK0RD_SDFFONT_H__
+#ifndef __AKK0RD_VIDEODRIVER_H__
+#define __AKK0RD_VIDEODRIVER_H__
 
 #include <unordered_map>
 #include "basewrapper.h"
@@ -246,9 +246,9 @@ public:
 
 class VideoDriver {
 public:
-    enum struct Feature : Uint8 { SDF = 1, Gradient = 2 };
+    enum struct Feature : Uint8 { SDF = 1, SDF_Outline = 2, Gradient = 4 };
     static bool Init(const VideoDriver::Feature Features);
-    bool DrawLinearGradientRect(const AkkordRect& Rect, const AkkordColor& X0Y0, const AkkordColor& X1Y0, const AkkordColor& X1Y1, const AkkordColor& X0Y1);
+    static bool DrawLinearGradientRect(const AkkordRect& Rect, const AkkordColor& X0Y0, const AkkordColor& X1Y0, const AkkordColor& X1Y1, const AkkordColor& X0Y1);
 };
 
 inline VideoDriver::Feature operator | (VideoDriver::Feature a, VideoDriver::Feature b) {
@@ -268,4 +268,4 @@ inline bool operator!(VideoDriver::Feature a) {
     return (static_cast<Uint8>(a) == 0);
 }
 
-#endif // __AKK0RD_SDFFONT_H__
+#endif // __AKK0RD_VIDEODRIVER_H__
