@@ -287,11 +287,17 @@ bool GradientProgram::DrawLinearGradientRect(const AkkordRect& Rect, const Akkor
     const float ScrenH = static_cast<decltype(ScrenH)>(screenSize.y);
 
     const std::array<GLushort, 6> Indices = { 0, 1, 3, 1, 2, 3 };
+
+    const auto x0 = static_cast<float>(2 * Rect.x);
+    const auto x1 = static_cast<float>(2 * (Rect.x + Rect.w));
+    const auto y0 = static_cast<float>(2 * (screenSize.y - Rect.y));
+    const auto y1 = static_cast<float>(2 * (screenSize.y - Rect.y - Rect.h));
+
     const std::array<GLfloat, 8> squareVertices = {
-        /*X0Y0*/2.0F * (static_cast<float>(Rect.x) / ScrenW) - 1.0F, 2.0F * (ScrenH - static_cast<float>(Rect.y)) / ScrenH - 1.0F,
-        /*X1Y0*/2.0F * (static_cast<float>(Rect.x) + (static_cast<float>(Rect.w) - 1.0F)) / ScrenW - 1.0F, 2.0F * (ScrenH - static_cast<float>(Rect.y)) / ScrenH - 1.0F,
-        /*X1Y1*/2.0F * (static_cast<float>(Rect.x) + (static_cast<float>(Rect.w) - 1.0F)) / ScrenW - 1.0F, 2.0F * (ScrenH - static_cast<float>(Rect.y) - static_cast<float>(Rect.h)) / ScrenH - 1.0F,
-        /*X0Y1*/2.0F * (static_cast<float>(Rect.x) / ScrenW) - 1.0F, 2.0F * (ScrenH - static_cast<float>(Rect.y) - static_cast<float>(Rect.h)) / ScrenH - 1.0F
+        x0 / ScrenW - 1.0F, y0 / ScrenH - 1.0F,
+        x1 / ScrenW - 1.0F, y0 / ScrenH - 1.0F,
+        x1 / ScrenW - 1.0F, y1 / ScrenH - 1.0F,
+        x0 / ScrenW - 1.0F, y1 / ScrenH - 1.0F
     };
 
     const std::array<GLfloat, 16>UV = {
@@ -506,10 +512,10 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
         Src.h = atlasH;
     }
 
-    Dest.x = Src.x / atlasW;                     //px1
-    Dest.y = (Src.x + Src.w - 1.0f) / atlasW;     //px2
-    Dest.w = (Src.y + Src.h - 1.0f) / atlasH;     //py1
-    Dest.h = Src.y / atlasH;                   //py2
+    Dest.x = Src.x / atlasW;           //px1
+    Dest.y = (Src.x + Src.w) / atlasW; //px2
+    Dest.w = (Src.y + Src.h) / atlasH; //py1
+    Dest.h = Src.y / atlasH;           //py2
 
     const float& px1 = Dest.x;
     const float& px2 = Dest.y;
