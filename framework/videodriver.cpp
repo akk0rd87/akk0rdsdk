@@ -383,7 +383,7 @@ bool SDFProgram::Init(const VideoDriver::Feature Features)
         }
     }
 
-    if (!!(Features & VideoDriver::Feature::SDF)) {
+    if (!!(Features & VideoDriver::Feature::SDF_Outline)) {
         const char* Outline = "#define SDF_OUTLINE \n";
 #ifdef __WINDOWS__
         const std::string outVertex{ std::string(winGLSL_Version) + Outline + SDF_vertexSource };
