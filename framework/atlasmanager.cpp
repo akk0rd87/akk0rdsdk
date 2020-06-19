@@ -12,10 +12,11 @@ void AtlasManager::ParseFile_LeshyLabsText(FileReader& fr, IndexType AtlasIndex)
             Sprites.emplace_back(AtlasIndex, std::string(line.c_str(), p - line.c_str()));
             auto& s = Sprites.back();
 
-            auto getIntValue = [](const char*& p) {
+            const auto getIntValue = [](const char*& p) {
                 int v{ 0 };
-                for (; *(++p) && *p != ',';) {
-                    v = v * 10 + static_cast<decltype(v)>(*p - '0');
+                for (++p; ('0' <= (*p) && (*p) <= '9'); ++p) {
+                    v *= 10;
+                    v += static_cast<decltype(v)>(*p - '0');
                 }
                 return v;
             };
