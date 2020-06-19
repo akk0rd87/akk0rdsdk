@@ -559,6 +559,7 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
 
 bool SDFTexture::Flush()
 {
+    BWrapper::FlushRenderer();
     if (Indices.size() > 0) {
         Texture.Draw(Outline, this->Color, this->OutlineColor, UV, squareVertices, Indices, Scale, (GLfloat)Border, Spread);
     }
@@ -1078,5 +1079,6 @@ bool VideoDriver::Init(const VideoDriver::Feature Features) {
 };
 
 bool VideoDriver::DrawLinearGradientRect(const AkkordRect& Rect, const AkkordColor& X0Y0, const AkkordColor& X1Y0, const AkkordColor& X1Y1, const AkkordColor& X0Y1) {
+    BWrapper::FlushRenderer();
     return gradientProgram.DrawLinearGradientRect(Rect, X0Y0, X1Y0, X1Y1, X0Y1);
 };
