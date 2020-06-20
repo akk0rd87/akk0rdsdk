@@ -530,17 +530,17 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
             px2, py2
         });
 
-    Dest.x = static_cast<float>(DestRect.x);
-    Dest.y = static_cast<float>(DestRect.y);
-    Dest.w = static_cast<float>(DestRect.w);
-    Dest.h = static_cast<float>(DestRect.h);
+    Dest.x = static_cast<float>(2 * DestRect.x) / ScrenW - 1.0F;
+    Dest.y = static_cast<float>(2 * (ScreenSize.y - DestRect.y)) / ScrenH - 1.0F;
+    Dest.w = static_cast<float>(2 * (DestRect.x + DestRect.w)) / ScrenW - 1.0F;
+    Dest.h = static_cast<float>(2 * (ScreenSize.y - DestRect.y - DestRect.h)) / ScrenH - 1.0F;
 
     squareVertices.insert(squareVertices.cend(),
         {
-            2.0f * (Dest.x / ScrenW) - 1.0f                  , 2.0f * (ScrenH - Dest.y - (Dest.h)) / ScrenH - 1.0f,
-            2.0f * (Dest.x + (Dest.w - 1.0f)) / ScrenW - 1.0f, 2.0f * (ScrenH - Dest.y - (Dest.h)) / ScrenH - 1.0f,
-            2.0f * (Dest.x / ScrenW) - 1.0f                  , 2.0f * (ScrenH - Dest.y) / ScrenH - 1.0f,
-            2.0f * (Dest.x + (Dest.w - 1.0f)) / ScrenW - 1.0f, 2.0f * (ScrenH - Dest.y) / ScrenH - 1.0f
+            Dest.x, Dest.h,
+            Dest.w, Dest.h,
+            Dest.x, Dest.y,
+            Dest.w, Dest.y
         });
 
     const decltype(Indices)::value_type PointsCnt0 = Indices.size() / 6 * 4;
@@ -554,7 +554,7 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
             PointsCnt1, PointsCnt2, PointsCnt3
         });
 
-    this->Scale = std::max((Dest.w) / Src.w, (Dest.h) / Src.h);
+    this->Scale = std::max(static_cast<float>(DestRect.w) / Src.w, static_cast<float>(DestRect.h) / Src.h);
 
     if (this->AutoFlush) {
         Flush();
