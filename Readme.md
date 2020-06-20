@@ -159,3 +159,7 @@ Download last LibGDX build from <https://libgdx.badlogicgames.com/ci/nightlies/>
 <https://developers.google.com/admob/ios/quick-start>
 
 <https://github.com/wasabeef/awesome-android-ui>
+
+### ApiTrace
+
+<https://github.com/apitrace/apitrace>
