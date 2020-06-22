@@ -183,7 +183,7 @@ class SDFFontBuffer
 
     //float offset, contrast, outlineOffset, outlineContrast;
 
-    AkkordPoint GetTextSizeByLine(const char* Text, std::vector<int>& VecSize);
+    AkkordPoint GetTextSizeByLine(const char* Text, std::vector<int>* VecSize);
 public:
     SDFFontBuffer() : sdfFont{ nullptr } {};
     SDFFontBuffer(SDFFont* Font, unsigned int DigitsCount, const AkkordColor& Color) {
@@ -232,8 +232,7 @@ public:
     };
     // сейчас это int, возможно для этой функции сделать отдельный тип со float
     AkkordPoint GetTextSize(const char* Text) {
-        std::vector<int> VecSize;
-        return GetTextSizeByLine(Text, VecSize);
+        return GetTextSizeByLine(Text, nullptr);
     };
     void        WrapText(const char* Text, float ScaleMutiplier, std::string& ResultString, float& UsedScale, AkkordPoint& Size);
     AkkordPoint DrawText(int X, int Y, const char* Text);

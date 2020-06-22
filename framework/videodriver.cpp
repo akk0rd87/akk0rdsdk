@@ -8,6 +8,10 @@ https://github.com/libgdx/libgdx/wiki/Hiero
 "java -cp gdx.jar;gdx-natives.jar;gdx-backend-lwjgl.jar;gdx-backend-lwjgl-natives.jar;extensions\gdx-freetype\gdx-freetype.jar;extensions\gdx-freetype\gdx-freetype-natives.jar;extensions\gdx-tools\gdx-tools.jar com.badlogic.gdx.tools.hiero.Hiero"
 */
 
+#ifdef __WINDOWS__
+const char* winGLSL_Version = "#version 130 \n";
+#endif // __WINDOWS__
+
 static const GLchar* SDF_vertexSource =
 "varying highp vec4 result_color; \n\
 varying highp vec2 result_uv; \n\
@@ -24,7 +28,7 @@ varying highp float center; \n\
     varying highp float    outlineMaxValue0; \n\
     varying highp float    outlineMaxValue1; \n\
 #endif \n\
-void main()  \n\
+void main() \n\
 {\n\
     gl_Position = vec4(a_position, 0.0, 1.0); \n\
     result_color = font_color; \n\
@@ -49,9 +53,7 @@ varying highp float SmoothDistance; \n\
 varying highp float   outlineMaxValue0; \n\
 varying highp float   outlineMaxValue1; \n\
 varying highp float   center; \n\
-\n\
 varying highp vec4       outBorderCol; \n\
-\n\
 highp float my_smoothstep(highp float edge0, highp float edge1, highp float x) { \n\
 x = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0); \n\
 return x * x * (3.0 - 2.0 * x); \n\
@@ -74,19 +76,15 @@ varying highp vec4 result_color; \
 void main() \
 { \
 result_color = vertex_color; \
-gl_Position = vec4(a_position, 0.0, 1.0); \n \
+gl_Position = vec4(a_position, 0.0, 1.0); \
 }";
 
 static const GLchar* Gradient_fragmentSource =
 "varying highp vec4 result_color; \
 void main() \
 { \
-    gl_FragColor = result_color; \
+gl_FragColor = result_color; \
 }";
-
-#ifdef __WINDOWS__
-const char* winGLSL_Version = "#version 130 \n";
-#endif // __WINDOWS__
 
 // https://habrahabr.ru/post/282191/
 static inline unsigned int UTF2Unicode(const /*unsigned*/ char* txt, unsigned& i) {
@@ -741,50 +739,50 @@ bool SDFFont::Draw(bool Outline, const AkkordColor& FontColor, const AkkordColor
 
 // Для рисования всегда указывать левую верхнюю точку (удобно для разгаданных слов в "составь слова")
 
-AkkordPoint SDFFontBuffer::GetTextSizeByLine(const char* Text, std::vector<int>& VecSize)
+AkkordPoint SDFFontBuffer::GetTextSizeByLine(const char* Text, std::vector<int>* VecSize)
 {
     // VecSize - вектор строк (в надписи может быть несколько строк, нужно считать длину каждой строки отдельно - для выравнивания)
+    AkkordPoint pt(0, 0);
+    if (Text != nullptr) {
+        unsigned i{ 0 }, linesCount{ 0 };
+        decltype(pt.x) localPointX{ 0 };
+        SDFFont::SDFCharInfo charParams;
+        while (true) {
+            const auto a = UTF2Unicode(Text, i);
+            switch (a) {
+            case 0: // конец строки
+                goto after_while;
+                break;
 
-    AkkordPoint pt, localpoint;
-    pt = localpoint = AkkordPoint(0, 0);
+            case 10: // Если это переход строки
+                ++linesCount;
+                if (VecSize) {
+                    VecSize->push_back(localPointX);
+                }
+                pt.x = std::max(pt.x, localPointX);
+                localPointX = 0;
+                break;
 
-    unsigned int a = 0;
-    unsigned int i = 0;
+            case 13: // Ничего не делаем
+                break;
 
-    SDFFont::SDFCharInfo charParams;
-
-    if (Text != nullptr)
-    {
-        do
-        {
-            a = UTF2Unicode(Text, i);
-
-            if (a == 0)
-            {
+            default:
+                sdfFont->GetCharInfo(a, charParams);
+                localPointX += static_cast<decltype(localPointX)>(scaleX * static_cast<decltype(scaleX)>(charParams.xoffset));
+                localPointX += static_cast<decltype(localPointX)>(scaleX * static_cast<decltype(scaleX)>(charParams.xadvance));
                 break;
             }
-            else if (a == 10) // Если это переход строки
-            {
-                pt.y += static_cast<decltype(pt.y)>(scaleY * sdfFont->GetLineHeight()); // надо учесть общую высоту строки
-                VecSize.emplace_back(localpoint.x);
-                pt.x = std::max(pt.x, localpoint.x);
-                localpoint.x = 0;
-            }
-            else if (a != 13) // Если это не переход строки
-            {
-                sdfFont->GetCharInfo(a, charParams);
+        }
 
-                localpoint.x += static_cast<decltype(localpoint.x)>(scaleX * charParams.xoffset);
-                localpoint.x += static_cast<decltype(localpoint.x)>(scaleX * charParams.xadvance);
-            }
-        } while (true);
+    after_while:
+        ++linesCount;
+        if (VecSize) {
+            VecSize->push_back(localPointX);
+        }
+        pt.x = std::max(pt.x, localPointX);
+        // надо учесть общую высоту строки
+        pt.y = static_cast<decltype(pt.y)>(scaleY * static_cast<decltype(scaleY)>(sdfFont->GetLineHeight() * linesCount));
     }
-
-    VecSize.emplace_back(localpoint.x);
-    pt.x = std::max(pt.x, localpoint.x);
-
-    //pt.y += localpoint.y; // надо учесть общую высоту строки
-    pt.y = static_cast<decltype(pt.y)>(scaleY * sdfFont->GetLineHeight() * VecSize.size());
     return pt;
 }
 
@@ -800,11 +798,9 @@ AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text)
 {
     AkkordPoint pt = AkkordPoint(0, 0);
     float px1, px2, py1, py2;
-    if (Text != nullptr)
-    {
+    if (Text != nullptr) {
         std::vector<int> VecSize;
-        AkkordPoint size;
-        pt = size = GetTextSizeByLine(Text, VecSize);
+        AkkordPoint size = pt = GetTextSizeByLine(Text, &VecSize);
         decltype(X) x_start, x_current;
         pt = AkkordPoint(0, 0);
 
