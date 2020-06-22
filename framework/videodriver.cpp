@@ -404,7 +404,7 @@ bool SDFProgram::Init(const VideoDriver::Feature Features)
         const std::string outFragment{ std::string(winGLSL_Version) + SDF_outlineFragmentSource };
         if (!this->CompileProgram(&ShaderProgramOutline, outVertex.c_str(), outFragment.c_str()))
 #else
-        if (!this->CompileProgram(&ShaderProgram, SDF_outlineVertexSource, SDF_outlineFragmentSource))
+        if (!this->CompileProgram(&ShaderProgramOutline, SDF_outlineVertexSource, SDF_outlineFragmentSource))
 #endif
         {
             logError("SDF Outline program compilation error!");
