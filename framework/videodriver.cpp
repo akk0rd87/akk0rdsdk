@@ -12,62 +12,64 @@ https://github.com/libgdx/libgdx/wiki/Hiero
 const char* winGLSL_Version = "#version 130 \n";
 #endif // __WINDOWS__
 
-static const GLchar* SDF_vertexSource =
-"varying highp vec4 result_color; \n\
-varying highp vec2 result_uv; \n\
-uniform highp vec4 font_color; \n\
-uniform highp float smooth_param; \n\
-attribute highp vec2 a_position; \n\
-attribute highp vec2 a_texCoord; \n\
-varying highp float SmoothDistance; \n\
+static const GLchar* SDF_outlineVertexSource =
+"#define SDF_OUTLINE \n"
+"varying highp vec4 result_color; \
+varying highp vec2 result_uv; \
+uniform highp vec4 font_color; \
+uniform highp float smooth_param; \
+attribute highp vec2 a_position; \
+attribute highp vec2 a_texCoord; \
+varying highp float SmoothDistance; \
 varying highp float center; \n\
 #ifdef SDF_OUTLINE \n\
-    uniform highp vec4  sdf_outline_color; \n\
-    uniform highp float border; \n\
-    varying highp vec4  outBorderCol; \n\
-    varying highp float    outlineMaxValue0; \n\
-    varying highp float    outlineMaxValue1; \n\
+  uniform highp vec4 sdf_outline_color; \
+  uniform highp float border; \
+  varying highp vec4 outBorderCol; \
+  varying highp float outlineMaxValue0; \
+  varying highp float outlineMaxValue1; \n\
 #endif \n\
-void main() \n\
-{\n\
-    gl_Position = vec4(a_position, 0.0, 1.0); \n\
-    result_color = font_color; \n\
-    result_uv = a_texCoord; \n\
-    SmoothDistance = smooth_param; \n\
+void main() \
+{\
+  gl_Position = vec4(a_position, 0.0, 1.0); \
+  result_color = font_color; \
+  result_uv = a_texCoord; \
+  SmoothDistance = smooth_param; \n\
 #ifdef SDF_OUTLINE \n\
-    outBorderCol = sdf_outline_color; \n\
-    outlineMaxValue0 = 0.5 - border; \n\
-    outlineMaxValue1 = 0.5 + border; \n\
-    center = outlineMaxValue0 - border; \n\
+  outBorderCol = sdf_outline_color; \
+  outlineMaxValue0 = 0.5 - border; \
+  outlineMaxValue1 = 0.5 + border; \
+  center = outlineMaxValue0 - border; \n\
 #else \n\
-    center = 0.5; \n\
+  center = 0.5; \n\
 #endif \n\
-}\n";
+}";
 
-static const GLchar* SDF_fragmentSource =
-"varying highp vec4 result_color; \n\
-varying highp vec2 result_uv; \n\
-uniform highp vec4 sdf_outline_color; \n\
-uniform highp sampler2D base_texture; \n\
-varying highp float SmoothDistance; \n\
-varying highp float   outlineMaxValue0; \n\
-varying highp float   outlineMaxValue1; \n\
-varying highp float   center; \n\
-varying highp vec4       outBorderCol; \n\
-highp float my_smoothstep(highp float edge0, highp float edge1, highp float x) { \n\
-x = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0); \n\
-return x * x * (3.0 - 2.0 * x); \n\
-}\n\
-void main() \n\
-{  \n\
-    highp float distAlpha = texture2D(base_texture, result_uv).a; \n\
-    highp vec4 rgba = result_color; \n\
+static const GLchar* SDF_outlineFragmentSource =
+"#define SDF_OUTLINE \n"
+"varying highp vec4 result_color; \
+varying highp vec2 result_uv; \
+uniform highp vec4 sdf_outline_color; \
+uniform highp sampler2D base_texture; \
+varying highp float SmoothDistance; \
+varying highp float outlineMaxValue0; \
+varying highp float outlineMaxValue1; \
+varying highp float center; \
+varying highp vec4 outBorderCol; \
+highp float my_smoothstep(highp float edge0, highp float edge1, highp float x) { \
+x = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0); \
+return x * x * (3.0 - 2.0 * x); \
+} \
+void main() \
+{ \
+  highp float distAlpha = texture2D(base_texture, result_uv).a; \
+  highp vec4 rgba = result_color; \n\
 #ifdef SDF_OUTLINE \n\
-    rgba.xyzw = mix(rgba.xyzw, outBorderCol.xyzw, my_smoothstep(outlineMaxValue1, outlineMaxValue0, distAlpha)); \n\
+  rgba.xyzw = mix(rgba.xyzw, outBorderCol.xyzw, my_smoothstep(outlineMaxValue1, outlineMaxValue0, distAlpha)); \n\
 #endif \n\
-    rgba.a *= my_smoothstep(center - SmoothDistance, center + SmoothDistance, distAlpha); \n\
-    gl_FragColor = rgba; \n\
-}\n";
+  rgba.a *= my_smoothstep(center - SmoothDistance, center + SmoothDistance, distAlpha); \
+  gl_FragColor = rgba; \
+}";
 
 static const GLchar* Gradient_vertexSource =
 "attribute highp vec2 a_position; \
@@ -116,6 +118,11 @@ struct Attributes {
         //ATTRIB_COLOR = 8
     };
 };
+
+static struct { // разделяемый буффер, который используется эксклюзивно только в рамках одного вызова в потоке рисования
+    std::string strObject;
+    std::vector<int> intVector;
+} SharedPool;
 
 struct SDFShaderProgramStruct
 {
@@ -374,6 +381,9 @@ bool SDFProgram::CompileProgram(SDFShaderProgramStruct* Program, const char* Ver
 bool SDFProgram::Init(const VideoDriver::Feature Features)
 {
     if (!!(Features & VideoDriver::Feature::SDF)) {
+        const auto SDF_vertexSource = std::strchr(SDF_outlineVertexSource, '\n') + 1;
+        const auto SDF_fragmentSource = std::strchr(SDF_outlineFragmentSource, '\n') + 1;
+
 #ifdef __WINDOWS__
         const auto regVertex{ std::string(winGLSL_Version) + SDF_vertexSource };
         const auto regFragment{ std::string(winGLSL_Version) + SDF_fragmentSource };
@@ -388,15 +398,15 @@ bool SDFProgram::Init(const VideoDriver::Feature Features)
     }
 
     if (!!(Features & VideoDriver::Feature::SDF_Outline)) {
-        const char* Outline = "#define SDF_OUTLINE \n";
 #ifdef __WINDOWS__
-        const std::string outVertex{ std::string(winGLSL_Version) + Outline + SDF_vertexSource };
-        const std::string outFragment{ std::string(winGLSL_Version) + Outline + SDF_fragmentSource };
+        const char* Outline = "#define SDF_OUTLINE \n";
+        const std::string outVertex{ std::string(winGLSL_Version) + SDF_outlineVertexSource };
+        const std::string outFragment{ std::string(winGLSL_Version) + SDF_outlineFragmentSource };
+        if (!this->CompileProgram(&ShaderProgramOutline, outVertex.c_str(), outFragment.c_str()))
 #else
-        const std::string outVertex{ std::string(Outline) + SDF_vertexSource };
-        const std::string outFragment{ std::string(Outline) + SDF_fragmentSource };
+        if (!this->CompileProgram(&ShaderProgram, SDF_outlineVertexSource, SDF_outlineFragmentSource))
 #endif
-        if (!this->CompileProgram(&ShaderProgramOutline, outVertex.c_str(), outFragment.c_str())) {
+        {
             logError("SDF Outline program compilation error!");
             return false;
         }
@@ -578,12 +588,11 @@ private:
 public:
     MyStream(const char* Pointer, int Size) : pointer(Pointer), end(Pointer + Size) {};
     bool ReadLine(std::string& line) {
-        constexpr char c13 = 13;
-        constexpr char c10 = 10;
+        constexpr char c13{ 13 };
+        constexpr char c10{ 10 };
         line.clear();
         decltype(pointer) start = nullptr;
-        while (pointer != end)
-        {
+        while (pointer != end) {
             if (c13 == *pointer || c10 == *pointer) {
                 if (start) {
                     break;
@@ -796,29 +805,23 @@ void SDFFontBuffer::Flush()
 
 AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text)
 {
-    AkkordPoint pt = AkkordPoint(0, 0);
-    float px1, px2, py1, py2;
+    AkkordPoint pt(0, 0);
     if (Text != nullptr) {
-        std::vector<int> VecSize;
-        AkkordPoint size = pt = GetTextSizeByLine(Text, &VecSize);
+        float px1, px2, py1, py2;
+        SharedPool.intVector.clear();
+        AkkordPoint size(GetTextSizeByLine(Text, &SharedPool.intVector));
         decltype(X) x_start, x_current;
-        pt = AkkordPoint(0, 0);
+        unsigned i{ 0 }, line{ 0 };
 
-        unsigned int a = 0;
+        const auto atlasW = static_cast<float>(sdfFont->GetAtlasW());
+        const auto atlasH = static_cast<float>(sdfFont->GetAtlasH());
 
-        unsigned i = 0;
+        const auto ScreenSize = BWrapper::GetScreenSize();
 
-        auto atlasW = static_cast<float>(sdfFont->GetAtlasW());
-        auto atlasH = static_cast<float>(sdfFont->GetAtlasH());
-
-        auto ScreenSize = BWrapper::GetScreenSize();
-
-        float ScrenW = static_cast<decltype(ScrenW)>(ScreenSize.x);
-        float ScrenH = static_cast<decltype(ScrenH)>(ScreenSize.y);
+        const float ScrenW = static_cast<decltype(ScrenW)>(ScreenSize.x);
+        const float ScrenH = static_cast<decltype(ScrenH)>(ScreenSize.y);
 
         SDFFont::SDFCharInfo charParams;
-
-        unsigned line = 0;
         decltype (Indices)::value_type PointsCnt = static_cast<decltype (Indices)::value_type>(UV.size() / 2); // Разделив на 2, получаем количество вершин
 
         switch (alignV)
@@ -838,10 +841,10 @@ AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text)
         switch (alignH)
         {
         case SDFFont::AlignH::Center:
-            x_start = X + (rectW - VecSize[line]) / 2;
+            x_start = X + (rectW - SharedPool.intVector[line]) / 2;
             break;
         case SDFFont::AlignH::Right:
-            x_start = X + (rectW - VecSize[line]);
+            x_start = X + (rectW - SharedPool.intVector[line]);
             break;
         default:
             x_start = X;
@@ -850,35 +853,32 @@ AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text)
 
         x_current = x_start;
 
-        do
-        {
-            a = UTF2Unicode(Text, i);
-
-            if (a == 0)
+        while (true) {
+            const auto a = UTF2Unicode(Text, i);
+            switch (a)
             {
+            case 0: // выйти
+                goto after_cycle;
                 break;
-            }
-            else if (a == 10)
-            {
+
+            case 10: // переход строки
                 ++line;
                 Y += static_cast<decltype(Y)>(scaleY * sdfFont->GetLineHeight());
-
                 pt.x = std::max(pt.x, x_current - x_start + 1);
                 goto check_h_align;
-            }
-            else if (a == 13) {} // ничего не делаем
-            else
-            {
+                break;
+
+            case 13: // ничего не делаем
+                break;
+
+            default:
                 sdfFont->GetCharInfo(a, charParams);
-
                 x_current += static_cast<decltype(x_current)>(scaleX * charParams.xoffset);
-
                 //const decltype(charParams.w) minus = 0;
-
-                px1 = float(charParams.x) / atlasW;
-                px2 = float(charParams.x + charParams.w /*- minus */) / atlasW;
-                py1 = float(charParams.y + charParams.h /*- minus */) / atlasH;
-                py2 = float(charParams.y) / atlasH;
+                px1 = static_cast<float>(charParams.x) / atlasW;
+                px2 = static_cast<float>(charParams.x + charParams.w /*- minus */) / atlasW;
+                py1 = static_cast<float>(charParams.y + charParams.h /*- minus */) / atlasH;
+                py2 = static_cast<float>(charParams.y) / atlasH;
 
                 UV.insert(UV.cend(),
                     {
@@ -888,10 +888,10 @@ AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text)
                         px2, py2
                     });
 
-                px1 = 2 * ((float)x_current / ScrenW) - 1.0F;
-                px2 = 2 * ((float)x_current + scaleX * (charParams.w - 1.0F)) / ScrenW - 1.0F;
-                py1 = 2 * (ScrenH - Y - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0F;
-                py2 = 2 * (ScrenH - Y - scaleY * charParams.yoffset) / ScrenH - 1.0F;
+                px1 = 2 * (static_cast<float>(x_current) / ScrenW) - 1.0F;
+                px2 = 2 * (static_cast<float>(x_current) + scaleX * static_cast<decltype(px2)>(charParams.w)) / ScrenW - 1.0F;
+                py1 = 2 * (ScrenH - static_cast<float>(Y) - scaleY * static_cast<decltype(px2)>(charParams.h + charParams.yoffset)) / ScrenH - 1.0F;
+                py2 = 2 * (ScrenH - static_cast<float>(Y) - scaleY * static_cast<decltype(px2)>(charParams.yoffset)) / ScrenH - 1.0F;
 
                 squareVertices.insert(squareVertices.cend(),
                     {
@@ -901,25 +901,26 @@ AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text)
                         px2, py2
                     });
 
-                {
-                    const auto& PointsCnt0 = PointsCnt;
-                    decltype(PointsCnt) PointsCnt1 = PointsCnt0 + 1;
-                    decltype(PointsCnt) PointsCnt2 = PointsCnt1 + 1;
-                    decltype(PointsCnt) PointsCnt3 = PointsCnt2 + 1;
+                const auto& PointsCnt0 = PointsCnt;
+                const decltype(PointsCnt) PointsCnt1 = PointsCnt0 + 1;
+                const decltype(PointsCnt) PointsCnt2 = PointsCnt1 + 1;
+                const decltype(PointsCnt) PointsCnt3 = PointsCnt2 + 1;
 
-                    Indices.insert(Indices.cend(),
-                        {
-                            PointsCnt0, PointsCnt1, PointsCnt2,
-                            PointsCnt1, PointsCnt2, PointsCnt3
-                        });
-                }
-                x_current = x_current + static_cast<decltype(x_current)>(scaleX * charParams.xadvance);
+                Indices.insert(Indices.cend(),
+                    {
+                        PointsCnt0, PointsCnt1, PointsCnt2,
+                        PointsCnt1, PointsCnt2, PointsCnt3
+                    });
+
+                x_current += static_cast<decltype(x_current)>(scaleX * charParams.xadvance);
                 PointsCnt += 4;
+                break;
             }
-        } while (true);
+        }
 
+    after_cycle:
         pt.x = std::max(pt.x, x_current - x_start + 1);
-        pt.y = static_cast<decltype(pt.y)>(scaleY * sdfFont->GetLineHeight() * VecSize.size());
+        pt.y = static_cast<decltype(pt.y)>(scaleY * sdfFont->GetLineHeight() * SharedPool.intVector.size());
     }
     return pt;
 };
@@ -927,27 +928,33 @@ AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text)
 void SDFFontBuffer::WrapText(const char* Text, float ScaleMutiplier, std::string& ResultString, float& UsedScale, AkkordPoint& Size)
 {
     UsedScale = scaleX;
-    auto font_line_height = sdfFont->GetLineHeight();
+    const auto font_line_height = sdfFont->GetLineHeight();
     const char* textPtr;
 
     // лямбда для поиска нового слова
-    auto GetNextWord = [&textPtr]() {
-        std::string res;
-        for (; textPtr && (*textPtr) && (*textPtr) != ' ' && (*textPtr) != '\n'; ++textPtr)
-            res += (*textPtr);
-        return res;
+    auto GetNextWord = [&textPtr](std::string& Word) {
+        const auto pBegin = textPtr;
+        while (textPtr && (*textPtr) && (*textPtr) != ' ' && (*textPtr) != '\n') {
+            ++textPtr;
+        }
+        if (textPtr > pBegin) {
+            Word = std::string(pBegin, textPtr - pBegin);
+        }
+        else {
+            Word.clear();
+        }
     };
 
     // лямбда для определения размера слова в единицах шрифта
-    auto GetWordSize = [](SDFFont* sdfFont, const char* Word, float uScale)
-    {
+    auto GetWordSize = [](SDFFont* sdfFont, const char* Word, float uScale) {
         SDFFont::SDFCharInfo charParams;
         int xSize = 0;
-        unsigned int i = 0, a = 0;
+        unsigned int i = 0;
         while (1) {
-            a = UTF2Unicode(Word, i);
-            if (!a)
+            const auto a = UTF2Unicode(Word, i);
+            if (!a) {
                 break;
+            }
             sdfFont->GetCharInfo(a, charParams);
             xSize += static_cast<decltype(xSize)>(uScale * charParams.xadvance);
             xSize += static_cast<decltype(xSize)>(uScale * charParams.xoffset);
@@ -958,20 +965,17 @@ void SDFFontBuffer::WrapText(const char* Text, float ScaleMutiplier, std::string
     unsigned lines_cnt = 0;
     int x_pos = 0, max_line_len = 0, space_len = 0;
     SDFFont::SDFCharInfo charParams;
-    std::string word;
 
     // сначала пробегаем по всем словам, и делаем так, чтобы каждое слово было меньше ширины выделенного под текст прямоугольника
     textPtr = Text;
     while (1) {
-        const auto word = GetNextWord();
+        GetNextWord(SharedPool.strObject);
         while (1) {
-            int xSize = GetWordSize(sdfFont, word.c_str(), UsedScale);
-            if (xSize >= rectW)
-            {
+            int xSize = GetWordSize(sdfFont, SharedPool.strObject.c_str(), UsedScale);
+            if (xSize >= rectW) {
                 UsedScale *= ScaleMutiplier;
             }
-            else
-            {
+            else {
                 break;
             }
         }
@@ -993,22 +997,20 @@ repeat_again:
     space_len = static_cast<decltype(space_len)>(UsedScale * charParams.xoffset) + static_cast<decltype(space_len)>(UsedScale * charParams.xadvance);
     while (1)
     {
-        const auto word = GetNextWord();
-        const auto xSize = GetWordSize(sdfFont, word.c_str(), UsedScale);
+        GetNextWord(SharedPool.strObject);
+        const auto xSize = GetWordSize(sdfFont, SharedPool.strObject.c_str(), UsedScale);
 
         // если в строке уже есть слово
         if (x_pos != 0)
         {
             // если новое еще помещается в текущую строку
-            if (x_pos + space_len + xSize <= rectW)
-            {
+            if (x_pos + space_len + xSize <= rectW) {
                 x_pos += (space_len + xSize);
                 ResultString += " ";
-                ResultString += word;
+                ResultString += SharedPool.strObject;
                 max_line_len = std::max(max_line_len, x_pos);
             }
-            else // если новое уже не помещается в текущую строку
-            {
+            else { // если новое уже не помещается в текущую строку
                 ++lines_cnt;
 
                 // проверить, не вышли ли за диапазон по высоте
@@ -1019,33 +1021,32 @@ repeat_again:
                 }
 
                 ResultString += '\n';
-                ResultString += word;
+                ResultString += SharedPool.strObject;
                 x_pos = xSize;
                 max_line_len = std::max(max_line_len, x_pos);
             }
         }
-        else // 0 == x_pos
-        {
+        else { // 0 == x_pos
             x_pos += xSize;
-            ResultString += word;
+            ResultString += SharedPool.strObject;
             max_line_len = std::max(max_line_len, x_pos);
         }
 
         // пропускаем ненужные пробелы
-        while (' ' == *textPtr)
+        while (' ' == *textPtr) {
             ++textPtr;
+        }
 
         // если конец строки, выходим
-        if ('\0' == *textPtr)
+        if ('\0' == *textPtr) {
             break;
+        }
 
-        while ('\n' == *textPtr)
-        {
+        while ('\n' == *textPtr) {
             // переход к след строке
             ++lines_cnt;
             // проверить, не вышли ли за диапазон по высоте
-            if (static_cast<int>(UsedScale * font_line_height * (lines_cnt + 1) > rectH))
-            {
+            if (static_cast<int>(UsedScale * font_line_height * (lines_cnt + 1) > rectH)) {
                 UsedScale *= ScaleMutiplier;
                 goto repeat_again;
             }

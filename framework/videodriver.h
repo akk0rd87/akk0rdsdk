@@ -181,8 +181,6 @@ class SDFFontBuffer
     std::vector<GLfloat>squareVertices;
     std::vector<GLushort>Indices;
 
-    //float offset, contrast, outlineOffset, outlineContrast;
-
     AkkordPoint GetTextSizeByLine(const char* Text, std::vector<int>* VecSize);
 public:
     SDFFontBuffer() : sdfFont{ nullptr } {};
