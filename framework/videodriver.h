@@ -163,12 +163,12 @@ private:
 // Для рисования всегда указывать левую верхнюю точку (удобно для разгаданных слов в "составь слова")
 class SDFFontBuffer
 {
-    float scaleX = 1.0f;
-    float scaleY = 1.0f;
-    float Border = 0.0f;
+    float scaleX = 1.0F;
+    float scaleY = 1.0F;
+    float Border = 0.0F;
 
     SDFFont* sdfFont = nullptr;
-    int rectW = -1, rectH = -1;
+    float rectW = -1.0F, rectH = -1.0F;
 
     bool outline = false;
 
@@ -181,7 +181,7 @@ class SDFFontBuffer
     std::vector<GLfloat>squareVertices;
     std::vector<GLushort>Indices;
 
-    AkkordPoint GetTextSizeByLine(const char* Text, std::vector<int>* VecSize);
+    AkkordPoint GetTextSizeByLine(const char* Text, std::vector<float>* VecSize);
 public:
     SDFFontBuffer() : sdfFont{ nullptr } {};
     SDFFontBuffer(SDFFont* Font, unsigned int DigitsCount, const AkkordColor& Color) {
@@ -203,7 +203,7 @@ public:
     float GetScaleX() { return this->scaleX; };
     float GetScaleY() { return this->scaleY; };
 
-    void SetRect(int W, int H) { this->rectW = W; this->rectH = H; };
+    void SetRect(int W, int H) { this->rectW = static_cast<decltype(rectW)>(W); this->rectH = static_cast<decltype(rectH)>(H); };
 
     void SetAlignment(SDFFont::AlignH AlignH, SDFFont::AlignV AlignV) { this->alignH = AlignH; this->alignV = AlignV; };
     void SetAlignmentH(SDFFont::AlignH AlignH) { this->alignH = AlignH; };
