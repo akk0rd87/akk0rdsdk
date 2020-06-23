@@ -104,12 +104,12 @@ class SDFFont
 public:
     enum struct AlignV : unsigned char { Top, Center, Bottom };
     enum struct AlignH : unsigned char { Left, Center, Right };
-    unsigned int GetAtlasW() { return ScaleW; };
-    unsigned int GetAtlasH() { return ScaleH; };
+    float GetAtlasW() { return ScaleW; };
+    float GetAtlasH() { return ScaleH; };
 
     struct SDFCharInfo {
-        unsigned int id, x, y, w, h;
-        int xoffset, yoffset, xadvance;
+        unsigned int id;
+        float x, y, w, h, xoffset, yoffset, xadvance;
     };
 
     bool Load(const char* FileNameFNT, const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority, int Spread) {
@@ -137,7 +137,7 @@ public:
         logError("Char with id=%u not found", Code);
         return false;
     };
-    unsigned GetLineHeight() { return LineHeight; };
+    float GetLineHeight() { return LineHeight; };
 
     SDFFont() {};
     ~SDFFont() { Clear(); };
@@ -147,7 +147,8 @@ public:
     SDFFont& operator= (SDFFont&& rhs) = delete; // Оператор перемещающего присваивания
 private:
     SDFGLTexture FontAtlas;
-    unsigned int ScaleW = 0, ScaleH = 0, LineHeight = 0, Spread = 0;
+    float LineHeight = 0.0F, ScaleW = 0.0F, ScaleH = 0.0F;
+    unsigned int Spread = 0;
     std::unordered_map<unsigned, SDFFont::SDFCharInfo> CharsMap;
 
     template <class fntStream>
