@@ -121,7 +121,7 @@ struct Attributes {
 
 static struct { // разделяемый буффер, который используется эксклюзивно только в рамках одного вызова в потоке рисования
     std::string strObject;
-    std::vector<int> intVector;
+    std::vector<float> floatVector;
 } SharedPool;
 
 struct SDFShaderProgramStruct
@@ -654,42 +654,42 @@ bool SDFFont::ParseFontMap(myStream& fonsStream)
 
                 rpos = line.find("id=", lpos) + 3;
                 if (line[rpos] == '\"') ++rpos;
-                auto id = getUnsignedValue(line.c_str() + rpos);
+                const auto id = getUnsignedValue(line.c_str() + rpos);
 
                 lpos = rpos;
                 rpos = line.find("x=", lpos) + 2;
                 if (line[rpos] == '\"') ++rpos;
-                sd.x = getUnsignedValue(line.c_str() + rpos);
+                sd.x = static_cast<decltype(sd.x)>(getUnsignedValue(line.c_str() + rpos));
 
                 lpos = rpos;
                 rpos = line.find("y=", lpos) + 2;
                 if (line[rpos] == '\"') ++rpos;
-                sd.y = getUnsignedValue(line.c_str() + rpos);
+                sd.y = static_cast<decltype(sd.y)>(getUnsignedValue(line.c_str() + rpos));
 
                 lpos = rpos;
                 rpos = line.find("width=", lpos) + 6;
                 if (line[rpos] == '\"') ++rpos;
-                sd.w = getUnsignedValue(line.c_str() + rpos);
+                sd.w = static_cast<decltype(sd.w)>(getUnsignedValue(line.c_str() + rpos));
 
                 lpos = rpos;
                 rpos = line.find("height=", lpos) + 7;
                 if (line[rpos] == '\"') ++rpos;
-                sd.h = getUnsignedValue(line.c_str() + rpos);
+                sd.h = static_cast<decltype(sd.h)>(getUnsignedValue(line.c_str() + rpos));
 
                 lpos = rpos;
                 rpos = line.find("xoffset=", lpos) + 8;
                 if (line[rpos] == '\"') ++rpos;
-                sd.xoffset = getSignedValue(line.c_str() + rpos);
+                sd.xoffset = static_cast<decltype(sd.xoffset)>(getSignedValue(line.c_str() + rpos));
 
                 lpos = rpos;
                 rpos = line.find("yoffset=", lpos) + 8;
                 if (line[rpos] == '\"') ++rpos;
-                sd.yoffset = getSignedValue(line.c_str() + rpos);
+                sd.yoffset = static_cast<decltype(sd.yoffset)>(getSignedValue(line.c_str() + rpos));
 
                 lpos = rpos;
                 rpos = line.find("xadvance=", lpos) + 9;
                 if (line[rpos] == '\"') ++rpos;
-                sd.xadvance = getSignedValue(line.c_str() + rpos);
+                sd.xadvance = static_cast<decltype(sd.xadvance)>(getSignedValue(line.c_str() + rpos));
 
                 CharsMap.emplace(id, sd);
 
@@ -703,17 +703,15 @@ bool SDFFont::ParseFontMap(myStream& fonsStream)
             if (std::strncmp(line.c_str(), "common", 6) == 0) {
                 rpos = line.find("lineHeight=", 0) + 11;
                 if (line[rpos] == '\"') ++rpos;
-                LineHeight = getUnsignedValue(line.c_str() + rpos);
+                LineHeight = static_cast<decltype(LineHeight)>(getUnsignedValue(line.c_str() + rpos));
 
                 rpos = line.find("scaleW=", 0) + 7;
                 if (line[rpos] == '\"') ++rpos;
-                ScaleW = getUnsignedValue(line.c_str() + rpos);
+                ScaleW = static_cast<decltype(ScaleW)>(getUnsignedValue(line.c_str() + rpos));
 
                 rpos = line.find("scaleH=", 0) + 7;
                 if (line[rpos] == '\"') ++rpos;
-                ScaleH = getUnsignedValue(line.c_str() + rpos);
-
-                //logDebug("ScaleW = %d, ScaleH = %d", ScaleW, ScaleH);
+                ScaleH = static_cast<decltype(ScaleH)>(getUnsignedValue(line.c_str() + rpos));
             };
         };
     return true;
@@ -748,13 +746,14 @@ bool SDFFont::Draw(bool Outline, const AkkordColor& FontColor, const AkkordColor
 
 // Для рисования всегда указывать левую верхнюю точку (удобно для разгаданных слов в "составь слова")
 
-AkkordPoint SDFFontBuffer::GetTextSizeByLine(const char* Text, std::vector<int>* VecSize)
+AkkordPoint SDFFontBuffer::GetTextSizeByLine(const char* Text, std::vector<float>* VecSize)
 {
     // VecSize - вектор строк (в надписи может быть несколько строк, нужно считать длину каждой строки отдельно - для выравнивания)
     AkkordPoint pt(0, 0);
     if (Text != nullptr) {
         unsigned i{ 0 }, linesCount{ 0 };
-        decltype(pt.x) localPointX{ 0 };
+        //decltype(pt.x) localPointX{ 0 };
+        float localPointX{ 0.0F };
         SDFFont::SDFCharInfo charParams;
         while (true) {
             const auto a = UTF2Unicode(Text, i);
@@ -768,8 +767,8 @@ AkkordPoint SDFFontBuffer::GetTextSizeByLine(const char* Text, std::vector<int>*
                 if (VecSize) {
                     VecSize->push_back(localPointX);
                 }
-                pt.x = std::max(pt.x, localPointX);
-                localPointX = 0;
+                pt.x = std::max(pt.x, static_cast<decltype(pt.x)>(localPointX));
+                localPointX = 0.0F;
                 break;
 
             case 13: // Ничего не делаем
@@ -777,8 +776,7 @@ AkkordPoint SDFFontBuffer::GetTextSizeByLine(const char* Text, std::vector<int>*
 
             default:
                 sdfFont->GetCharInfo(a, charParams);
-                localPointX += static_cast<decltype(localPointX)>(scaleX * static_cast<decltype(scaleX)>(charParams.xoffset));
-                localPointX += static_cast<decltype(localPointX)>(scaleX * static_cast<decltype(scaleX)>(charParams.xadvance));
+                localPointX += scaleX * (charParams.xoffset + charParams.xadvance);
                 break;
             }
         }
@@ -788,9 +786,9 @@ AkkordPoint SDFFontBuffer::GetTextSizeByLine(const char* Text, std::vector<int>*
         if (VecSize) {
             VecSize->push_back(localPointX);
         }
-        pt.x = std::max(pt.x, localPointX);
+        pt.x = std::max(pt.x, static_cast<decltype(pt.x)>(localPointX));
         // надо учесть общую высоту строки
-        pt.y = static_cast<decltype(pt.y)>(scaleY * static_cast<decltype(scaleY)>(sdfFont->GetLineHeight() * linesCount));
+        pt.y = static_cast<decltype(pt.y)>(scaleY * sdfFont->GetLineHeight() * static_cast<decltype(scaleY)>(linesCount));
     }
     return pt;
 }
@@ -808,13 +806,13 @@ AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text)
     AkkordPoint pt(0, 0);
     if (Text != nullptr) {
         float px1, px2, py1, py2;
-        SharedPool.intVector.clear();
-        AkkordPoint size(GetTextSizeByLine(Text, &SharedPool.intVector));
-        decltype(X) x_start, x_current;
+        SharedPool.floatVector.clear();
+        AkkordPoint size(GetTextSizeByLine(Text, &SharedPool.floatVector));
+        float x_start, x_current, y_current{ static_cast<float>(Y) };
         unsigned i{ 0 }, line{ 0 };
 
-        const auto atlasW = static_cast<float>(sdfFont->GetAtlasW());
-        const auto atlasH = static_cast<float>(sdfFont->GetAtlasH());
+        const auto atlasW = sdfFont->GetAtlasW();
+        const auto atlasH = sdfFont->GetAtlasH();
 
         const auto ScreenSize = BWrapper::GetScreenSize();
 
@@ -827,10 +825,10 @@ AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text)
         switch (alignV)
         {
         case SDFFont::AlignV::Center:
-            Y = Y + (rectH - size.y) / 2;
+            y_current += (rectH - static_cast<decltype(y_current)>(size.y)) / 2;
             break;
         case SDFFont::AlignV::Bottom:
-            Y = Y + (rectH - size.y);
+            y_current += (rectH - static_cast<decltype(y_current)>(size.y));
             break;
         default: // в остальных случаях ничего не делаем, координату Y не меняем
             break;
@@ -838,16 +836,16 @@ AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text)
 
     check_h_align:
         // Выбираем начальную точку в зависимости от выравнивания
+        x_start = static_cast<decltype(x_start)>(X);
         switch (alignH)
         {
         case SDFFont::AlignH::Center:
-            x_start = X + (rectW - SharedPool.intVector[line]) / 2;
+            x_start += (rectW - SharedPool.floatVector[line]) / 2.0F;
             break;
         case SDFFont::AlignH::Right:
-            x_start = X + (rectW - SharedPool.intVector[line]);
+            x_start += (rectW - SharedPool.floatVector[line]);
             break;
         default:
-            x_start = X;
             break;
         };
 
@@ -863,8 +861,8 @@ AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text)
 
             case 10: // переход строки
                 ++line;
-                Y += static_cast<decltype(Y)>(scaleY * sdfFont->GetLineHeight());
-                pt.x = std::max(pt.x, x_current - x_start + 1);
+                y_current += scaleY * sdfFont->GetLineHeight();
+                pt.x = std::max(pt.x, static_cast<decltype(pt.x)>(x_current - x_start + 1.0F));
                 goto check_h_align;
                 break;
 
@@ -873,12 +871,12 @@ AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text)
 
             default:
                 sdfFont->GetCharInfo(a, charParams);
-                x_current += static_cast<decltype(x_current)>(scaleX * charParams.xoffset);
+                x_current += scaleX * static_cast<decltype(x_current)>(charParams.xoffset);
                 //const decltype(charParams.w) minus = 0;
-                px1 = static_cast<float>(charParams.x) / atlasW;
-                px2 = static_cast<float>(charParams.x + charParams.w /*- minus */) / atlasW;
-                py1 = static_cast<float>(charParams.y + charParams.h /*- minus */) / atlasH;
-                py2 = static_cast<float>(charParams.y) / atlasH;
+                px1 = (charParams.x) / atlasW;
+                px2 = (charParams.x + charParams.w /*- minus */) / atlasW;
+                py1 = (charParams.y + charParams.h /*- minus */) / atlasH;
+                py2 = (charParams.y) / atlasH;
 
                 UV.insert(UV.cend(),
                     {
@@ -888,10 +886,10 @@ AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text)
                         px2, py2
                     });
 
-                px1 = 2 * (static_cast<float>(x_current) / ScrenW) - 1.0F;
-                px2 = 2 * (static_cast<float>(x_current) + scaleX * static_cast<decltype(px2)>(charParams.w)) / ScrenW - 1.0F;
-                py1 = 2 * (ScrenH - static_cast<float>(Y) - scaleY * static_cast<decltype(px2)>(charParams.h + charParams.yoffset)) / ScrenH - 1.0F;
-                py2 = 2 * (ScrenH - static_cast<float>(Y) - scaleY * static_cast<decltype(px2)>(charParams.yoffset)) / ScrenH - 1.0F;
+                px1 = 2 * (x_current / ScrenW) - 1.0F;
+                px2 = 2 * (x_current + scaleX * charParams.w) / ScrenW - 1.0F;
+                py1 = 2 * (ScrenH - y_current - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0F;
+                py2 = 2 * (ScrenH - y_current - scaleY * (charParams.yoffset)) / ScrenH - 1.0F;
 
                 squareVertices.insert(squareVertices.cend(),
                     {
@@ -912,15 +910,15 @@ AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text)
                         PointsCnt1, PointsCnt2, PointsCnt3
                     });
 
-                x_current += static_cast<decltype(x_current)>(scaleX * charParams.xadvance);
+                x_current += scaleX * charParams.xadvance;
                 PointsCnt += 4;
                 break;
             }
         }
 
     after_cycle:
-        pt.x = std::max(pt.x, x_current - x_start + 1);
-        pt.y = static_cast<decltype(pt.y)>(scaleY * sdfFont->GetLineHeight() * SharedPool.intVector.size());
+        pt.x = std::max(pt.x, static_cast<decltype(pt.x)>(x_current - x_start + 1.0F));
+        pt.y = static_cast<decltype(pt.y)>(scaleY * sdfFont->GetLineHeight() * SharedPool.floatVector.size());
     }
     return pt;
 };
@@ -929,7 +927,7 @@ void SDFFontBuffer::WrapText(const char* Text, float ScaleMutiplier, std::string
 {
     UsedScale = scaleX;
     const auto font_line_height = sdfFont->GetLineHeight();
-    const char* textPtr;
+    const char* textPtr{ Text };
 
     // лямбда для поиска нового слова
     auto GetNextWord = [&textPtr](std::string& Word) {
@@ -946,32 +944,31 @@ void SDFFontBuffer::WrapText(const char* Text, float ScaleMutiplier, std::string
     };
 
     // лямбда для определения размера слова в единицах шрифта
-    auto GetWordSize = [](SDFFont* sdfFont, const char* Word, float uScale) {
+    auto GetWordSize = [](SDFFont* sdfFont, const char* Word) {
         SDFFont::SDFCharInfo charParams;
-        int xSize = 0;
-        unsigned int i = 0;
+        float xSize{ 0.0F };
+        unsigned int i{ 0 };
         while (1) {
             const auto a = UTF2Unicode(Word, i);
             if (!a) {
                 break;
             }
             sdfFont->GetCharInfo(a, charParams);
-            xSize += static_cast<decltype(xSize)>(uScale * charParams.xadvance);
-            xSize += static_cast<decltype(xSize)>(uScale * charParams.xoffset);
+            xSize += charParams.xadvance;
+            xSize += charParams.xoffset;
         };
         return xSize;
     };
 
     unsigned lines_cnt = 0;
-    int x_pos = 0, max_line_len = 0, space_len = 0;
+    float x_pos = 0, max_line_len = 0;
     SDFFont::SDFCharInfo charParams;
 
     // сначала пробегаем по всем словам, и делаем так, чтобы каждое слово было меньше ширины выделенного под текст прямоугольника
-    textPtr = Text;
     while (1) {
         GetNextWord(SharedPool.strObject);
         while (1) {
-            int xSize = GetWordSize(sdfFont, SharedPool.strObject.c_str(), UsedScale);
+            const auto xSize = UsedScale * GetWordSize(sdfFont, SharedPool.strObject.c_str());
             if (xSize >= rectW) {
                 UsedScale *= ScaleMutiplier;
             }
@@ -981,8 +978,9 @@ void SDFFontBuffer::WrapText(const char* Text, float ScaleMutiplier, std::string
         }
 
         // пропускаем ненужные пробелы и переходы на новой строку
-        while (' ' == *textPtr || '\n' == *textPtr)
+        while (' ' == *textPtr || '\n' == *textPtr || '\r' == *textPtr) {
             ++textPtr;
+        }
 
         // если конец строки, выходим
         if ('\0' == *textPtr)
@@ -992,17 +990,16 @@ void SDFFontBuffer::WrapText(const char* Text, float ScaleMutiplier, std::string
 repeat_again:
     ResultString.clear();
     textPtr = Text;
-    lines_cnt = max_line_len = x_pos = 0;
+    lines_cnt = 0;
+    max_line_len = x_pos = 0.0F;
     sdfFont->GetCharInfo(32 /* space */, charParams);
-    space_len = static_cast<decltype(space_len)>(UsedScale * charParams.xoffset) + static_cast<decltype(space_len)>(UsedScale * charParams.xadvance);
-    while (1)
-    {
+    const auto space_len = UsedScale * (charParams.xoffset + charParams.xadvance);
+    while (1) {
         GetNextWord(SharedPool.strObject);
-        const auto xSize = GetWordSize(sdfFont, SharedPool.strObject.c_str(), UsedScale);
+        const auto xSize = UsedScale * GetWordSize(sdfFont, SharedPool.strObject.c_str());
 
         // если в строке уже есть слово
-        if (x_pos != 0)
-        {
+        if (static_cast<int>(x_pos) != 0) {
             // если новое еще помещается в текущую строку
             if (x_pos + space_len + xSize <= rectW) {
                 x_pos += (space_len + xSize);
@@ -1014,8 +1011,7 @@ repeat_again:
                 ++lines_cnt;
 
                 // проверить, не вышли ли за диапазон по высоте
-                if (static_cast<int>(UsedScale * font_line_height * (lines_cnt + 1) > rectH))
-                {
+                if (UsedScale * font_line_height * (lines_cnt + 1) > rectH) {
                     UsedScale *= ScaleMutiplier;
                     goto repeat_again;
                 }
@@ -1033,7 +1029,7 @@ repeat_again:
         }
 
         // пропускаем ненужные пробелы
-        while (' ' == *textPtr) {
+        while (' ' == *textPtr || '\r' == *textPtr) {
             ++textPtr;
         }
 
@@ -1046,17 +1042,17 @@ repeat_again:
             // переход к след строке
             ++lines_cnt;
             // проверить, не вышли ли за диапазон по высоте
-            if (static_cast<int>(UsedScale * font_line_height * (lines_cnt + 1) > rectH)) {
+            if (UsedScale * font_line_height * (lines_cnt + 1) > rectH) {
                 UsedScale *= ScaleMutiplier;
                 goto repeat_again;
             }
             ++textPtr;
-            x_pos = 0;
+            x_pos = 0.0F;
             ResultString += '\n';
         }
     };
 
-    Size = AkkordPoint(max_line_len, static_cast<int>(UsedScale * font_line_height * (lines_cnt + 1)));
+    Size = AkkordPoint(static_cast<int>(max_line_len), static_cast<int>(UsedScale * font_line_height * (lines_cnt + 1)));
 };
 
 bool VideoDriver::Init(const VideoDriver::Feature Features) {

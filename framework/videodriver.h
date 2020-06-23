@@ -104,12 +104,12 @@ class SDFFont
 public:
     enum struct AlignV : unsigned char { Top, Center, Bottom };
     enum struct AlignH : unsigned char { Left, Center, Right };
-    unsigned int GetAtlasW() { return ScaleW; };
-    unsigned int GetAtlasH() { return ScaleH; };
+    float GetAtlasW() { return ScaleW; };
+    float GetAtlasH() { return ScaleH; };
 
     struct SDFCharInfo {
-        unsigned int id, x, y, w, h;
-        int xoffset, yoffset, xadvance;
+        unsigned int id;
+        float x, y, w, h, xoffset, yoffset, xadvance;
     };
 
     bool Load(const char* FileNameFNT, const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority, int Spread) {
@@ -137,7 +137,7 @@ public:
         logError("Char with id=%u not found", Code);
         return false;
     };
-    unsigned GetLineHeight() { return LineHeight; };
+    float GetLineHeight() { return LineHeight; };
 
     SDFFont() {};
     ~SDFFont() { Clear(); };
@@ -147,7 +147,8 @@ public:
     SDFFont& operator= (SDFFont&& rhs) = delete; // Оператор перемещающего присваивания
 private:
     SDFGLTexture FontAtlas;
-    unsigned int ScaleW = 0, ScaleH = 0, LineHeight = 0, Spread = 0;
+    float LineHeight = 0.0F, ScaleW = 0.0F, ScaleH = 0.0F;
+    unsigned int Spread = 0;
     std::unordered_map<unsigned, SDFFont::SDFCharInfo> CharsMap;
 
     template <class fntStream>
@@ -163,12 +164,12 @@ private:
 // Для рисования всегда указывать левую верхнюю точку (удобно для разгаданных слов в "составь слова")
 class SDFFontBuffer
 {
-    float scaleX = 1.0f;
-    float scaleY = 1.0f;
-    float Border = 0.0f;
+    float scaleX = 1.0F;
+    float scaleY = 1.0F;
+    float Border = 0.0F;
 
     SDFFont* sdfFont = nullptr;
-    int rectW = -1, rectH = -1;
+    float rectW = -1.0F, rectH = -1.0F;
 
     bool outline = false;
 
@@ -181,7 +182,7 @@ class SDFFontBuffer
     std::vector<GLfloat>squareVertices;
     std::vector<GLushort>Indices;
 
-    AkkordPoint GetTextSizeByLine(const char* Text, std::vector<int>* VecSize);
+    AkkordPoint GetTextSizeByLine(const char* Text, std::vector<float>* VecSize);
 public:
     SDFFontBuffer() : sdfFont{ nullptr } {};
     SDFFontBuffer(SDFFont* Font, unsigned int DigitsCount, const AkkordColor& Color) {
@@ -203,7 +204,7 @@ public:
     float GetScaleX() { return this->scaleX; };
     float GetScaleY() { return this->scaleY; };
 
-    void SetRect(int W, int H) { this->rectW = W; this->rectH = H; };
+    void SetRect(int W, int H) { this->rectW = static_cast<decltype(rectW)>(W); this->rectH = static_cast<decltype(rectH)>(H); };
 
     void SetAlignment(SDFFont::AlignH AlignH, SDFFont::AlignV AlignV) { this->alignH = AlignH; this->alignV = AlignV; };
     void SetAlignmentH(SDFFont::AlignH AlignH) { this->alignH = AlignH; };
