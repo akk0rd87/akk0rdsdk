@@ -29,6 +29,12 @@ public:
     void SetH(int H) { h = H; };
     void SetX(int X) { x = X; };
     void SetY(int Y) { y = Y; };
+
+    void SetPosition(const AkkordPoint& Position) { x = Position.x; y = Position.y; };
+    void SetSize(const AkkordPoint& Size) { w = Size.x; h = Size.y; };
+
+    AkkordPoint GetPosition() const { return AkkordPoint(x, y); }
+    AkkordPoint GetSize() const { return AkkordPoint(w, h); }
 };
 
 class AkkordColor

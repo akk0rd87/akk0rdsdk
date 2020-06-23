@@ -205,6 +205,7 @@ public:
     float GetScaleY() { return this->scaleY; };
 
     void SetRect(int W, int H) { this->rectW = static_cast<decltype(rectW)>(W); this->rectH = static_cast<decltype(rectH)>(H); };
+    void SetRect(const AkkordPoint& Rect) { SetRect(Rect.x, Rect.y); };
 
     void SetAlignment(SDFFont::AlignH AlignH, SDFFont::AlignV AlignV) { this->alignH = AlignH; this->alignV = AlignV; };
     void SetAlignmentH(SDFFont::AlignH AlignH) { this->alignH = AlignH; };
