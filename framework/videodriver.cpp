@@ -417,6 +417,7 @@ bool SDFProgram::Init(const VideoDriver::Feature Features)
 
 bool SDFGLTexture::Draw(bool Outline, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const std::vector<GLfloat>& UV, const std::vector<GLfloat>& squareVertices, const std::vector <GLushort>& Indices, GLfloat Scale, GLfloat Border, int Spread)
 {
+    BWrapper::FlushRenderer();
     SDFShaderProgramStruct* shaderProgram{ nullptr };
     if (Outline) {
         if (!sdfProgram.ShaderProgramOutline.shaderProgram) {
@@ -573,7 +574,6 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
 
 bool SDFTexture::Flush()
 {
-    BWrapper::FlushRenderer();
     if (Indices.size() > 0) {
         Texture.Draw(Outline, this->Color, this->OutlineColor, UV, squareVertices, Indices, Scale, (GLfloat)Border, Spread);
     }

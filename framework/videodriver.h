@@ -206,6 +206,7 @@ public:
 
     void SetRect(int W, int H) { this->rectW = static_cast<decltype(rectW)>(W); this->rectH = static_cast<decltype(rectH)>(H); };
     void SetRect(const AkkordPoint& Rect) { SetRect(Rect.x, Rect.y); };
+    AkkordPoint GetRect() { return AkkordPoint(static_cast<int>(rectW), static_cast<int>(rectH)); }
 
     void SetAlignment(SDFFont::AlignH AlignH, SDFFont::AlignV AlignV) { this->alignH = AlignH; this->alignV = AlignV; };
     void SetAlignmentH(SDFFont::AlignH AlignH) { this->alignH = AlignH; };
