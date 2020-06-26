@@ -4,7 +4,7 @@
 #include "core/core_defines.h"
 #include <ctime>
 
-static_assert(CHAR_MIN == 0 && CHAR_MAX == 255, "Char data type must be as unsigned char data type. Set compiler flag -funsigned-char for GCC or /J for MSVC");
+static_assert (!std::numeric_limits<char>::is_signed, "Char data type must be as unsigned char data type. Set compiler flag -funsigned-char for GCC or /J for MSVC");
 
 #define NANOSVG_IMPLEMENTATION
 #include "../libraries/nanosvg/nanosvg.h"
