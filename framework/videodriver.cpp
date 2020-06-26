@@ -786,9 +786,9 @@ AkkordPoint SDFFontBuffer::GetTextSizeByLine(const char* Text, std::vector<float
         if (VecSize) {
             VecSize->push_back(localPointX);
         }
-        pt.x = std::max(pt.x, static_cast<decltype(pt.x)>(localPointX));
+        pt.x = std::max(pt.x, static_cast<decltype(pt.x)>(std::ceil(localPointX)));
         // надо учесть общую высоту строки
-        pt.y = static_cast<decltype(pt.y)>(scaleY * sdfFont->GetLineHeight() * static_cast<decltype(scaleY)>(linesCount));
+        pt.y = static_cast<decltype(pt.y)>(std::ceil(scaleY * sdfFont->GetLineHeight() * static_cast<decltype(scaleY)>(linesCount)));
     }
     return pt;
 }
@@ -917,8 +917,8 @@ AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text)
         }
 
     after_cycle:
-        pt.x = std::max(pt.x, static_cast<decltype(pt.x)>(x_current - x_start + 1.0F));
-        pt.y = static_cast<decltype(pt.y)>(scaleY * sdfFont->GetLineHeight() * SharedPool.floatVector.size());
+        pt.x = std::max(pt.x, static_cast<decltype(pt.x)>(std::ceil(x_current - x_start + 1.0F)));
+        pt.y = static_cast<decltype(pt.y)>(std::ceil(scaleY * sdfFont->GetLineHeight() * SharedPool.floatVector.size()));
     }
     return pt;
 };
