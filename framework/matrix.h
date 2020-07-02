@@ -13,6 +13,8 @@ public:
     void Clear() { Data.clear(); w = h = 0; };
     void Resize(int W, int H) { Data.resize(W * H); w = W; h = H; }
     void Fill(int W, int H, const T& Value) { Data.clear(); Data.insert(Data.begin(), W * H, Value); w = W; h = H; };
+    void Reserve(int Count) { Data.reserve(Count); }
+    void Reserve(int W, int H) { Data.reserve(W * H); }
     /* */ T& operator[](int Index) /* */ { return Data[Index]; }
     const T& operator[](int Index) const { return Data[Index]; }
     /* */ T& operator()(int I, int J) /* */ { return Data[J * w + I]; }
