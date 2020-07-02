@@ -4,7 +4,7 @@
 
 #include "locale.h"
 
-#ifdef __WIN32__
+#ifdef __WINDOWS__
 #include "windows/windows_wrapper.h"
 #include <windows.h>
 #endif
@@ -86,7 +86,7 @@ bool Platforms::InitInternalDirs()
     result = true;
 #endif
 
-#ifdef __WIN32__
+#ifdef __WINDOWS__
     InteralDirs.InternalWriteDir = std::string("data-ram/");
     InteralDirs.Initialized = true;
     result = true;
@@ -137,7 +137,7 @@ Locale::Lang Platforms::GetDeviceLanguage()
     lang = AndroidWrapper::GetLanguage();
 #endif
 
-#ifdef __WIN32__
+#ifdef __WINDOWS__
     //lang = WindowsWrapper::GetLanguage();
     //return Locale::DecodeLang_ISO639_Code(lang.c_str());
     //return Locale::DecodeLang_ISO639_Code("+-");
@@ -153,7 +153,7 @@ Locale::Lang Platforms::GetDeviceLanguage()
 
 bool Platforms::DirCreate(const char* Dir)
 {
-#ifdef __WIN32__
+#ifdef __WINDOWS__
     return WindowsWrapper::DirCreate(Dir);
 #endif
 
@@ -174,9 +174,9 @@ bool Platforms::OpenURL(const char* url)
     return AndroidWrapper::OpenURL(url);
 #endif // __ANDROID__
 
-#ifdef __WIN32__
+#ifdef __WINDOWS__
     return WindowsWrapper::OpenURL(url);
-#endif // __WIN32__
+#endif // __WINDOWS__
 
 #ifdef __APPLE__
     return iOSWrapper::OpenURL(url);
@@ -196,7 +196,7 @@ constexpr BWrapper::OS Platforms::GetDeviceOS()
     return BWrapper::OS::AndroidOS;
 #endif
 
-#ifdef __WIN32__
+#ifdef __WINDOWS__
     return  BWrapper::OS::Windows;
 #endif
 
@@ -230,7 +230,7 @@ bool Platforms::DirExists(const char* Dir)
     return AndroidWrapper::DirectoryExists(Dir);
 #endif
 
-#ifdef __WIN32__
+#ifdef __WINDOWS__
     return WindowsWrapper::DirectoryExists(Dir);
 #endif
 
@@ -247,7 +247,7 @@ bool Platforms::GetDirContent  (const char* Dir, DirContentElementArray& ArrayLi
     return AndroidWrapper::GetDirContent(Dir, ArrayList);
 #endif
 
-#ifdef __WIN32__
+#ifdef __WINDOWS__
     return WindowsWrapper::GetDirContent(Dir, ArrayList);
 #endif
     return false;
@@ -255,7 +255,7 @@ bool Platforms::GetDirContent  (const char* Dir, DirContentElementArray& ArrayLi
 
 bool Platforms::DirRemove(const char* Dir)
 {
-#ifdef __WIN32__
+#ifdef __WINDOWS__
     return WindowsWrapper::DirRemove(Dir);
 #endif
 
@@ -267,7 +267,7 @@ bool Platforms::DirRemove(const char* Dir)
 
 bool Platforms::DirRemoveRecursive(const char* Dir)
 {
-#ifdef __WIN32__
+#ifdef __WINDOWS__
     return WindowsWrapper::DirRemoveRecursive(Dir);
 #endif
 
@@ -283,7 +283,7 @@ bool Platforms::DirRemoveRecursive(const char* Dir)
 
 std::string Platforms::GetEnvVariable(const char* Variable)
 {
-#ifdef __WIN32__
+#ifdef __WINDOWS__
     return WindowsWrapper::GetEnvVariable(Variable);
 #endif
     return std::string("");
@@ -292,7 +292,7 @@ std::string Platforms::GetEnvVariable(const char* Variable)
 
 void Platforms::MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS)
 {
-#ifdef __WIN32__
+#ifdef __WINDOWS__
     return WindowsWrapper::MessageBoxShow(Code, Title, Message, Button1, Button2, Button3);
 #endif
 

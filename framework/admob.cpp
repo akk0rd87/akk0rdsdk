@@ -222,7 +222,7 @@ bool AdMob::Init(const char* AdMobAppID, int Formats)
     AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::NotInited);
     AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::NotInited);
 
-#ifdef __WIN32__
+#ifdef __WINDOWS__
     inited = true; // inited безусловно ставим Inited
 #endif
 

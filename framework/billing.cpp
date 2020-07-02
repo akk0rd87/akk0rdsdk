@@ -97,7 +97,7 @@ bool BillingManager::Init()
     return iOSBillingManager::Init();
 #endif
 
-#ifdef __WIN32__
+#ifdef __WINDOWS__
     return true; // будем считать, что на винде все прошло норм
 #endif
 

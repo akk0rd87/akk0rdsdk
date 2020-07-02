@@ -232,7 +232,7 @@ public:
         return BWrapper::OS::AndroidOS;
 #endif
 
-#ifdef __WIN32__
+#ifdef __WINDOWS__
         return  BWrapper::OS::Windows;
 #endif
 
