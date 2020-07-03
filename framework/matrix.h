@@ -1,7 +1,6 @@
 #ifndef __AKK0RD_MATRIX_H__
 #define __AKK0RD_MATRIX_H__
 
-#include <functional>
 template <class T>
 class Matrix {
 private:
@@ -21,9 +20,24 @@ public:
     const T& operator()(int I, int J) const { return Data[J * w + I]; }
     int GetW() const { return w; }
     int GetH() const { return h; }
-    void ForEach(const std::function<void(T& Value)>& Func) {
-        std::for_each(Data.begin(), Data.end(), Func);
-    };
+
+    auto begin() { return Data.begin(); }
+    auto end() { return Data.end(); }
+
+    auto begin() const { return Data.begin(); }
+    auto end() const { return Data.end(); }
+
+    auto cbegin() const { return Data.cbegin(); }
+    auto cend() const { return Data.cend(); }
+
+    auto rbegin() { return Data.rbegin(); }
+    auto rend() { return Data.rend(); }
+
+    auto rbegin() const { return Data.rbegin(); }
+    auto rend() const { return Data.rend(); }
+
+    auto crbegin() const { return Data.crbegin(); }
+    auto crend() const { return Data.crend(); }
 
     /*
     class Line {
