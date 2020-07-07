@@ -14,6 +14,7 @@ public:
     AkkordPoint() : x(0), y(0) {};
     AkkordPoint(int X, int Y) : x(X), y(Y) {};
     AkkordPoint(const AkkordPoint& Point) : x(Point.x), y(Point.y) {};
+    bool operator== (const AkkordPoint& Point) const { return Point.x == x && Point.y == y; };
 };
 
 class AkkordRect
