@@ -215,8 +215,21 @@ void AdRandomizer::OpenURL(Apps AppId)
 
 void AdRandomizer::OpenPublisherAppstorePage()
 {
-    if (BWrapper::GetDeviceOS() == BWrapper::OS::iOS)
-        BWrapper::OpenURL("https://itunes.apple.com/developer/id945326562");
-    else
-        BWrapper::OpenURL("https://play.google.com/store/apps/developer?id=popapp.org");
+    const char* iOS = "https://itunes.apple.com/developer/id945326562";
+    const char* AndroidOS = "https://play.google.com/store/apps/developer?id=popapp.org";
+
+    switch (BWrapper::GetDeviceOS()) {
+    case BWrapper::OS::iOS:
+        BWrapper::OpenURL(iOS);
+        break;
+
+    case BWrapper::OS::AndroidOS:
+        BWrapper::OpenURL(AndroidOS);
+        break;
+
+    default:
+        BWrapper::OpenURL(AndroidOS);
+        BWrapper::OpenURL(iOS);
+        break;
+    }
 };
