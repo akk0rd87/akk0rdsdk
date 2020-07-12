@@ -102,15 +102,9 @@ public:
 class SDFFont
 {
 public:
+    friend class SDFFontBuffer;
     enum struct AlignV : unsigned char { Top, Center, Bottom };
     enum struct AlignH : unsigned char { Left, Center, Right };
-    float GetAtlasW() { return ScaleW; };
-    float GetAtlasH() { return ScaleH; };
-
-    struct SDFCharInfo {
-        unsigned int id;
-        float x, y, w, h, xoffset, yoffset, xadvance;
-    };
 
     bool Load(const char* FileNameFNT, const char* FileNamePNG, BWrapper::FileSearchPriority SearchPriority, int Spread) {
         this->Clear();
@@ -127,17 +121,10 @@ public:
 
     bool LoadCharMapFromMemory(const char* Buffer, int Size);
 
-    bool Draw(bool Outline, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const std::vector<GLfloat>& UV, const std::vector<GLfloat>& squareVertices, const std::vector <GLushort>& Indices, GLfloat Scale, GLfloat Border);
-    bool GetCharInfo(unsigned Code, SDFFont::SDFCharInfo& ci) {
-        const auto res = CharsMap.find(Code);
-        if (res != CharsMap.end()) {
-            ci = res->second;
-            return true;
-        }
-        logError("Char with id=%u not found", Code);
-        return false;
+    void Clear() {
+        CharsMap.clear();
+        FontAtlas.Clear();
     };
-    float GetLineHeight() { return LineHeight; };
 
     SDFFont() {};
     ~SDFFont() { Clear(); };
@@ -146,7 +133,11 @@ public:
     SDFFont& operator= (const SDFFont& rhs) = delete; // Оператор копирующего присваивания
     SDFFont& operator= (SDFFont&& rhs) = delete; // Оператор перемещающего присваивания
 private:
-    SDFGLTexture FontAtlas;
+    mutable SDFGLTexture FontAtlas;
+    struct SDFCharInfo {
+        unsigned int id;
+        float x, y, w, h, xoffset, yoffset, xadvance;
+    };
     float LineHeight = 0.0F, ScaleW = 0.0F, ScaleH = 0.0F;
     unsigned int Spread = 0;
     std::unordered_map<unsigned, SDFFont::SDFCharInfo> CharsMap;
@@ -154,11 +145,26 @@ private:
     template <class fntStream>
     bool ParseFontMap(fntStream& fonsStream);
 
-    bool ParseFNTFile(const char* FNTFile, BWrapper::FileSearchPriority SearchPriority);
-    void Clear() {
-        CharsMap.clear();
-        FontAtlas.Clear();
+    float GetAtlasW() const { return ScaleW; };
+    float GetAtlasH() const { return ScaleH; };
+
+    bool GetCharInfo(unsigned Code, SDFFont::SDFCharInfo& ci) const {
+        const auto res = CharsMap.find(Code);
+        if (res != CharsMap.end()) {
+            ci = res->second;
+            return true;
+        }
+        logError("Char with id=%u not found", Code);
+        return false;
     };
+    float GetLineHeight() const { return LineHeight; };
+
+    bool Draw(bool Outline, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const std::vector<GLfloat>& UV, const std::vector<GLfloat>& squareVertices, const std::vector <GLushort>& Indices, GLfloat Scale, GLfloat Border) const {
+        FontAtlas.Draw(Outline, FontColor, OutlineColor, UV, squareVertices, Indices, Scale, Border, Spread);
+        return true;
+    };
+
+    bool ParseFNTFile(const char* FNTFile, BWrapper::FileSearchPriority SearchPriority);
 };
 
 // Для рисования всегда указывать левую верхнюю точку (удобно для разгаданных слов в "составь слова")
@@ -182,7 +188,7 @@ class SDFFontBuffer
     std::vector<GLfloat>squareVertices;
     std::vector<GLushort>Indices;
 
-    AkkordPoint GetTextSizeByLine(const char* Text, std::vector<float>* VecSize);
+    AkkordPoint GetTextSizeByLine(const char* Text, std::vector<float>* VecSize) const;
 public:
     SDFFontBuffer() : sdfFont{ nullptr } {};
     SDFFontBuffer(SDFFont* Font, unsigned int DigitsCount, const AkkordColor& Color) {
@@ -201,19 +207,19 @@ public:
     void SetOutlineColor(const AkkordColor& OutlineColor) { this->outlineColor = OutlineColor; };
     void SetBorder(float BorderWidth) { this->Border = BorderWidth; };
 
-    float GetScaleX() { return this->scaleX; };
-    float GetScaleY() { return this->scaleY; };
+    float GetScaleX() const { return this->scaleX; };
+    float GetScaleY() const { return this->scaleY; };
 
     void SetRect(int W, int H) { this->rectW = static_cast<decltype(rectW)>(W); this->rectH = static_cast<decltype(rectH)>(H); };
     void SetRect(const AkkordPoint& Rect) { SetRect(Rect.x, Rect.y); };
-    AkkordPoint GetRect() { return AkkordPoint(static_cast<int>(rectW), static_cast<int>(rectH)); }
+    AkkordPoint GetRect() const { return AkkordPoint(static_cast<int>(rectW), static_cast<int>(rectH)); }
 
     void SetAlignment(SDFFont::AlignH AlignH, SDFFont::AlignV AlignV) { this->alignH = AlignH; this->alignV = AlignV; };
     void SetAlignmentH(SDFFont::AlignH AlignH) { this->alignH = AlignH; };
     void SetAlignmentV(SDFFont::AlignV AlignV) { this->alignV = AlignV; };
 
-    SDFFont::AlignH GetAlignH() { return this->alignH; };
-    SDFFont::AlignV GetAlignV() { return this->alignV; };
+    SDFFont::AlignH GetAlignH() const { return this->alignH; };
+    SDFFont::AlignV GetAlignV() const { return this->alignV; };
 
     void Reserve(unsigned Count) {
         UV.reserve(Count * 4);
@@ -226,13 +232,20 @@ public:
         squareVertices.clear();
         Indices.clear();
     };
-    void Flush();
+
+    void Flush() {
+        if (Indices.size() > 0) {
+            sdfFont->Draw(this->outline, this->color, this->outlineColor, UV, squareVertices, Indices, (GLfloat)this->scaleX, (GLfloat)this->Border);
+        }
+        Clear();
+    };
+
     ~SDFFontBuffer() {
         Clear();
         sdfFont = nullptr;
     };
     // сейчас это int, возможно для этой функции сделать отдельный тип со float
-    AkkordPoint GetTextSize(const char* Text) {
+    AkkordPoint GetTextSize(const char* Text) const {
         return GetTextSizeByLine(Text, nullptr);
     };
     void        WrapText(const char* Text, float ScaleMutiplier, std::string& ResultString, float& UsedScale, AkkordPoint& Size);

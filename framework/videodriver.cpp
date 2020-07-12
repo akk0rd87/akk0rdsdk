@@ -738,15 +738,7 @@ bool SDFFont::ParseFNTFile(const char* FNTFile, BWrapper::FileSearchPriority Sea
     return false;
 }
 
-bool SDFFont::Draw(bool Outline, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const std::vector<GLfloat>& UV, const std::vector<GLfloat>& squareVertices, const std::vector <GLushort>& Indices, GLfloat Scale, GLfloat Border)
-{
-    FontAtlas.Draw(Outline, FontColor, OutlineColor, UV, squareVertices, Indices, Scale, Border, Spread);
-    return true;
-};
-
-// Для рисования всегда указывать левую верхнюю точку (удобно для разгаданных слов в "составь слова")
-
-AkkordPoint SDFFontBuffer::GetTextSizeByLine(const char* Text, std::vector<float>* VecSize)
+AkkordPoint SDFFontBuffer::GetTextSizeByLine(const char* Text, std::vector<float>* VecSize) const
 {
     // VecSize - вектор строк (в надписи может быть несколько строк, нужно считать длину каждой строки отдельно - для выравнивания)
     AkkordPoint pt(0, 0);
@@ -792,14 +784,6 @@ AkkordPoint SDFFontBuffer::GetTextSizeByLine(const char* Text, std::vector<float
     }
     return pt;
 }
-
-void SDFFontBuffer::Flush()
-{
-    if (Indices.size() > 0) {
-        sdfFont->Draw(this->outline, this->color, this->outlineColor, UV, squareVertices, Indices, (GLfloat)this->scaleX, (GLfloat)this->Border);
-    }
-    Clear();
-};
 
 AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text)
 {
