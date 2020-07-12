@@ -36,35 +36,37 @@ class Platforms
 private:
     static bool InitInternalDirs();
 public:
-    static bool                     Init();
-    static Locale::Lang             GetDeviceLanguage();
+    inline static bool                     Init();
+    inline static Locale::Lang             GetDeviceLanguage();
     //static constexpr BWrapper::OS   GetDeviceOS();
-    static std::string              GetEnvVariable   (const char* Variable); // Only for windows
+    inline static std::string              GetEnvVariable   (const char* Variable); // Only for windows
 
-    static std::string              GetInternalDir();
-    static std::string              GetInternalWriteDir();
-    static std::string              GetInternalAssetsDir();
+    inline static std::string              GetInternalDir();
+    inline static std::string              GetInternalWriteDir();
+    inline static std::string              GetInternalAssetsDir();
 
-    static bool                     DirCreate(const char* Dir);
-    static bool                     DirExists(const char* Dir);
-    static bool                     DirRemove(const char* Dir);
-    static bool                     DirRemoveRecursive(const char* Dir);
+    inline static bool                     DirCreate(const char* Dir);
+    inline static bool                     DirExists(const char* Dir);
+    inline static bool                     DirRemove(const char* Dir);
+    inline static bool                     DirRemoveRecursive(const char* Dir);
 
     // Activity functions
-    static bool                     OpenURL(const char* url);
+    inline static bool                     OpenURL(const char* url);
 
     // Android-specific functions
-    static int                      AndroidGetApiLevel();
-    static bool                     AndroidShowToast(const char* Message, BWrapper::AndroidToastDuration Duration, int Gravity, int xOffset, int yOffset);
+    inline static int                      AndroidGetApiLevel();
+    inline static bool                     AndroidShowToast(const char* Message, BWrapper::AndroidToastDuration Duration, int Gravity, int xOffset, int yOffset);
 
-    static bool                     GetDirContent  (const char* Dir, DirContentElementArray& ArrayList);
+    inline static bool                     GetDirContent  (const char* Dir, DirContentElementArray& ArrayList);
 
-    static void                     MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS);
-    static void                     ShareText(const char* Title, const char* Message);
-    static void                     SharePNG(const char* Title, const char* File);
+    inline static void                     MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS);
+    inline static void                     ShareText(const char* Title, const char* Message);
+    inline static void                     SharePNG(const char* Title, const char* File);
 
-    static int                      GetAudioOutputRate();       // only for Android
-    static int                      GetAudioOutputBufferSize(); // only for Android
+    inline static int                      GetAudioOutputRate();       // only for Android
+    inline static int                      GetAudioOutputBufferSize(); // only for Android
+
+    Platforms() = delete;
 };
 
 /////////////////////////////////////////
