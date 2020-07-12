@@ -199,6 +199,7 @@ public:
     };
 
     void SetFont(SDFFont* Font) { this->sdfFont = Font; };
+    void SetFont(SDFFont& Font) { this->sdfFont = &Font; };
     void SetScale(float Scale) { this->scaleX = this->scaleY = Scale; };
     void SetScale(float ScaleX, float ScaleY) { this->scaleX = ScaleX; this->scaleY = ScaleY; };
 
