@@ -44,11 +44,11 @@ private:
     Uint32 color;
 public:
     AkkordColor() : color{ 0 } {};
-    AkkordColor(Uint32 Color) : color(Color) {};
+    explicit AkkordColor(Uint32 Color) : color(Color) {};
     AkkordColor(Uint8 R, Uint8 G, Uint8 B) { SetRGB(R, G, B); };
     AkkordColor(Uint8 R, Uint8 G, Uint8 B, Uint8 A) { SetRGBA(R, G, B, A); };
 
-    void                 SetInt32(Uint32 Color) { color = Color; };
+    void                 SetUint32(Uint32 Color) { color = Color; };
     void                 SetRGB(Uint8 R, Uint8 G, Uint8 B) { SetRGBA(R, G, B, static_cast<Uint8>(255)); };
     void                 SetRGBA(Uint8 R, Uint8 G, Uint8 B, Uint8 A) { color = AkkordColor::RGBA2Int32(R, G, B, A); };
 
