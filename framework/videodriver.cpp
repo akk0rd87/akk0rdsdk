@@ -170,8 +170,9 @@ static GLESDriver glesDriver;
 #define PrintGLESShaderLog(Shader)
 #endif
 
-constexpr GLsizei constBufferSize = 8;
-static struct {
+static struct VBOBufferStruct {
+    static constexpr GLsizei constBufferSize = 8;
+
     std::array<GLuint, constBufferSize> ArrayBufferID;
     std::array<GLuint, constBufferSize> ElementBufferID;
 
@@ -248,7 +249,7 @@ static void DrawElements(const UVBuffer& UV, const squareVerticesBuffer& squareV
     Driver.glDrawElements((GLenum)GL_TRIANGLES, static_cast<GLsizei>(Indices.size()), (GLenum)GL_UNSIGNED_SHORT, nullptr); CheckGLESError();
 
     // переходим к следующему буфферу, который будет использоваться при следующем обращении
-    if (++VBO.CurrentBuffer >= constBufferSize) {
+    if (++VBO.CurrentBuffer >= VBO.constBufferSize) {
         VBO.CurrentBuffer = 0;
     }
 }
@@ -1048,8 +1049,8 @@ bool VideoDriver::Init(const VideoDriver::Feature Features) {
         std::fill(VBO.ElementBufferID.begin(), VBO.ElementBufferID.end(), 0);
         std::fill(VBO.ArrayBufferSize.begin(), VBO.ArrayBufferSize.end(), 0);
         std::fill(VBO.ElementBufferSize.begin(), VBO.ElementBufferSize.end(), 0);
-        glesDriver.glGenBuffers(constBufferSize, &VBO.ArrayBufferID.front()); CheckGLESError();
-        glesDriver.glGenBuffers(constBufferSize, &VBO.ElementBufferID.front()); CheckGLESError();
+        glesDriver.glGenBuffers(VBO.constBufferSize, &VBO.ArrayBufferID.front()); CheckGLESError();
+        glesDriver.glGenBuffers(VBO.constBufferSize, &VBO.ElementBufferID.front()); CheckGLESError();
     }
 
     sdfProgram.Init(Features); // проверка на фичи будет внутри
