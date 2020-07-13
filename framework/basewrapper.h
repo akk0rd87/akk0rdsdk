@@ -11,20 +11,21 @@ class AkkordPoint
 {
 public:
     int x, y;
-    AkkordPoint() : x(0), y(0) {};
-    AkkordPoint(int X, int Y) : x(X), y(Y) {};
-    AkkordPoint(const AkkordPoint& Point) : x(Point.x), y(Point.y) {};
+    constexpr AkkordPoint() : x(0), y(0) {};
+    constexpr AkkordPoint(int X, int Y) : x(X), y(Y) {};
+    constexpr AkkordPoint(const AkkordPoint& Point) : x(Point.x), y(Point.y) {};
     bool operator== (const AkkordPoint& Point) const { return Point.x == x && Point.y == y; };
+    bool operator!= (const AkkordPoint& Point) const { return !(Point == *this); };
 };
 
 class AkkordRect
 {
 public:
     int x, y, w, h;
-    AkkordRect() : x(0), y(0), w(0), h(0) {};
-    AkkordRect(const AkkordRect& Rect) : x(Rect.x), y(Rect.y), w(Rect.w), h(Rect.h) {};
-    AkkordRect(int X, int Y, int W, int H) : x(X), y(Y), w(W), h(H) {};
-    AkkordRect(const AkkordPoint& Point1, const AkkordPoint& Point2) : x(Point1.x), y(Point1.y), w(Point2.x), h(Point2.y) {};
+    constexpr AkkordRect() : x(0), y(0), w(0), h(0) {};
+    constexpr AkkordRect(const AkkordRect& Rect) : x(Rect.x), y(Rect.y), w(Rect.w), h(Rect.h) {};
+    constexpr AkkordRect(int X, int Y, int W, int H) : x(X), y(Y), w(W), h(H) {};
+    constexpr AkkordRect(const AkkordPoint& Point1, const AkkordPoint& Point2) : x(Point1.x), y(Point1.y), w(Point2.x), h(Point2.y) {};
 
     void SetW(int W) { w = W; };
     void SetH(int H) { h = H; };
@@ -36,6 +37,9 @@ public:
 
     AkkordPoint GetPosition() const { return AkkordPoint(x, y); }
     AkkordPoint GetSize() const { return AkkordPoint(w, h); }
+
+    bool operator== (const AkkordRect& Rect) const { return Rect.x == x && Rect.y == y && Rect.w == w && Rect.h == h; };
+    bool operator!= (const AkkordRect& Rect) const { return !(Rect == *this); };
 };
 
 class AkkordColor
@@ -43,10 +47,10 @@ class AkkordColor
 private:
     Uint32 color;
 public:
-    AkkordColor() : color{ 0 } {};
-    explicit AkkordColor(Uint32 Color) : color(Color) {};
-    AkkordColor(Uint8 R, Uint8 G, Uint8 B) { SetRGB(R, G, B); };
-    AkkordColor(Uint8 R, Uint8 G, Uint8 B, Uint8 A) { SetRGBA(R, G, B, A); };
+    constexpr AkkordColor() : color{ 0 } {};
+    constexpr explicit AkkordColor(Uint32 Color) : color(Color) {};
+    constexpr AkkordColor(Uint8 R, Uint8 G, Uint8 B, Uint8 A) : color{ RGBA2Int32(R, G, B, A) } {};
+    constexpr AkkordColor(Uint8 R, Uint8 G, Uint8 B) : AkkordColor(R, G, B, 255) {};
 
     void                 SetUint32(Uint32 Color) { color = Color; };
     void                 SetRGB(Uint8 R, Uint8 G, Uint8 B) { SetRGBA(R, G, B, static_cast<Uint8>(255)); };
@@ -68,8 +72,10 @@ public:
     static constexpr Uint8 GetBFromInt32(Uint32 ColorInt32) { return static_cast<Uint8>((ColorInt32 & static_cast<Uint32>(0x00ff0000)) >> 16); };
     static constexpr Uint8 GetAFromInt32(Uint32 ColorInt32) { return static_cast<Uint8>((ColorInt32 & static_cast<Uint32>(0xff000000)) >> 24); };
 
-    //static constexpr Uint32 RGBA2Int32(int r, int g, int b, int a) { return r + g * 256 + b * 256 * 256 + a * 256 * 256 * 256; };
-    static constexpr Uint32 RGBA2Int32(int r, int g, int b, int a) { return static_cast<Uint32>(r) | static_cast<Uint32>(g) << 8 | static_cast<Uint32>(b) << 16 | static_cast<Uint32>(a) << 24; };
+    static constexpr Uint32 RGBA2Int32(int r, int g, int b, int a) { return static_cast<Uint32>(r) | (static_cast<Uint32>(g) << 8) | (static_cast<Uint32>(b) << 16) | (static_cast<Uint32>(a) << 24); };
+
+    bool operator== (const AkkordColor& Color) const { return Color.color == color; };
+    bool operator!= (const AkkordColor& Color) const { return Color.color != color; };
 };
 
 class BWrapper
