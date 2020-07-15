@@ -876,75 +876,73 @@ void BWrapper::Log(BWrapper::LogPriority Priority, const char* File, const char*
 #ifdef __AKK0RD_DEBUG_MACRO__
     // https://wiki.libsdl.org/CategoryLog
     SDL_LogPriority sev = (SDL_LogPriority)Priority;
-    char TimeBuffer[16];
 
-    auto ms = BWrapper::GetTicks();
-    auto hh24 = ms / 60 / 60 / 1000;
-    ms = ms - hh24 * 60 / 60 / 1000;
-    auto mi = ms / 60 / 1000;
-    ms = ms - mi * 60 * 1000;
-    auto ss = ms / 1000;
-    ms = ms % 1000;
+    std::string Format;
+    {
+        auto ms = BWrapper::GetTicks();
+        const auto hh24 = ms / 60 / 60 / 1000;
+        ms = ms - hh24 * 60 / 60 / 1000;
+        const auto mi = ms / 60 / 1000;
+        ms = ms - mi * 60 * 1000;
+        const auto ss = ms / 1000;
+        ms = ms % 1000;
 
-    TimeBuffer[0] = hh24 / 10 + '0';
-    TimeBuffer[1] = hh24 % 10 + '0';
-    TimeBuffer[2] = ':';
-    TimeBuffer[3] = mi / 10 + '0';
-    TimeBuffer[4] = mi % 10 + '0';
-    TimeBuffer[5] = ':';
-    TimeBuffer[6] = ss / 10 + '0';
-    TimeBuffer[7] = ss % 10 + '0';
-    TimeBuffer[8] = '.';
-    TimeBuffer[9] = ms / 100 + '0';
-    TimeBuffer[10] = ms % 100 / 10 + '0';
-    TimeBuffer[11] = ms % 10 + '0';
-    TimeBuffer[12] = ' ';
-    TimeBuffer[13] = '|';
-    TimeBuffer[14] = 32;
-    TimeBuffer[15] = 0;
-
-    auto Format = std::string(TimeBuffer);
+        char TimeBuffer[16];
+        TimeBuffer[0] = hh24 / 10 + '0';
+        TimeBuffer[1] = hh24 % 10 + '0';
+        TimeBuffer[2] = ':';
+        TimeBuffer[3] = mi / 10 + '0';
+        TimeBuffer[4] = mi % 10 + '0';
+        TimeBuffer[5] = ':';
+        TimeBuffer[6] = ss / 10 + '0';
+        TimeBuffer[7] = ss % 10 + '0';
+        TimeBuffer[8] = '.';
+        TimeBuffer[9] = ms / 100 + '0';
+        TimeBuffer[10] = ms % 100 / 10 + '0';
+        TimeBuffer[11] = ms % 10 + '0';
+        TimeBuffer[12] = ' ';
+        TimeBuffer[13] = '|';
+        TimeBuffer[14] = 32;
+        TimeBuffer[15] = 0;
+        Format = TimeBuffer;
+    }
+    std::string sLine;
 
     // Add File Info
-    if (LogParams.showFile)
-    {
+    if (LogParams.showFile) {
         auto pos = std::string(File).find_last_of("\\/");
         if (pos != std::string::npos) {
-            std::string sFile{ std::string(File, pos + 1, LogParams.lenFile) };
+            auto& sFile = sLine;
+            sFile = std::string(File, pos + 1, LogParams.lenFile);
 
             auto len = sFile.length();
-            if (len < LogParams.lenFile)
+            if (len < LogParams.lenFile) {
                 sFile.insert(len, LogParams.lenFile - len, 32);
-
-            sFile = sFile + " | ";
-            Format = Format + sFile;
+            }
+            Format = Format + sFile + " | ";
         }
     }
 
     // Add function info
-    if (LogParams.showFunction)
-    {
-        std::string sFunction{ std::string(Function, 0, LogParams.lenFunction) };
+    if (LogParams.showFunction) {
+        auto& sFunction = sLine;
+        sFunction = std::string(Function, 0, LogParams.lenFunction);
 
         auto len = sFunction.length();
-        if (len < LogParams.lenFunction)
+        if (len < LogParams.lenFunction) {
             sFunction.insert(len, LogParams.lenFunction - len, 32);
-
-        sFunction = sFunction + " | ";
-        Format = Format + sFunction;
+        }
+        Format = Format + sFunction + " | ";
     }
 
     // Add Line Info
-    if (LogParams.showLine)
-    {
-        std::string sLine = std::to_string(Line);
-
+    if (LogParams.showLine) {
+        sLine = std::to_string(Line);
         auto len = sLine.length();
-        if (len < LogParams.lenLine)
+        if (len < LogParams.lenLine) {
             sLine.insert(len, LogParams.lenLine - len, 32);
-
-        sLine = sLine + " | ";
-        Format = Format + sLine;
+        }
+        Format = Format + sLine + " | ";
     }
 
     int len = 0;
