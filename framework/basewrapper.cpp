@@ -877,7 +877,18 @@ void BWrapper::Log(BWrapper::LogPriority Priority, const char* File, const char*
     // https://wiki.libsdl.org/CategoryLog
     SDL_LogPriority sev = (SDL_LogPriority)Priority;
 
-    std::string Format;
+    int len = 0;
+    switch (Priority)
+    {
+    case BWrapper::LogPriority::Verbose: len = 7; break;
+    case BWrapper::LogPriority::Debug: len = 5; break;
+    case BWrapper::LogPriority::Info: len = 4; break;
+    case BWrapper::LogPriority::Warning: len = 4; break; /* base WARN*/
+    case BWrapper::LogPriority::Error: len = 5; break;
+    case BWrapper::LogPriority::Critical: len = 8; break;
+    }
+    std::string Format(8 - len, ' ');
+
     {
         auto ms = BWrapper::GetTicks();
         const auto hh24 = ms / 60 / 60 / 1000;
@@ -904,7 +915,7 @@ void BWrapper::Log(BWrapper::LogPriority Priority, const char* File, const char*
         TimeBuffer[13] = '|';
         TimeBuffer[14] = 32;
         TimeBuffer[15] = 0;
-        Format = TimeBuffer;
+        Format += TimeBuffer;
     }
     std::string sLine;
 
@@ -913,51 +924,39 @@ void BWrapper::Log(BWrapper::LogPriority Priority, const char* File, const char*
         auto pos = std::string(File).find_last_of("\\/");
         if (pos != std::string::npos) {
             auto& sFile = sLine;
-            sFile = std::string(File, pos + 1, LogParams.lenFile);
+            sFile.assign(File, pos + 1, LogParams.lenFile);
 
             auto len = sFile.length();
             if (len < LogParams.lenFile) {
                 sFile.insert(len, LogParams.lenFile - len, 32);
             }
-            Format = Format + sFile + " | ";
+            sFile += " | "; Format += sFile;
         }
     }
 
     // Add function info
     if (LogParams.showFunction) {
         auto& sFunction = sLine;
-        sFunction = std::string(Function, 0, LogParams.lenFunction);
+        sFunction.assign(Function, 0, LogParams.lenFunction);
 
         auto len = sFunction.length();
         if (len < LogParams.lenFunction) {
             sFunction.insert(len, LogParams.lenFunction - len, 32);
         }
-        Format = Format + sFunction + " | ";
+        sFunction += " | "; Format += sFunction;
     }
 
     // Add Line Info
     if (LogParams.showLine) {
         sLine = std::to_string(Line);
-        auto len = sLine.length();
+        const auto len = sLine.length();
         if (len < LogParams.lenLine) {
-            sLine.insert(len, LogParams.lenLine - len, 32);
+            Format.insert(Format.end(), LogParams.lenLine - len, 32);
         }
-        Format = Format + sLine + " | ";
+        sLine += " | "; Format += sLine;
     }
 
-    int len = 0;
-    switch (Priority)
-    {
-    case BWrapper::LogPriority::Verbose: len = 7; break;
-    case BWrapper::LogPriority::Debug: len = 5; break;
-    case BWrapper::LogPriority::Info: len = 4; break;
-    case BWrapper::LogPriority::Warning: len = 4; break; /* base WARN*/
-    case BWrapper::LogPriority::Error: len = 5; break;
-    case BWrapper::LogPriority::Critical: len = 8; break;
-    }
-
-    Format = Format + Fmt;
-    Format.insert(0, 8 - len, ' ');
+    Format += Fmt;
 
     va_list ap;
     va_start(ap, Fmt);

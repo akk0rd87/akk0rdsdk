@@ -606,7 +606,7 @@ public:
         }
 
         if (start) {
-            line = std::string(start, pointer - start);
+            line.assign(start, pointer - start);
             return true;
         }
         return false;
@@ -921,7 +921,7 @@ void SDFFontBuffer::WrapText(const char* Text, float ScaleMutiplier, std::string
             ++textPtr;
         }
         if (textPtr > pBegin) {
-            Word = std::string(pBegin, textPtr - pBegin);
+            Word.assign(pBegin, textPtr - pBegin);
         }
         else {
             Word.clear();
