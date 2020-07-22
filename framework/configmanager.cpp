@@ -1,4 +1,5 @@
 #include <fstream>
+#include <algorithm>
 #include "configmanager.h"
 
 void ConfigManager::SetValue(const char* Key, const char* Value)
@@ -59,8 +60,6 @@ bool ConfigManager::Save()
 }
 
 void ConfigManager::PrintConfig() {
-    logInfo("=== ConfigManager::PrintConfig() ===");
-    for (const auto& v : ConfigList) {
-        logDebug("File=%s, Key=[%s] Value=[%s]", this->FileName.c_str(), v.first.c_str(), v.second.c_str());
-    }
+    logInfo("=== ConfigManager::PrintConfig() %s ===", this->FileName.c_str());
+    std::for_each(ConfigList.cbegin(), ConfigList.cend(), [](const auto& v) { logDebug("%s=%s", v.first.c_str(), v.second.c_str()); });
 }

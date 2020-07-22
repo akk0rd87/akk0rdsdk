@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "adsmanager.h"
 
 // выбираем подходящий по времени Unit
@@ -74,10 +75,6 @@ bool adsManager::InterstitialShow()
     return false;
 };
 
-void adsManager::ShowAdUnits()
-{
-#ifdef __AKK0RD_DEBUG_MACRO__ // пришлось поставить условную компиляцию, а то в release-сборке компилятор ругается на неиспользованную переменную v
-    for (const auto& v : AdMobUnits)
-        logDebug("Ad Unit %s %u", v.Id.c_str(), v.TimePriority);
-#endif
+void adsManager::ShowAdUnits() {
+    std::for_each(AdMobUnits.cbegin(), AdMobUnits.cend(), [](const auto& v) { logDebug("Ad Unit %s %u", v.Id.c_str(), v.TimePriority); });
 }
