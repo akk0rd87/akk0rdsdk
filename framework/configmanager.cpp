@@ -51,7 +51,7 @@ bool ConfigManager::Save()
 
     std::ofstream ofs(this->FileName.c_str(), std::ofstream::binary | std::ofstream::out);
     for (const auto& v : ConfigList) {
-        ofs << v.first << "=" << v.second << "\n";
+        ofs << v.first << '=' << v.second << '\n';
     }
 
     ofs.close();
