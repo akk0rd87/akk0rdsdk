@@ -33,7 +33,9 @@ public:
     void SetY(int Y) { y = Y; };
 
     void SetPosition(const AkkordPoint& Position) { x = Position.x; y = Position.y; };
+    void SetPosition(int X, int Y) { x = X; y = Y; };
     void SetSize(const AkkordPoint& Size) { w = Size.x; h = Size.y; };
+    void SetSize(int W, int H) { w = W; h = H; };
 
     AkkordPoint GetPosition() const { return AkkordPoint(x, y); }
     AkkordPoint GetSize() const { return AkkordPoint(w, h); }
