@@ -135,7 +135,6 @@ public:
 private:
     mutable SDFGLTexture FontAtlas;
     struct SDFCharInfo {
-        unsigned int id;
         float x, y, w, h, xoffset, yoffset, xadvance;
     };
     float LineHeight = 0.0F, ScaleW = 0.0F, ScaleH = 0.0F;

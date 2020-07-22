@@ -43,7 +43,7 @@ bool ConfigManager::Load() {
 bool ConfigManager::Save()
 {
     if (BWrapper::FileSearchPriority::Assets == FSearchPriority) {
-        logError("ConfigManager::Save(): Asset config file save is not allowed %s", this->FileName.c_str());
+        logError("Asset config file save is not allowed %s", this->FileName.c_str());
         return false;
     }
 
