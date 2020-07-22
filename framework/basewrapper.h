@@ -45,27 +45,30 @@ public:
 class AkkordColor
 {
 private:
-    Uint32 color;
+    Uint32 ABGRcolor;
 public:
-    constexpr AkkordColor() : color{ 0 } {};
-    constexpr explicit AkkordColor(Uint32 Color) : color(Color) {};
-    constexpr AkkordColor(Uint8 R, Uint8 G, Uint8 B, Uint8 A) : color{ RGBA2Int32(R, G, B, A) } {};
+    constexpr AkkordColor() : ABGRcolor{ 0 } {};
+    constexpr explicit AkkordColor(Uint32 Color) : ABGRcolor(Color) {};
+    constexpr AkkordColor(Uint8 R, Uint8 G, Uint8 B, Uint8 A) : ABGRcolor{ RGBA2Int32(R, G, B, A) } {};
     constexpr AkkordColor(Uint8 R, Uint8 G, Uint8 B) : AkkordColor(R, G, B, 255) {};
 
-    void                 SetUint32(Uint32 Color) { color = Color; };
+    void                 SetUint32(Uint32 ARGB) { ABGRcolor = ARGB; };
     void                 SetRGB(Uint8 R, Uint8 G, Uint8 B) { SetRGBA(R, G, B, static_cast<Uint8>(255)); };
-    void                 SetRGBA(Uint8 R, Uint8 G, Uint8 B, Uint8 A) { color = AkkordColor::RGBA2Int32(R, G, B, A); };
+    void                 SetRGBA(Uint8 R, Uint8 G, Uint8 B, Uint8 A) { ABGRcolor = AkkordColor::RGBA2Int32(R, G, B, A); };
 
-    void                 SetR(Uint8 R) { color &= static_cast<Uint32>(0xffffff00); color |= static_cast<Uint32>(R); };
-    void                 SetG(Uint8 G) { color &= static_cast<Uint32>(0xffff00ff); color |= (static_cast<Uint32>(G) << 8); };
-    void                 SetB(Uint8 B) { color &= static_cast<Uint32>(0xff00ffff); color |= (static_cast<Uint32>(B) << 16); };
-    void                 SetA(Uint8 A) { color &= static_cast<Uint32>(0x00ffffff); color |= (static_cast<Uint32>(A) << 24); };
+    void                 SetR(Uint8 R) { ABGRcolor &= static_cast<Uint32>(0xffffff00); ABGRcolor |= static_cast<Uint32>(R); };
+    void                 SetG(Uint8 G) { ABGRcolor &= static_cast<Uint32>(0xffff00ff); ABGRcolor |= (static_cast<Uint32>(G) << 8); };
+    void                 SetB(Uint8 B) { ABGRcolor &= static_cast<Uint32>(0xff00ffff); ABGRcolor |= (static_cast<Uint32>(B) << 16); };
+    void                 SetA(Uint8 A) { ABGRcolor &= static_cast<Uint32>(0x00ffffff); ABGRcolor |= (static_cast<Uint32>(A) << 24); };
 
-    Uint32               GetInt32() const { return color; };
-    Uint8                GetR() const { return AkkordColor::GetRFromInt32(color); };
-    Uint8                GetG() const { return AkkordColor::GetGFromInt32(color); };
-    Uint8                GetB() const { return AkkordColor::GetBFromInt32(color); };
-    Uint8                GetA() const { return AkkordColor::GetAFromInt32(color); };
+    // проставление цвета копипастом из Adobe Ullistrator
+    void                 SetAiRGB24(Uint32 RGB) { SetRGBA(static_cast<Uint8>((RGB & static_cast<Uint32>(0xff0000)) >> 16), static_cast<Uint8>((RGB & static_cast<Uint32>(0x00ff00)) >> 8), static_cast<Uint8>((RGB & static_cast<Uint32>(0x0000ff))), 255); };
+
+    Uint32               GetInt32() const { return ABGRcolor; };
+    Uint8                GetR() const { return AkkordColor::GetRFromInt32(ABGRcolor); };
+    Uint8                GetG() const { return AkkordColor::GetGFromInt32(ABGRcolor); };
+    Uint8                GetB() const { return AkkordColor::GetBFromInt32(ABGRcolor); };
+    Uint8                GetA() const { return AkkordColor::GetAFromInt32(ABGRcolor); };
 
     static constexpr Uint8 GetRFromInt32(Uint32 ColorInt32) { return static_cast<Uint8>((ColorInt32 & static_cast<Uint32>(0x000000ff))); };
     static constexpr Uint8 GetGFromInt32(Uint32 ColorInt32) { return static_cast<Uint8>((ColorInt32 & static_cast<Uint32>(0x0000ff00)) >> 8); };
@@ -74,8 +77,8 @@ public:
 
     static constexpr Uint32 RGBA2Int32(int r, int g, int b, int a) { return static_cast<Uint32>(r) | (static_cast<Uint32>(g) << 8) | (static_cast<Uint32>(b) << 16) | (static_cast<Uint32>(a) << 24); };
 
-    bool operator== (const AkkordColor& Color) const { return Color.color == color; };
-    bool operator!= (const AkkordColor& Color) const { return Color.color != color; };
+    bool operator== (const AkkordColor& Color) const { return Color.ABGRcolor == ABGRcolor; };
+    bool operator!= (const AkkordColor& Color) const { return Color.ABGRcolor != ABGRcolor; };
 };
 
 class BWrapper
