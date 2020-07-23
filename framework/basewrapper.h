@@ -164,6 +164,8 @@ public:
 
     // Drawing functions
     static bool                SetCurrentColor(const AkkordColor& Color);
+    static bool                SetCurrentColor(Uint8 R, Uint8 G, Uint8 B) { return SetCurrentColor(AkkordColor(R, G, B)); };
+    static bool                SetCurrentColor(Uint8 R, Uint8 G, Uint8 B, Uint8 A) { return SetCurrentColor(AkkordColor(R, G, B, A)); };
     static bool                DrawRect(const AkkordRect& Rect);
     static bool                DrawRect(int X, int Y, int W, int H);
     static bool                FillRect(const AkkordRect& Rect);

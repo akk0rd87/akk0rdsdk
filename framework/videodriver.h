@@ -250,6 +250,7 @@ public:
     };
     void        WrapText(const char* Text, float ScaleMutiplier, std::string& ResultString, float& UsedScale, AkkordPoint& Size);
     AkkordPoint DrawText(int X, int Y, const char* Text);
+    AkkordPoint DrawText(const AkkordPoint& Position, const char* Text) { return DrawText(Position.x, Position.y, Text); };
 
     SDFFontBuffer(const SDFFontBuffer& rhs) = delete; // Копирующий: конструктор
     SDFFontBuffer(SDFFontBuffer&& rhs) = default; // Перемещающий: конструктор
