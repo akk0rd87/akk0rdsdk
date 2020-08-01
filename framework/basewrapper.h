@@ -290,10 +290,10 @@ public:
     SDL_Texture* GetTexture() { return tex.get(); };
 
     AkkordTexture() : tex(nullptr, nullptr) {};
-    ~AkkordTexture() = default;
+
     AkkordTexture(const AkkordTexture& rhs) = delete; // Копирующий: конструктор
-    AkkordTexture(AkkordTexture&& tmp) = default; // Перемещающий конструктор объявлен
     AkkordTexture& operator= (const AkkordTexture& rhs) = delete; // Оператор копирующего присваивания
+    AkkordTexture(AkkordTexture&& rhs) = default; // Перемещающий: конструктор
     AkkordTexture& operator= (AkkordTexture&& rhs) = default; // Оператор перемещающего присваивания
 };
 
@@ -308,12 +308,12 @@ public:
     bool Close() { List.clear(); this->Size = this->Pointer = 0; return true; };
     bool Next(DirContentElement*& Element);
     DirContentReader() : Size(0), Pointer(0) {};
-    ~DirContentReader() { Close(); };
 
+    ~DirContentReader() = default;
     DirContentReader(const DirContentReader& rhs) = delete; // Копирующий: конструктор
-    DirContentReader(DirContentReader&& rhs) = default; // Перемещающий: конструктор
     DirContentReader& operator= (const DirContentReader& rhs) = delete; // Оператор копирующего присваивания
-    DirContentReader& operator= (DirContentReader&& rhs) = delete; // Оператор перемещающего присваивания
+    DirContentReader(DirContentReader&& rhs) = default; // Перемещающий: конструктор
+    DirContentReader& operator= (DirContentReader&& rhs) = default; // Оператор перемещающего присваивания
 };
 
 class FileReader

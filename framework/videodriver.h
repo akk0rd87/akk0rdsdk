@@ -38,11 +38,11 @@ public:
     AkkordPoint GetSize() { return akkordTexture.GetSize(); };
     ~SDFGLTexture() { Clear(); };
 
-    SDFGLTexture() {};
+    SDFGLTexture() = default;
     SDFGLTexture(const SDFGLTexture& rhs) = delete; // Копирующий: конструктор
-    SDFGLTexture(SDFGLTexture&& rhs) = delete; // Перемещающий: конструктор
     SDFGLTexture& operator= (const SDFGLTexture& rhs) = delete; // Оператор копирующего присваивания
-    SDFGLTexture& operator= (SDFGLTexture&& rhs) = delete; // Оператор перемещающего присваивания
+    SDFGLTexture(SDFGLTexture&& rhs) = default; // Перемещающий: конструктор
+    SDFGLTexture& operator= (SDFGLTexture&& rhs) = default; // Оператор перемещающего присваивания
 };
 
 class SDFTexture
@@ -92,11 +92,11 @@ public:
         Texture.Clear();
     };
 
-    SDFTexture() {};
+    SDFTexture() = default;
     SDFTexture(const SDFTexture& rhs) = delete; // Копирующий: конструктор
-    SDFTexture(SDFTexture&& rhs) = delete; // Перемещающий: конструктор
     SDFTexture& operator= (const SDFTexture& rhs) = delete; // Оператор копирующего присваивания
-    SDFTexture& operator= (SDFTexture&& rhs) = delete; // Оператор перемещающего присваивания
+    SDFTexture(SDFTexture&& rhs) = default; // Перемещающий: конструктор
+    SDFTexture& operator= (SDFTexture&& rhs) = default; // Оператор перемещающего присваивания
 };
 
 class SDFFont
@@ -126,12 +126,11 @@ public:
         FontAtlas.Clear();
     };
 
-    SDFFont() {};
-    ~SDFFont() { Clear(); };
+    SDFFont() = default;
     SDFFont(const SDFFont& rhs) = delete; // Копирующий: конструктор
-    SDFFont(SDFFont&& rhs) = delete; // Перемещающий: конструктор
     SDFFont& operator= (const SDFFont& rhs) = delete; // Оператор копирующего присваивания
-    SDFFont& operator= (SDFFont&& rhs) = delete; // Оператор перемещающего присваивания
+    SDFFont(SDFFont&& rhs) = default; // Перемещающий: конструктор
+    SDFFont& operator= (SDFFont&& rhs) = default; // Оператор перемещающего присваивания
 private:
     mutable SDFGLTexture FontAtlas;
     struct SDFCharInfo {
@@ -240,10 +239,6 @@ public:
         Clear();
     };
 
-    ~SDFFontBuffer() {
-        Clear();
-        sdfFont = nullptr;
-    };
     // сейчас это int, возможно для этой функции сделать отдельный тип со float
     AkkordPoint GetTextSize(const char* Text) const {
         return GetTextSizeByLine(Text, nullptr);
@@ -253,9 +248,9 @@ public:
     AkkordPoint DrawText(const AkkordPoint& Position, const char* Text) { return DrawText(Position.x, Position.y, Text); };
 
     SDFFontBuffer(const SDFFontBuffer& rhs) = delete; // Копирующий: конструктор
-    SDFFontBuffer(SDFFontBuffer&& rhs) = default; // Перемещающий: конструктор
     SDFFontBuffer& operator= (const SDFFontBuffer& rhs) = delete; // Оператор копирующего присваивания
-    SDFFontBuffer& operator= (SDFFontBuffer&& rhs) = delete; // Оператор перемещающего присваивания
+    SDFFontBuffer(SDFFontBuffer&& rhs) = default; // Перемещающий: конструктор
+    SDFFontBuffer& operator= (SDFFontBuffer&& rhs) = default; // Оператор перемещающего присваивания
 };
 
 class VideoDriver {
