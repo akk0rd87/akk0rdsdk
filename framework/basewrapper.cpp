@@ -371,15 +371,8 @@ bool BWrapper::SetWindowSize(int W, int H)
 }
 bool AkkordTexture::CreateFromSurface(SDL_Surface* Surface)
 {
-    if (tex != nullptr)
-    {
-        this->Destroy();
-    }
-
-    tex = SDL_CreateTextureFromSurface(CurrentContext.CurrentRenderer, Surface);
-
-    if (!tex)
-    {
+    tex = std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)>(SDL_CreateTextureFromSurface(CurrentContext.CurrentRenderer, Surface), SDL_DestroyTexture);
+    if (!tex) {
         logError("Error create texture from surface %s", SDL_GetError());
         return false;
     }
@@ -388,11 +381,6 @@ bool AkkordTexture::CreateFromSurface(SDL_Surface* Surface)
 
 bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Type, float Scale)
 {
-    if (tex != nullptr)
-    {
-        this->Destroy();
-    }
-
     if (nullptr == Buffer)
     {
         logError("Error load texture from memory: buffer is not specified");
@@ -504,7 +492,7 @@ bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const B
 
 bool AkkordTexture::SetColorMod(Uint8 R, Uint8 G, Uint8 B)
 {
-    if (SDL_SetTextureColorMod(tex, R, G, B) == 0)
+    if (SDL_SetTextureColorMod(tex.get(), R, G, B) == 0)
         return true;
 
     logError("SDL_SetTextureColorMod error: %s", SDL_GetError());
@@ -513,7 +501,7 @@ bool AkkordTexture::SetColorMod(Uint8 R, Uint8 G, Uint8 B)
 
 bool AkkordTexture::SetAlphaMod(Uint8 A)
 {
-    if (SDL_SetTextureAlphaMod(tex, A) == 0)
+    if (SDL_SetTextureAlphaMod(tex.get(), A) == 0)
         return true;
 
     logError("SDL_SetTextureAlphaMod error: %s", SDL_GetError());
@@ -533,7 +521,7 @@ bool AkkordTexture::Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas
         NativeSrcRect_ptr = &NativeSrcRect;
     }
 
-    auto res = SDL_RenderCopy(CurrentContext.CurrentRenderer, tex, NativeSrcRect_ptr, &NativeDstRect);
+    auto res = SDL_RenderCopy(CurrentContext.CurrentRenderer, tex.get(), NativeSrcRect_ptr, &NativeDstRect);
 
     if (res != 0)
     {
@@ -572,7 +560,7 @@ bool AkkordTexture::Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas
     // converting Flip
     const SDL_RendererFlip flip = (SDL_RendererFlip)Flip;
 
-    auto res = SDL_RenderCopyEx(CurrentContext.CurrentRenderer, tex, NativeSrcRect_ptr, &NativeDstRect, Angle, point_ptr, flip);
+    auto res = SDL_RenderCopyEx(CurrentContext.CurrentRenderer, tex.get(), NativeSrcRect_ptr, &NativeDstRect, Angle, point_ptr, flip);
 
     if (res != 0)
     {
@@ -588,7 +576,7 @@ AkkordPoint AkkordTexture::GetSize() const
     AkkordPoint Point(-1, -1);
     if (tex)
     {
-        SDL_QueryTexture(tex, NULL, NULL, &Point.x, &Point.y);
+        SDL_QueryTexture(tex.get(), nullptr, nullptr, &Point.x, &Point.y);
     }
     else
     {
@@ -1143,7 +1131,7 @@ bool FileReader::Open(const char* Fname, BWrapper::FileSearchPriority SearchPrio
         opened = true;
     }
     return opened;
-};
+    };
 
 void FileReader::Close()
 {

@@ -273,33 +273,28 @@ public:
 class AkkordTexture
 {
 private:
-    SDL_Texture* tex = nullptr;
+    std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> tex;
 public:
     enum struct TextureType : unsigned char { BMP, PNG, JPEG, SVG };
     struct Flip { enum : unsigned char { None = SDL_FLIP_NONE, Horizontal = SDL_FLIP_HORIZONTAL, Vertical = SDL_FLIP_VERTICAL }; };
-    void Destroy() { if (tex) { SDL_DestroyTexture(tex); }; tex = nullptr; };
-    //bool LoadFromFile(const char* FileName);
+    void Destroy() { tex.reset(); };
     bool LoadFromFile(const char* FileName, TextureType Type, const BWrapper::FileSearchPriority SearchPriority = BWrapper::FileSearchPriority::Assets, float Scale = 1.0f);
     bool LoadFromMemory(const char* Buffer, int Size, TextureType Type, float Scale = 1.0f);
     bool CreateFromSurface(SDL_Surface* Surface);
-    //int Draw(AkkordRect Rect);
-    //int Draw(AkkordRect RectFromAtlas, AkkordRect Rect);
     bool Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas = nullptr) const;
     bool Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas, unsigned char Flip, double Angle, AkkordPoint* Point) const;
     AkkordPoint GetSize() const;
     bool SetColorMod(Uint8 R, Uint8 G, Uint8 B);
     bool SetColorMod(const AkkordColor& ModColor) { return SetColorMod(ModColor.GetR(), ModColor.GetG(), ModColor.GetB()); };
     bool SetAlphaMod(Uint8 A);
+    SDL_Texture* GetTexture() { return tex.get(); };
 
-    AkkordTexture() : tex(nullptr) {};
-    ~AkkordTexture() { Destroy(); };
-
-    SDL_Texture* GetTexture() { return tex; };
-
+    AkkordTexture() : tex(nullptr, nullptr) {};
+    ~AkkordTexture() = default;
     AkkordTexture(const AkkordTexture& rhs) = delete; // Копирующий: конструктор
-    AkkordTexture(AkkordTexture&& tmp) { this->tex = tmp.tex; tmp.tex = nullptr; }; // Перемещающий конструктор объявлен
+    AkkordTexture(AkkordTexture&& tmp) = default; // Перемещающий конструктор объявлен
     AkkordTexture& operator= (const AkkordTexture& rhs) = delete; // Оператор копирующего присваивания
-    AkkordTexture& operator= (AkkordTexture&& rhs) = delete; // Оператор перемещающего присваивания
+    AkkordTexture& operator= (AkkordTexture&& rhs) = default; // Оператор перемещающего присваивания
 };
 
 class DirContentReader
