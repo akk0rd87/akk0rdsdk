@@ -26,24 +26,27 @@ public:
     // Return Sprite postion in Atlas
     AkkordPoint GetSpriteSize(IndexType SpriteIndex);
     AkkordRect  GetSpriteRect(IndexType SpriteIndex);
-    void        Clear();
+    void        Clear() { Sprites.clear(); AtlasTextureList.clear(); };
     void        ReserveSprites(std::size_t Count) {
         Sprites.reserve(Count);
     };
 
-    void        ReserveAtlases(std::size_t Count) {
-        AtlasTextureList.reserve(Count);
-    }
+    void        ReserveAtlases(std::size_t Count) { AtlasTextureList.reserve(Count); }
 
     AkkordTexture* GetAtlasBySprite(IndexType SpriteIndex);
 
-    AtlasManager();
-    ~AtlasManager();
+    AtlasManager() = default;
+    ~AtlasManager() = default;
+    AtlasManager(AtlasManager&& rhs) = default; // Перемещающий: конструктор
+    AtlasManager& operator= (AtlasManager&& rhs) = default; // Оператор перемещающего присваивания
+
+    AtlasManager(const AtlasManager& rhs) = delete; // Копирующий: конструктор
+    AtlasManager& operator= (const AtlasManager& rhs) = delete; // Оператор копирующего присваивания
 
 private:
 
     // список текстур
-    std::vector<std::unique_ptr<AkkordTexture>> AtlasTextureList;
+    std::vector<AkkordTexture> AtlasTextureList;
 
     // структура спрайта
     struct SpriteStruct {
@@ -59,13 +62,6 @@ private:
     bool IsValidSpriteIndex(IndexType SpriteIndex);
     bool IsValidAtlasIndex(IndexType AtlasIndex);
     void ParseFile_LeshyLabsText(FileReader& fr, IndexType AtlasIndex);
-    void AddTexture();
-
-    //Запрещаем создавать экземпляр класса AtlasManager
-    AtlasManager(const AtlasManager& rhs) = delete; // Копирующий: конструктор
-    AtlasManager(AtlasManager&& rhs) = delete; // Перемещающий: конструктор
-    AtlasManager& operator= (const AtlasManager& rhs) = delete; // Оператор копирующего присваивания
-    AtlasManager& operator= (AtlasManager&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 #endif // __AKK0RD_ATLAS_MANAGER_H__

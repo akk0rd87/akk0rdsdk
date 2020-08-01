@@ -31,9 +31,9 @@ void AtlasManager::ParseFile_LeshyLabsText(FileReader& fr, IndexType AtlasIndex)
 
 AtlasManager::IndexType AtlasManager::LoadAtlas(const char* ListFilename, const char* TextureFilename, AtlasManager::AtlasType Type, BWrapper::FileSearchPriority ListSearchPriority, BWrapper::FileSearchPriority TextureSearchPriority)
 {
-    AddTexture();
-    auto index = AtlasTextureList.size() - 1;
-    AtlasTextureList[index]->LoadFromFile(TextureFilename, AkkordTexture::TextureType::PNG, TextureSearchPriority);
+    AtlasTextureList.emplace_back();
+    const auto index = AtlasTextureList.size() - 1;
+    AtlasTextureList.back().LoadFromFile(TextureFilename, AkkordTexture::TextureType::PNG, TextureSearchPriority);
 
     FileReader fr;
     if (fr.Open(ListFilename, ListSearchPriority))
@@ -88,7 +88,7 @@ AtlasManager::IndexType AtlasManager::GetIndexBySpriteName(IndexType AtlasIndex,
 AkkordTexture* AtlasManager::GetAtlasBySprite(IndexType SpriteIndex)
 {
     if (IsValidSpriteIndex(SpriteIndex))
-        return AtlasTextureList[Sprites[SpriteIndex].altasIndex].get();
+        return &AtlasTextureList[Sprites[SpriteIndex].altasIndex];
 
     return nullptr;
 };
@@ -96,7 +96,7 @@ AkkordTexture* AtlasManager::GetAtlasBySprite(IndexType SpriteIndex)
 void AtlasManager::DrawSprite(IndexType SpriteIndex, const AkkordRect& Rect, unsigned char Flip, double Angle, AkkordPoint* Point)
 {
     if (IsValidSpriteIndex(SpriteIndex))
-        AtlasTextureList[Sprites[SpriteIndex].altasIndex]->Draw(Rect, &Sprites[SpriteIndex].rect, Flip, Angle, Point);
+        AtlasTextureList[Sprites[SpriteIndex].altasIndex].Draw(Rect, &Sprites[SpriteIndex].rect, Flip, Angle, Point);
 }
 
 AkkordPoint AtlasManager::GetSpriteSize(IndexType SpriteIndex)
@@ -115,25 +115,4 @@ AkkordRect AtlasManager::GetSpriteRect(IndexType SpriteIndex)
         return Sprites[SpriteIndex].rect;
 
     return AkkordRect(-1, -1, -1, -1);
-}
-
-void AtlasManager::Clear()
-{
-    Sprites.clear();
-    AtlasTextureList.clear();
-}
-
-AtlasManager::AtlasManager()
-{
-    this->Clear();
-}
-
-AtlasManager::~AtlasManager()
-{
-    this->Clear();
-}
-
-void AtlasManager::AddTexture()
-{
-    AtlasTextureList.emplace_back(std::make_unique<AkkordTexture>());
 }
