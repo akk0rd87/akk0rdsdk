@@ -76,7 +76,11 @@ public:
         return true;
     };
     void SetColor(const AkkordColor& Color) { this->Color = Color; };
+    void SetColor(Uint8 R, Uint8 G, Uint8 B) { this->Color = AkkordColor(R, G, B); };
+    void SetColor(Uint8 R, Uint8 G, Uint8 B, Uint8 A) { this->Color = AkkordColor(R, G, B, A); };
     void SetOutlineColor(const AkkordColor& OutlineColor) { this->OutlineColor = OutlineColor; };
+    void SetOutlineColor(Uint8 R, Uint8 G, Uint8 B) { this->OutlineColor = AkkordColor(R, G, B); };
+    void SetOutlineColor(Uint8 R, Uint8 G, Uint8 B, Uint8 A) { this->OutlineColor = AkkordColor(R, G, B, A); };
     bool Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect = nullptr);
     bool Flush();
     void SetAutoFlush(bool AutoFlush) { this->AutoFlush = AutoFlush; };
@@ -202,8 +206,12 @@ public:
     void SetScale(float ScaleX, float ScaleY) { this->scaleX = ScaleX; this->scaleY = ScaleY; };
 
     void SetColor(const AkkordColor& Color) { this->color = Color; };
+    void SetColor(Uint8 R, Uint8 G, Uint8 B) { this->color = AkkordColor(R, G, B); };
+    void SetColor(Uint8 R, Uint8 G, Uint8 B, Uint8 A) { this->color = AkkordColor(R, G, B, A); };
     void SetOutline(bool Outline) { this->outline = Outline; };
     void SetOutlineColor(const AkkordColor& OutlineColor) { this->outlineColor = OutlineColor; };
+    void SetOutlineColor(Uint8 R, Uint8 G, Uint8 B) { this->outlineColor = AkkordColor(R, G, B); };
+    void SetOutlineColor(Uint8 R, Uint8 G, Uint8 B, Uint8 A) { this->outlineColor = AkkordColor(R, G, B, A); };
     void SetBorder(float BorderWidth) { this->Border = BorderWidth; };
 
     float GetScaleX() const { return this->scaleX; };
