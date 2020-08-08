@@ -248,12 +248,14 @@ public:
     };
 
     // сейчас это int, возможно для этой функции сделать отдельный тип со float
-    AkkordPoint GetTextSize(const char* Text) const {
-        return GetTextSizeByLine(Text, nullptr);
-    };
+    AkkordPoint GetTextSize(const char* Text) const { return GetTextSizeByLine(Text, nullptr); };
+    AkkordPoint GetTextSize(const std::string& Text) const { return GetTextSizeByLine(Text.c_str(), nullptr); };
     void        WrapText(const char* Text, float ScaleMutiplier, std::string& ResultString, float& UsedScale, AkkordPoint& Size);
     AkkordPoint DrawText(int X, int Y, const char* Text);
     AkkordPoint DrawText(const AkkordPoint& Position, const char* Text) { return DrawText(Position.x, Position.y, Text); };
+
+    AkkordPoint DrawText(int X, int Y, const std::string& Text) { return DrawText(X, Y, Text.c_str()); };
+    AkkordPoint DrawText(const AkkordPoint& Position, const std::string& Text) { return DrawText(Position.x, Position.y, Text.c_str()); };
 
     SDFFontBuffer(const SDFFontBuffer& rhs) = delete; // Копирующий: конструктор
     SDFFontBuffer& operator= (const SDFFontBuffer& rhs) = delete; // Оператор копирующего присваивания
