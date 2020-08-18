@@ -861,7 +861,7 @@ LogParamsStruct* BWrapper::GetLogParams()
 
 void BWrapper::Log(BWrapper::LogPriority Priority, const char* File, const char* Function, unsigned Line, SDL_PRINTF_FORMAT_STRING const char* Fmt, ...)
 {
-#ifdef __AKK0RD_DEBUG_MACRO__
+#ifdef __AKK0RD_SDK_DEBUG_MACRO__
     // https://wiki.libsdl.org/CategoryLog
     SDL_LogPriority sev = (SDL_LogPriority)Priority;
 

@@ -1,5 +1,5 @@
-#ifndef __AKK0RD_ADS_MANAGER__
-#define __AKK0RD_ADS_MANAGER__
+#ifndef __AKK0RD_SDK_ADS_MANAGER__
+#define __AKK0RD_SDK_ADS_MANAGER__
 
 #include <chrono>
 #include "admob.h"
@@ -65,4 +65,4 @@ public:
     adsManager& operator= (adsManager&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
-#endif // __AKK0RD_ADS_MANAGER__
+#endif // __AKK0RD_SDK_ADS_MANAGER__

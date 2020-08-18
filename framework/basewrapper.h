@@ -1,6 +1,6 @@
 #pragma once
-#ifndef __AKK0RD_BASE_BASEWRAPPER_H__
-#define __AKK0RD_BASE_BASEWRAPPER_H__
+#ifndef __AKK0RD_SDK_BASE_BASEWRAPPER_H__
+#define __AKK0RD_SDK_BASE_BASEWRAPPER_H__
 
 #define _CRT_SECURE_NO_WARNINGS
 
@@ -255,7 +255,7 @@ public:
 
     static constexpr bool IsReleaseBuild()
     {
-#ifdef __AKK0RD_DEBUG_MACRO__
+#ifdef __AKK0RD_SDK_DEBUG_MACRO__
         return false;
 #endif
         return true;
@@ -382,4 +382,4 @@ public:
     WAVPlayer& operator= (WAVPlayer&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
-#endif // __AKK0RD_BASE_BASEWRAPPER_H__
+#endif // __AKK0RD_SDK_BASE_BASEWRAPPER_H__

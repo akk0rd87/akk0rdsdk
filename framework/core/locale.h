@@ -1,6 +1,6 @@
 #pragma once
-#ifndef __AKK0RD_LOCALE_HEADER__
-#define __AKK0RD_LOCALE_HEADER__
+#ifndef __AKK0RD_SDK_LOCALE_HEADER__
+#define __AKK0RD_SDK_LOCALE_HEADER__
 
 #include "framework_defines.h"
 
@@ -202,4 +202,4 @@ public:
     };
 };
 
-#endif // __AKK0RD_LOCALE_HEADER__
+#endif // __AKK0RD_SDK_LOCALE_HEADER__

@@ -1,6 +1,6 @@
 #pragma once
-#ifndef __AKK0RD_ANDROIDADMOBWRAPPER_H__
-#define __AKK0RD_ANDROIDADMOBWRAPPER_H__
+#ifndef __AKK0RD_SDK_ANDROIDADMOBWRAPPER_H__
+#define __AKK0RD_SDK_ANDROIDADMOBWRAPPER_H__
 
 #include "admob.h"
 #include "basewrapper.h"
@@ -186,4 +186,4 @@ bool AdMobAndroid::RewardedVideoShow()
     return false;
 };
 
-#endif // __AKK0RD_ANDROIDADMOBWRAPPER_H__
+#endif // __AKK0RD_SDK_ANDROIDADMOBWRAPPER_H__

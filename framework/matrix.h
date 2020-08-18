@@ -1,5 +1,5 @@
-#ifndef __AKK0RD_MATRIX_H__
-#define __AKK0RD_MATRIX_H__
+#ifndef __AKK0RD_SDK_MATRIX_H__
+#define __AKK0RD_SDK_MATRIX_H__
 
 template <class T>
 class Matrix {
@@ -101,4 +101,4 @@ public:
     */
 };
 
-#endif // __AKK0RD_MATRIX_H__
+#endif // __AKK0RD_SDK_MATRIX_H__

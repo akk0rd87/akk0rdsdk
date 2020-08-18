@@ -1,6 +1,6 @@
 #pragma once
-#ifndef __AKK0RD_CONFIG_MANAGER_H__
-#define __AKK0RD_CONFIG_MANAGER_H__
+#ifndef __AKK0RD_SDK_CONFIG_MANAGER_H__
+#define __AKK0RD_SDK_CONFIG_MANAGER_H__
 
 #include <unordered_map>
 #include "basewrapper.h"
@@ -43,4 +43,4 @@ private:
     };
 };
 
-#endif // __AKK0RD_CONFIG_MANAGER_H__
+#endif // __AKK0RD_SDK_CONFIG_MANAGER_H__

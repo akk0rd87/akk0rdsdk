@@ -1,5 +1,5 @@
-﻿#ifndef __AKK0RD_OPENGLES_DRIVER_H__
-#define __AKK0RD_OPENGLES_DRIVER_H__
+﻿#ifndef __AKK0RD_SDK_OPENGLES_DRIVER_H__
+#define __AKK0RD_SDK_OPENGLES_DRIVER_H__
 
 #include "SDL_opengles2.h"
 #include "basewrapper.h"
@@ -72,4 +72,4 @@ public:
     GLESDriver& operator= (GLESDriver&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
-#endif // __AKK0RD_OPENGLES_DRIVER_H__
+#endif // __AKK0RD_SDK_OPENGLES_DRIVER_H__

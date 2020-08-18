@@ -1,6 +1,6 @@
 #pragma once
-#ifndef __AKK0RD_PLATFORMS_H__
-#define __AKK0RD_PLATFORMS_H__
+#ifndef __AKK0RD_SDK_PLATFORMS_H__
+#define __AKK0RD_SDK_PLATFORMS_H__
 
 #include "locale.h"
 
@@ -353,4 +353,4 @@ int Platforms::GetAudioOutputBufferSize() { // only for Android
     return -1;
 }
 
-#endif // __AKK0RD_PLATFORMS_H__
+#endif // __AKK0RD_SDK_PLATFORMS_H__

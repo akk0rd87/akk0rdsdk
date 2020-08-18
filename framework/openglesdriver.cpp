@@ -10,7 +10,7 @@ void GLESDriver::Init()
 
 bool GLESDriver::CheckError(const char* File, const char* Function, unsigned Line)
 {
-#ifdef __AKK0RD_DEBUG_MACRO__
+#ifdef __AKK0RD_SDK_DEBUG_MACRO__
     const auto glErr = this->glGetError();
     if (glErr != GL_NO_ERROR)
     {
@@ -34,7 +34,7 @@ bool GLESDriver::CheckError(const char* File, const char* Function, unsigned Lin
 
 void GLESDriver::PrintProgamLog(GLuint Program, const char* File, const char* Function, unsigned Line)
 {
-#ifdef __AKK0RD_DEBUG_MACRO__
+#ifdef __AKK0RD_SDK_DEBUG_MACRO__
     GLint logLength = 0;
     glGetProgramiv(Program, GL_INFO_LOG_LENGTH, &logLength);
     if (logLength > 0) {
@@ -50,7 +50,7 @@ void GLESDriver::PrintProgamLog(GLuint Program, const char* File, const char* Fu
 
 void GLESDriver::PrintShaderLog(GLuint Shader, const char* File, const char* Function, unsigned Line)
 {
-#ifdef __AKK0RD_DEBUG_MACRO__
+#ifdef __AKK0RD_SDK_DEBUG_MACRO__
     GLint logLength = 0;
     glGetShaderiv(Shader, GL_INFO_LOG_LENGTH, &logLength);
     if (logLength > 0) {
@@ -66,7 +66,7 @@ void GLESDriver::PrintShaderLog(GLuint Shader, const char* File, const char* Fun
 
 void GLESDriver::PrintShaderSource(GLuint Shader)
 {
-#ifdef __AKK0RD_DEBUG_MACRO__
+#ifdef __AKK0RD_SDK_DEBUG_MACRO__
     GLint logLength = 0;
     glGetShaderiv(Shader, GL_SHADER_SOURCE_LENGTH, &logLength);
     if (logLength > 0) {

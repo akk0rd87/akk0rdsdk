@@ -1,6 +1,6 @@
 #pragma once
-#ifndef __AKK0RD_CustomEvents_H__
-#define __AKK0RD_CustomEvents_H__
+#ifndef __AKK0RD_SDK_CustomEvents_H__
+#define __AKK0RD_SDK_CustomEvents_H__
 
 #include "core/core_defines.h"
 #include "basewrapper.h"
@@ -85,4 +85,4 @@ public:
     };
 };
 
-#endif // __AKK0RD_CustomEvents_H__
+#endif // __AKK0RD_SDK_CustomEvents_H__

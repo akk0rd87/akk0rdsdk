@@ -160,7 +160,7 @@ static GradientProgram gradientProgram;
 static GLESDriver glesDriver;
 //static opengls
 
-#ifdef __AKK0RD_DEBUG_MACRO__
+#ifdef __AKK0RD_SDK_DEBUG_MACRO__
 #define CheckGLESError()            glesDriver.CheckError    (         __FILE__, __FUNCTION__, __LINE__)
 #define PrintGLESProgamLog(Program) glesDriver.PrintProgamLog(Program, __FILE__, __FUNCTION__, __LINE__)
 #define PrintGLESShaderLog(Shader)  glesDriver.PrintShaderLog(Shader , __FILE__, __FUNCTION__, __LINE__)

@@ -1,6 +1,6 @@
 #pragma once
-#ifndef __AKK0RD_IOS_BASEWRAPPER_H__
-#define __AKK0RD_IOS_BASEWRAPPER_H__
+#ifndef __AKK0RD_SDK_IOS_BASEWRAPPER_H__
+#define __AKK0RD_SDK_IOS_BASEWRAPPER_H__
 #include "basewrapper.h"
 #include "../core_defines.h"
 
@@ -23,4 +23,4 @@ class iOSWrapper
     static void             SharePNG(const char* Title, const char* File);
 };
 
-#endif // __AKK0RD_IOS_BASEWRAPPER_H__
+#endif // __AKK0RD_SDK_IOS_BASEWRAPPER_H__

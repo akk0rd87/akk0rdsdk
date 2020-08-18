@@ -1,6 +1,6 @@
 #pragma once
-#ifndef __AKK0RD_ANDROID_INAPP_BILLING_H__
-#define __AKK0RD_ANDROID_INAPP_BILLING_H__
+#ifndef __AKK0RD_SDK_ANDROID_INAPP_BILLING_H__
+#define __AKK0RD_SDK_ANDROID_INAPP_BILLING_H__
 
 #include "basewrapper.h"
 #include <jni.h>
@@ -148,4 +148,4 @@ bool AndroidBillingManager::ConsumeProductItem(const char* PurchaseToken)
     return true;
 }
 
-#endif // __AKK0RD_ANDROID_INAPP_BILLING_H__
+#endif // __AKK0RD_SDK_ANDROID_INAPP_BILLING_H__

@@ -1,6 +1,6 @@
 #pragma once
-#ifndef __AKK0RD_WINDOWS_BASEWRAPPER_H__
-#define __AKK0RD_WINDOWS_BASEWRAPPER_H__
+#ifndef __AKK0RD_SDK_WINDOWS_BASEWRAPPER_H__
+#define __AKK0RD_SDK_WINDOWS_BASEWRAPPER_H__
 
 #include <windows.h>
 #include <shellapi.h>
@@ -241,6 +241,6 @@ void WindowsWrapper::MessageBoxShow(int Code, const char* Title, const char* Mes
 };
 
 
-#endif //__AKK0RD_WINDOWS_BASEWRAPPER_H__
+#endif //__AKK0RD_SDK_WINDOWS_BASEWRAPPER_H__
 
 // ${AKKORD_SDK_HOME}\framework\basewrapper\windows\windows_wrapper.cpp

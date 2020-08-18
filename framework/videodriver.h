@@ -1,5 +1,5 @@
-#ifndef __AKK0RD_VIDEODRIVER_H__
-#define __AKK0RD_VIDEODRIVER_H__
+#ifndef __AKK0RD_SDK_VIDEODRIVER_H__
+#define __AKK0RD_SDK_VIDEODRIVER_H__
 
 #include <unordered_map>
 #include "basewrapper.h"
@@ -287,4 +287,4 @@ inline bool operator!(VideoDriver::Feature a) {
     return (static_cast<Uint8>(a) == 0);
 }
 
-#endif // __AKK0RD_VIDEODRIVER_H__
+#endif // __AKK0RD_SDK_VIDEODRIVER_H__

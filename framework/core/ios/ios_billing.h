@@ -1,6 +1,6 @@
 #pragma once
-#ifndef __AKK0RD_IOS_INAPP_BILLING_H__
-#define __AKK0RD_IOS_INAPP_BILLING_H__
+#ifndef __AKK0RD_SDK_IOS_INAPP_BILLING_H__
+#define __AKK0RD_SDK_IOS_INAPP_BILLING_H__
 
 #include "basewrapper.h"
 #include "billing.h"
@@ -17,4 +17,4 @@ public:
     static void SetPurchaseUpdatedCallback (BillingManager::BillingPurchaseUpdatedCallback * Callback);
 };
 
-#endif // __AKK0RD_IOS_INAPP_BILLING_H__
+#endif // __AKK0RD_SDK_IOS_INAPP_BILLING_H__

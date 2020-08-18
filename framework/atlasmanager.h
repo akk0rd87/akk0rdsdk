@@ -1,6 +1,6 @@
 #pragma once
-#ifndef __AKK0RD_ATLAS_MANAGER_H__
-#define __AKK0RD_ATLAS_MANAGER_H__
+#ifndef __AKK0RD_SDK_ATLAS_MANAGER_H__
+#define __AKK0RD_SDK_ATLAS_MANAGER_H__
 
 #include "basewrapper.h"
 
@@ -64,4 +64,4 @@ private:
     void ParseFile_LeshyLabsText(FileReader& fr, IndexType AtlasIndex);
 };
 
-#endif // __AKK0RD_ATLAS_MANAGER_H__
+#endif // __AKK0RD_SDK_ATLAS_MANAGER_H__

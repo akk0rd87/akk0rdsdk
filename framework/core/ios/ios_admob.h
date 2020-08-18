@@ -1,6 +1,6 @@
 #pragma once
-#ifndef __AKK0RD_IOS_ADMOB_H__
-#define __AKK0RD_IOS_ADMOB_H__
+#ifndef __AKK0RD_SDK_IOS_ADMOB_H__
+#define __AKK0RD_SDK_IOS_ADMOB_H__
 #include "basewrapper.h"
 #include "admob.h"
 #include "../core_defines.h"
@@ -21,4 +21,4 @@ public:
     static void SetAdEventCallback (AdMob::AdEventCallback * Callback);
 };
 
-#endif // __AKK0RD_IOS_ADMOB_H__
+#endif // __AKK0RD_SDK_IOS_ADMOB_H__

@@ -1,6 +1,6 @@
 #pragma once
-#ifndef __AKK0RD_INAPP_BILLING_H__
-#define __AKK0RD_INAPP_BILLING_H__
+#ifndef __AKK0RD_SDK_INAPP_BILLING_H__
+#define __AKK0RD_SDK_INAPP_BILLING_H__
 
 #include "basewrapper.h"
 
@@ -37,4 +37,4 @@ public:
     BillingManager& operator= (BillingManager&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
-#endif // __AKK0RD_INAPP_BILLING_H__
+#endif // __AKK0RD_SDK_INAPP_BILLING_H__
