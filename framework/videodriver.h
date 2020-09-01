@@ -86,6 +86,8 @@ public:
     void SetAutoFlush(bool AutoFlush) { this->AutoFlush = AutoFlush; };
     void SetOutline(bool Outline) { this->Outline = Outline; };
     void SetBorder(float Border) { this->Border = Border; };
+    AkkordColor GetColor() const { return Color; };
+    AkkordColor GetOutlineColor() const { return OutlineColor; };
     void Clear() {
         UV.clear();
         squareVertices.clear();
