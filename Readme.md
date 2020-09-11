@@ -20,6 +20,15 @@ Read about recommended versions of MS Visual Studio on SDL installation guide <h
 
 <http://www.oracle.com/technetwork/java/javase/downloads/index.html>
 
+#### Android SDK - need to build android apk files
+
+Android Studio
+
+<https://developer.android.com/studio/index.html>
+
+
+SET ANDROID_SDK_ROOT=C:\PortablePrograms\android-sdk
+
 #### Android NDK - need to compile native C++ libraries
 
 <https://developer.android.com/ndk/index.html>
@@ -30,19 +39,7 @@ Read about recommended versions of MS Visual Studio on SDL installation guide <h
 
 <https://developer.android.com/ndk/downloads/older_releases.html>
 
-SET ANDROID_NDK_HOME=C:\PortablePrograms\android-ndk-r15c
-
-#### Android SDK - need to build android apk files
-
-Android Studio (Not required)
-
-<https://developer.android.com/studio/index.html>
-
-Just download command line tools. I don't use Android Stuidio UI interface.
-
-<https://developer.android.com/studio/index.html#downloads>
-
-SET ANDROID_HOME=C:\PortablePrograms\android-sdk
+Do not use standalone Android NDK. Instead download it via SDK Manager in Android Studio.
 
 #### Android KeyStore Directory
 
@@ -52,7 +49,7 @@ ANDROID_KEYSTORE_HOME
 
 Reference: <https://developer.android.com/studio/command-line/adb.html>
 
-Set path to adb utility to PATH env variable. It located on %ANDROID_HOME%/platform-tools/
+Set path to adb utility to PATH env variable. It located on %ANDROID_SDK_ROOT%/platform-tools/
 
 #### Hints
 
