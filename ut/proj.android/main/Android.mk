@@ -31,6 +31,8 @@ APP_LOCAL_SRC_FILE_LIST  := $(wildcard $(MY_LOCAL_PATH)/../../src/*.cpp)
 LOCAL_SRC_FILES    := $(AKKORD_SDK_HOME)/framework/admob.cpp \
                       $(AKKORD_SDK_HOME)/framework/billing.cpp \
                       $(AKKORD_SDK_HOME)/framework/basewrapper.cpp \
+                      $(AKKORD_SDK_HOME)/framework/configmanager.cpp \
+                      $(AKKORD_SDK_HOME)/framework/core/android/android_wrapper.cpp \
                       $(APP_LOCAL_SRC_FILE_LIST)
 
 LOCAL_SHARED_LIBRARIES := SDL2
@@ -44,6 +46,6 @@ LOCAL_CPPFLAGS  = -Wall -std=c++14
 #APP_CFLAGS += -std=c++11
 #LOCAL_CFLAGS+= -std=c++11
 #LOCAL_LDLIBS := -ldl -lGLESv1_CM -lGLESv2 -llog -landroid
-LOCAL_LDLIBS =  -landroid -latomic
+LOCAL_LDLIBS =  -landroid
 
 include $(BUILD_SHARED_LIBRARY)

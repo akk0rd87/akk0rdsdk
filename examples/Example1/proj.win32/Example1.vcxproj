@@ -79,13 +79,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="$(AKKORD_SDK_HOME)\framework\basewrapper.cpp" />
+    <ClCompile Include="$(AKKORD_SDK_HOME)\framework\core\windows\windows_wrapper.cpp" />
     <ClCompile Include="$(AKKORD_SDK_HOME)\framework\atlasmanager.cpp" />
     <ClCompile Include="..\src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(AKKORD_SDK_HOME)\framework\adrandomizer.h" />
     <ClInclude Include="$(AKKORD_SDK_HOME)\framework\basewrapper.h" />
-    <ClInclude Include="$(AKKORD_SDK_HOME)\framework\platforms\windows\windows_wrapper.h" />
     <ClInclude Include="$(AKKORD_SDK_HOME)\framework\atlasmanager.h" />
     <ClInclude Include="$(AKKORD_SDK_HOME)\framework\configmanager.h" />
     <ClInclude Include="$(AKKORD_SDK_HOME)\framework\admob.h" />

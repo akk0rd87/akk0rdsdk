@@ -20,6 +20,9 @@ android {
     }
     compileSdkVersion rootProject.ext.compileSdkVersion
     defaultConfig {
+        minSdkVersion    = 14
+        targetSdkVersion = 29
+
         versionName '1.0.28'
         versionCode 39
     }
@@ -39,6 +42,7 @@ android {
         main {
             jniLibs.srcDirs = ['libs']
             manifest.srcFile '../AndroidManifest.xml'
+            java.srcDir "${akkord_sdk_path}/libraries/SDL/SDL/android-project/app/src/main/java/org/libsdl/app/"
             java.srcDir "${akkord_sdk_path}/framework/core/android/wrapper/"
             java.srcDir "${akkord_sdk_path}/framework/core/android/admob/"
             java.srcDir "${akkord_sdk_path}/framework/core/android/billing/"
@@ -123,6 +127,7 @@ android.applicationVariants.all { variant ->
 }
 
 dependencies {
+    implementation 'com.getkeepsafe.relinker:relinker:1.3.1'
     implementation 'com.google.android.gms:play-services-ads:15.0.1'
     implementation 'com.android.billingclient:billing:1.1'
 }

@@ -191,7 +191,7 @@ public:
     static bool                DirCreate(const char* Dir);
     static bool                DirExists(const char* Dir);
     static bool                DirRemoveRecursive(const char* Dir);
-    static std::string         GetInternalDir();
+    //static std::string         GetInternalDir();
     static std::string         GetInternalWriteDir();
 
     // Conversion functions

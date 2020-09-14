@@ -63,9 +63,7 @@ bool BWrapper::Init(Uint32 flags)
     SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
 
     CurrentContext.MessageBoxEvent = SDL_RegisterEvents(1);
-
-    Platforms::Init();
-
+    PlatformWrapper::GetInstance().Init();
     return true;
 };
 
@@ -175,7 +173,7 @@ char* BWrapper::File2Buffer(const char* FileName, FileSearchPriority SearchPrior
         return buffer;
 #else
         //Во всех остальных случаях читаем из папки assets
-        Fname = Platforms::GetInternalAssetsDir() + std::string(FileName);
+        Fname = PlatformWrapper::GetInstance().GetInternalAssetsDir() + std::string(FileName);
 #endif
     }
 
@@ -218,7 +216,7 @@ bool BWrapper::FileExists(const char* FileName, BWrapper::FileSearchPriority Sea
         return true;
     }
     return false;
-}
+    }
 
 void BWrapper::CloseBuffer(char*& buffer)
 {
@@ -263,7 +261,7 @@ bool BWrapper::FilePutS(FILE* File, const char* String) // http://www.cplusplus.
 
 bool BWrapper::DirCreate(const char* Dir)
 {
-    return Platforms::DirCreate(Dir);
+    return PlatformWrapper::GetInstance().DirCreate(Dir);
 }
 
 bool BWrapper::FileDelete(const char* FileName)
@@ -826,7 +824,7 @@ void BWrapper::Quit()
 
 bool BWrapper::OpenURL(const char* url)
 {
-    if (Platforms::OpenURL(url))
+    if (PlatformWrapper::GetInstance().OpenURL(url))
         return true;
 
     logError("URL %s was not opened", url);
@@ -835,23 +833,18 @@ bool BWrapper::OpenURL(const char* url)
 
 Locale::Lang BWrapper::GetDeviceLanguage()
 {
-    return Platforms::GetDeviceLanguage();
+    return PlatformWrapper::GetInstance().GetDeviceLanguage();
     //return Locale::Lang::Unknown;
 };
 
-//BWrapper::OS BWrapper::GetDeviceOS()
-//{
-//    return Platforms::GetDeviceOS();
-//};
-
 int BWrapper::AndroidGetApiLevel()
 {
-    return Platforms::AndroidGetApiLevel();
+    return PlatformSpecific::AndroidGetApiLevel();
 }
 
 bool BWrapper::AndroidShowToast(const char* Message, BWrapper::AndroidToastDuration Duration, int Gravity, int xOffset, int yOffset)
 {
-    return Platforms::AndroidShowToast(Message, Duration, Gravity, xOffset, yOffset);
+    return PlatformSpecific::AndroidShowToast(Message, Duration, Gravity, xOffset, yOffset);
 }
 
 LogParamsStruct* BWrapper::GetLogParams()
@@ -960,7 +953,7 @@ Uint32 msgBox::GetEventCode()
 
 void msgBox::Show(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS)
 {
-    Platforms::MessageBoxShow(Code, Title, Message, Button1, Button2, Button3, TimeOutMS);
+    PlatformWrapper::GetInstance().MessageBoxShow(Code, Title, Message, Button1, Button2, Button3, TimeOutMS);
 }
 
 void msgBox::DecodeEvent(const SDL_Event& Event, int& Code, msgBox::Action& Action)
@@ -1031,18 +1024,18 @@ std::string BWrapper::GetSDKVersionInfo()
 
 bool BWrapper::DirExists(const char* Dir)
 {
-    return Platforms::DirExists(Dir);
+    return PlatformWrapper::GetInstance().DirExists(Dir);
 }
 
-std::string BWrapper::GetInternalDir() { return Platforms::GetInternalDir(); };
-std::string BWrapper::GetInternalWriteDir() { return Platforms::GetInternalWriteDir(); };
+//std::string BWrapper::GetInternalDir() { return Platforms::GetInternalDir(); };
+std::string BWrapper::GetInternalWriteDir() { return PlatformWrapper::GetInstance().GetInternalWriteDir(); };
 
 int BWrapper::GetAudioOutputRate() {
-    return Platforms::GetAudioOutputRate();
+    return PlatformWrapper::GetInstance().GetAudioOutputRate();
 }
 
 int BWrapper::GetAudioOutputBufferSize() {
-    return Platforms::GetAudioOutputBufferSize();
+    return PlatformWrapper::GetInstance().GetAudioOutputBufferSize();
 }
 
 bool DirContentReader::Next(DirContentElement*& Element)
@@ -1063,7 +1056,7 @@ bool DirContentReader::Open(const char* Dir)
 
     if (BWrapper::DirExists(Dir))
     {
-        auto res = Platforms::GetDirContent(Dir, List);
+        auto res = PlatformWrapper::GetInstance().GetDirContent(Dir, List);
         this->Size = List.size();
         return res;
     }
@@ -1080,22 +1073,22 @@ bool BWrapper::DirRemove(const char* Dir)
 
 bool BWrapper::DirRemoveRecursive(const char* Dir)
 {
-    auto res = Platforms::DirRemoveRecursive(Dir);
+    auto res = PlatformWrapper::GetInstance().DirRemoveRecursive(Dir);
     return res && (!DirExists(Dir));
 };
 
 std::string BWrapper::GetEnvVariable(const char* Variable)
 {
-    return Platforms::GetEnvVariable(Variable);
+    return PlatformWrapper::GetInstance().GetEnvVariable(Variable);
 }
 
 void BWrapper::ShareText(const char* Title, const char* Message)
 {
-    Platforms::ShareText(Title, Message);
+    PlatformWrapper::GetInstance().ShareText(Title, Message);
 };
 
 void BWrapper::SharePNG(const char* Title, const char* File) {
-    Platforms::SharePNG(Title, File);
+    PlatformWrapper::GetInstance().SharePNG(Title, File);
 };
 
 //////////////////////////
@@ -1121,7 +1114,7 @@ bool FileReader::Open(const char* Fname, BWrapper::FileSearchPriority SearchPrio
     }
 #else
     if (BWrapper::FileSearchPriority::Assets == SearchPriority)
-        Path = Platforms::GetInternalAssetsDir() + "/";
+        Path = PlatformWrapper::GetInstance().GetInternalAssetsDir() + "/";
 #endif
 
     Path = Path + Fname;
