@@ -1,6 +1,7 @@
-#include "SDL.h"
+#include "basewrapper.h"
 #include "ios_wrapper.h"
 #include "../platforms.h"
+#include "../core_defines.h"
 #include "customevents.h"
 
 #import <CoreFoundation/CFBundle.h>
@@ -48,11 +49,11 @@ class iOSPlatformWrapper : public PlatformWrapper {
         }
     }
 
-    void vGetInternalWriteDir(std::string& Dir) override {
+    std::string vGetInternalWriteDir() override {
         NSArray *docdirs = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
         NSString *documents = docdirs[0];
 
-        Dir = std::string([documents UTF8String]);
+        return std::string([documents UTF8String]);
     }
 
     bool vDirExists(const char* Dir) override {
@@ -70,7 +71,7 @@ class iOSPlatformWrapper : public PlatformWrapper {
         return false;
     }
 
-    bool FileExists(const char* FileName) override { // пока не использется
+    bool FileExists(const char* FileName) { // пока не использется
         NSString *path = [[NSString alloc] initWithUTF8String:FileName];
 
         BOOL isDir;
@@ -166,7 +167,7 @@ class iOSPlatformWrapper : public PlatformWrapper {
         NSDictionary *languageDic = [NSLocale componentsFromLocaleIdentifier:language];
         NSString *languageCode = [languageDic objectForKey:@"kCFLocaleLanguageCodeKey"];
         //MessageBoxShow(10000, "Language", std::string([languageCode UTF8String]).c_str(), "Ok", nullptr, nullptr);
-        return Locale::DecodeLang_ISO639_Codestd::string([languageCode UTF8String]).c_str());
+        return Locale::DecodeLang_ISO639_Code(std::string([languageCode UTF8String]).c_str());
     }
 
     void vShareText(const char* Title, const char* Message) override {
@@ -196,7 +197,7 @@ class iOSPlatformWrapper : public PlatformWrapper {
         [sMessage release];
     };
 
-    void vMessageBoxShow (int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3) override {
+    void vMessageBoxShow (int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS) override {
         NSString *sTitle = [[NSString alloc] initWithUTF8String:Title];
         NSString *sMessage = [[NSString alloc] initWithUTF8String:Message];
 
