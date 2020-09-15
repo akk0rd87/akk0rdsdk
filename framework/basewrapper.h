@@ -235,6 +235,7 @@ public:
 
     static int                 GetAudioOutputRate(); // only for Android
     static int                 GetAudioOutputBufferSize(); // only for Android
+    static bool                LaunchAppReviewIfAvailable(); // only for Android
 
     static constexpr BWrapper::OS GetDeviceOS()
     {

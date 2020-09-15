@@ -20,6 +20,7 @@ class AndroidPlatformWrapper : public PlatformWrapper {
         //jmethodID midSharePNG                 { nullptr };
         jmethodID midGetAudioOutputRate       { nullptr };
         jmethodID midGetAudioOutputBufferSize { nullptr };
+        jmethodID midLaunchAppReviewIfAvailable { nullptr };
 
         std::string sLanguage;
         //std::string sInternalDir;
@@ -116,13 +117,14 @@ class AndroidPlatformWrapper : public PlatformWrapper {
         if(!AndroidWrapperState.UtilsClass) {
             return false;
         }
-        AndroidWrapperState.midDirectoryDelete           = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "DirectoryDelete", "(Ljava/lang/String;I)I", true);
-        AndroidWrapperState.midOpenURL                   = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "openURL", "(Ljava/lang/String;)V", true);
-        AndroidWrapperState.midShowToast                 = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "showToast", "(Ljava/lang/String;IIII)V", true);
-        AndroidWrapperState.midMkDir                     = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "MkDir", "(Ljava/lang/String;)I", true);
-        AndroidWrapperState.midShowMessageBox            = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "showMessageBox", "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)V", true);
-        AndroidWrapperState.midGetAssetManager           = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "GetAssetManager", "()Landroid/content/res/AssetManager;", true);
-        AndroidWrapperState.midShareText                 = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "shareText", "(Ljava/lang/String;Ljava/lang/String;)V", true);
+        AndroidWrapperState.midDirectoryDelete             = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "DirectoryDelete", "(Ljava/lang/String;I)I", true);
+        AndroidWrapperState.midOpenURL                     = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "openURL", "(Ljava/lang/String;)V", true);
+        AndroidWrapperState.midShowToast                   = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "showToast", "(Ljava/lang/String;IIII)V", true);
+        AndroidWrapperState.midMkDir                       = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "MkDir", "(Ljava/lang/String;)I", true);
+        AndroidWrapperState.midShowMessageBox              = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "showMessageBox", "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)V", true);
+        AndroidWrapperState.midGetAssetManager             = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "GetAssetManager", "()Landroid/content/res/AssetManager;", true);
+        AndroidWrapperState.midShareText                   = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "shareText", "(Ljava/lang/String;Ljava/lang/String;)V", true);
+        AndroidWrapperState.midLaunchAppReviewIfAvailable  = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "LaunchAppReviewIfAvailable", "()V", true);
         // пока комментим, так как для Android требуется FileProvider
         //AndroidWrapperState.midSharePNG                  = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "sharePNG", "(Ljava/lang/String;Ljava/lang/String;)V", true);
 
@@ -330,6 +332,16 @@ class AndroidPlatformWrapper : public PlatformWrapper {
         //logDebug("outputBufferSize %d", static_cast<int>(value));
         return static_cast<int>(value);
     };
+
+    bool vLaunchAppReviewIfAvailable() override {
+        if(!AndroidWrapperState.midLaunchAppReviewIfAvailable) {
+            logError("AndroidWrapper LaunchAppReviewIfAvailable Java method not Found");
+            return false;
+        }
+        JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
+        env->CallStaticVoidMethod(AndroidWrapperState.UtilsClass, AndroidWrapperState.midLaunchAppReviewIfAvailable);
+        return true;
+    }
 
 public:
     int GetApiLevel() {

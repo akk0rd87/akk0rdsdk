@@ -216,7 +216,7 @@ bool BWrapper::FileExists(const char* FileName, BWrapper::FileSearchPriority Sea
         return true;
     }
     return false;
-    }
+}
 
 void BWrapper::CloseBuffer(char*& buffer)
 {
@@ -1038,6 +1038,10 @@ int BWrapper::GetAudioOutputBufferSize() {
     return PlatformWrapper::GetInstance().GetAudioOutputBufferSize();
 }
 
+bool BWrapper::LaunchAppReviewIfAvailable() {
+    return PlatformWrapper::GetInstance().LaunchAppReviewIfAvailable();
+}
+
 bool DirContentReader::Next(DirContentElement*& Element)
 {
     if (0 < Size && Pointer < Size)
@@ -1124,7 +1128,7 @@ bool FileReader::Open(const char* Fname, BWrapper::FileSearchPriority SearchPrio
         opened = true;
     }
     return opened;
-    };
+};
 
 void FileReader::Close()
 {

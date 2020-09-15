@@ -32,6 +32,7 @@ public:
 
     int                      GetAudioOutputRate() { return vGetAudioOutputRate(); };       // only for Android
     int                      GetAudioOutputBufferSize() { return vGetAudioOutputBufferSize(); }; // only for Android
+    bool                     LaunchAppReviewIfAvailable() { return vLaunchAppReviewIfAvailable(); }
 
 private:
     static                           PlatformWrapper& vGetInstance();
@@ -59,27 +60,28 @@ private:
     // Android-specific functions
     virtual int                      vGetAudioOutputRate() { return 0; };       // only for Android
     virtual int                      vGetAudioOutputBufferSize() { return 0; }; // only for Android
+    virtual bool                     vLaunchAppReviewIfAvailable() { return false; }
 };
 
 #ifdef __ANDROID__
-   #include "android/android_wrapper.h"
+#include "android/android_wrapper.h"
 #endif
 
 class PlatformSpecific {
 public:
     static bool AndroidShowToast(const char* Message, BWrapper::AndroidToastDuration Duration, int Gravity, int xOffset, int yOffset) {
 #ifdef __ANDROID__
-    return AndroidWrapper::AndroidShowToast(Message, Duration, Gravity, xOffset, yOffset);
+        return AndroidWrapper::AndroidShowToast(Message, Duration, Gravity, xOffset, yOffset);
 #else
-    return false;
+        return false;
 #endif
     };
 
     static int AndroidGetApiLevel() {
 #ifdef __ANDROID__
-    return AndroidWrapper::AndroidGetApiLevel();
+        return AndroidWrapper::AndroidGetApiLevel();
 #else
-    return 0;
+        return 0;
 #endif
     };
 };

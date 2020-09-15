@@ -17,16 +17,26 @@ import android.content.*;
 import android.content.res.AssetManager;
 import android.media.AudioManager;
 
+import com.google.android.play.core.tasks.Task;
+import com.google.android.play.core.review.ReviewManager;
+import com.google.android.play.core.review.ReviewInfo;
+import com.google.android.play.core.review.ReviewManagerFactory;
+import com.google.android.play.core.review.ReviewInfo;
+
 public class Utils {
     private static  final String TAG = "SDL";
     private static  Activity _context = null;
     private static  AssetManager AssetMgr = null;
+
+    private static  ReviewManager reviewManager = null;
+    private static  ReviewInfo    reviewInfo = null;
 
     public static native void MessageBoxCallback(int Code, int Result);
 
     public static void Init(Activity ActivityContext){
         _context = ActivityContext;
         AssetMgr = _context.getResources().getAssets();
+        InitReviewSettings();
     }
 
     public static Activity GetContext()
@@ -516,6 +526,42 @@ public class Utils {
         {
             Log.e(TAG, e.getMessage());
             return 1; // Error
+        }
+    }
+
+    private static void InitReviewSettings() {
+        try {
+            reviewManager = ReviewManagerFactory.create(_context);
+            Task<ReviewInfo> requestFlow = reviewManager.requestReviewFlow();
+            requestFlow.addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    // We can get the ReviewInfo object
+                    reviewInfo = task.getResult();
+                } else {
+                    // There was some problem, continue regardless of the result.
+                }
+            });
+        }
+        catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+    }
+
+    public static void LaunchAppReviewIfAvailable() {
+        try {
+            if(null != reviewManager && null != reviewInfo) {
+                Log.d(TAG, "launchReviewFlow");
+                Task<Void> flow = reviewManager.launchReviewFlow(_context, reviewInfo);
+                flow.addOnCompleteListener(task -> {
+                    Log.d(TAG, "launchReviewFlow comleted");
+                    // The flow has finished. The API does not indicate whether the user
+                    // reviewed or not, or even whether the review dialog was shown. Thus, no
+                    // matter the result, we continue our app flow.
+                });
+            }
+        }
+        catch (Exception e) {
+            Log.e(TAG, e.getMessage());
         }
     }
 
