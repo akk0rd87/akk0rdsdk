@@ -22,7 +22,7 @@
 		843BE84F1FBED13100CAF09A /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 843BE84E1FBED13100CAF09A /* assets */; };
 		843BE8511FBED66600CAF09A /* adrandomizer in Resources */ = {isa = PBXBuildFile; fileRef = 843BE8501FBED66600CAF09A /* adrandomizer */; };
 		84B5E2261FC9279B00EB116C /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84B97F4C1FBCCB8500239F03 /* main.cpp */; };
-		84B97F0A1FBCC27800239F03 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84B97F091FBCC27800239F03 /* MobileCoreServices.framework */; };
+		84B97F0A1FBCC27800239F03 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84B97F091FBCC27800239F03 /* CoreServices.framework */; };
 		84B97F0C1FBCC27F00239F03 /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84B97F0B1FBCC27F00239F03 /* ImageIO.framework */; };
 		84B97F0E1FBCC28E00239F03 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84B97F0D1FBCC28E00239F03 /* AVFoundation.framework */; };
 		945C4F53195AF17F00DBBF61 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 945C4F52195AF17F00DBBF61 /* Default-568h@2x.png */; };
@@ -75,7 +75,7 @@
 		840663102024339D002C8D8D /* SDL_image.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL_image.xcodeproj; path = "${AKKORD_SDK_HOME}/libraries/SDL_image/SDL_image/Xcode-iOS/SDL_image.xcodeproj"; sourceTree = "<group>"; };
 		843BE84E1FBED13100CAF09A /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../assets; sourceTree = "<group>"; };
 		843BE8501FBED66600CAF09A /* adrandomizer */ = {isa = PBXFileReference; lastKnownFileType = folder; name = adrandomizer; path = "${AKKORD_SDK_HOME}/resources/adimages/adrandomizer"; sourceTree = "<group>"; };
-		84B97F091FBCC27800239F03 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
+		84B97F091FBCC27800239F03 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		84B97F0B1FBCC27F00239F03 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
 		84B97F0D1FBCC28E00239F03 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		84B97F4C1FBCCB8500239F03 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
@@ -100,7 +100,7 @@
 				FD779EDE0E26BA1200F39101 /* CoreAudio.framework in Frameworks */,
 				84B97F0E1FBCC28E00239F03 /* AVFoundation.framework in Frameworks */,
 				84B97F0C1FBCC27F00239F03 /* ImageIO.framework in Frameworks */,
-				84B97F0A1FBCC27800239F03 /* MobileCoreServices.framework in Frameworks */,
+				84B97F0A1FBCC27800239F03 /* CoreServices.framework in Frameworks */,
 				FAE0E9651BAF967F0098DFA4 /* GameController.framework in Frameworks */,
 				1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */,
 				1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */,
@@ -163,7 +163,7 @@
 			children = (
 				84B97F0D1FBCC28E00239F03 /* AVFoundation.framework */,
 				84B97F0B1FBCC27F00239F03 /* ImageIO.framework */,
-				84B97F091FBCC27800239F03 /* MobileCoreServices.framework */,
+				84B97F091FBCC27800239F03 /* CoreServices.framework */,
 				FAE0E9641BAF967F0098DFA4 /* GameController.framework */,
 				FA8B4B96196703B400F8EB7C /* CoreMotion.framework */,
 				FDB8BFC50E5A0F6A00980157 /* CoreGraphics.framework */,

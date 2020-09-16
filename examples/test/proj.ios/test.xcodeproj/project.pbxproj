@@ -16,7 +16,7 @@
 		842E1BBE20106D8B002863AD /* ios_wrapper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 844D3AFC200D27820073AE3C /* ios_wrapper.mm */; };
 		842E1BBF20106D91002863AD /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 844D3ADC200D27530073AE3C /* main.cpp */; };
 		844D3B08200D27AD0073AE3C /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 844D3B07200D27AD0073AE3C /* ImageIO.framework */; };
-		844D3B0A200D27C20073AE3C /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 844D3B09200D27C20073AE3C /* MobileCoreServices.framework */; };
+		844D3B0A200D27C20073AE3C /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 844D3B09200D27C20073AE3C /* CoreServices.framework */; };
 		84B39A85200FD8E5004F9FBE /* libSDL2_image.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 84EC6774200D393C0009E504 /* libSDL2_image.a */; };
 		84B39A86200FD8EC004F9FBE /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 844D3AD5200D26CF0073AE3C /* libSDL2.a */; };
 		84EC6776200D399B0009E504 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84EC6775200D399B0009E504 /* AVFoundation.framework */; };
@@ -93,7 +93,7 @@
 		844D3B02200D27820073AE3C /* framework_defines.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = framework_defines.h; sourceTree = "<group>"; };
 		844D3B03200D27820073AE3C /* openglesdriver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = openglesdriver.h; sourceTree = "<group>"; };
 		844D3B07200D27AD0073AE3C /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
-		844D3B09200D27C20073AE3C /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
+		844D3B09200D27C20073AE3C /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		84EC676F200D393C0009E504 /* SDL_image.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL_image.xcodeproj; path = "../../../libraries/SDL_image/SDL_image/Xcode-iOS/SDL_image.xcodeproj"; sourceTree = "<group>"; };
 		84EC6775200D399B0009E504 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -117,7 +117,7 @@
 				84EC6776200D399B0009E504 /* AVFoundation.framework in Frameworks */,
 				FD77A0850E26BDB800F39101 /* AudioToolbox.framework in Frameworks */,
 				FD779EDE0E26BA1200F39101 /* CoreAudio.framework in Frameworks */,
-				844D3B0A200D27C20073AE3C /* MobileCoreServices.framework in Frameworks */,
+				844D3B0A200D27C20073AE3C /* CoreServices.framework in Frameworks */,
 				844D3B08200D27AD0073AE3C /* ImageIO.framework in Frameworks */,
 				FAE0E9651BAF967F0098DFA4 /* GameController.framework in Frameworks */,
 				1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */,
@@ -177,7 +177,7 @@
 			isa = PBXGroup;
 			children = (
 				84EC6775200D399B0009E504 /* AVFoundation.framework */,
-				844D3B09200D27C20073AE3C /* MobileCoreServices.framework */,
+				844D3B09200D27C20073AE3C /* CoreServices.framework */,
 				844D3B07200D27AD0073AE3C /* ImageIO.framework */,
 				FAE0E9641BAF967F0098DFA4 /* GameController.framework */,
 				FA8B4B96196703B400F8EB7C /* CoreMotion.framework */,
