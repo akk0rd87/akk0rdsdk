@@ -7,6 +7,7 @@
 #import <CoreFoundation/CFBundle.h>
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import <StoreKit/StoreKit.h>
 
 class iOSPlatformWrapper : public PlatformWrapper {
 
@@ -294,6 +295,11 @@ class iOSPlatformWrapper : public PlatformWrapper {
         [imgShare release];
         [imageData release];
     };
+
+    bool vLaunchAppReviewIfAvailable() override {
+        [SKStoreReviewController requestReview];
+        return true;
+    }
 };
 
 static iOSPlatformWrapper iosPlatformWrapper;
