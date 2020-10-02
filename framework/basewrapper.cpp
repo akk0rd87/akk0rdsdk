@@ -379,8 +379,7 @@ bool AkkordTexture::CreateFromSurface(SDL_Surface* Surface)
 
 bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Type, float Scale)
 {
-    if (nullptr == Buffer)
-    {
+    if (nullptr == Buffer) {
         logError("Error load texture from memory: buffer is not specified");
         return false;
     }
@@ -388,71 +387,74 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
     std::unique_ptr<SDL_RWops, void(*)(SDL_RWops*)>io(SDL_RWFromMem((void*)Buffer, Size), [](SDL_RWops* i) {SDL_RWclose(i); });
     bool result = false;
 
-    if (io)
-    {
-        std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)> image(nullptr, SDL_FreeSurface);
-        switch (Type)
-        {
-        case AkkordTexture::TextureType::BMP:
-            image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadBMP_RW(io.get()), SDL_FreeSurface);
+    if (io) {
+        auto image = [](decltype(io)& IO, AkkordTexture::TextureType TextureType, float Scale) {
+            switch (TextureType)
+            {
+            case AkkordTexture::TextureType::BMP:
+                return std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadBMP_RW(IO.get()), SDL_FreeSurface);
+                break;
+
+            case AkkordTexture::TextureType::PNG:
+                return std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadPNG_RW(IO.get()), SDL_FreeSurface);
+                break;
+
+            case AkkordTexture::TextureType::JPEG:
+                return std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadJPG_RW(IO.get()), SDL_FreeSurface);
+                break;
+
+            case AkkordTexture::TextureType::SVG:
+            {
+                std::unique_ptr<char, void(*)(char*)> data((char*)SDL_LoadFile_RW(IO.get(), nullptr, SDL_FALSE), [](char* i) { SDL_free(i); });
+                if (data) {
+                    std::unique_ptr<NSVGimage, void(*)(NSVGimage*)> svg_image(nsvgParse(data.get(), "px", 96.0f), nsvgDelete);
+                    if (svg_image) {
+                        std::unique_ptr<NSVGrasterizer, void(*)(NSVGrasterizer*)>rasterizer(nsvgCreateRasterizer(), nsvgDeleteRasterizer);
+                        if (rasterizer) {
+                            std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)> image(
+                                SDL_CreateRGBSurface(SDL_SWSURFACE,
+                                    static_cast<int>(svg_image->width * Scale),
+                                    static_cast<int>(svg_image->height * Scale),
+                                    32,
+                                    0x000000FF,
+                                    0x0000FF00,
+                                    0x00FF0000,
+                                    0xFF000000),
+                                SDL_FreeSurface
+                            );
+                            if (image) {
+                                nsvgRasterize(rasterizer.get(), svg_image.get(), 0.0f, 0.0f, Scale, static_cast<unsigned char*>(image->pixels), image->w, image->h, image->pitch);
+                                return image;
+                            }
+                            else {
+                                logError("Couldn't create SDL_CreateRGBSurface %s", SDL_GetError());
+                            }
+                        }
+                        else {
+                            logError("Couldn't create SVG rasterizer %s", SDL_GetError());
+                        }
+                    }
+                    else {
+                        logError("Couldn't parse SVG image %s", SDL_GetError());
+                    }
+                }
+                else {
+                    logError("Couldn't parse SVG image %s", SDL_GetError());
+                }
+            }
             break;
-        case AkkordTexture::TextureType::PNG:
-            image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadPNG_RW(io.get()), SDL_FreeSurface);
-            break;
-        case AkkordTexture::TextureType::JPEG:
-            image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadJPG_RW(io.get()), SDL_FreeSurface);
-            break;
-        case AkkordTexture::TextureType::SVG:
-        {
-            std::unique_ptr<char, void(*)(char*)> data((char*)SDL_LoadFile_RW(io.get(), nullptr, SDL_FALSE), [](char* i) { SDL_free(i); });
-            if (data.get() == nullptr)
-            {
-                logError("Couldn't parse SVG image %s", SDL_GetError());
-                return result;
+
+            default:
+                logError("Invalid texture type");
+                break;
             }
-            std::unique_ptr<NSVGimage, void(*)(NSVGimage*)> svg_image(nsvgParse(data.get(), "px", 96.0f), nsvgDelete);
+            return std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(nullptr, SDL_FreeSurface);
+        }(io, Type, Scale);
 
-            if (svg_image.get() == nullptr)
-            {
-                logError("Couldn't parse SVG image %s", SDL_GetError());
-                return result;
-            }
-
-            std::unique_ptr<NSVGrasterizer, void(*)(NSVGrasterizer*)>rasterizer(nsvgCreateRasterizer(), nsvgDeleteRasterizer);
-            if (rasterizer.get() == nullptr)
-            {
-                logError("Couldn't create SVG rasterizer %s", SDL_GetError());
-                return result;
-            }
-
-            image = std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(
-                SDL_CreateRGBSurface(SDL_SWSURFACE,
-                    (int)(svg_image->width * Scale),
-                    (int)(svg_image->height * Scale),
-                    32,
-                    0x000000FF,
-                    0x0000FF00,
-                    0x00FF0000,
-                    0xFF000000),
-                SDL_FreeSurface);
-
-            if (image.get() == nullptr)
-            {
-                logError("Couldn't create SDL_CreateRGBSurface %s", SDL_GetError());
-                return result;
-            }
-
-            nsvgRasterize(rasterizer.get(), svg_image.get(), 0.0f, 0.0f, Scale, (unsigned char*)image->pixels, image->w, image->h, image->pitch);
-        }
-        break;
-        }
-
-        if (image.get())
-        {
+        if (image) {
             result = this->CreateFromSurface(image.get());
         }
-        else
-        {
+        else {
             logError("Error load Image SDL_RWFromMem error=%s", SDL_GetError());
         }
     }
