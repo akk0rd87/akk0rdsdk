@@ -58,8 +58,8 @@ private:
     virtual void                     vSharePNG(const char* Title, const char* File) {};
 
     // Android-specific functions
-    virtual int                      vGetAudioOutputRate() { return 0; };       // only for Android
-    virtual int                      vGetAudioOutputBufferSize() { return 0; }; // only for Android
+    virtual int                      vGetAudioOutputRate() { return -1; };       // only for Android
+    virtual int                      vGetAudioOutputBufferSize() { return -1; }; // only for Android
     virtual bool                     vLaunchAppReviewIfAvailable() { return false; }
 };
 
