@@ -493,19 +493,15 @@ SDL_VideoInit(const char *driver_name)
     if (driver_name != NULL) {
         for (i = 0; bootstrap[i]; ++i) {
             if (SDL_strncasecmp(bootstrap[i]->name, driver_name, SDL_strlen(driver_name)) == 0) {
-                if (bootstrap[i]->available()) {
-                    video = bootstrap[i]->create(index);
-                    break;
-                }
+                video = bootstrap[i]->create(index);
+                break;
             }
         }
     } else {
         for (i = 0; bootstrap[i]; ++i) {
-            if (bootstrap[i]->available()) {
-                video = bootstrap[i]->create(index);
-                if (video != NULL) {
-                    break;
-                }
+            video = bootstrap[i]->create(index);
+            if (video != NULL) {
+                break;
             }
         }
     }
@@ -599,11 +595,11 @@ SDL_AddBasicVideoDisplay(const SDL_DisplayMode * desktop_mode)
     }
     display.current_mode = display.desktop_mode;
 
-    return SDL_AddVideoDisplay(&display);
+    return SDL_AddVideoDisplay(&display, SDL_FALSE);
 }
 
 int
-SDL_AddVideoDisplay(const SDL_VideoDisplay * display)
+SDL_AddVideoDisplay(const SDL_VideoDisplay * display, SDL_bool send_event)
 {
     SDL_VideoDisplay *displays;
     int index = -1;
@@ -625,10 +621,29 @@ SDL_AddVideoDisplay(const SDL_VideoDisplay * display)
             SDL_itoa(index, name, 10);
             displays[index].name = SDL_strdup(name);
         }
+
+        if (send_event) {
+            SDL_SendDisplayEvent(&_this->displays[index], SDL_DISPLAYEVENT_CONNECTED, 0);
+        }
     } else {
         SDL_OutOfMemory();
     }
     return index;
+}
+
+void
+SDL_DelVideoDisplay(int index)
+{
+    if (index < 0 || index >= _this->num_displays) {
+        return;
+    }
+
+    SDL_SendDisplayEvent(&_this->displays[index], SDL_DISPLAYEVENT_DISCONNECTED, 0);
+
+    if (index < (_this->num_displays - 1)) {
+        SDL_memmove(&_this->displays[index], &_this->displays[index+1], (_this->num_displays - index - 1)*sizeof(_this->displays[index]));
+    }
+    --_this->num_displays;
 }
 
 int
@@ -1429,7 +1444,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
 
     if (!_this) {
         /* Initialize the video system if needed */
-        if (SDL_VideoInit(NULL) < 0) {
+        if (SDL_Init(SDL_INIT_VIDEO) < 0) {
             return NULL;
         }
     }
@@ -1706,10 +1721,12 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
         return -1;
     }
 
+    /*
     if ((window->flags & SDL_WINDOW_METAL) != (flags & SDL_WINDOW_METAL)) {
         SDL_SetError("Can't change SDL_WINDOW_METAL window flag");
         return -1;
     }
+    */
 
     if ((window->flags & SDL_WINDOW_VULKAN) && (flags & SDL_WINDOW_OPENGL)) {
         SDL_SetError("Vulkan and OpenGL not supported on same window");
@@ -2372,6 +2389,7 @@ SDL_GetWindowSurface(SDL_Window * window)
         if (window->surface) {
             window->surface->flags &= ~SDL_DONTFREE;
             SDL_FreeSurface(window->surface);
+            window->surface = NULL;
         }
         window->surface = SDL_CreateWindowFramebuffer(window);
         if (window->surface) {
@@ -2731,7 +2749,7 @@ ShouldMinimizeOnFocusLoss(SDL_Window * window)
     }
 #endif
 
-    return SDL_GetHintBoolean(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, SDL_TRUE);
+    return SDL_GetHintBoolean(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, SDL_FALSE);
 }
 
 void
@@ -3150,24 +3168,24 @@ SDL_GL_ResetAttributes()
     _this->gl_config.retained_backing = 1;
     _this->gl_config.accelerated = -1;  /* accelerated or not, both are fine */
 
+#if SDL_VIDEO_OPENGL
+    _this->gl_config.major_version = 2;
+    _this->gl_config.minor_version = 1;
+    _this->gl_config.profile_mask = 0;
+#elif SDL_VIDEO_OPENGL_ES2
+    _this->gl_config.major_version = 2;
+    _this->gl_config.minor_version = 0;
+    _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
+#elif SDL_VIDEO_OPENGL_ES
+    _this->gl_config.major_version = 1;
+    _this->gl_config.minor_version = 1;
+    _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
+#endif
+
     if (_this->GL_DefaultProfileConfig) {
         _this->GL_DefaultProfileConfig(_this, &_this->gl_config.profile_mask,
                                        &_this->gl_config.major_version,
                                        &_this->gl_config.minor_version);
-    } else {
-#if SDL_VIDEO_OPENGL
-        _this->gl_config.major_version = 2;
-        _this->gl_config.minor_version = 1;
-        _this->gl_config.profile_mask = 0;
-#elif SDL_VIDEO_OPENGL_ES2
-        _this->gl_config.major_version = 2;
-        _this->gl_config.minor_version = 0;
-        _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
-#elif SDL_VIDEO_OPENGL_ES
-        _this->gl_config.major_version = 1;
-        _this->gl_config.minor_version = 1;
-        _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
-#endif
     }
 
     _this->gl_config.flags = 0;

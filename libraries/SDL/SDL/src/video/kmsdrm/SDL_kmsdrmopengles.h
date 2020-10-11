@@ -1,6 +1,7 @@
 /*
   Simple DirectMedia Layer
   Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Atomic KMSDRM backend by Manuel Alfayate Corchete <redwindwanderer@gmail.com>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -35,6 +36,7 @@
 #define KMSDRM_GLES_DeleteContext SDL_EGL_DeleteContext
 #define KMSDRM_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
 
+extern void KMSDRM_GLES_DefaultProfileConfig(_THIS, int *mask, int *major, int *minor);
 extern int KMSDRM_GLES_SetSwapInterval(_THIS, int interval);
 extern int KMSDRM_GLES_LoadLibrary(_THIS, const char *path);
 extern SDL_GLContext KMSDRM_GLES_CreateContext(_THIS, SDL_Window * window);

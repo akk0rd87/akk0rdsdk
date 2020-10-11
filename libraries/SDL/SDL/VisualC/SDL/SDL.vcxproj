@@ -26,19 +26,15 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -243,9 +239,11 @@
     <ClInclude Include="..\..\include\SDL_keyboard.h" />
     <ClInclude Include="..\..\include\SDL_keycode.h" />
     <ClInclude Include="..\..\include\SDL_loadso.h" />
+    <ClInclude Include="..\..\include\SDL_locale.h" />
     <ClInclude Include="..\..\include\SDL_log.h" />
     <ClInclude Include="..\..\include\SDL_main.h" />
     <ClInclude Include="..\..\include\SDL_messagebox.h" />
+    <ClInclude Include="..\..\include\SDL_misc.h" />
     <ClInclude Include="..\..\include\SDL_mouse.h" />
     <ClInclude Include="..\..\include\SDL_mutex.h" />
     <ClInclude Include="..\..\include\SDL_name.h" />
@@ -335,6 +333,7 @@
     <ClInclude Include="..\..\src\joystick\windows\SDL_xinputjoystick_c.h" />
     <ClInclude Include="..\..\src\libm\math_libm.h" />
     <ClInclude Include="..\..\src\libm\math_private.h" />
+    <ClInclude Include="..\..\src\locale\SDL_syslocale.h" />
     <ClInclude Include="..\..\src\render\direct3d11\SDL_shaders_d3d11.h" />
     <ClInclude Include="..\..\src\render\direct3d\SDL_shaders_d3d.h" />
     <ClInclude Include="..\..\src\render\opengl\SDL_glfuncs.h" />
@@ -467,6 +466,10 @@
     <ClCompile Include="..\..\src\libm\s_sin.c" />
     <ClCompile Include="..\..\src\libm\s_tan.c" />
     <ClCompile Include="..\..\src\loadso\windows\SDL_sysloadso.c" />
+    <ClCompile Include="..\..\src\locale\SDL_locale.c" />
+    <ClCompile Include="..\..\src\locale\windows\SDL_syslocale.c" />
+    <ClCompile Include="..\..\src\misc\SDL_url.c" />
+    <ClCompile Include="..\..\src\misc\windows\SDL_sysurl.c" />
     <ClCompile Include="..\..\src\power\SDL_power.c" />
     <ClCompile Include="..\..\src\power\windows\SDL_syspower.c" />
     <ClCompile Include="..\..\src\render\direct3d11\SDL_shaders_d3d11.c" />

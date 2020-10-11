@@ -655,8 +655,6 @@ SDL_CFLAGS
 INSTALL_SDL2_CONFIG
 LIBUSB_LIBS
 LIBUSB_CFLAGS
-FCITX_LIBS
-FCITX_CFLAGS
 IBUS_LIBS
 IBUS_CFLAGS
 DBUS_LIBS
@@ -770,6 +768,7 @@ infodir
 docdir
 oldincludedir
 includedir
+runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -939,8 +938,6 @@ DBUS_CFLAGS
 DBUS_LIBS
 IBUS_CFLAGS
 IBUS_LIBS
-FCITX_CFLAGS
-FCITX_LIBS
 LIBUSB_CFLAGS
 LIBUSB_LIBS'
 
@@ -981,6 +978,7 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
+runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE}'
@@ -1233,6 +1231,15 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
+  -runstatedir | --runstatedir | --runstatedi | --runstated \
+  | --runstate | --runstat | --runsta | --runst | --runs \
+  | --run | --ru | --r)
+    ac_prev=runstatedir ;;
+  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
+  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
+  | --run=* | --ru=* | --r=*)
+    runstatedir=$ac_optarg ;;
+
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1370,7 +1377,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir
+		libdir localedir mandir runstatedir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1523,6 +1530,7 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
+  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -1626,7 +1634,7 @@ Optional Features:
                           [[default=yes]]
   --enable-libsamplerate-shared
                           dynamically load libsamplerate [[default=yes]]
-  --enable-arm-simd       use SIMD assembly blitters on ARM [[default=yes]]
+  --enable-arm-simd       use SIMD assembly blitters on ARM [[default=no]]
   --enable-arm-neon       use NEON assembly blitters on ARM [[default=no]]
   --enable-video-wayland  use Wayland video driver [[default=yes]]
   --enable-video-wayland-qt-touch
@@ -1756,9 +1764,6 @@ Some influential environment variables:
   DBUS_LIBS   linker flags for DBUS, overriding pkg-config
   IBUS_CFLAGS C compiler flags for IBUS, overriding pkg-config
   IBUS_LIBS   linker flags for IBUS, overriding pkg-config
-  FCITX_CFLAGS
-              C compiler flags for FCITX, overriding pkg-config
-  FCITX_LIBS  linker flags for FCITX, overriding pkg-config
   LIBUSB_CFLAGS
               C compiler flags for LIBUSB, overriding pkg-config
   LIBUSB_LIBS linker flags for LIBUSB, overriding pkg-config
@@ -15995,7 +16000,16 @@ case "$host" in
         ;;
 esac
 
-INCLUDE="-I$srcdir/include -idirafter $srcdir/src/video/khronos"
+INCLUDE="-I$srcdir/include"
+
+case "$host" in
+    *-*-nto-qnx*)
+        ;;
+    *)
+        INCLUDE="$INCLUDE -idirafter $srcdir/src/video/khronos"
+        ;;
+esac
+
 if test x$srcdir != x.; then
     INCLUDE="-Iinclude $INCLUDE"
 elif test -d .hg; then
@@ -17299,6 +17313,7 @@ SOURCES="$SOURCES $srcdir/src/file/*.c"
 SOURCES="$SOURCES $srcdir/src/haptic/*.c"
 SOURCES="$SOURCES $srcdir/src/joystick/*.c"
 SOURCES="$SOURCES $srcdir/src/libm/*.c"
+SOURCES="$SOURCES $srcdir/src/misc/*.c"
 SOURCES="$SOURCES $srcdir/src/power/*.c"
 #SOURCES="$SOURCES $srcdir/src/filesystem/*.c"
 SOURCES="$SOURCES $srcdir/src/render/*.c"
@@ -17309,6 +17324,7 @@ SOURCES="$SOURCES $srcdir/src/thread/*.c"
 SOURCES="$SOURCES $srcdir/src/timer/*.c"
 SOURCES="$SOURCES $srcdir/src/video/*.c"
 SOURCES="$SOURCES $srcdir/src/video/yuv2rgb/*.c"
+SOURCES="$SOURCES $srcdir/src/locale/*.c"
 
 
 # Check whether --enable-atomic was given.
@@ -19458,7 +19474,7 @@ CheckARM()
 if test "${enable_arm_simd+set}" = set; then :
   enableval=$enable_arm_simd; enable_arm_simd=$enableval
 else
-  enable_arm_simd=yes
+  enable_arm_simd=no
 fi
 
     if test x$enable_video = xyes -a x$enable_assembly = xyes -a x$enable_arm_simd = xyes; then
@@ -21760,7 +21776,7 @@ $as_echo_n "checking for Metal framework... " >&6; }
           #import <Metal/Metal.h>
           #import <QuartzCore/CAMetalLayer.h>
 
-          #if !TARGET_CPU_X86_64
+          #if TARGET_CPU_X86
           #error Metal doesn't work on this configuration
           #endif
 
@@ -21971,12 +21987,12 @@ if test -n "$LIBDRM_CFLAGS"; then
     pkg_cv_LIBDRM_CFLAGS="$LIBDRM_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libdrm >= 2.4.46\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libdrm >= 2.4.46") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libdrm >= 2.4.82\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libdrm >= 2.4.82") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_LIBDRM_CFLAGS=`$PKG_CONFIG --cflags "libdrm >= 2.4.46" 2>/dev/null`
+  pkg_cv_LIBDRM_CFLAGS=`$PKG_CONFIG --cflags "libdrm >= 2.4.82" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -21987,12 +22003,12 @@ if test -n "$LIBDRM_LIBS"; then
     pkg_cv_LIBDRM_LIBS="$LIBDRM_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libdrm >= 2.4.46\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libdrm >= 2.4.46") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libdrm >= 2.4.82\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libdrm >= 2.4.82") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_LIBDRM_LIBS=`$PKG_CONFIG --libs "libdrm >= 2.4.46" 2>/dev/null`
+  pkg_cv_LIBDRM_LIBS=`$PKG_CONFIG --libs "libdrm >= 2.4.82" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -22012,9 +22028,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        LIBDRM_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libdrm >= 2.4.46" 2>&1`
+	        LIBDRM_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libdrm >= 2.4.82" 2>&1`
         else
-	        LIBDRM_PKG_ERRORS=`$PKG_CONFIG --print-errors "libdrm >= 2.4.46" 2>&1`
+	        LIBDRM_PKG_ERRORS=`$PKG_CONFIG --print-errors "libdrm >= 2.4.82" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$LIBDRM_PKG_ERRORS" >&5
@@ -22040,12 +22056,12 @@ if test -n "$LIBGBM_CFLAGS"; then
     pkg_cv_LIBGBM_CFLAGS="$LIBGBM_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gbm >= 9.0.0\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "gbm >= 9.0.0") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gbm >= 17.1.0\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "gbm >= 17.1.0") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_LIBGBM_CFLAGS=`$PKG_CONFIG --cflags "gbm >= 9.0.0" 2>/dev/null`
+  pkg_cv_LIBGBM_CFLAGS=`$PKG_CONFIG --cflags "gbm >= 17.1.0" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -22056,12 +22072,12 @@ if test -n "$LIBGBM_LIBS"; then
     pkg_cv_LIBGBM_LIBS="$LIBGBM_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gbm >= 9.0.0\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "gbm >= 9.0.0") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gbm >= 17.1.0\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "gbm >= 17.1.0") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_LIBGBM_LIBS=`$PKG_CONFIG --libs "gbm >= 9.0.0" 2>/dev/null`
+  pkg_cv_LIBGBM_LIBS=`$PKG_CONFIG --libs "gbm >= 17.1.0" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -22081,9 +22097,9 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        LIBGBM_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "gbm >= 9.0.0" 2>&1`
+	        LIBGBM_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "gbm >= 17.1.0" 2>&1`
         else
-	        LIBGBM_PKG_ERRORS=`$PKG_CONFIG --print-errors "gbm >= 9.0.0" 2>&1`
+	        LIBGBM_PKG_ERRORS=`$PKG_CONFIG --print-errors "gbm >= 17.1.0" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$LIBGBM_PKG_ERRORS" >&5
@@ -22663,7 +22679,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
                   #include <Metal/Metal.h>
                   #include <QuartzCore/CAMetalLayer.h>
 
-                  #if !TARGET_CPU_X86_64
+                  #if TARGET_CPU_X86
                   #error Vulkan doesn't work on this configuration
                   #endif
 
@@ -23068,102 +23084,24 @@ else
 fi
 
     if test x$enable_fcitx = xyes; then
-
-pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for FCITX" >&5
-$as_echo_n "checking for FCITX... " >&6; }
-
-if test -n "$FCITX_CFLAGS"; then
-    pkg_cv_FCITX_CFLAGS="$FCITX_CFLAGS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"fcitx\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "fcitx") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_FCITX_CFLAGS=`$PKG_CONFIG --cflags "fcitx" 2>/dev/null`
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-if test -n "$FCITX_LIBS"; then
-    pkg_cv_FCITX_LIBS="$FCITX_LIBS"
- elif test -n "$PKG_CONFIG"; then
-    if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"fcitx\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "fcitx") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-  pkg_cv_FCITX_LIBS=`$PKG_CONFIG --libs "fcitx" 2>/dev/null`
-else
-  pkg_failed=yes
-fi
- else
-    pkg_failed=untried
-fi
-
-
-
-if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-
-if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
-        _pkg_short_errors_supported=yes
-else
-        _pkg_short_errors_supported=no
-fi
-        if test $_pkg_short_errors_supported = yes; then
-	        FCITX_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "fcitx" 2>&1`
-        else
-	        FCITX_PKG_ERRORS=`$PKG_CONFIG --print-errors "fcitx" 2>&1`
-        fi
-	# Put the nasty error message in config.log where it belongs
-	echo "$FCITX_PKG_ERRORS" >&5
-
-	have_fcitx=no
-elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-	have_fcitx=no
-else
-	FCITX_CFLAGS=$pkg_cv_FCITX_CFLAGS
-	FCITX_LIBS=$pkg_cv_FCITX_LIBS
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-	have_fcitx=yes
-fi
-        CFLAGS="$CFLAGS $FCITX_CFLAGS"
-        ac_fn_c_check_header_mongrel "$LINENO" "fcitx/frontend.h" "ac_cv_header_fcitx_frontend_h" "$ac_includes_default"
-if test "x$ac_cv_header_fcitx_frontend_h" = xyes; then :
-  have_fcitx_frontend_h_hdr=yes
-else
-  have_fcitx_frontend_h_hdr=no
-fi
-
-
-        CFLAGS="$save_CFLAGS"
-        if test x$have_fcitx_frontend_h_hdr = xyes; then
-            if test x$enable_ime != xyes; then
-                { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: IME support is required for fcitx." >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fcitx support" >&5
+$as_echo_n "checking for fcitx support... " >&6; }
+        have_fcitx=no
+        if test x$enable_ime != xyes; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: IME support is required for fcitx." >&5
 $as_echo "$as_me: WARNING: IME support is required for fcitx." >&2;}
-                have_fcitx_frontend_h_hdr=no
-            elif test x$enable_dbus != xyes; then
-                { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: DBus support is required for fcitx." >&5
+        elif test x$have_dbus_dbus_h_hdr != xyes; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: DBus support is required for fcitx." >&5
 $as_echo "$as_me: WARNING: DBus support is required for fcitx." >&2;}
-                have_fcitx_frontend_h_hdr=no
-            else
+        else
+            have_fcitx=yes
 
-$as_echo "#define HAVE_FCITX_FRONTEND_H 1" >>confdefs.h
+$as_echo "#define HAVE_FCITX 1" >>confdefs.h
 
-                EXTRA_CFLAGS="$EXTRA_CFLAGS $FCITX_CFLAGS"
-                SOURCES="$SOURCES $srcdir/src/core/linux/SDL_fcitx.c"
-            fi
+            SOURCES="$SOURCES $srcdir/src/core/linux/SDL_fcitx.c"
         fi
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_fcitx" >&5
+$as_echo "$have_fcitx" >&6; }
     fi
 }
 
@@ -24317,7 +24255,7 @@ CheckHIDAPI()
     # so we'll just use libusb when it's available.
     case "$host" in
         # libusb does not support iOS
-        arm*-apple-darwin* | *-ios-* )
+        *-ios-* )
             skiplibusb=yes
             ;;
         # On the other hand, *BSD specifically uses libusb only
@@ -24659,6 +24597,8 @@ CheckNoStrictAliasing
 
 CheckEventSignals
 
+have_locale=no
+
 case "$host" in
     *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-aix*|*-*-minix*|*-*-nto*)
         case "$host" in
@@ -24745,6 +24685,12 @@ case "$host" in
         CheckLinuxVersion
         CheckRPATH
         CheckVivanteVideo
+
+        SOURCES="$SOURCES $srcdir/src/misc/unix/*.c"
+        have_misc=yes
+
+        SOURCES="$SOURCES $srcdir/src/locale/unix/*.c"
+        have_locale=yes
 
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
@@ -24922,6 +24868,13 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
 
         # Set up the core platform files
         SOURCES="$SOURCES $srcdir/src/core/windows/*.c"
+
+        SOURCES="$SOURCES $srcdir/src/misc/windows/*.c"
+        have_misc=yes
+
+        # Use the Windows locale APIs.
+        SOURCES="$SOURCES $srcdir/src/locale/windows/*.c"
+        have_locale=yes
 
         # Set up files for the video library
         if test x$enable_video = xyes; then
@@ -25174,6 +25127,14 @@ $as_echo "#define SDL_FILESYSTEM_HAIKU 1" >>confdefs.h
             SOURCES="$SOURCES $srcdir/src/filesystem/haiku/*.cc"
             have_filesystem=yes
         fi
+
+        SOURCES="$SOURCES $srcdir/src/misc/haiku/*.cc"
+        have_misc=yes
+
+        # Set up files for the locale library
+        SOURCES="$SOURCES $srcdir/src/locale/haiku/*.cc"
+        have_locale=yes
+
         # The Haiku platform requires special setup.
         SOURCES="$srcdir/src/main/haiku/*.cc $SOURCES"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lroot -lbe -lmedia -lgame -ldevice -ltextencoding"
@@ -25203,7 +25164,7 @@ else
 fi
 
         ;;
-    arm*-apple-darwin*|*-ios-*)
+    *-ios-*)
         ARCH=ios
 
         CheckVisibilityHidden
@@ -25215,6 +25176,13 @@ fi
         CheckMETAL
         CheckVulkan
         CheckPTHREAD
+
+        SOURCES="$SOURCES $srcdir/src/misc/ios/*.m"
+        have_misc=yes
+
+        # Set up files for the locale library
+        SOURCES="$SOURCES $srcdir/src/locale/macosx/*.m"
+        have_locale=yes
 
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
@@ -25233,6 +25201,9 @@ $as_echo "#define SDL_JOYSTICK_MFI 1" >>confdefs.h
             SOURCES="$SOURCES $srcdir/src/joystick/iphoneos/*.m"
             SOURCES="$SOURCES $srcdir/src/joystick/steam/*.c"
             have_joystick=yes
+        else
+            # Need this code for accelerometer as joystick support
+            SOURCES="$SOURCES $srcdir/src/joystick/iphoneos/*.m"
         fi
         # Set up files for the haptic library
         #if test x$enable_haptic = xyes; then
@@ -25336,6 +25307,13 @@ $as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
         CheckVulkan
         CheckPTHREAD
         CheckHIDAPI
+
+        SOURCES="$SOURCES $srcdir/src/misc/macosx/*.m"
+        have_misc=yes
+
+        # Set up files for the locale library
+        SOURCES="$SOURCES $srcdir/src/locale/macosx/*.m"
+        have_locale=yes
 
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
@@ -25492,6 +25470,9 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
             SOURCES="$SOURCES $srcdir/src/timer/unix/*.c"
             have_timers=yes
         fi
+        # Set up files for the locale library
+        SOURCES="$SOURCES $srcdir/src/locale/emscripten/*.c"
+        have_locale=yes
         ;;
     *-*-riscos*)
         ARCH=riscos
@@ -25549,6 +25530,12 @@ INSTALL_SDL2_CONFIG=$enable_sdl2_config
 
 # Verify that we have all the platform specific files we need
 
+if test x$have_misc != xyes; then
+    SOURCES="$SOURCES $srcdir/src/misc/dummy/*.c"
+fi
+if test x$have_locale != xyes; then
+    SOURCES="$SOURCES $srcdir/src/locale/dummy/*.c"
+fi
 if test x$have_joystick != xyes; then
     if test x$enable_joystick = xyes; then
 
@@ -25816,7 +25803,7 @@ if test x$have_ibus_ibus_h_hdr = xyes; then
 else
     SUMMARY="${SUMMARY}Using ibus          : NO\n"
 fi
-if test x$have_fcitx_frontend_h_hdr = xyes; then
+if test x$have_fcitx = xyes; then
     SUMMARY="${SUMMARY}Using fcitx         : YES\n"
 else
     SUMMARY="${SUMMARY}Using fcitx         : NO\n"

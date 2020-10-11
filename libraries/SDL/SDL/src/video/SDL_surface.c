@@ -37,15 +37,15 @@ SDL_COMPILE_TIME_ASSERT(surface_size_assumptions,
 /*
  * Calculate the pad-aligned scanline width of a surface
  */
-static int
+static Sint64
 SDL_CalculatePitch(Uint32 format, int width)
 {
-    int pitch;
+    Sint64 pitch;
 
     if (SDL_ISPIXELFORMAT_FOURCC(format) || SDL_BITSPERPIXEL(format) >= 8) {
-        pitch = (width * SDL_BYTESPERPIXEL(format));
+        pitch = ((Sint64)width * SDL_BYTESPERPIXEL(format));
     } else {
-        pitch = ((width * SDL_BITSPERPIXEL(format)) + 7) / 8;
+        pitch = (((Sint64)width * SDL_BITSPERPIXEL(format)) + 7) / 8;
     }
     pitch = (pitch + 3) & ~3;   /* 4-byte aligning for speed */
     return pitch;
@@ -59,10 +59,18 @@ SDL_Surface *
 SDL_CreateRGBSurfaceWithFormat(Uint32 flags, int width, int height, int depth,
                                Uint32 format)
 {
+    Sint64 pitch;
     SDL_Surface *surface;
 
     /* The flags are no longer used, make the compiler happy */
     (void)flags;
+
+    pitch = SDL_CalculatePitch(format, width);
+    if (pitch < 0 || pitch > SDL_MAX_SINT32) {
+        /* Overflow... */
+        SDL_OutOfMemory();
+        return NULL;
+    }
 
     /* Allocate the surface */
     surface = (SDL_Surface *) SDL_calloc(1, sizeof(*surface));
@@ -78,7 +86,7 @@ SDL_CreateRGBSurfaceWithFormat(Uint32 flags, int width, int height, int depth,
     }
     surface->w = width;
     surface->h = height;
-    surface->pitch = SDL_CalculatePitch(format, width);
+    surface->pitch = (int)pitch;
     SDL_SetClipRect(surface, NULL);
 
     if (SDL_ISPIXELFORMAT_INDEXED(surface->format->format)) {
@@ -1106,6 +1114,7 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
 
     if (copy_flags & SDL_COPY_COLORKEY) {
         SDL_bool set_colorkey_by_color = SDL_FALSE;
+        SDL_bool convert_colorkey = SDL_TRUE;
 
         if (surface->format->palette) {
             if (format->palette &&
@@ -1115,7 +1124,13 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
                 /* The palette is identical, just set the same colorkey */
                 SDL_SetColorKey(convert, 1, surface->map->info.colorkey);
             } else if (!format->palette) {
-                /* Was done by 'palette_ck_transform' */
+                if (format->Amask) {
+                    /* No need to add the colorkey, transparency is in the alpha channel*/
+                } else {
+                    /* Only set the colorkey information */
+                    set_colorkey_by_color = SDL_TRUE;
+                    convert_colorkey = SDL_FALSE;
+                }
             } else {
                 set_colorkey_by_color = SDL_TRUE;
             }
@@ -1156,7 +1171,9 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
             SDL_SetColorKey(convert, 1, converted_colorkey);
 
             /* This is needed when converting for 3D texture upload */
-            SDL_ConvertColorkeyToAlpha(convert, SDL_TRUE);
+            if (convert_colorkey) {
+                SDL_ConvertColorkeyToAlpha(convert, SDL_TRUE);
+            }
         }
     }
     SDL_SetClipRect(convert, &surface->clip_rect);
@@ -1242,6 +1259,7 @@ int SDL_ConvertPixels(int width, int height,
     SDL_BlitMap src_blitmap, dst_blitmap;
     SDL_Rect rect;
     void *nonconst_src = (void *) src;
+    int ret;
 
     /* Check to make sure we are blitting somewhere, so we don't crash */
     if (!dst) {
@@ -1294,7 +1312,12 @@ int SDL_ConvertPixels(int width, int height,
     rect.y = 0;
     rect.w = width;
     rect.h = height;
-    return SDL_LowerBlit(&src_surface, &rect, &dst_surface, &rect);
+    ret = SDL_LowerBlit(&src_surface, &rect, &dst_surface, &rect);
+
+    /* Free blitmap reference, after blitting between stack'ed surfaces */
+    SDL_InvalidateMap(src_surface.map);
+
+    return ret;
 }
 
 /*
@@ -1310,6 +1333,8 @@ SDL_FreeSurface(SDL_Surface * surface)
         return;
     }
     SDL_InvalidateMap(surface->map);
+
+    SDL_InvalidateAllBlitMap(surface);
 
     if (--surface->refcount > 0) {
         return;

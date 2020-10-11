@@ -37,6 +37,7 @@ TARGETS = \
 	testjoystick$(EXE) \
 	testkeys$(EXE) \
 	testloadso$(EXE) \
+	testlocale$(EXE) \
 	testlock$(EXE) \
 	testmessage$(EXE) \
 	testmultiaudio$(EXE) \
@@ -59,6 +60,7 @@ TARGETS = \
 	teststreaming$(EXE) \
 	testthread$(EXE) \
 	testtimer$(EXE) \
+	testurl$(EXE) \
 	testver$(EXE) \
 	testviewport$(EXE) \
 	testvulkan$(EXE) \
@@ -264,6 +266,9 @@ teststreaming$(EXE): $(srcdir)/teststreaming.c
 testtimer$(EXE): $(srcdir)/testtimer.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
+testurl$(EXE): $(srcdir)/testurl.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
 testver$(EXE): $(srcdir)/testver.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
@@ -302,6 +307,10 @@ controllermap$(EXE): $(srcdir)/controllermap.c
 
 testvulkan$(EXE): $(srcdir)/testvulkan.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testlocale$(EXE): $(srcdir)/testlocale.c
+	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
+
 
 
 clean:

@@ -33,6 +33,9 @@
 #ifndef kIOPMAssertPreventUserIdleDisplaySleep
 #define kIOPMAssertPreventUserIdleDisplaySleep kIOPMAssertionTypePreventUserIdleDisplaySleep
 #endif
+#ifndef NSAppKitVersionNumber10_8
+#define NSAppKitVersionNumber10_8 1187
+#endif
 
 @interface SDLApplication : NSApplication
 
@@ -117,6 +120,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 }
 
 - (id)init;
+- (void)localeDidChange:(NSNotification *)notification;
 @end
 
 @implementation SDLAppDelegate : NSObject
@@ -137,6 +141,11 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
                    selector:@selector(focusSomeWindow:)
                        name:NSApplicationDidBecomeActiveNotification
                      object:nil];
+
+        [center addObserver:self
+                   selector:@selector(localeDidChange:)
+                       name:NSCurrentLocaleDidChangeNotification
+                     object:nil];
     }
 
     return self;
@@ -148,6 +157,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 
     [center removeObserver:self name:NSWindowWillCloseNotification object:nil];
     [center removeObserver:self name:NSApplicationDidBecomeActiveNotification object:nil];
+    [center removeObserver:self name:NSCurrentLocaleDidChangeNotification object:nil];
 
     [super dealloc];
 }
@@ -226,6 +236,11 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
     }
 }
 
+- (void)localeDidChange:(NSNotification *)notification;
+{
+    SDL_SendLocaleChangedEvent();
+}
+
 - (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)filename
 {
     return (BOOL)SDL_SendDropFile(NULL, [filename UTF8String]) && SDL_SendDropComplete(NULL);
@@ -294,7 +309,10 @@ LoadMainMenuNibIfAvailable(void)
     NSDictionary *infoDict;
     NSString *mainNibFileName;
     bool success = false;
-    
+
+    if (floor(NSAppKitVersionNumber) < NSAppKitVersionNumber10_8) {
+        return false;
+    }
     infoDict = [[NSBundle mainBundle] infoDictionary];
     if (infoDict) {
         mainNibFileName = [infoDict valueForKey:@"NSMainNibFile"];

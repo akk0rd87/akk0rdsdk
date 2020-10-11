@@ -57,6 +57,9 @@
 #ifndef MAC_OS_X_VERSION_10_12
 #define NSEventModifierFlagCapsLock NSAlphaShiftKeyMask
 #endif
+#ifndef NSAppKitVersionNumber10_14
+#define NSAppKitVersionNumber10_14 1671
+#endif
 
 @interface SDLWindow : NSWindow <NSDraggingDestination>
 /* These are needed for borderless/fullscreen windows */
@@ -912,11 +915,9 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
        keypresses; it won't toggle the mod state if you send a keyrelease.  */
     const SDL_bool osenabled = ([theEvent modifierFlags] & NSEventModifierFlagCapsLock) ? SDL_TRUE : SDL_FALSE;
     const SDL_bool sdlenabled = (SDL_GetModState() & KMOD_CAPS) ? SDL_TRUE : SDL_FALSE;
-    if (!osenabled && sdlenabled) {
-        SDL_ToggleModState(KMOD_CAPS, SDL_FALSE);
-        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
-    } else if (osenabled && !sdlenabled) {
+    if (osenabled ^ sdlenabled) {
         SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_CAPSLOCK);
+        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
     }
 }
 - (void)keyDown:(NSEvent *)theEvent
@@ -1567,8 +1568,8 @@ int
 Cocoa_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
 { @autoreleasepool
 {
-    NSView* nsview;
-    NSWindow *nswindow;
+    NSView* nsview = nil;
+    NSWindow *nswindow = nil;
 
     if ([(id)data isKindOfClass:[NSWindow class]]) {
       nswindow = (NSWindow*)data;
@@ -1587,6 +1588,21 @@ Cocoa_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
     if (title) {
         window->title = SDL_strdup([title UTF8String]);
     }
+
+    /* We still support OpenGL as long as Apple offers it, deprecated or not, so disable deprecation warnings about it. */
+    #ifdef __clang__
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    #endif
+    /* Note: as of the macOS 10.15 SDK, this defaults to YES instead of NO when
+     * the NSHighResolutionCapable boolean is set in Info.plist. */
+    if ([nsview respondsToSelector:@selector(setWantsBestResolutionOpenGLSurface:)]) {
+        BOOL highdpi = (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) != 0;
+        [nsview setWantsBestResolutionOpenGLSurface:highdpi];
+    }
+    #ifdef __clang__
+    #pragma clang diagnostic pop
+    #endif
 
     return SetupWindowData(_this, window, nswindow, nsview, SDL_FALSE);
 }}
@@ -1820,17 +1836,7 @@ Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
         /* Hack to fix origin on Mac OS X 10.4
            This is no longer needed as of Mac OS X 10.15, according to bug 4822.
          */
-        NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-#if MAC_OS_X_VERSION_MAX_ALLOWED < 101000 /* NSOperatingSystemVersion added in the 10.10 SDK */
-        typedef struct {
-            NSInteger majorVersion;
-            NSInteger minorVersion;
-            NSInteger patchVersion;
-        } NSOperatingSystemVersion;
-#endif
-        NSOperatingSystemVersion version = { 10, 15, 0 };
-        if (![processInfo respondsToSelector:@selector(isOperatingSystemAtLeastVersion:)] ||
-            ![processInfo isOperatingSystemAtLeastVersion:version]) {
+        if (floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_14) {
             NSRect screenRect = [[nswindow screen] frame];
             if (screenRect.size.height >= 1.0f) {
                 rect.origin.y += (screenRect.size.height - rect.size.height);

@@ -229,10 +229,6 @@ const DIDATAFORMAT SDL_c_dfDIJoystick2 = {
 static int
 SetDIerror(const char *function, HRESULT code)
 {
-    /*
-    return SDL_SetError("%s() [%s]: %s", function,
-    DXGetErrorString9A(code), DXGetErrorDescription9A(code));
-    */
     return SDL_SetError("%s() DirectX error 0x%8.8lx", function, code);
 }
 
@@ -509,7 +505,7 @@ SDL_DINPUT_JoystickInit(void)
     coinitialized = SDL_TRUE;
 
     result = CoCreateInstance(&CLSID_DirectInput8, NULL, CLSCTX_INPROC_SERVER,
-        &IID_IDirectInput8, (LPVOID)&dinput);
+        &IID_IDirectInput8, (LPVOID *)&dinput);
 
     if (FAILED(result)) {
         return SetDIerror("CoCreateInstance", result);
@@ -696,6 +692,47 @@ SDL_DINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
         SDL_RawDevList = NULL;
     }
     SDL_RawDevListCount = 0;
+}
+
+typedef struct
+{
+    Uint16 vendor;
+    Uint16 product;
+    Uint16 version;
+    SDL_bool present;
+} EnumJoystickPresentData;
+
+static BOOL CALLBACK
+EnumJoystickPresentCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
+{
+    EnumJoystickPresentData *data = (EnumJoystickPresentData *)pContext;
+    Uint16 vendor = 0;
+    Uint16 product = 0;
+    Uint16 version = 0;
+
+    if (SDL_memcmp(&pdidInstance->guidProduct.Data4[2], "PIDVID", 6) == 0) {
+        vendor = (Uint16)LOWORD(pdidInstance->guidProduct.Data1);
+        product = (Uint16)HIWORD(pdidInstance->guidProduct.Data1);
+        if (data->vendor == vendor && data->product == product && data->version == version) {
+            data->present = SDL_TRUE;
+            return DIENUM_STOP;
+        }
+    }
+    return DIENUM_CONTINUE;
+}
+
+SDL_bool
+SDL_DINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version)
+{
+    EnumJoystickPresentData data;
+
+    data.vendor = vendor;
+    data.product = product;
+    data.version = version;
+    data.present = SDL_FALSE;
+    IDirectInput8_EnumDevices(dinput, DI8DEVCLASS_GAMECTRL, EnumJoystickPresentCallback, &data, DIEDFL_ATTACHEDONLY);
+
+    return data.present;
 }
 
 static BOOL CALLBACK
@@ -1259,6 +1296,12 @@ SDL_DINPUT_JoystickInit(void)
 void
 SDL_DINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
 {
+}
+
+SDL_bool
+SDL_DINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version)
+{
+    return SDL_FALSE;
 }
 
 int

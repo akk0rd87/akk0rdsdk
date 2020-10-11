@@ -70,7 +70,17 @@ case "$host" in
 esac
 
 dnl Set up the compiler and linker flags
-INCLUDE="-I$srcdir/include -idirafter $srcdir/src/video/khronos"
+INCLUDE="-I$srcdir/include"
+
+dnl Don't use our khronos headers on QNX.
+case "$host" in
+    *-*-nto-qnx*)
+        ;;
+    *)
+        INCLUDE="$INCLUDE -idirafter $srcdir/src/video/khronos"
+        ;;
+esac
+
 if test x$srcdir != x.; then
     INCLUDE="-Iinclude $INCLUDE"
 elif test -d .hg; then
@@ -403,6 +413,7 @@ SOURCES="$SOURCES $srcdir/src/file/*.c"
 SOURCES="$SOURCES $srcdir/src/haptic/*.c"
 SOURCES="$SOURCES $srcdir/src/joystick/*.c"
 SOURCES="$SOURCES $srcdir/src/libm/*.c"
+SOURCES="$SOURCES $srcdir/src/misc/*.c"
 SOURCES="$SOURCES $srcdir/src/power/*.c"
 #SOURCES="$SOURCES $srcdir/src/filesystem/*.c"
 SOURCES="$SOURCES $srcdir/src/render/*.c"
@@ -413,6 +424,7 @@ SOURCES="$SOURCES $srcdir/src/thread/*.c"
 SOURCES="$SOURCES $srcdir/src/timer/*.c"
 SOURCES="$SOURCES $srcdir/src/video/*.c"
 SOURCES="$SOURCES $srcdir/src/video/yuv2rgb/*.c"
+SOURCES="$SOURCES $srcdir/src/locale/*.c"
 
 dnl Enable/disable various subsystems of the SDL library
 
@@ -1308,8 +1320,8 @@ dnl Check for ARM instruction support using gas syntax
 CheckARM()
 {
     AC_ARG_ENABLE(arm-simd,
-AC_HELP_STRING([--enable-arm-simd], [use SIMD assembly blitters on ARM [[default=yes]]]),
-                  enable_arm_simd=$enableval, enable_arm_simd=yes)
+AC_HELP_STRING([--enable-arm-simd], [use SIMD assembly blitters on ARM [[default=no]]]),
+                  enable_arm_simd=$enableval, enable_arm_simd=no)
     if test x$enable_video = xyes -a x$enable_assembly = xyes -a x$enable_arm_simd = xyes; then
         save_CFLAGS="$CFLAGS"
         have_arm_simd=no
@@ -2146,7 +2158,7 @@ AS_HELP_STRING([--enable-render-metal], [enable the Metal render driver [[defaul
           #import <Metal/Metal.h>
           #import <QuartzCore/CAMetalLayer.h>
 
-          #if !TARGET_CPU_X86_64
+          #if TARGET_CPU_X86
           #error Metal doesn't work on this configuration
           #endif
         ],[
@@ -2234,8 +2246,8 @@ AS_HELP_STRING([--enable-video-kmsdrm], [use KMSDRM video driver [[default=no]]]
     if test x$enable_video = xyes -a x$enable_video_kmsdrm = xyes; then
         video_kmsdrm=no
 
-        PKG_CHECK_MODULES([LIBDRM], [libdrm >= 2.4.46], libdrm_avail=yes, libdrm_avail=no)
-        PKG_CHECK_MODULES([LIBGBM], [gbm >= 9.0.0], libgbm_avail=yes, libgbm_avail=no)
+        PKG_CHECK_MODULES([LIBDRM], [libdrm >= 2.4.82], libdrm_avail=yes, libdrm_avail=no)
+        PKG_CHECK_MODULES([LIBGBM], [gbm >= 17.1.0], libgbm_avail=yes, libgbm_avail=no)
 
         if test x$libdrm_avail = xyes -a x$libgbm_avail = xyes; then
             video_kmsdrm=yes
@@ -2561,7 +2573,7 @@ CheckVulkan()
                   #include <Metal/Metal.h>
                   #include <QuartzCore/CAMetalLayer.h>
 
-                  #if !TARGET_CPU_X86_64
+                  #if TARGET_CPU_X86
                   #error Vulkan doesn't work on this configuration
                   #endif
                 ],[
@@ -2730,25 +2742,18 @@ CheckFcitx()
 AS_HELP_STRING([--enable-fcitx], [enable fcitx support [[default=yes]]]),
                   , enable_fcitx=yes)
     if test x$enable_fcitx = xyes; then
-        PKG_CHECK_MODULES([FCITX], [fcitx], have_fcitx=yes, have_fcitx=no)
-        CFLAGS="$CFLAGS $FCITX_CFLAGS"
-        AC_CHECK_HEADER(fcitx/frontend.h,
-                        have_fcitx_frontend_h_hdr=yes,
-                        have_fcitx_frontend_h_hdr=no)
-        CFLAGS="$save_CFLAGS"
-        if test x$have_fcitx_frontend_h_hdr = xyes; then
-            if test x$enable_ime != xyes; then
-                AC_MSG_WARN([IME support is required for fcitx.])
-                have_fcitx_frontend_h_hdr=no
-            elif test x$enable_dbus != xyes; then
-                AC_MSG_WARN([DBus support is required for fcitx.])
-                have_fcitx_frontend_h_hdr=no
-            else
-                AC_DEFINE(HAVE_FCITX_FRONTEND_H, 1, [ ])
-                EXTRA_CFLAGS="$EXTRA_CFLAGS $FCITX_CFLAGS"
-                SOURCES="$SOURCES $srcdir/src/core/linux/SDL_fcitx.c"
-            fi
+        AC_MSG_CHECKING(for fcitx support)
+        have_fcitx=no
+        if test x$enable_ime != xyes; then
+            AC_MSG_WARN([IME support is required for fcitx.])
+        elif test x$have_dbus_dbus_h_hdr != xyes; then
+            AC_MSG_WARN([DBus support is required for fcitx.])
+        else
+            have_fcitx=yes
+            AC_DEFINE(HAVE_FCITX, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/core/linux/SDL_fcitx.c"
         fi
+        AC_MSG_RESULT($have_fcitx)
     fi
 }
 
@@ -3285,7 +3290,7 @@ CheckHIDAPI()
     # so we'll just use libusb when it's available.
     case "$host" in
         # libusb does not support iOS
-        arm*-apple-darwin* | *-ios-* )
+        *-ios-* )
             skiplibusb=yes
             ;;
         # On the other hand, *BSD specifically uses libusb only
@@ -3439,6 +3444,8 @@ CheckNoStrictAliasing
 dnl Do this for every platform, but for some it doesn't mean anything, but better to catch it here anyhow.
 CheckEventSignals
 
+have_locale=no
+
 dnl Set up the configuration based on the host platform!
 case "$host" in
     *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-aix*|*-*-minix*|*-*-nto*)
@@ -3526,6 +3533,12 @@ case "$host" in
         CheckLinuxVersion
         CheckRPATH
         CheckVivanteVideo
+
+        SOURCES="$SOURCES $srcdir/src/misc/unix/*.c"
+        have_misc=yes
+
+        SOURCES="$SOURCES $srcdir/src/locale/unix/*.c"
+        have_locale=yes
 
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
@@ -3675,6 +3688,13 @@ case "$host" in
 
         # Set up the core platform files
         SOURCES="$SOURCES $srcdir/src/core/windows/*.c"
+
+        SOURCES="$SOURCES $srcdir/src/misc/windows/*.c"
+        have_misc=yes
+
+        # Use the Windows locale APIs.
+        SOURCES="$SOURCES $srcdir/src/locale/windows/*.c"
+        have_locale=yes
 
         # Set up files for the video library
         if test x$enable_video = xyes; then
@@ -3847,6 +3867,14 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             SOURCES="$SOURCES $srcdir/src/filesystem/haiku/*.cc"
             have_filesystem=yes
         fi
+
+        SOURCES="$SOURCES $srcdir/src/misc/haiku/*.cc"
+        have_misc=yes
+
+        # Set up files for the locale library
+        SOURCES="$SOURCES $srcdir/src/locale/haiku/*.cc"
+        have_locale=yes
+
         # The Haiku platform requires special setup.
         SOURCES="$srcdir/src/main/haiku/*.cc $SOURCES"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lroot -lbe -lmedia -lgame -ldevice -ltextencoding"
@@ -3854,7 +3882,7 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         #  other spins, like x86-64, use a more standard "libstdc++.so.*"
         AC_CHECK_FILE("/boot/system/lib/libstdc++.r4.so", EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lstdc++.r4", EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lstdc++")
         ;;
-    arm*-apple-darwin*|*-ios-*)
+    *-ios-*)
         ARCH=ios
 
         CheckVisibilityHidden
@@ -3866,6 +3894,13 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         CheckMETAL
         CheckVulkan
         CheckPTHREAD
+
+        SOURCES="$SOURCES $srcdir/src/misc/ios/*.m"
+        have_misc=yes
+
+        # Set up files for the locale library
+        SOURCES="$SOURCES $srcdir/src/locale/macosx/*.m"
+        have_locale=yes
 
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
@@ -3880,6 +3915,9 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             SOURCES="$SOURCES $srcdir/src/joystick/iphoneos/*.m"
             SOURCES="$SOURCES $srcdir/src/joystick/steam/*.c"
             have_joystick=yes
+        else
+            # Need this code for accelerometer as joystick support
+            SOURCES="$SOURCES $srcdir/src/joystick/iphoneos/*.m"
         fi
         # Set up files for the haptic library
         #if test x$enable_haptic = xyes; then
@@ -3965,6 +4003,13 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         CheckVulkan
         CheckPTHREAD
         CheckHIDAPI
+
+        SOURCES="$SOURCES $srcdir/src/misc/macosx/*.m"
+        have_misc=yes
+
+        # Set up files for the locale library
+        SOURCES="$SOURCES $srcdir/src/locale/macosx/*.m"
+        have_locale=yes
 
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
@@ -4093,6 +4138,9 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             SOURCES="$SOURCES $srcdir/src/timer/unix/*.c"
             have_timers=yes
         fi
+        # Set up files for the locale library
+        SOURCES="$SOURCES $srcdir/src/locale/emscripten/*.c"
+        have_locale=yes
         ;;
     *-*-riscos*)
         ARCH=riscos
@@ -4141,6 +4189,12 @@ AC_SUBST([INSTALL_SDL2_CONFIG], [$enable_sdl2_config])
 
 # Verify that we have all the platform specific files we need
 
+if test x$have_misc != xyes; then
+    SOURCES="$SOURCES $srcdir/src/misc/dummy/*.c"
+fi
+if test x$have_locale != xyes; then
+    SOURCES="$SOURCES $srcdir/src/locale/dummy/*.c"
+fi
 if test x$have_joystick != xyes; then
     if test x$enable_joystick = xyes; then
         AC_DEFINE(SDL_JOYSTICK_DUMMY, 1, [ ])
@@ -4379,7 +4433,7 @@ if test x$have_ibus_ibus_h_hdr = xyes; then
 else
     SUMMARY="${SUMMARY}Using ibus          : NO\n"
 fi
-if test x$have_fcitx_frontend_h_hdr = xyes; then
+if test x$have_fcitx = xyes; then
     SUMMARY="${SUMMARY}Using fcitx         : YES\n"
 else
     SUMMARY="${SUMMARY}Using fcitx         : NO\n"

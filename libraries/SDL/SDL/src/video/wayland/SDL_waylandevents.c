@@ -65,6 +65,8 @@ struct SDL_WaylandInput {
     struct wl_keyboard *keyboard;
     SDL_WaylandDataDevice *data_device;
     struct zwp_relative_pointer_v1 *relative_pointer;
+    struct zwp_confined_pointer_v1 *confined_pointer;
+    SDL_Window *confined_pointer_window;
     SDL_WindowData *pointer_focus;
     SDL_WindowData *keyboard_focus;
 
@@ -219,6 +221,21 @@ Wayland_PumpEvents(_THIS)
 }
 
 static void
+pointer_handle_motion(void *data, struct wl_pointer *pointer,
+                      uint32_t time, wl_fixed_t sx_w, wl_fixed_t sy_w)
+{
+    struct SDL_WaylandInput *input = data;
+    SDL_WindowData *window = input->pointer_focus;
+    input->sx_w = sx_w;
+    input->sy_w = sy_w;
+    if (input->pointer_focus) {
+        const int sx = wl_fixed_to_int(sx_w);
+        const int sy = wl_fixed_to_int(sy_w);
+        SDL_SendMouseMotion(window->sdlwindow, 0, 0, sx, sy);
+    }
+}
+
+static void
 pointer_handle_enter(void *data, struct wl_pointer *pointer,
                      uint32_t serial, struct wl_surface *surface,
                      wl_fixed_t sx_w, wl_fixed_t sy_w)
@@ -242,6 +259,10 @@ pointer_handle_enter(void *data, struct wl_pointer *pointer,
     if (window) {
         input->pointer_focus = window;
         SDL_SetMouseFocus(window->sdlwindow);
+        /* In the case of e.g. a pointer confine warp, we may receive an enter
+         * event with no following motion event, but with the new coordinates
+         * as part of the enter event. */
+        pointer_handle_motion(data, pointer, serial, sx_w, sy_w);
     }
 }
 
@@ -254,21 +275,6 @@ pointer_handle_leave(void *data, struct wl_pointer *pointer,
     if (input->pointer_focus) {
         SDL_SetMouseFocus(NULL);
         input->pointer_focus = NULL;
-    }
-}
-
-static void
-pointer_handle_motion(void *data, struct wl_pointer *pointer,
-                      uint32_t time, wl_fixed_t sx_w, wl_fixed_t sy_w)
-{
-    struct SDL_WaylandInput *input = data;
-    SDL_WindowData *window = input->pointer_focus;
-    input->sx_w = sx_w;
-    input->sy_w = sy_w;
-    if (input->pointer_focus) {
-        const int sx = wl_fixed_to_int(sx_w);
-        const int sy = wl_fixed_to_int(sy_w);
-        SDL_SendMouseMotion(window->sdlwindow, 0, 0, sx, sy);
     }
 }
 
@@ -1206,6 +1212,14 @@ lock_pointer_to_window(SDL_Window *window,
     w->locked_pointer = locked_pointer;
 }
 
+static void pointer_confine_destroy(struct SDL_WaylandInput *input)
+{
+    if (input->confined_pointer) {
+        zwp_confined_pointer_v1_destroy(input->confined_pointer);
+        input->confined_pointer = NULL;
+    }
+}
+
 int Wayland_input_lock_pointer(struct SDL_WaylandInput *input)
 {
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
@@ -1221,6 +1235,10 @@ int Wayland_input_lock_pointer(struct SDL_WaylandInput *input)
 
     if (!input->pointer)
         return -1;
+
+    /* If we have a pointer confine active, we must destroy it here because
+     * creating a locked pointer otherwise would be a protocol error. */
+    pointer_confine_destroy(input);
 
     if (!input->relative_pointer) {
         relative_pointer =
@@ -1260,6 +1278,71 @@ int Wayland_input_unlock_pointer(struct SDL_WaylandInput *input)
 
     d->relative_mouse_mode = 0;
 
+    if (input->confined_pointer_window)
+        Wayland_input_confine_pointer(input->confined_pointer_window, input);
+
+    return 0;
+}
+
+static void
+confined_pointer_confined(void *data,
+                          struct zwp_confined_pointer_v1 *confined_pointer)
+{
+}
+
+static void
+confined_pointer_unconfined(void *data,
+                            struct zwp_confined_pointer_v1 *confined_pointer)
+{
+}
+
+static const struct zwp_confined_pointer_v1_listener confined_pointer_listener = {
+    confined_pointer_confined,
+    confined_pointer_unconfined,
+};
+
+int Wayland_input_confine_pointer(SDL_Window *window, struct SDL_WaylandInput *input)
+{
+    SDL_WindowData *w = window->driverdata;
+    SDL_VideoData *d = input->display;
+    struct zwp_confined_pointer_v1 *confined_pointer;
+
+    if (!d->pointer_constraints)
+        return -1;
+
+    if (!input->pointer)
+        return -1;
+
+    /* A confine may already be active, in which case we should destroy it and
+     * create a new one. */
+    if (input->confined_pointer)
+        Wayland_input_unconfine_pointer(input);
+
+    input->confined_pointer_window = window;
+
+    /* We cannot create a confine if the pointer is already locked. Defer until
+     * the pointer is unlocked. */
+    if (d->relative_mouse_mode)
+        return 0;
+
+    confined_pointer =
+        zwp_pointer_constraints_v1_confine_pointer(d->pointer_constraints,
+                                                   w->surface,
+                                                   input->pointer,
+                                                   NULL,
+                                                   ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
+    zwp_confined_pointer_v1_add_listener(confined_pointer,
+                                         &confined_pointer_listener,
+                                         window);
+
+    input->confined_pointer = confined_pointer;
+    return 0;
+}
+
+int Wayland_input_unconfine_pointer(struct SDL_WaylandInput *input)
+{
+    pointer_confine_destroy(input);
+    input->confined_pointer_window = NULL;
     return 0;
 }
 

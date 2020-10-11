@@ -54,12 +54,6 @@ static void Emscripten_SetWindowTitle(_THIS, SDL_Window * window);
 
 /* Emscripten driver bootstrap functions */
 
-static int
-Emscripten_Available(void)
-{
-    return (1);
-}
-
 static void
 Emscripten_DeleteDevice(SDL_VideoDevice * device)
 {
@@ -132,7 +126,7 @@ Emscripten_CreateDevice(int devindex)
 
 VideoBootStrap Emscripten_bootstrap = {
     EMSCRIPTENVID_DRIVER_NAME, "SDL emscripten video driver",
-    Emscripten_Available, Emscripten_CreateDevice
+    Emscripten_CreateDevice
 };
 
 
@@ -366,8 +360,8 @@ Emscripten_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * di
 static void
 Emscripten_SetWindowTitle(_THIS, SDL_Window * window) {
     EM_ASM_INT({
-      if (typeof Module['setWindowTitle'] !== 'undefined') {
-        Module['setWindowTitle'](UTF8ToString($0));
+      if (typeof setWindowTitle !== 'undefined') {
+        setWindowTitle(UTF8ToString($0));
       }
       return 0;
     }, window->title);

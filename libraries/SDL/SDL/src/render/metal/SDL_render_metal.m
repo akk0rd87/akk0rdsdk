@@ -47,6 +47,9 @@
 
 /* Apple Metal renderer implementation */
 
+/* Used to re-create the window with Metal capability */
+extern int SDL_RecreateWindow(SDL_Window * window, Uint32 flags);
+
 /* macOS requires constants in a buffer to have a 256 byte alignment. */
 /* Use native type alignments from https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf */
 #ifdef __MACOSX__
@@ -1515,15 +1518,21 @@ METAL_RenderPresent(SDL_Renderer * renderer)
 { @autoreleasepool {
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
 
-    if (data.mtlcmdencoder != nil) {
-        [data.mtlcmdencoder endEncoding];
+    // If we don't have a command buffer, we can't present, so activate to get one.
+    if (data.mtlcmdencoder == nil) {
+        // We haven't even gotten a backbuffer yet? Clear it to black. Otherwise, load the existing data.
+        if (data.mtlbackbuffer == nil) {
+            MTLClearColor color = MTLClearColorMake(0.0f, 0.0f, 0.0f, 1.0f);
+            METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionClear, &color, nil);
+        } else {
+            METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad, NULL, nil);
+        }
     }
-    if (data.mtlbackbuffer != nil) {
-        [data.mtlcmdbuffer presentDrawable:data.mtlbackbuffer];
-    }
-    if (data.mtlcmdbuffer != nil) {
-        [data.mtlcmdbuffer commit];
-    }
+
+    [data.mtlcmdencoder endEncoding];
+    [data.mtlcmdbuffer presentDrawable:data.mtlbackbuffer];
+    [data.mtlcmdbuffer commit];
+
     data.mtlcmdencoder = nil;
     data.mtlcmdbuffer = nil;
     data.mtlbackbuffer = nil;
@@ -1578,6 +1587,8 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     SDL_MetalView view = NULL;
     CAMetalLayer *layer = nil;
     SDL_SysWMinfo syswm;
+    Uint32 window_flags;
+    SDL_bool changed_window = SDL_FALSE;
 
     SDL_VERSION(&syswm.version);
     if (!SDL_GetWindowWMInfo(window, &syswm)) {
@@ -1588,9 +1599,20 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
         return NULL;
     }
 
+    window_flags = SDL_GetWindowFlags(window);
+    if (!(window_flags & SDL_WINDOW_METAL)) {
+        changed_window = SDL_TRUE;
+        if (SDL_RecreateWindow(window, (window_flags & ~SDL_WINDOW_OPENGL) | SDL_WINDOW_METAL) < 0) {
+            return NULL;
+        }
+    }
+
     renderer = (SDL_Renderer *) SDL_calloc(1, sizeof(*renderer));
     if (!renderer) {
         SDL_OutOfMemory();
+        if (changed_window) {
+            SDL_RecreateWindow(window, window_flags);
+        }
         return NULL;
     }
 
@@ -1600,6 +1622,9 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     if (mtldevice == nil) {
         SDL_free(renderer);
         SDL_SetError("Failed to obtain Metal device");
+        if (changed_window) {
+            SDL_RecreateWindow(window, window_flags);
+        }
         return NULL;
     }
 
@@ -1610,6 +1635,9 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
         [mtldevice release];
 #endif
         SDL_free(renderer);
+        if (changed_window) {
+            SDL_RecreateWindow(window, window_flags);
+        }
         return NULL;
     }
 
@@ -1622,6 +1650,9 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
 #endif
         SDL_Metal_DestroyView(view);
         SDL_free(renderer);
+        if (changed_window) {
+            SDL_RecreateWindow(window, window_flags);
+        }
         return NULL;
     }
 
