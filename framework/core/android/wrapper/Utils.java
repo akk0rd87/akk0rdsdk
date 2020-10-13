@@ -25,7 +25,7 @@ import com.google.android.play.core.review.ReviewInfo;
 
 public class Utils {
     private static  final String TAG = "SDL";
-    private static  Activity _context = null;
+    private static  AkkordActivity _context = null;
     private static  AssetManager AssetMgr = null;
 
     private static  ReviewManager reviewManager = null;
@@ -33,7 +33,7 @@ public class Utils {
 
     public static native void MessageBoxCallback(int Code, int Result);
 
-    public static void Init(Activity ActivityContext){
+    public static void Init(AkkordActivity ActivityContext){
         _context = ActivityContext;
         AssetMgr = _context.getResources().getAssets();
         InitReviewSettings();
@@ -139,8 +139,9 @@ public class Utils {
     public static void openURL(String url) {
         try
         {
-            Intent browseIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-            _context.startActivity(browseIntent);
+            _context.openURL(url);
+            //Intent browseIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            //_context.startActivity(browseIntent);
         }
         catch(Exception e)
         {
