@@ -15,6 +15,7 @@ class iOSPlatformWrapper : public PlatformWrapper {
         return true;
     }
 
+    /*
     bool vOpenURL(const char* url) override {
         // https://useyourloaf.com/blog/openurl-deprecated-in-ios10/
         @autoreleasepool
@@ -49,6 +50,7 @@ class iOSPlatformWrapper : public PlatformWrapper {
             return Result;
         }
     }
+    */
 
     std::string vGetInternalWriteDir() override {
         NSArray *docdirs = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
