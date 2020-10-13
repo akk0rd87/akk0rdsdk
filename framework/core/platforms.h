@@ -52,7 +52,7 @@ private:
     virtual bool                     vGetDirContent(const char* Dir, DirContentElementArray& ArrayList) = 0;
 
     // Activity functions
-    virtual bool                     vOpenURL(const char* url) = 0;
+    virtual bool                     vOpenURL(const char* url) { return 0 == SDL_OpenURL(url); };
     virtual void                     vMessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS) = 0;
     virtual void                     vShareText(const char* Title, const char* Message) {};
     virtual void                     vSharePNG(const char* Title, const char* File) {};

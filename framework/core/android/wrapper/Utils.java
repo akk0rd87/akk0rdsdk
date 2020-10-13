@@ -136,18 +136,18 @@ public class Utils {
 //        System.exit(0);
 //    }
 
-    public static void openURL(String url) {
-        try
-        {
-            _context.openURL(url);
-            //Intent browseIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-            //_context.startActivity(browseIntent);
-        }
-        catch(Exception e)
-        {
-            Log.e(TAG, e.getMessage());
-        }
-    }
+    //public static void openURL(String url) {
+    //    try
+    //    {
+    //        _context.openURL(url);
+    //        //Intent browseIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+    //        //_context.startActivity(browseIntent);
+    //    }
+    //    catch(Exception e)
+    //    {
+    //        Log.e(TAG, e.getMessage());
+    //    }
+    //}
 
     public static void showMessageBox(int Code, String Title, String Message, String Button1, String Button2, String Button3, long TimeOut)
     {

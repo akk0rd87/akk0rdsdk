@@ -11,7 +11,7 @@ class AndroidPlatformWrapper : public PlatformWrapper {
         AAssetManager *AssetMgr               { nullptr };
         jclass    UtilsClass                  { nullptr } ;
         jmethodID midDirectoryDelete          { nullptr };
-        jmethodID midOpenURL                  { nullptr };
+        //jmethodID midOpenURL                  { nullptr };
         jmethodID midShowToast                { nullptr };
         jmethodID midMkDir                    { nullptr };
         jmethodID midShowMessageBox           { nullptr };
@@ -101,7 +101,7 @@ class AndroidPlatformWrapper : public PlatformWrapper {
         AndroidWrapperState.AssetMgr                    = nullptr;
         AndroidWrapperState.UtilsClass                  = nullptr;
         AndroidWrapperState.midDirectoryDelete          = nullptr;
-        AndroidWrapperState.midOpenURL                  = nullptr;
+        //AndroidWrapperState.midOpenURL                  = nullptr;
         AndroidWrapperState.midShowToast                = nullptr;
         AndroidWrapperState.midMkDir                    = nullptr;
         AndroidWrapperState.midShowMessageBox           = nullptr;
@@ -118,7 +118,7 @@ class AndroidPlatformWrapper : public PlatformWrapper {
             return false;
         }
         AndroidWrapperState.midDirectoryDelete             = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "DirectoryDelete", "(Ljava/lang/String;I)I", true);
-        AndroidWrapperState.midOpenURL                     = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "openURL", "(Ljava/lang/String;)V", true);
+        //AndroidWrapperState.midOpenURL                     = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "openURL", "(Ljava/lang/String;)V", true);
         AndroidWrapperState.midShowToast                   = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "showToast", "(Ljava/lang/String;IIII)V", true);
         AndroidWrapperState.midMkDir                       = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "MkDir", "(Ljava/lang/String;)I", true);
         AndroidWrapperState.midShowMessageBox              = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "showMessageBox", "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)V", true);
@@ -254,6 +254,7 @@ class AndroidPlatformWrapper : public PlatformWrapper {
     };
 
     // Activity functions
+    /*
     bool vOpenURL(const char* url)  override {
         JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
         //logDebug("GetStaticMethodID before");
@@ -268,6 +269,7 @@ class AndroidPlatformWrapper : public PlatformWrapper {
         env->DeleteLocalRef(url_jstring);
         return true;
     };
+    */
 
     void vMessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS)  override {
         JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
