@@ -1,4 +1,4 @@
-﻿#ifndef __AKK0RD_SDK_OPENGLES_DRIVER_H__
+#ifndef __AKK0RD_SDK_OPENGLES_DRIVER_H__
 #define __AKK0RD_SDK_OPENGLES_DRIVER_H__
 
 #include "SDL_opengles2.h"
