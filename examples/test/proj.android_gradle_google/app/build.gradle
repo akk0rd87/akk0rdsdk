@@ -55,9 +55,9 @@ android {
         main {
             jniLibs.srcDirs = ['libs']
             manifest.srcFile '../AndroidManifest.xml'
-            java.srcDir "${akkord_sdk_path}/framework/core/android/wrapper/"
-            java.srcDir "${akkord_sdk_path}/framework/core/android/admob/"
-            java.srcDir "${akkord_sdk_path}/framework/core/android/billing/"
+            java.srcDir "${akkord_sdk_path}/framework/core/platformwrapper/android/wrapper/"
+            java.srcDir "${akkord_sdk_path}/framework/core/platformwrapper/android/admob/"
+            java.srcDir "${akkord_sdk_path}/framework/core/platformwrapper/android/billing/"
             java.srcDir '../java'
             res.srcDirs    = ['../res']
             assets.srcDir '../../assets'

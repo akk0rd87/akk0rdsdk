@@ -187,7 +187,7 @@ AdMob::RewardedVideoStatus  AdMob::RewardedVideoGetStatus()
 
 // Функция для вызова из Java. Callback
 #ifdef __ANDROID__
-#include "core/android/android_admob.h"
+#include "core/platformwrapper/android/android_admob.h"
 extern "C" {
     JNIEXPORT void JNICALL Java_org_akkord_lib_AdMobAdapter_AdCallback(JNIEnv*, jclass, jint, jint, jint);
 }

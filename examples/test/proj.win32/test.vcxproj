@@ -77,7 +77,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="$(AKKORD_SDK_HOME)\framework\basewrapper.cpp" />
-    <ClCompile Include="$(AKKORD_SDK_HOME)\framework\core\windows\windows_wrapper.cpp" />
+    <ClCompile Include="$(AKKORD_SDK_HOME)\framework\core\platformwrapper\windows\windows_wrapper.cpp" />
     <ClCompile Include="$(AKKORD_SDK_HOME)\framework\admob.cpp" />
     <ClCompile Include="$(AKKORD_SDK_HOME)\framework\billing.cpp" />
     <ClCompile Include="..\src\main.cpp" />
