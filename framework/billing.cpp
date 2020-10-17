@@ -78,7 +78,7 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseConsumed(JNIEn
 #endif
 
 #ifdef __APPLE__
-#include "core/ios/ios_billing.h"
+#include "core/platformwrapper/ios/ios_billing.h"
 #endif
 
 ////////////////////////////////////////

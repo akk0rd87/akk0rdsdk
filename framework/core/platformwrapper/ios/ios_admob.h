@@ -3,7 +3,7 @@
 #define __AKK0RD_SDK_IOS_ADMOB_H__
 #include "basewrapper.h"
 #include "admob.h"
-#include "../core_defines.h"
+#include "../../core_defines.h"
 
 class AdMobiOS
 {

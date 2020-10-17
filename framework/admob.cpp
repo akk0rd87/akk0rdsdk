@@ -204,7 +204,7 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_AdMobAdapter_AdCallback(JNIEnv*, jcla
 #endif
 
 #ifdef __APPLE__
-#include "core/ios/ios_admob.h"
+#include "core/platformwrapper/ios/ios_admob.h"
 #endif
 
 Uint32 AdMob::GetEventCode()

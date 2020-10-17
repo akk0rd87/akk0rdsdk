@@ -1,7 +1,7 @@
 #include "basewrapper.h"
 #include "ios_wrapper.h"
 #include "../platforms.h"
-#include "../core_defines.h"
+#include "../../core_defines.h"
 #include "customevents.h"
 
 #import <CoreFoundation/CFBundle.h>
