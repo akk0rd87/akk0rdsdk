@@ -56,8 +56,8 @@ model {
                 }
                 java {
                     source {
-                        srcDir "${akkord_sdk_path}/framework/core/android/wrapper/"
-                        //srcDir "${akkord_sdk_path}/framework/core/android/admob/"
+                        srcDir "${akkord_sdk_path}/framework/core/platformwrapper/android/wrapper/"
+                        //srcDir "${akkord_sdk_path}/framework/core/platformwrapper/android/admob/"
                     }
                 }
 //                manifest {

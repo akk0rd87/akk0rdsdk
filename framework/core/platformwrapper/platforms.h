@@ -3,7 +3,7 @@
 #define __AKK0RD_SDK_PLATFORMS_H__
 
 #include "locale.h"
-#include "../basewrapper.h"
+#include "basewrapper.h"
 
 class PlatformWrapper
 {
@@ -33,6 +33,8 @@ public:
     int                      GetAudioOutputRate() { return vGetAudioOutputRate(); };       // only for Android
     int                      GetAudioOutputBufferSize() { return vGetAudioOutputBufferSize(); }; // only for Android
     bool                     LaunchAppReviewIfAvailable() { return vLaunchAppReviewIfAvailable(); }
+
+    virtual ~PlatformWrapper() {}
 
 private:
     static                           PlatformWrapper& vGetInstance();

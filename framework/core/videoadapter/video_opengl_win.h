@@ -1,7 +1,7 @@
 #ifndef __AKK0RD_SDK_VIDEOADAPTER_OPENGL_WIN_H__
 #define __AKK0RD_SDK_VIDEOADAPTER_OPENGL_WIN_H__
 
-#include "videoadapter_opengles.h"
+#include "video_opengles.h"
 
 class VideoAdapter_OPENGLWIN : public VideoAdapter_OPENGLES {
 private:

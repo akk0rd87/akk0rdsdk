@@ -32,7 +32,7 @@ LOCAL_SRC_FILES    := $(AKKORD_SDK_HOME)/framework/admob.cpp \
                       $(AKKORD_SDK_HOME)/framework/billing.cpp \
                       $(AKKORD_SDK_HOME)/framework/basewrapper.cpp \
                       $(AKKORD_SDK_HOME)/framework/configmanager.cpp \
-                      $(AKKORD_SDK_HOME)/framework/core/android/android_wrapper.cpp \
+                      $(AKKORD_SDK_HOME)/framework/core/platformwrapper/android/android_wrapper.cpp \
                       $(APP_LOCAL_SRC_FILE_LIST)
 
 LOCAL_SHARED_LIBRARIES := SDL2

@@ -2,7 +2,7 @@
 #define __AKK0RD_SDK_VIDEOADAPTER_OPENGLES_H__
 
 #include "SDL_opengles2.h"
-#include "videoadapter_interface.h"
+#include "video_interface.h"
 #include <array>
 
 // выборочный список OPENGLES2-функций из файла "../src/render/opengles2/SDL_gles2funcs.h"

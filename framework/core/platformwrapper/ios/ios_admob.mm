@@ -253,10 +253,10 @@
         [self.rewardedAd release];
         self.rewardedAd = nullptr;
     };
-    
+
     NSString *ID = [[NSString alloc] initWithUTF8String:self.RewardedVideoUnitID.c_str()];
     self.rewardedAd = [[GADRewardedAd alloc] initWithAdUnitID:ID];
-    
+
     if(self.rewardedAd) {
         GADRequest *request = [GADRequest request];
         [self.rewardedAd loadRequest:request completionHandler:^(GADRequestError * _Nullable error) {

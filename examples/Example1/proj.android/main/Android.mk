@@ -28,7 +28,7 @@ LOCAL_C_INCLUDES   += $(AKKORD_SDK_HOME)/framework/
 # https://stackoverflow.com/questions/8980284/android-mk-include-all-cpp-files
 APP_LOCAL_SRC_FILE_LIST  := $(wildcard $(MY_LOCAL_PATH)/../../src/*.cpp)
 
-LOCAL_SRC_FILES    := $(AKKORD_SDK_HOME)/framework/core/android/android_wrapper.cpp \
+LOCAL_SRC_FILES    := $(AKKORD_SDK_HOME)/framework/core/platformwrapper/android/android_wrapper.cpp \
                       $(AKKORD_SDK_HOME)/framework/basewrapper.cpp \
                       $(AKKORD_SDK_HOME)/framework/atlasmanager.cpp \
                       $(APP_LOCAL_SRC_FILE_LIST)

@@ -1,5 +1,5 @@
 #include "videodriver.h"
-#include "core/videoadapter/videoadapter_interface.h"
+#include "core/videoadapter/video_interface.h"
 
 static std::unique_ptr<VideoAdapter> videoAdapter;
 

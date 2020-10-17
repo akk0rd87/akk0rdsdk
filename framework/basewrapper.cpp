@@ -1,6 +1,6 @@
 #include "basewrapper.h"
 #include "SDL_image.h"
-#include "core/platforms.h"
+#include "core/platformwrapper/platforms.h"
 #include "core/core_defines.h"
 #include <ctime>
 

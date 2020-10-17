@@ -19,7 +19,7 @@ int BillingManager::GetStatus()
 };
 
 #ifdef __ANDROID__
-#include "core/android/android_billing.h"
+#include "core/platformwrapper/android/android_billing.h"
 extern "C" {
     JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_BillingSetupFinished(JNIEnv*, jclass, jint);
     JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_BillingDisconnected(JNIEnv*, jclass);
