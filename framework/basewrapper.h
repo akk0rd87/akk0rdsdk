@@ -16,6 +16,9 @@ public:
     constexpr AkkordPoint(const AkkordPoint& Point) : x(Point.x), y(Point.y) {};
     bool operator== (const AkkordPoint& Point) const { return Point.x == x && Point.y == y; };
     bool operator!= (const AkkordPoint& Point) const { return !(Point == *this); };
+
+    AkkordPoint& SetX(int X) { x = X; return *this; }
+    AkkordPoint& SetY(int Y) { y = Y; return *this; }
 };
 
 class AkkordRect
@@ -27,15 +30,15 @@ public:
     constexpr AkkordRect(int X, int Y, int W, int H) : x(X), y(Y), w(W), h(H) {};
     constexpr AkkordRect(const AkkordPoint& Point1, const AkkordPoint& Point2) : x(Point1.x), y(Point1.y), w(Point2.x), h(Point2.y) {};
 
-    void SetW(int W) { w = W; };
-    void SetH(int H) { h = H; };
-    void SetX(int X) { x = X; };
-    void SetY(int Y) { y = Y; };
+    AkkordRect& SetW(int W) { w = W; return *this; };
+    AkkordRect& SetH(int H) { h = H; return *this; };
+    AkkordRect& SetX(int X) { x = X; return *this; };
+    AkkordRect& SetY(int Y) { y = Y; return *this; };
 
-    void SetPosition(const AkkordPoint& Position) { x = Position.x; y = Position.y; };
-    void SetPosition(int X, int Y) { x = X; y = Y; };
-    void SetSize(const AkkordPoint& Size) { w = Size.x; h = Size.y; };
-    void SetSize(int W, int H) { w = W; h = H; };
+    AkkordRect& SetPosition(const AkkordPoint& Position) { x = Position.x; y = Position.y; return *this; };
+    AkkordRect& SetPosition(int X, int Y) { x = X; y = Y; return *this; };
+    AkkordRect& SetSize(const AkkordPoint& Size) { w = Size.x; h = Size.y; return *this; };
+    AkkordRect& SetSize(int W, int H) { w = W; h = H; return *this; };
 
     AkkordPoint GetPosition() const { return AkkordPoint(x, y); }
     AkkordPoint GetSize() const { return AkkordPoint(w, h); }
@@ -54,14 +57,14 @@ public:
     constexpr AkkordColor(Uint8 R, Uint8 G, Uint8 B, Uint8 A) : ABGRcolor{ RGBA2Int32(R, G, B, A) } {};
     constexpr AkkordColor(Uint8 R, Uint8 G, Uint8 B) : AkkordColor(R, G, B, 255) {};
 
-    void                 SetUint32(Uint32 ARGB) { ABGRcolor = ARGB; };
-    void                 SetRGB(Uint8 R, Uint8 G, Uint8 B) { SetRGBA(R, G, B, static_cast<Uint8>(255)); };
-    void                 SetRGBA(Uint8 R, Uint8 G, Uint8 B, Uint8 A) { ABGRcolor = AkkordColor::RGBA2Int32(R, G, B, A); };
+    AkkordColor& SetUint32(Uint32 ARGB) { ABGRcolor = ARGB; return *this; };
+    AkkordColor& SetRGB(Uint8 R, Uint8 G, Uint8 B) { SetRGBA(R, G, B, static_cast<Uint8>(255)); return *this; };
+    AkkordColor& SetRGBA(Uint8 R, Uint8 G, Uint8 B, Uint8 A) { ABGRcolor = AkkordColor::RGBA2Int32(R, G, B, A); return *this; };
 
-    void                 SetR(Uint8 R) { ABGRcolor &= static_cast<Uint32>(0xffffff00); ABGRcolor |= static_cast<Uint32>(R); };
-    void                 SetG(Uint8 G) { ABGRcolor &= static_cast<Uint32>(0xffff00ff); ABGRcolor |= (static_cast<Uint32>(G) << 8); };
-    void                 SetB(Uint8 B) { ABGRcolor &= static_cast<Uint32>(0xff00ffff); ABGRcolor |= (static_cast<Uint32>(B) << 16); };
-    void                 SetA(Uint8 A) { ABGRcolor &= static_cast<Uint32>(0x00ffffff); ABGRcolor |= (static_cast<Uint32>(A) << 24); };
+    AkkordColor& SetR(Uint8 R) { ABGRcolor &= static_cast<Uint32>(0xffffff00); ABGRcolor |= static_cast<Uint32>(R); return *this; };
+    AkkordColor& SetG(Uint8 G) { ABGRcolor &= static_cast<Uint32>(0xffff00ff); ABGRcolor |= (static_cast<Uint32>(G) << 8); return *this; };
+    AkkordColor& SetB(Uint8 B) { ABGRcolor &= static_cast<Uint32>(0xff00ffff); ABGRcolor |= (static_cast<Uint32>(B) << 16); return *this; };
+    AkkordColor& SetA(Uint8 A) { ABGRcolor &= static_cast<Uint32>(0x00ffffff); ABGRcolor |= (static_cast<Uint32>(A) << 24);  return *this; };
 
     // проставление цвета копипастом из Adobe Ullistrator
     void                 SetAiRGB24(Uint32 RGB) { SetRGBA(static_cast<Uint8>((RGB & static_cast<Uint32>(0xff0000)) >> 16), static_cast<Uint8>((RGB & static_cast<Uint32>(0x00ff00)) >> 8), static_cast<Uint8>((RGB & static_cast<Uint32>(0x0000ff))), 255); };
