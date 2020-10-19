@@ -34,7 +34,7 @@ public:
         akkordTexture.LoadFromMemory(Buffer, Size, AkkordTexture::TextureType::PNG);
         return true;
     };
-    bool Draw(bool Outline, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const std::vector<GLfloat>& UV, const std::vector<GLfloat>& squareVertices, const std::vector <GLushort>& Indices, GLfloat Scale, GLfloat Border, int Spread);
+    bool Draw(bool Outline, const AkkordColor& FontColor, const AkkordColor& OutlineColor, GLfloat Scale, GLfloat Border, int Spread, const std::vector<GLfloat>& UV, const std::vector<GLfloat>& squareVertices, const std::vector <GLushort>& Indices);
     AkkordPoint GetSize() { return akkordTexture.GetSize(); };
     ~SDFGLTexture() { Clear(); };
 
@@ -83,16 +83,12 @@ public:
     void SetOutlineColor(Uint8 R, Uint8 G, Uint8 B, Uint8 A) { this->OutlineColor = AkkordColor(R, G, B, A); };
     bool Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect = nullptr);
     bool Flush();
+    void Clear();
     void SetAutoFlush(bool AutoFlush) { this->AutoFlush = AutoFlush; };
     void SetOutline(bool Outline) { this->Outline = Outline; };
     void SetBorder(float Border) { this->Border = Border; };
     AkkordColor GetColor() const { return Color; };
     AkkordColor GetOutlineColor() const { return OutlineColor; };
-    void Clear() {
-        UV.clear();
-        squareVertices.clear();
-        Indices.clear();
-    };
     ~SDFTexture() {
         Clear();
         Texture.Clear();
@@ -162,12 +158,6 @@ private:
         return false;
     };
     float GetLineHeight() const { return LineHeight; };
-
-    bool Draw(bool Outline, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const std::vector<GLfloat>& UV, const std::vector<GLfloat>& squareVertices, const std::vector <GLushort>& Indices, GLfloat Scale, GLfloat Border) const {
-        FontAtlas.Draw(Outline, FontColor, OutlineColor, UV, squareVertices, Indices, Scale, Border, Spread);
-        return true;
-    };
-
     bool ParseFNTFile(const char* FNTFile, BWrapper::FileSearchPriority SearchPriority);
 };
 
@@ -230,24 +220,9 @@ public:
     SDFFont::AlignH GetAlignH() const { return this->alignH; };
     SDFFont::AlignV GetAlignV() const { return this->alignV; };
 
-    void Reserve(unsigned Count) {
-        UV.reserve(Count * 4);
-        squareVertices.reserve(Count * 4);
-        Indices.reserve(Count * 6);
-    };
-
-    void Clear() {
-        UV.clear();
-        squareVertices.clear();
-        Indices.clear();
-    };
-
-    void Flush() {
-        if (Indices.size() > 0) {
-            sdfFont->Draw(this->outline, this->color, this->outlineColor, UV, squareVertices, Indices, (GLfloat)this->scaleX, (GLfloat)this->Border);
-        }
-        Clear();
-    };
+    void Clear();
+    void Reserve(unsigned Count);
+    void Flush();
 
     // сейчас это int, возможно для этой функции сделать отдельный тип со float
     AkkordPoint GetTextSize(const char* Text) const { return GetTextSizeByLine(Text, nullptr); };

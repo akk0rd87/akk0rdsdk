@@ -35,11 +35,17 @@ static struct { // разделяемый буффер, который испо�
     std::vector<float> floatVector;
 } SharedPool;
 
-bool SDFGLTexture::Draw(bool Outline, const AkkordColor& FontColor, const AkkordColor& OutlineColor, const std::vector<GLfloat>& UV, const std::vector<GLfloat>& squareVertices, const std::vector <GLushort>& Indices, GLfloat Scale, GLfloat Border, int Spread)
+bool SDFGLTexture::Draw(bool Outline, const AkkordColor& FontColor, const AkkordColor& OutlineColor, GLfloat Scale, GLfloat Border, int Spread, const std::vector<GLfloat>& UV, const std::vector<GLfloat>& squareVertices, const std::vector <GLushort>& Indices)
 {
     videoAdapter->DrawSDF(akkordTexture.GetTexture(), Outline, FontColor, OutlineColor, UV, squareVertices, Indices, Scale, Border, Spread);
     return true;
 };
+
+void SDFTexture::Clear() {
+    UV.clear();
+    squareVertices.clear();
+    Indices.clear();
+}
 
 bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
 {
@@ -121,7 +127,7 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
 bool SDFTexture::Flush()
 {
     if (Indices.size() > 0) {
-        Texture.Draw(Outline, this->Color, this->OutlineColor, UV, squareVertices, Indices, Scale, (GLfloat)Border, Spread);
+        Texture.Draw(Outline, this->Color, this->OutlineColor, Scale, static_cast<GLfloat>(Border), Spread, UV, squareVertices, Indices);
     }
     Clear();
     return true;
@@ -167,7 +173,7 @@ bool SDFFont::ParseFontMap(myStream& fonsStream)
     https://www.gamedev.net/forums/topic/284560-bmfont-and-how-to-interpret-the-fnt-file/
     */
 
-    std::string line;
+    auto& line = SharedPool.strObject;
     decltype(line.find(',')) lpos;
     decltype(lpos)           rpos;
     SDFCharInfo sd;
@@ -266,7 +272,6 @@ bool SDFFont::ParseFontMap(myStream& fonsStream)
 bool SDFFont::LoadCharMapFromMemory(const char* Buffer, int Size)
 {
     CharsMap.clear();
-    std::string line;
     MyStream ms(Buffer, Size);
     return ParseFontMap(ms);
 };
@@ -282,6 +287,25 @@ bool SDFFont::ParseFNTFile(const char* FNTFile, BWrapper::FileSearchPriority Sea
         return true;
     }
     return false;
+}
+
+void SDFFontBuffer::Clear() {
+    UV.clear();
+    squareVertices.clear();
+    Indices.clear();
+}
+
+void SDFFontBuffer::Reserve(unsigned Count) {
+    UV.reserve(Count * 4);
+    squareVertices.reserve(Count * 4);
+    Indices.reserve(Count * 6);
+}
+
+void SDFFontBuffer::Flush() {
+    if (Indices.size() > 0) {
+        sdfFont->FontAtlas.Draw(this->outline, this->color, this->outlineColor, static_cast<GLfloat>(this->scaleX), static_cast<GLfloat>(this->Border), sdfFont->Spread, UV, squareVertices, Indices);
+    }
+    Clear();
 }
 
 AkkordPoint SDFFontBuffer::GetTextSizeByLine(const char* Text, std::vector<float>* VecSize) const
