@@ -286,7 +286,7 @@ bool BWrapper::FileRename(const char* OldName, const char* NewName)
 
 void inline ConvertRect2Native(const AkkordRect& Rect, SDL_Rect* sRect)
 {
-    sRect->x = Rect.x; sRect->y = Rect.y; sRect->w = Rect.w; sRect->h = Rect.h;
+    sRect->x = Rect.GetX(); sRect->y = Rect.GetY(); sRect->w = Rect.GetW(); sRect->h = Rect.GetH();
 }
 
 AkkordWindow* BWrapper::CreateRenderWindow(const char* Title, int X, int Y, int W, int H, Uint32 Flags)
@@ -631,7 +631,7 @@ bool BWrapper::FillRect(int X, int Y, int W, int H)
 
 bool BWrapper::DrawLine(const AkkordPoint& Point1, const AkkordPoint& Point2)
 {
-    if (SDL_RenderDrawLine(CurrentContext.CurrentRenderer, Point1.x, Point1.y, Point2.x, Point2.y) == 0) return true;
+    if (SDL_RenderDrawLine(CurrentContext.CurrentRenderer, Point1.GetX(), Point1.GetY(), Point2.GetX(), Point2.GetY()) == 0) return true;
     logError("Draw error %s", SDL_GetError());
     return false;
 };

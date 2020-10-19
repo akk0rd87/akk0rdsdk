@@ -511,15 +511,15 @@ private:
             return;
         }
         const auto screenSize = BWrapper::GetScreenSize();
-        const float ScrenW = static_cast<decltype(ScrenW)>(screenSize.x);
-        const float ScrenH = static_cast<decltype(ScrenH)>(screenSize.y);
+        const float ScrenW = static_cast<decltype(ScrenW)>(screenSize.GetX());
+        const float ScrenH = static_cast<decltype(ScrenH)>(screenSize.GetY());
 
         const std::array<GLushort, 6> Indices = { 0, 1, 3, 1, 2, 3 };
 
-        const auto x0 = static_cast<float>(2 * Rect.x);
-        const auto x1 = static_cast<float>(2 * (Rect.x + Rect.w));
-        const auto y0 = static_cast<float>(2 * (screenSize.y - Rect.y));
-        const auto y1 = static_cast<float>(2 * (screenSize.y - Rect.y - Rect.h));
+        const auto x0 = static_cast<float>(2 * Rect.GetX());
+        const auto x1 = static_cast<float>(2 * (Rect.GetX() + Rect.GetW()));
+        const auto y0 = static_cast<float>(2 * (screenSize.GetY() - Rect.GetY()));
+        const auto y1 = static_cast<float>(2 * (screenSize.GetY() - Rect.GetY() - Rect.GetH()));
 
         const std::array<GLfloat, 8> squareVertices = {
             x0 / ScrenW - 1.0F, y0 / ScrenH - 1.0F,

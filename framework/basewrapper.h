@@ -20,8 +20,8 @@ public:
     AkkordPoint& SetX(int X) { x = X; return *this; }
     AkkordPoint& SetY(int Y) { y = Y; return *this; }
 
-    int GetX() { return x; }
-    int GetY() { return y; }
+    int GetX() const { return x; }
+    int GetY() const { return y; }
 };
 
 class AkkordRect
@@ -38,14 +38,14 @@ public:
     AkkordRect& SetX(int X) { x = X; return *this; };
     AkkordRect& SetY(int Y) { y = Y; return *this; };
 
-    int GetW() { return w; };
-    int GetH() { return h; };
-    int GetX() { return x; };
-    int GetY() { return y; };
+    int GetW() const { return w; };
+    int GetH() const { return h; };
+    int GetX() const { return x; };
+    int GetY() const { return y; };
 
-    AkkordRect& SetPosition(const AkkordPoint& Position) { x = Position.x; y = Position.y; return *this; };
+    AkkordRect& SetPosition(const AkkordPoint& Position) { x = Position.GetX(); y = Position.GetY(); return *this; };
     AkkordRect& SetPosition(int X, int Y) { x = X; y = Y; return *this; };
-    AkkordRect& SetSize(const AkkordPoint& Size) { w = Size.x; h = Size.y; return *this; };
+    AkkordRect& SetSize(const AkkordPoint& Size) { w = Size.GetX(); h = Size.GetY(); return *this; };
     AkkordRect& SetSize(int W, int H) { w = W; h = H; return *this; };
 
     AkkordPoint GetPosition() const { return AkkordPoint(x, y); }
