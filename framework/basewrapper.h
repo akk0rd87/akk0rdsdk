@@ -19,6 +19,9 @@ public:
 
     AkkordPoint& SetX(int X) { x = X; return *this; }
     AkkordPoint& SetY(int Y) { y = Y; return *this; }
+
+    int GetX() { return x; }
+    int GetY() { return y; }
 };
 
 class AkkordRect
@@ -34,6 +37,11 @@ public:
     AkkordRect& SetH(int H) { h = H; return *this; };
     AkkordRect& SetX(int X) { x = X; return *this; };
     AkkordRect& SetY(int Y) { y = Y; return *this; };
+
+    int GetW() { return w; };
+    int GetH() { return h; };
+    int GetX() { return x; };
+    int GetY() { return y; };
 
     AkkordRect& SetPosition(const AkkordPoint& Position) { x = Position.x; y = Position.y; return *this; };
     AkkordRect& SetPosition(int X, int Y) { x = X; y = Y; return *this; };
