@@ -18,6 +18,8 @@ https://github.com/libgdx/libgdx/wiki/Hiero
 "java -cp gdx.jar;gdx-natives.jar;gdx-backend-lwjgl.jar;gdx-backend-lwjgl-natives.jar;extensions\gdx-freetype\gdx-freetype.jar;extensions\gdx-freetype\gdx-freetype-natives.jar;extensions\gdx-tools\gdx-tools.jar com.badlogic.gdx.tools.hiero.Hiero"
 */
 
+class VideoSDFBuffer;
+
 class SDFGLTexture
 {
     AkkordTexture akkordTexture;
@@ -55,6 +57,8 @@ class SDFTexture
     std::vector<GLfloat>squareVertices;
     std::vector<GLushort>Indices;
 
+    std::unique_ptr<VideoSDFBuffer> videoBuffer;
+
     bool AutoFlush = false, Outline = false;
     float atlasW = 0.0f, atlasH = 0.0f, Scale = 0.0f, Border = 0.0f;
     void InitAtlasWH() {
@@ -89,16 +93,13 @@ public:
     void SetBorder(float Border) { this->Border = Border; };
     AkkordColor GetColor() const { return Color; };
     AkkordColor GetOutlineColor() const { return OutlineColor; };
-    ~SDFTexture() {
-        Clear();
-        Texture.Clear();
-    };
 
-    SDFTexture() = default;
+    ~SDFTexture();
+    SDFTexture();
+    SDFTexture(SDFTexture&& rhs); // Перемещающий: конструктор
     SDFTexture(const SDFTexture& rhs) = delete; // Копирующий: конструктор
     SDFTexture& operator= (const SDFTexture& rhs) = delete; // Оператор копирующего присваивания
-    SDFTexture(SDFTexture&& rhs) = default; // Перемещающий: конструктор
-    SDFTexture& operator= (SDFTexture&& rhs) = default; // Оператор перемещающего присваивания
+    SDFTexture& operator= (SDFTexture&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 class SDFFont
@@ -182,15 +183,10 @@ class SDFFontBuffer
     std::vector<GLfloat>squareVertices;
     std::vector<GLushort>Indices;
 
+    std::unique_ptr<VideoSDFBuffer> videoBuffer;
+
     AkkordPoint GetTextSizeByLine(const char* Text, std::vector<float>* VecSize) const;
 public:
-    SDFFontBuffer() : sdfFont{ nullptr } {};
-    SDFFontBuffer(SDFFont* Font, unsigned int DigitsCount, const AkkordColor& Color) {
-        this->Clear();
-        sdfFont = Font;
-        color = Color;
-        Reserve(DigitsCount);
-    };
 
     void SetFont(SDFFont* Font) { this->sdfFont = Font; };
     void SetFont(SDFFont& Font) { this->sdfFont = &Font; };
@@ -235,10 +231,13 @@ public:
     AkkordPoint DrawText(int X, int Y, const std::string& Text) { return DrawText(X, Y, Text.c_str()); };
     AkkordPoint DrawText(const AkkordPoint& Position, const std::string& Text) { return DrawText(Position.x, Position.y, Text.c_str()); };
 
+    SDFFontBuffer();
+    SDFFontBuffer(SDFFont* Font, unsigned int DigitsCount, const AkkordColor& Color);
+    ~SDFFontBuffer();
+    SDFFontBuffer(SDFFontBuffer&& rhs); // Перемещающий: конструктор
     SDFFontBuffer(const SDFFontBuffer& rhs) = delete; // Копирующий: конструктор
     SDFFontBuffer& operator= (const SDFFontBuffer& rhs) = delete; // Оператор копирующего присваивания
-    SDFFontBuffer(SDFFontBuffer&& rhs) = default; // Перемещающий: конструктор
-    SDFFontBuffer& operator= (SDFFontBuffer&& rhs) = default; // Оператор перемещающего присваивания
+    SDFFontBuffer& operator= (SDFFontBuffer&& rhs) = delete; // Оператор перемещающего присваивания
 };
 
 class VideoDriver {

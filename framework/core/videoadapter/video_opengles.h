@@ -5,6 +5,80 @@
 #include "video_interface.h"
 #include <array>
 
+class VideoSDFBuffer_OPENGLES : public VideoSDFBuffer {
+public:
+    virtual void Clear() override {
+        UV.clear();
+        squareVertices.clear();
+        Indices.clear();
+    };
+
+    virtual void Flush() override {};
+
+    virtual void Reserve(unsigned Count) override {
+        UV.reserve(Count * 4);
+        squareVertices.reserve(Count * 4);
+        Indices.reserve(Count * 6);
+    };
+
+    virtual void Draw(const AkkordRect& DestRect, const AkkordRect& SrcRect, float ScrenW, float ScrenH, float AtlasW, float AtlasH) override {
+        struct FloatRect { float x, y, w, h; };
+        FloatRect Src, Dest;
+
+        Src.x = Src.y = 0.0f;
+        Src.w = AtlasW;
+        Src.h = AtlasH;
+
+        Dest.x = Src.x / AtlasW;           //px1
+        Dest.y = (Src.x + Src.w) / AtlasW; //px2
+        Dest.w = (Src.y + Src.h) / AtlasH; //py1
+        Dest.h = Src.y / AtlasH;           //py2
+
+        const float& px1 = Dest.x;
+        const float& px2 = Dest.y;
+        const float& py1 = Dest.w;
+        const float& py2 = Dest.h;
+
+        UV.insert(UV.cend(),
+            {
+                px1, py1,
+                px2, py1,
+                px1, py2,
+                px2, py2
+            });
+
+        Dest.x = static_cast<float>(2 * DestRect.x) / ScrenW - 1.0F;
+        Dest.y = static_cast<float>(2 * (ScrenH - DestRect.y)) / ScrenH - 1.0F;
+        Dest.w = static_cast<float>(2 * (DestRect.x + DestRect.w)) / ScrenW - 1.0F;
+        Dest.h = static_cast<float>(2 * (ScrenH - DestRect.y - DestRect.h)) / ScrenH - 1.0F;
+
+        squareVertices.insert(squareVertices.cend(),
+            {
+                Dest.x, Dest.h,
+                Dest.w, Dest.h,
+                Dest.x, Dest.y,
+                Dest.w, Dest.y
+            });
+
+        const decltype(Indices)::value_type PointsCnt0 = Indices.size() / 6 * 4;
+        const decltype(PointsCnt0) PointsCnt1 = PointsCnt0 + 1;
+        const decltype(PointsCnt0) PointsCnt2 = PointsCnt0 + 2;
+        const decltype(PointsCnt0) PointsCnt3 = PointsCnt0 + 3;
+
+        Indices.insert(Indices.cend(),
+            {
+                PointsCnt0, PointsCnt1, PointsCnt2,
+                PointsCnt1, PointsCnt2, PointsCnt3
+            });
+    };
+
+    virtual ~VideoSDFBuffer_OPENGLES() {};
+private:
+    std::vector<GLfloat>UV;
+    std::vector<GLfloat>squareVertices;
+    std::vector<GLushort>Indices;
+};
+
 // выборочный список OPENGLES2-функций из файла "../src/render/opengles2/SDL_gles2funcs.h"
 // некоторых нижеперечисленных ф-ий нет в файле "../src/render/opengles2/SDL_gles2funcs.h"
 #if __NACL__ || __ANDROID__
@@ -61,6 +135,10 @@ SDL_PROC(void, glGetVertexAttribiv, (GLuint, GLenum, GLint*))
 
 class VideoAdapter_OPENGLES : public VideoAdapter {
 public:
+    virtual std::unique_ptr<VideoSDFBuffer> CreateVideoSDFBuffer() override {
+        return std::make_unique<VideoSDFBuffer_OPENGLES>();
+    }
+
     virtual void PreInit() override {
         LoadFuncs();
         InitVBO();

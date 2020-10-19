@@ -45,6 +45,10 @@ void SDFTexture::Clear() {
     UV.clear();
     squareVertices.clear();
     Indices.clear();
+
+    if (this->videoBuffer) {
+        this->videoBuffer->Clear();
+    }
 }
 
 bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
@@ -57,6 +61,20 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
 
     const float ScrenW = static_cast<decltype(ScrenW)>(ScreenSize.x);
     const float ScrenH = static_cast<decltype(ScrenH)>(ScreenSize.y);
+
+    if (!videoBuffer) {
+        videoBuffer = videoAdapter->CreateVideoSDFBuffer();
+    }
+
+    // не забыть посчитать Scale и выполнить AutoFlush
+    if (SourceRect) {
+        videoBuffer->Draw(DestRect, *SourceRect, ScrenW, ScrenH, atlasW, atlasH);
+        this->Scale = std::max(static_cast<decltype(this->Scale)>(DestRect.w) / SourceRect->w, static_cast<decltype(this->Scale)>(DestRect.h) / SourceRect->h);
+    }
+    else {
+        videoBuffer->Draw(DestRect, AkkordRect(0, 0, atlasW, atlasH), ScrenW, ScrenH, atlasW, atlasH);
+        this->Scale = 1.0F;
+    }
 
     struct FloatRect { float x, y, w, h; };
     FloatRect Src, Dest;
@@ -114,8 +132,6 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
             PointsCnt0, PointsCnt1, PointsCnt2,
             PointsCnt1, PointsCnt2, PointsCnt3
         });
-
-    this->Scale = std::max(static_cast<float>(DestRect.w) / Src.w, static_cast<float>(DestRect.h) / Src.h);
 
     if (this->AutoFlush) {
         Flush();
@@ -293,12 +309,21 @@ void SDFFontBuffer::Clear() {
     UV.clear();
     squareVertices.clear();
     Indices.clear();
+
+    if (this->videoBuffer) {
+        this->videoBuffer->Clear();
+    }
 }
 
 void SDFFontBuffer::Reserve(unsigned Count) {
     UV.reserve(Count * 4);
     squareVertices.reserve(Count * 4);
     Indices.reserve(Count * 6);
+
+    if (!videoBuffer) {
+        videoBuffer = videoAdapter->CreateVideoSDFBuffer();
+    }
+    this->videoBuffer->Reserve(Count);
 }
 
 void SDFFontBuffer::Flush() {
@@ -357,6 +382,10 @@ AkkordPoint SDFFontBuffer::GetTextSizeByLine(const char* Text, std::vector<float
 
 AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text)
 {
+    if (!videoBuffer) {
+        videoBuffer = videoAdapter->CreateVideoSDFBuffer();
+    }
+
     AkkordPoint pt(0, 0);
     if (Text != nullptr) {
         float px1, px2, py1, py2;
@@ -633,3 +662,12 @@ bool VideoDriver::DrawLinearGradientRect(const AkkordRect& Rect, const AkkordCol
     videoAdapter->DrawLinearGradientRect(Rect, X0Y0, X1Y0, X1Y1, X0Y1);
     return true;
 };
+
+SDFTexture::~SDFTexture() { Clear();     Texture.Clear(); };
+SDFTexture::SDFTexture() = default;
+SDFTexture::SDFTexture(SDFTexture && rhs) = default; // Перемещающий: конструктор
+
+SDFFontBuffer::SDFFontBuffer() : sdfFont{ nullptr } {};
+SDFFontBuffer::SDFFontBuffer(SDFFont * Font, unsigned int DigitsCount, const AkkordColor & Color) : sdfFont{ Font }, color{ Color }{ Reserve(DigitsCount); };
+SDFFontBuffer::~SDFFontBuffer() = default;
+SDFFontBuffer::SDFFontBuffer(SDFFontBuffer && rhs) = default; // Перемещающий: конструктор

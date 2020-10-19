@@ -3,6 +3,15 @@
 #include <memory>
 #include "basewrapper.h"
 
+class VideoSDFBuffer {
+public:
+    virtual void Clear() = 0;
+    virtual void Flush() = 0;
+    virtual void Reserve(unsigned Count) = 0;
+    virtual void Draw(const AkkordRect& DestRect, const AkkordRect& SrcRect, float ScrenW, float ScrenH, float AtlasW, float AtlasH) = 0;
+    virtual ~VideoSDFBuffer() {};
+};
+
 class VideoAdapter {
 public:
     enum struct Type : unsigned char { Auto, OPENGL, OPENGLES, Metal, Vulkan };
@@ -12,6 +21,8 @@ public:
     virtual void InitSDFPlain() = 0;
     virtual void InitSDFOutline() = 0;
     virtual void InitGradient() = 0;
+
+    virtual std::unique_ptr<VideoSDFBuffer> CreateVideoSDFBuffer() = 0;
 
     virtual void DrawLinearGradientRect(const AkkordRect& Rect, const AkkordColor& X0Y0, const AkkordColor& X1Y0, const AkkordColor& X1Y1, const AkkordColor& X0Y1) = 0;
     virtual void DrawSDF(SDL_Texture* Texture, bool Outline, const AkkordColor& Color, const AkkordColor& OutlineColor, const std::vector<GLfloat>& UV, const std::vector<GLfloat>& squareVertices, const std::vector <GLushort>& Indices, GLfloat Scale, GLfloat Border, int Spread) = 0;
