@@ -1,7 +1,7 @@
 #include "videodriver.h"
 #include "core/videoadapter/video_interface.h"
 
-static std::unique_ptr<VideoAdapter> videoAdapter;
+static std::unique_ptr<VideoAdapter> videoAdapter = nullptr;
 
 /*
 https://github.com/libgdx/libgdx/wiki/Hiero
@@ -71,7 +71,7 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
         return false;
     }
 
-    if (!videoBuffer) {
+    if (!videoBuffer && videoAdapter) {
         videoBuffer = videoAdapter->CreateVideoBuffer();
     }
 
@@ -285,7 +285,7 @@ void SDFFontBuffer::Clear() {
 }
 
 void SDFFontBuffer::Reserve(unsigned Count) {
-    if (!videoBuffer) {
+    if (!videoBuffer && videoAdapter) {
         videoBuffer = videoAdapter->CreateVideoBuffer();
     }
     this->videoBuffer->Reserve(Count);
@@ -345,7 +345,7 @@ AkkordPoint SDFFontBuffer::GetTextSizeByLine(const char* Text, std::vector<float
 
 AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text)
 {
-    if (!videoBuffer) {
+    if (!videoBuffer && videoAdapter) {
         videoBuffer = videoAdapter->CreateVideoBuffer();
     }
 
