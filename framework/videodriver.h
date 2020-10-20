@@ -3,7 +3,6 @@
 
 #include <unordered_map>
 #include "basewrapper.h"
-#include "SDL_opengles2.h"
 
 // https://github.com/libgdx/libgdx/wiki/distance-field-fonts
 
@@ -18,7 +17,7 @@ https://github.com/libgdx/libgdx/wiki/Hiero
 "java -cp gdx.jar;gdx-natives.jar;gdx-backend-lwjgl.jar;gdx-backend-lwjgl-natives.jar;extensions\gdx-freetype\gdx-freetype.jar;extensions\gdx-freetype\gdx-freetype-natives.jar;extensions\gdx-tools\gdx-tools.jar com.badlogic.gdx.tools.hiero.Hiero"
 */
 
-class VideoSDFBuffer;
+class VideoBuffer;
 
 class SDFGLTexture
 {
@@ -36,8 +35,8 @@ public:
         akkordTexture.LoadFromMemory(Buffer, Size, AkkordTexture::TextureType::PNG);
         return true;
     };
-    bool Draw(bool Outline, const AkkordColor& FontColor, const AkkordColor& OutlineColor, GLfloat Scale, GLfloat Border, int Spread, const std::vector<GLfloat>& UV, const std::vector<GLfloat>& squareVertices, const std::vector <GLushort>& Indices);
-    AkkordPoint GetSize() { return akkordTexture.GetSize(); };
+    bool Draw(VideoBuffer* sdfVideoBuffer, bool Outline, const AkkordColor& FontColor, const AkkordColor& OutlineColor, float Scale, float Border, int Spread);
+    AkkordPoint GetSize() const { return akkordTexture.GetSize(); };
     ~SDFGLTexture() { Clear(); };
 
     SDFGLTexture() = default;
@@ -52,12 +51,7 @@ class SDFTexture
     SDFGLTexture Texture;
     AkkordColor Color, OutlineColor;
     int Spread = 0;
-
-    std::vector<GLfloat>UV;
-    std::vector<GLfloat>squareVertices;
-    std::vector<GLushort>Indices;
-
-    std::unique_ptr<VideoSDFBuffer> videoBuffer;
+    std::unique_ptr<VideoBuffer> videoBuffer;
 
     bool AutoFlush = false, Outline = false;
     float atlasW = 0.0f, atlasH = 0.0f, Scale = 0.0f, Border = 0.0f;
@@ -171,19 +165,13 @@ class SDFFontBuffer
 
     SDFFont* sdfFont = nullptr;
     float rectW = -1.0F, rectH = -1.0F;
-
     bool outline = false;
 
     SDFFont::AlignH alignH = SDFFont::AlignH::Center;
     SDFFont::AlignV alignV = SDFFont::AlignV::Center;
 
     AkkordColor color, outlineColor;
-
-    std::vector<GLfloat>UV;
-    std::vector<GLfloat>squareVertices;
-    std::vector<GLushort>Indices;
-
-    std::unique_ptr<VideoSDFBuffer> videoBuffer;
+    std::unique_ptr<VideoBuffer> videoBuffer;
 
     AkkordPoint GetTextSizeByLine(const char* Text, std::vector<float>* VecSize) const;
 public:

@@ -35,17 +35,29 @@ static struct { // разделяемый буффер, который испо�
     std::vector<float> floatVector;
 } SharedPool;
 
-bool SDFGLTexture::Draw(bool Outline, const AkkordColor& FontColor, const AkkordColor& OutlineColor, GLfloat Scale, GLfloat Border, int Spread, const std::vector<GLfloat>& UV, const std::vector<GLfloat>& squareVertices, const std::vector <GLushort>& Indices)
+bool SDFGLTexture::Draw(VideoBuffer* sdfVideoBuffer, bool Outline, const AkkordColor& FontColor, const AkkordColor& OutlineColor, float Scale, float Border, int Spread)
 {
-    videoAdapter->DrawSDF(akkordTexture.GetTexture(), Outline, FontColor, OutlineColor, UV, squareVertices, Indices, Scale, Border, Spread);
+    if (sdfVideoBuffer) {
+        VideoSDFBufferDrawParams SDFParams;
+        SDFParams.Texture = akkordTexture.GetTexture();
+        SDFParams.Color = &FontColor;
+        SDFParams.Outline = Outline;
+        SDFParams.OutlineColor = &OutlineColor;
+        SDFParams.Border = Border;
+        SDFParams.Scale = Scale;
+        SDFParams.Spread = Spread;
+
+        sdfVideoBuffer->DrawSDF(SDFParams);
+    }
+    else {
+        logError("sdfVideoBuffer is empty!");
+        return false;
+    }
+
     return true;
 };
 
 void SDFTexture::Clear() {
-    UV.clear();
-    squareVertices.clear();
-    Indices.clear();
-
     if (this->videoBuffer) {
         this->videoBuffer->Clear();
     }
@@ -59,79 +71,40 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
         return false;
     }
 
-    const float ScrenW = static_cast<decltype(ScrenW)>(ScreenSize.x);
-    const float ScrenH = static_cast<decltype(ScrenH)>(ScreenSize.y);
-
     if (!videoBuffer) {
-        videoBuffer = videoAdapter->CreateVideoSDFBuffer();
+        videoBuffer = videoAdapter->CreateVideoBuffer();
     }
 
     // не забыть посчитать Scale и выполнить AutoFlush
+    VideoFloatRect destRect, srcRect;
+
+    VideoBufferAppendParams appendParams;
+    appendParams.DestRect = &destRect;
+    appendParams.SrcRect = &srcRect;
+    appendParams.TextureW = atlasW;
+    appendParams.TextureH = atlasH;
+    appendParams.ScrenW = static_cast<decltype(appendParams.ScrenW)>(ScreenSize.x);
+    appendParams.ScrenH = static_cast<decltype(appendParams.ScrenH)>(ScreenSize.y);
+
+    destRect.x = static_cast<decltype(destRect.x)>(DestRect.x);
+    destRect.y = static_cast<decltype(destRect.y)>(DestRect.y);
+    destRect.w = static_cast<decltype(destRect.w)>(DestRect.w);
+    destRect.h = static_cast<decltype(destRect.h)>(DestRect.h);
+
     if (SourceRect) {
-        videoBuffer->Draw(DestRect, *SourceRect, ScrenW, ScrenH, atlasW, atlasH);
-        this->Scale = std::max(static_cast<decltype(this->Scale)>(DestRect.w) / SourceRect->w, static_cast<decltype(this->Scale)>(DestRect.h) / SourceRect->h);
+        srcRect.x = static_cast<decltype(srcRect.x)>(SourceRect->x);
+        srcRect.y = static_cast<decltype(srcRect.y)>(SourceRect->y);
+        srcRect.w = static_cast<decltype(srcRect.w)>(SourceRect->w);
+        srcRect.h = static_cast<decltype(srcRect.h)>(SourceRect->h);
     }
     else {
-        videoBuffer->Draw(DestRect, AkkordRect(0, 0, atlasW, atlasH), ScrenW, ScrenH, atlasW, atlasH);
-        this->Scale = 1.0F;
+        srcRect.x = 0.0F;
+        srcRect.y = 0.0F;
+        srcRect.w = atlasW;
+        srcRect.h = atlasH;
     }
-
-    struct FloatRect { float x, y, w, h; };
-    FloatRect Src, Dest;
-
-    if (SourceRect != nullptr) {
-        Src.x = static_cast<float>(SourceRect->x);
-        Src.y = static_cast<float>(SourceRect->y);
-        Src.w = static_cast<float>(SourceRect->w);
-        Src.h = static_cast<float>(SourceRect->h);
-    }
-    else {
-        Src.x = Src.y = 0.0f;
-        Src.w = atlasW;
-        Src.h = atlasH;
-    }
-
-    Dest.x = Src.x / atlasW;           //px1
-    Dest.y = (Src.x + Src.w) / atlasW; //px2
-    Dest.w = (Src.y + Src.h) / atlasH; //py1
-    Dest.h = Src.y / atlasH;           //py2
-
-    const float& px1 = Dest.x;
-    const float& px2 = Dest.y;
-    const float& py1 = Dest.w;
-    const float& py2 = Dest.h;
-
-    UV.insert(UV.cend(),
-        {
-            px1, py1,
-            px2, py1,
-            px1, py2,
-            px2, py2
-        });
-
-    Dest.x = static_cast<float>(2 * DestRect.x) / ScrenW - 1.0F;
-    Dest.y = static_cast<float>(2 * (ScreenSize.y - DestRect.y)) / ScrenH - 1.0F;
-    Dest.w = static_cast<float>(2 * (DestRect.x + DestRect.w)) / ScrenW - 1.0F;
-    Dest.h = static_cast<float>(2 * (ScreenSize.y - DestRect.y - DestRect.h)) / ScrenH - 1.0F;
-
-    squareVertices.insert(squareVertices.cend(),
-        {
-            Dest.x, Dest.h,
-            Dest.w, Dest.h,
-            Dest.x, Dest.y,
-            Dest.w, Dest.y
-        });
-
-    const decltype(Indices)::value_type PointsCnt0 = Indices.size() / 6 * 4;
-    const decltype(PointsCnt0) PointsCnt1 = PointsCnt0 + 1;
-    const decltype(PointsCnt0) PointsCnt2 = PointsCnt0 + 2;
-    const decltype(PointsCnt0) PointsCnt3 = PointsCnt0 + 3;
-
-    Indices.insert(Indices.cend(),
-        {
-            PointsCnt0, PointsCnt1, PointsCnt2,
-            PointsCnt1, PointsCnt2, PointsCnt3
-        });
+    videoBuffer->Append(appendParams);
+    this->Scale = std::max(destRect.w / srcRect.w, destRect.h / srcRect.h);
 
     if (this->AutoFlush) {
         Flush();
@@ -142,8 +115,8 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
 
 bool SDFTexture::Flush()
 {
-    if (Indices.size() > 0) {
-        Texture.Draw(Outline, this->Color, this->OutlineColor, Scale, static_cast<GLfloat>(Border), Spread, UV, squareVertices, Indices);
+    if (this->videoBuffer) {
+        Texture.Draw(this->videoBuffer.get(), Outline, this->Color, this->OutlineColor, Scale, Border, Spread);
     }
     Clear();
     return true;
@@ -306,30 +279,20 @@ bool SDFFont::ParseFNTFile(const char* FNTFile, BWrapper::FileSearchPriority Sea
 }
 
 void SDFFontBuffer::Clear() {
-    UV.clear();
-    squareVertices.clear();
-    Indices.clear();
-
     if (this->videoBuffer) {
         this->videoBuffer->Clear();
     }
 }
 
 void SDFFontBuffer::Reserve(unsigned Count) {
-    UV.reserve(Count * 4);
-    squareVertices.reserve(Count * 4);
-    Indices.reserve(Count * 6);
-
     if (!videoBuffer) {
-        videoBuffer = videoAdapter->CreateVideoSDFBuffer();
+        videoBuffer = videoAdapter->CreateVideoBuffer();
     }
     this->videoBuffer->Reserve(Count);
 }
 
 void SDFFontBuffer::Flush() {
-    if (Indices.size() > 0) {
-        sdfFont->FontAtlas.Draw(this->outline, this->color, this->outlineColor, static_cast<GLfloat>(this->scaleX), static_cast<GLfloat>(this->Border), sdfFont->Spread, UV, squareVertices, Indices);
-    }
+    sdfFont->FontAtlas.Draw(videoBuffer.get(), outline, color, outlineColor, scaleX, Border, sdfFont->Spread);
     Clear();
 }
 
@@ -383,27 +346,29 @@ AkkordPoint SDFFontBuffer::GetTextSizeByLine(const char* Text, std::vector<float
 AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text)
 {
     if (!videoBuffer) {
-        videoBuffer = videoAdapter->CreateVideoSDFBuffer();
+        videoBuffer = videoAdapter->CreateVideoBuffer();
     }
 
     AkkordPoint pt(0, 0);
     if (Text != nullptr) {
-        float px1, px2, py1, py2;
+        const auto ScreenSize = BWrapper::GetScreenSize();
+        // не забыть посчитать Scale и выполнить AutoFlush
+        VideoFloatRect destRect, srcRect;
+
+        VideoBufferAppendParams appendParams;
+        appendParams.DestRect = &destRect;
+        appendParams.SrcRect = &srcRect;
+        appendParams.TextureW = sdfFont->GetAtlasW();
+        appendParams.TextureH = sdfFont->GetAtlasH();
+        appendParams.ScrenW = static_cast<decltype(appendParams.ScrenW)>(ScreenSize.x);
+        appendParams.ScrenH = static_cast<decltype(appendParams.ScrenH)>(ScreenSize.y);
+
         SharedPool.floatVector.clear();
         AkkordPoint size(GetTextSizeByLine(Text, &SharedPool.floatVector));
         float x_start, x_current, y_current{ static_cast<float>(Y) };
         unsigned i{ 0 }, line{ 0 };
 
-        const auto atlasW = sdfFont->GetAtlasW();
-        const auto atlasH = sdfFont->GetAtlasH();
-
-        const auto ScreenSize = BWrapper::GetScreenSize();
-
-        const float ScrenW = static_cast<decltype(ScrenW)>(ScreenSize.x);
-        const float ScrenH = static_cast<decltype(ScrenH)>(ScreenSize.y);
-
         SDFFont::SDFCharInfo charParams;
-        decltype (Indices)::value_type PointsCnt = static_cast<decltype (Indices)::value_type>(UV.size() / 2); // Разделив на 2, получаем количество вершин
 
         switch (alignV)
         {
@@ -454,47 +419,21 @@ AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text)
 
             default:
                 sdfFont->GetCharInfo(a, charParams);
-                x_current += scaleX * static_cast<decltype(x_current)>(charParams.xoffset);
-                //const decltype(charParams.w) minus = 0;
-                px1 = (charParams.x) / atlasW;
-                px2 = (charParams.x + charParams.w /*- minus */) / atlasW;
-                py1 = (charParams.y + charParams.h /*- minus */) / atlasH;
-                py2 = (charParams.y) / atlasH;
+                x_current += scaleX * charParams.xoffset;
 
-                UV.insert(UV.cend(),
-                    {
-                        px1, py1,
-                        px2, py1,
-                        px1, py2,
-                        px2, py2
-                    });
+                srcRect.x = charParams.x;
+                srcRect.y = charParams.y;
+                srcRect.w = charParams.w;
+                srcRect.h = charParams.h;
 
-                px1 = 2 * (x_current / ScrenW) - 1.0F;
-                px2 = 2 * (x_current + scaleX * charParams.w) / ScrenW - 1.0F;
-                py1 = 2 * (ScrenH - y_current - scaleY * (charParams.h + charParams.yoffset)) / ScrenH - 1.0F;
-                py2 = 2 * (ScrenH - y_current - scaleY * (charParams.yoffset)) / ScrenH - 1.0F;
+                destRect.x = x_current;
+                destRect.y = y_current + scaleY * charParams.yoffset;
+                destRect.w = scaleX * charParams.w;
+                destRect.h = scaleX * charParams.h;
 
-                squareVertices.insert(squareVertices.cend(),
-                    {
-                        px1, py1,
-                        px2, py1,
-                        px1, py2,
-                        px2, py2
-                    });
-
-                const auto& PointsCnt0 = PointsCnt;
-                const decltype(PointsCnt) PointsCnt1 = PointsCnt0 + 1;
-                const decltype(PointsCnt) PointsCnt2 = PointsCnt1 + 1;
-                const decltype(PointsCnt) PointsCnt3 = PointsCnt2 + 1;
-
-                Indices.insert(Indices.cend(),
-                    {
-                        PointsCnt0, PointsCnt1, PointsCnt2,
-                        PointsCnt1, PointsCnt2, PointsCnt3
-                    });
+                videoBuffer->Append(appendParams);
 
                 x_current += scaleX * charParams.xadvance;
-                PointsCnt += 4;
                 break;
             }
         }

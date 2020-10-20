@@ -5,80 +5,6 @@
 #include "video_interface.h"
 #include <array>
 
-class VideoSDFBuffer_OPENGLES : public VideoSDFBuffer {
-public:
-    virtual void Clear() override {
-        UV.clear();
-        squareVertices.clear();
-        Indices.clear();
-    };
-
-    virtual void Flush() override {};
-
-    virtual void Reserve(unsigned Count) override {
-        UV.reserve(Count * 4);
-        squareVertices.reserve(Count * 4);
-        Indices.reserve(Count * 6);
-    };
-
-    virtual void Draw(const AkkordRect& DestRect, const AkkordRect& SrcRect, float ScrenW, float ScrenH, float AtlasW, float AtlasH) override {
-        struct FloatRect { float x, y, w, h; };
-        FloatRect Src, Dest;
-
-        Src.x = Src.y = 0.0f;
-        Src.w = AtlasW;
-        Src.h = AtlasH;
-
-        Dest.x = Src.x / AtlasW;           //px1
-        Dest.y = (Src.x + Src.w) / AtlasW; //px2
-        Dest.w = (Src.y + Src.h) / AtlasH; //py1
-        Dest.h = Src.y / AtlasH;           //py2
-
-        const float& px1 = Dest.x;
-        const float& px2 = Dest.y;
-        const float& py1 = Dest.w;
-        const float& py2 = Dest.h;
-
-        UV.insert(UV.cend(),
-            {
-                px1, py1,
-                px2, py1,
-                px1, py2,
-                px2, py2
-            });
-
-        Dest.x = static_cast<float>(2 * DestRect.x) / ScrenW - 1.0F;
-        Dest.y = static_cast<float>(2 * (ScrenH - DestRect.y)) / ScrenH - 1.0F;
-        Dest.w = static_cast<float>(2 * (DestRect.x + DestRect.w)) / ScrenW - 1.0F;
-        Dest.h = static_cast<float>(2 * (ScrenH - DestRect.y - DestRect.h)) / ScrenH - 1.0F;
-
-        squareVertices.insert(squareVertices.cend(),
-            {
-                Dest.x, Dest.h,
-                Dest.w, Dest.h,
-                Dest.x, Dest.y,
-                Dest.w, Dest.y
-            });
-
-        const decltype(Indices)::value_type PointsCnt0 = Indices.size() / 6 * 4;
-        const decltype(PointsCnt0) PointsCnt1 = PointsCnt0 + 1;
-        const decltype(PointsCnt0) PointsCnt2 = PointsCnt0 + 2;
-        const decltype(PointsCnt0) PointsCnt3 = PointsCnt0 + 3;
-
-        Indices.insert(Indices.cend(),
-            {
-                PointsCnt0, PointsCnt1, PointsCnt2,
-                PointsCnt1, PointsCnt2, PointsCnt3
-            });
-    };
-
-    virtual ~VideoSDFBuffer_OPENGLES() {};
-private:
-    std::vector<GLfloat>UV;
-    std::vector<GLfloat>squareVertices;
-    std::vector<GLushort>Indices;
-};
-
 // выборочный список OPENGLES2-функций из файла "../src/render/opengles2/SDL_gles2funcs.h"
 // некоторых нижеперечисленных ф-ий нет в файле "../src/render/opengles2/SDL_gles2funcs.h"
 #if __NACL__ || __ANDROID__
@@ -133,11 +59,10 @@ SDL_PROC(void, glGetShaderInfoLog, (GLuint, GLsizei, GLsizei*, char*)) \
 SDL_PROC(void, glGetShaderiv, (GLuint, GLenum, GLint*)) \
 SDL_PROC(void, glGetVertexAttribiv, (GLuint, GLenum, GLint*))
 
+class VideoBuffer_OPENGLES;
 class VideoAdapter_OPENGLES : public VideoAdapter {
 public:
-    virtual std::unique_ptr<VideoSDFBuffer> CreateVideoSDFBuffer() override {
-        return std::make_unique<VideoSDFBuffer_OPENGLES>();
-    }
+    virtual std::unique_ptr<VideoBuffer> CreateVideoBuffer() override; // forward declaration
 
     virtual void PreInit() override {
         LoadFuncs();
@@ -191,81 +116,7 @@ public:
         }
     };
 
-    virtual void DrawSDF(SDL_Texture* Texture, bool Outline, const AkkordColor& Color, const AkkordColor& OutlineColor, const std::vector<GLfloat>& UV, const std::vector<GLfloat>& squareVertices, const std::vector <GLushort>& Indices, GLfloat Scale, GLfloat Border, int Spread) override {
-        BWrapper::FlushRenderer();
-        decltype(SDFPlainProgram)* shaderProgram{ nullptr };
-        if (Outline) {
-            if (!SDFOutlineProgram.shaderProgram) {
-                logError("SDF Outline program not initialized!");
-                return;
-            }
-            shaderProgram = &SDFOutlineProgram;
-        }
-        else {
-            if (!SDFPlainProgram.shaderProgram) {
-                logError("SDF program not initialized!");
-                return;
-            }
-            shaderProgram = &SDFPlainProgram;
-        }
-
-        const auto openGLState = BackupOpenGLState();
-        {
-            // эти два атрибута нужно включить, если они выключены
-            if (openGLState.attr_0_enabled == GL_FALSE) { glEnableVertexAttribArray((GLuint)0); CheckGLESError(); }
-            if (openGLState.attr_1_enabled == GL_FALSE) { glEnableVertexAttribArray((GLuint)1); CheckGLESError(); }
-
-            // эти атрибуты выключаем всегда, если они включены
-            if (openGLState.attr_2_enabled != GL_FALSE) { glDisableVertexAttribArray((GLuint)2); CheckGLESError(); }
-            if (openGLState.attr_3_enabled != GL_FALSE) { glDisableVertexAttribArray((GLuint)3); CheckGLESError(); }
-        }
-
-        if (openGLState.ProgramId != shaderProgram->shaderProgram) {
-            glUseProgram(shaderProgram->shaderProgram); CheckGLESError(); PrintGLESProgamLog(shaderProgram->shaderProgram);
-        }
-        SDL_GL_BindTexture(Texture, nullptr, nullptr);
-
-        glUniform4f(shaderProgram->font_color, GLfloat(Color.GetR()) / 255.0F, GLfloat(Color.GetG()) / 255.0F, GLfloat(Color.GetB()) / 255.0F, GLfloat(Color.GetA()) / 255.0F); CheckGLESError();
-
-        const GLfloat smoothness = std::min(0.3F, 0.25F / (GLfloat)Spread / Scale * 1.5F) * 850.0F / 255.0F / 3.333F;
-
-        glUniform1f(shaderProgram->smooth, smoothness); CheckGLESError();
-
-        if (Outline) {
-            if (shaderProgram->sdf_outline_color >= 0) {
-                glUniform4f(shaderProgram->sdf_outline_color, GLfloat(OutlineColor.GetR()) / 255.0F, GLfloat(OutlineColor.GetG()) / 255.0F, GLfloat(OutlineColor.GetB()) / 255.0F, GLfloat(OutlineColor.GetA()) / 255.0F); CheckGLESError();
-            }
-            else {
-                logError("shaderProgram->sdf_outline_color error %d", shaderProgram->sdf_outline_color);
-            }
-
-            if (shaderProgram->border >= 0) {
-                glUniform1f(shaderProgram->border, Border / 6.666F); CheckGLESError();
-            }
-            else {
-                logError("shaderProgram->border error %d", shaderProgram->border);
-            }
-        }
-
-        DrawElements(UV, squareVertices, Indices, 2);
-
-        // unbind texture
-        SDL_GL_UnbindTexture(Texture);
-
-        if (shaderProgram->shaderProgram != openGLState.ProgramId && openGLState.ProgramId > 0) {
-            glUseProgram(openGLState.ProgramId); CheckGLESError();
-        }
-
-        { // возвращаем все исходное состояние
-            // в рамках обработки SDF мы включили эти атрибуты. Возвращаем их в исходное состояние
-            if (openGLState.attr_0_enabled == GL_FALSE) { glDisableVertexAttribArray((GLuint)0); CheckGLESError(); }
-            if (openGLState.attr_1_enabled == GL_FALSE) { glDisableVertexAttribArray((GLuint)1); CheckGLESError(); }
-
-            if (openGLState.attr_2_enabled != GL_FALSE) { glEnableVertexAttribArray((GLuint)2); CheckGLESError(); }
-            if (openGLState.attr_3_enabled != GL_FALSE) { glEnableVertexAttribArray((GLuint)3); CheckGLESError(); }
-        }
-    };
-
+    void DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, const VideoSDFBufferDrawParams& Params);
 protected:
     static constexpr const GLchar* SDF_outlineVertexSource =
         "#define SDF_OUTLINE \n"
@@ -642,6 +493,158 @@ private:
             if (openGLState.attr_2_enabled != GL_FALSE) { glEnableVertexAttribArray((GLuint)2); CheckGLESError(); }
             if (openGLState.attr_3_enabled != GL_FALSE) { glEnableVertexAttribArray((GLuint)3); CheckGLESError(); }
         }
+    }
+};
+
+class VideoBuffer_OPENGLES : public VideoBuffer {
+public:
+    friend class VideoAdapter_OPENGLES;
+    virtual void Clear() override {
+        UV.clear();
+        squareVertices.clear();
+        Indices.clear();
+    };
+
+    virtual void Reserve(unsigned Count) override {
+        UV.reserve(Count * 4);
+        squareVertices.reserve(Count * 4);
+        Indices.reserve(Count * 6);
+    };
+
+    virtual void Append(const VideoBufferAppendParams& Params) override {
+        VideoFloatRect Dest;
+
+        Dest.x = Params.SrcRect->x / Params.TextureW;                       //px1
+        Dest.y = (Params.SrcRect->x + Params.SrcRect->w) / Params.TextureW; //px2
+        Dest.w = (Params.SrcRect->y + Params.SrcRect->h) / Params.TextureH; //py1
+        Dest.h = Params.SrcRect->y / Params.TextureH;                       //py2
+
+        const float& px1 = Dest.x;
+        const float& px2 = Dest.y;
+        const float& py1 = Dest.w;
+        const float& py2 = Dest.h;
+
+        UV.insert(UV.cend(),
+            {
+                px1, py1,
+                px2, py1,
+                px1, py2,
+                px2, py2
+            });
+
+        Dest.x = static_cast<float>(2 * Params.DestRect->x) / Params.ScrenW - 1.0F;
+        Dest.y = static_cast<float>(2 * (Params.ScrenH - Params.DestRect->y)) / Params.ScrenH - 1.0F;
+        Dest.w = static_cast<float>(2 * (Params.DestRect->x + Params.DestRect->w)) / Params.ScrenW - 1.0F;
+        Dest.h = static_cast<float>(2 * (Params.ScrenH - Params.DestRect->y - Params.DestRect->h)) / Params.ScrenH - 1.0F;
+
+        squareVertices.insert(squareVertices.cend(),
+            {
+                Dest.x, Dest.h,
+                Dest.w, Dest.h,
+                Dest.x, Dest.y,
+                Dest.w, Dest.y
+            });
+
+        const decltype(Indices)::value_type PointsCnt0 = Indices.size() / 6 * 4;
+        const decltype(PointsCnt0) PointsCnt1 = PointsCnt0 + 1;
+        const decltype(PointsCnt0) PointsCnt2 = PointsCnt0 + 2;
+        const decltype(PointsCnt0) PointsCnt3 = PointsCnt0 + 3;
+
+        Indices.insert(Indices.cend(),
+            {
+                PointsCnt0, PointsCnt1, PointsCnt2,
+                PointsCnt1, PointsCnt2, PointsCnt3
+            });
+    };
+
+    virtual void DrawSDF(const VideoSDFBufferDrawParams& Params) override {
+        if (!Indices.empty()) {
+            videoAdapter->DrawSDFBuffer(*this, Params);
+        }
+    };
+
+    virtual ~VideoBuffer_OPENGLES() {};
+
+    VideoBuffer_OPENGLES(VideoAdapter_OPENGLES* VideoAdapter) : videoAdapter(VideoAdapter) {}
+private:
+    std::vector<GLfloat>UV;
+    std::vector<GLfloat>squareVertices;
+    std::vector<GLushort>Indices;
+    VideoAdapter_OPENGLES* videoAdapter;
+};
+
+std::unique_ptr<VideoBuffer> VideoAdapter_OPENGLES::CreateVideoBuffer() {
+    return std::make_unique<VideoBuffer_OPENGLES>(this);
+}
+
+void VideoAdapter_OPENGLES::DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, const VideoSDFBufferDrawParams& Params) {
+    BWrapper::FlushRenderer();
+    decltype(SDFPlainProgram)* shaderProgram{ nullptr };
+    if (Params.Outline) {
+        if (!SDFOutlineProgram.shaderProgram) {
+            logError("SDF Outline program not initialized!");
+            return;
+        }
+        shaderProgram = &SDFOutlineProgram;
+    }
+    else {
+        if (!SDFPlainProgram.shaderProgram) {
+            logError("SDF program not initialized!");
+            return;
+        }
+        shaderProgram = &SDFPlainProgram;
+    }
+
+    const auto openGLState = BackupOpenGLState();
+    {
+        // эти два атрибута нужно включить, если они выключены
+        if (openGLState.attr_0_enabled == GL_FALSE) { glEnableVertexAttribArray(static_cast<GLuint>(0)); CheckGLESError(); }
+        if (openGLState.attr_1_enabled == GL_FALSE) { glEnableVertexAttribArray(static_cast<GLuint>(1)); CheckGLESError(); }
+
+        // эти атрибуты выключаем всегда, если они включены
+        if (openGLState.attr_2_enabled != GL_FALSE) { glDisableVertexAttribArray(static_cast<GLuint>(2)); CheckGLESError(); }
+        if (openGLState.attr_3_enabled != GL_FALSE) { glDisableVertexAttribArray(static_cast<GLuint>(3)); CheckGLESError(); }
+    }
+
+    if (openGLState.ProgramId != shaderProgram->shaderProgram) {
+        glUseProgram(shaderProgram->shaderProgram); CheckGLESError(); PrintGLESProgamLog(shaderProgram->shaderProgram);
+    }
+    SDL_GL_BindTexture(Params.Texture, nullptr, nullptr);
+    glUniform4f(shaderProgram->font_color, GLfloat(Params.Color->GetR()) / 255.0F, GLfloat(Params.Color->GetG()) / 255.0F, GLfloat(Params.Color->GetB()) / 255.0F, GLfloat(Params.Color->GetA()) / 255.0F); CheckGLESError();
+    const GLfloat smoothness = std::min(0.3F, 0.25F / static_cast<GLfloat>(Params.Spread) / Params.Scale * 1.5F) * 850.0F / 255.0F / 3.333F;
+    glUniform1f(shaderProgram->smooth, smoothness); CheckGLESError();
+
+    if (Params.Outline) {
+        if (shaderProgram->sdf_outline_color >= 0) {
+            glUniform4f(shaderProgram->sdf_outline_color, GLfloat(Params.OutlineColor->GetR()) / 255.0F, GLfloat(Params.OutlineColor->GetG()) / 255.0F, GLfloat(Params.OutlineColor->GetB()) / 255.0F, GLfloat(Params.OutlineColor->GetA()) / 255.0F); CheckGLESError();
+        }
+        else {
+            logError("shaderProgram->sdf_outline_color error %d", shaderProgram->sdf_outline_color);
+        }
+
+        if (shaderProgram->border >= 0) {
+            glUniform1f(shaderProgram->border, Params.Border / 6.666F); CheckGLESError();
+        }
+        else {
+            logError("shaderProgram->border error %d", shaderProgram->border);
+        }
+    }
+
+    DrawElements(Buffer.UV, Buffer.squareVertices, Buffer.Indices, 2);
+    // unbind texture
+    SDL_GL_UnbindTexture(Params.Texture);
+
+    if (shaderProgram->shaderProgram != openGLState.ProgramId && openGLState.ProgramId > 0) {
+        glUseProgram(openGLState.ProgramId); CheckGLESError();
+    }
+
+    { // возвращаем все исходное состояние
+        // в рамках обработки SDF мы включили эти атрибуты. Возвращаем их в исходное состояние
+        if (openGLState.attr_0_enabled == GL_FALSE) { glDisableVertexAttribArray(static_cast<GLuint>(0)); CheckGLESError(); }
+        if (openGLState.attr_1_enabled == GL_FALSE) { glDisableVertexAttribArray(static_cast<GLuint>(1)); CheckGLESError(); }
+
+        if (openGLState.attr_2_enabled != GL_FALSE) { glEnableVertexAttribArray(static_cast<GLuint>(2)); CheckGLESError(); }
+        if (openGLState.attr_3_enabled != GL_FALSE) { glEnableVertexAttribArray(static_cast<GLuint>(3)); CheckGLESError(); }
     }
 };
 
