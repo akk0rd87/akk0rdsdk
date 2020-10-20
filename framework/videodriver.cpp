@@ -579,18 +579,26 @@ repeat_again:
 
 bool VideoDriver::Init(const VideoDriver::Feature Features) {
     videoAdapter = VideoAdapter::CreateVideoAdapter();
-    videoAdapter->PreInit();
+    if (videoAdapter) {
+        videoAdapter->PreInit();
 
-    if (!!(Features & VideoDriver::Feature::SDF)) {
-        videoAdapter->InitSDFPlain();
+        if (!!(Features & VideoDriver::Feature::SDF)) {
+            videoAdapter->InitSDFPlain();
+        }
+
+        if (!!(Features & VideoDriver::Feature::SDF_Outline)) {
+            videoAdapter->InitSDFOutline();
+        }
+
+        if (!!(Features & VideoDriver::Feature::Gradient)) {
+            videoAdapter->InitGradient();
+        }
+
+        videoAdapter->PostInit();
     }
-
-    if (!!(Features & VideoDriver::Feature::SDF_Outline)) {
-        videoAdapter->InitSDFOutline();
-    }
-
-    if (!!(Features & VideoDriver::Feature::Gradient)) {
-        videoAdapter->InitGradient();
+    else {
+        logError("CreateVideoAdapter error!");
+        return false;
     }
 
     return true;
@@ -602,7 +610,7 @@ bool VideoDriver::DrawLinearGradientRect(const AkkordRect& Rect, const AkkordCol
     return true;
 };
 
-SDFTexture::~SDFTexture() { Clear();     Texture.Clear(); };
+SDFTexture::~SDFTexture() { Clear(); Texture.Clear(); };
 SDFTexture::SDFTexture() = default;
 SDFTexture::SDFTexture(SDFTexture && rhs) = default; // Перемещающий: конструктор
 
