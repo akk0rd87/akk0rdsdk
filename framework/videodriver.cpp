@@ -30,6 +30,21 @@ static inline unsigned int UTF2Unicode(const /*unsigned*/ char* txt, unsigned& i
     return a;
 };
 
+bool InitVideoBuffer(std::unique_ptr<VideoBuffer>& videoBuffer) {
+    if (videoAdapter) {
+        videoBuffer = videoAdapter->CreateVideoBuffer();
+        if (!videoBuffer) {
+            logError("videoBuffer create error");
+            return false;
+        }
+    }
+    else {
+        logError("videoAdapter is not initialized!");
+        return false;
+    }
+    return true;
+}
+
 static struct { // разделяемый буффер, который используется эксклюзивно только в рамках одного вызова в потоке рисования
     std::string strObject;
     std::vector<float> floatVector;
@@ -71,8 +86,10 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
         return false;
     }
 
-    if (!videoBuffer && videoAdapter) {
-        videoBuffer = videoAdapter->CreateVideoBuffer();
+    if (!videoBuffer) {
+        if (!InitVideoBuffer(videoBuffer)) {
+            return false;
+        }
     }
 
     // не забыть посчитать Scale и выполнить AutoFlush
@@ -285,8 +302,10 @@ void SDFFontBuffer::Clear() {
 }
 
 void SDFFontBuffer::Reserve(unsigned Count) {
-    if (!videoBuffer && videoAdapter) {
-        videoBuffer = videoAdapter->CreateVideoBuffer();
+    if (!videoBuffer) {
+        if (!InitVideoBuffer(videoBuffer)) {
+            return;
+        }
     }
     this->videoBuffer->Reserve(Count);
 }
@@ -343,13 +362,14 @@ AkkordPoint SDFFontBuffer::GetTextSizeByLine(const char* Text, std::vector<float
     return pt;
 }
 
-AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text)
-{
-    if (!videoBuffer && videoAdapter) {
-        videoBuffer = videoAdapter->CreateVideoBuffer();
+AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text) {
+    AkkordPoint pt(0, 0);
+    if (!videoBuffer) {
+        if (!InitVideoBuffer(videoBuffer)) {
+            return pt;
+        }
     }
 
-    AkkordPoint pt(0, 0);
     if (Text != nullptr) {
         const auto ScreenSize = BWrapper::GetScreenSize();
         // не забыть посчитать Scale и выполнить AutoFlush
