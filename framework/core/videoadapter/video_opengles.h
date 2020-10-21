@@ -115,8 +115,6 @@ public:
             glUseProgram(oldProgramId);
         }
     };
-
-    void DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, const VideoSDFBufferDrawParams& Params);
 protected:
     static constexpr const GLchar* SDF_outlineVertexSource =
         "#define SDF_OUTLINE \n"
@@ -494,6 +492,9 @@ private:
             if (openGLState.attr_3_enabled != GL_FALSE) { glEnableVertexAttribArray((GLuint)3); CheckGLESError(); }
         }
     }
+
+    friend class VideoBuffer_OPENGLES;
+    void DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, const VideoSDFBufferDrawParams& Params);
 };
 
 class VideoBuffer_OPENGLES : public VideoBuffer {
