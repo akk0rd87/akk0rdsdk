@@ -546,7 +546,7 @@ public:
                 Dest.w, Dest.y
             });
 
-        const decltype(Indices)::value_type PointsCnt0 = Indices.size() / 6 * 4;
+        const decltype(Indices)::value_type PointsCnt0 = (Indices.size() / 6) * 4;
         const decltype(PointsCnt0) PointsCnt1 = PointsCnt0 + 1;
         const decltype(PointsCnt0) PointsCnt2 = PointsCnt0 + 2;
         const decltype(PointsCnt0) PointsCnt3 = PointsCnt0 + 3;
