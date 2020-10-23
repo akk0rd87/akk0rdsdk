@@ -30,7 +30,7 @@ static inline unsigned int UTF2Unicode(const /*unsigned*/ char* txt, unsigned& i
     return a;
 };
 
-bool InitVideoBuffer(std::unique_ptr<VideoBuffer>& videoBuffer) {
+static bool InitVideoBuffer(std::unique_ptr<VideoBuffer>& videoBuffer) {
     if (videoAdapter) {
         videoBuffer = videoAdapter->CreateVideoBuffer();
         if (!videoBuffer) {
