@@ -63,7 +63,7 @@ bool adsManager::InterstitialShow()
 {
     if (AdMob::InterstitialGetStatus() == AdMob::InterstitialStatus::Loaded)
     {
-        logDebug("NewTm = %u, NextShowTime = %u", GetSeconds(), GetInterstitialNextShowTime());
+        logDebug("NewTm = %u, NextShowTime = %u", static_cast<unsigned>(GetSeconds()), static_cast<unsigned>(GetInterstitialNextShowTime()));
         auto NewTm = GetSeconds(); // время в секундах
         if (NewTm >= GetInterstitialNextShowTime())
         {
