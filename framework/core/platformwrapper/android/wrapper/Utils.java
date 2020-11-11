@@ -270,6 +270,7 @@ public class Utils {
                         });
                     */
                     mAlertDialog = builder.create();
+                    mAlertDialog.setIcon(0); // убираем иконку
                     mAlertDialog.show();
                     if(msgTimeOut > 0)
                     {
