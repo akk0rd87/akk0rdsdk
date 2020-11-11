@@ -28,15 +28,11 @@ public class Utils {
     private static  AkkordActivity _context = null;
     private static  AssetManager AssetMgr = null;
 
-    private static  ReviewManager reviewManager = null;
-    private static  ReviewInfo    reviewInfo = null;
-
     public static native void MessageBoxCallback(int Code, int Result);
 
     public static void Init(AkkordActivity ActivityContext){
         _context = ActivityContext;
         AssetMgr = _context.getResources().getAssets();
-        InitReviewSettings();
     }
 
     public static Activity GetContext()
@@ -531,34 +527,42 @@ public class Utils {
         }
     }
 
-    private static void InitReviewSettings() {
-        try {
-            reviewManager = ReviewManagerFactory.create(_context);
-            Task<ReviewInfo> requestFlow = reviewManager.requestReviewFlow();
-            requestFlow.addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    // We can get the ReviewInfo object
-                    reviewInfo = task.getResult();
-                } else {
-                    // There was some problem, continue regardless of the result.
-                }
-            });
-        }
-        catch (Exception e) {
-            Log.e(TAG, e.getMessage());
-        }
-    }
-
     public static void LaunchAppReviewIfAvailable() {
         try {
-            if(null != reviewManager && null != reviewInfo) {
-                Log.d(TAG, "launchReviewFlow");
-                Task<Void> flow = reviewManager.launchReviewFlow(_context, reviewInfo);
-                flow.addOnCompleteListener(task -> {
-                    Log.d(TAG, "launchReviewFlow comleted");
-                    // The flow has finished. The API does not indicate whether the user
-                    // reviewed or not, or even whether the review dialog was shown. Thus, no
-                    // matter the result, we continue our app flow.
+            Log.d(TAG, "LaunchAppReviewIfAvailable");
+            ReviewManager reviewManager = ReviewManagerFactory.create(_context);
+            if(null != reviewManager) {
+                Log.d(TAG, "requestReviewFlow");
+                Task<ReviewInfo> requestFlow = reviewManager.requestReviewFlow();
+                requestFlow.addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        try {
+                            // We can get the ReviewInfo object
+                            Log.d(TAG, "requestReviewFlow isSuccessful");
+                            ReviewInfo reviewInfo = task.getResult();
+                            if(null != reviewInfo) {
+                                Log.d(TAG, "launchReviewFlow");
+                                Task<Void> flow = reviewManager.launchReviewFlow(_context, reviewInfo);
+                                //flow.addOnCompleteListener(flowTask -> {
+                                //    // The flow has finished. The API does not indicate whether the user
+                                //    // reviewed or not, or even whether the review dialog was shown. Thus, no
+                                //    // matter the result, we continue our app flow.
+                                //    if (flowTask.isSuccessful()) {
+                                //        Log.d(TAG, "launchReviewFlow isSuccessful");
+                                //    }
+                                //    else {
+                                //        Log.d(TAG, "launchReviewFlow is not Successful");
+                                //    }
+                                //});
+                            }
+                        }
+                        catch (Exception e) {
+                            Log.e(TAG, e.getMessage());
+                        }
+                    } else {
+                        Log.d(TAG, "requestReviewFlow is NOT Successful");
+                        // There was some problem, continue regardless of the result.
+                    }
                 });
             }
         }
