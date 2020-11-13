@@ -248,6 +248,8 @@ public:
     static int                 GetAudioOutputBufferSize(); // only for Android
     static bool                LaunchAppReviewIfAvailable(); // only for Android
 
+    static std::string         GetAppVersionInfo();
+
     static constexpr BWrapper::OS GetDeviceOS()
     {
 #ifdef __APPLE__
@@ -263,7 +265,7 @@ public:
 #endif
 
         return BWrapper::OS::Unknown;
-    };
+};
 
     static constexpr bool IsReleaseBuild()
     {

@@ -21,6 +21,7 @@ class AndroidPlatformWrapper : public PlatformWrapper {
         jmethodID midGetAudioOutputRate       { nullptr };
         jmethodID midGetAudioOutputBufferSize { nullptr };
         jmethodID midLaunchAppReviewIfAvailable { nullptr };
+        jmethodID midGetAppVersionInfo        { nullptr };
 
         std::string sLanguage;
         //std::string sInternalDir;
@@ -125,6 +126,7 @@ class AndroidPlatformWrapper : public PlatformWrapper {
         AndroidWrapperState.midGetAssetManager             = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "GetAssetManager", "()Landroid/content/res/AssetManager;", true);
         AndroidWrapperState.midShareText                   = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "shareText", "(Ljava/lang/String;Ljava/lang/String;)V", true);
         AndroidWrapperState.midLaunchAppReviewIfAvailable  = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "LaunchAppReviewIfAvailable", "()V", true);
+        AndroidWrapperState.midGetAppVersionInfo           = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "GetAppVersionInfo", "()Ljava/lang/String;", true);
         // пока комментим, так как для Android требуется FileProvider
         //AndroidWrapperState.midSharePNG                  = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "sharePNG", "(Ljava/lang/String;Ljava/lang/String;)V", true);
 
@@ -343,6 +345,20 @@ class AndroidPlatformWrapper : public PlatformWrapper {
         JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
         env->CallStaticVoidMethod(AndroidWrapperState.UtilsClass, AndroidWrapperState.midLaunchAppReviewIfAvailable);
         return true;
+    }
+
+    std::string vGetAppVersionInfo() override {
+        if(!AndroidWrapperState.midGetAppVersionInfo) {
+            logError("AndroidWrapper GetAppVersionInfo Java method not Found");
+            return "Unknown";
+        }
+
+        JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
+        jstring jstrVersion = (jstring)env->CallStaticObjectMethod(AndroidWrapperState.UtilsClass, AndroidWrapperState.midGetAppVersionInfo);
+        const char* VersionStr = env->GetStringUTFChars(jstrVersion, 0);
+        const std::string versionString(VersionStr);
+        env->ReleaseStringUTFChars(jstrVersion, VersionStr);
+        return versionString;
     }
 
 public:

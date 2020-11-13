@@ -16,6 +16,7 @@ import android.app.*;
 import android.content.*;
 import android.content.res.AssetManager;
 import android.media.AudioManager;
+import android.content.pm.PackageInfo;
 
 import com.google.android.play.core.tasks.Task;
 import com.google.android.play.core.review.ReviewManager;
@@ -524,6 +525,23 @@ public class Utils {
         {
             Log.e(TAG, e.getMessage());
             return 1; // Error
+        }
+    }
+
+    public static String GetAppVersionInfo() {
+        try {
+            PackageInfo pInfo = _context.getPackageManager().getPackageInfo(_context.getPackageName(), 0);
+            String Result = "versionName=" + pInfo.versionName + "\nversionCode=";
+            if (android.os.Build.VERSION.SDK_INT >= 28) {
+                Result += pInfo.getLongVersionCode();
+            }
+            else {
+                Result += pInfo.versionCode;
+            }
+            return Result;
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+            return "";
         }
     }
 

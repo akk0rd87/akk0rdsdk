@@ -833,6 +833,10 @@ bool BWrapper::OpenURL(const char* url)
     return false;
 };
 
+std::string BWrapper::GetAppVersionInfo() {
+    return PlatformWrapper::GetInstance().GetAppVersionInfo();
+};
+
 Locale::Lang BWrapper::GetDeviceLanguage()
 {
     return PlatformWrapper::GetInstance().GetDeviceLanguage();
@@ -1117,7 +1121,7 @@ bool FileReader::Open(const char* Fname, BWrapper::FileSearchPriority SearchPrio
             opened = true;
         }
         return opened;
-    }
+}
 #else
     if (BWrapper::FileSearchPriority::Assets == SearchPriority)
         Path = PlatformWrapper::GetInstance().GetInternalAssetsDir() + "/";
