@@ -340,11 +340,11 @@ private:
 
     OpenGLState BackupOpenGLState() {
         OpenGLState p;
-        glGetIntegerv((GLenum)GL_CURRENT_PROGRAM, &p.ProgramId); CheckGLESError();
-        glGetVertexAttribiv((GLuint)0, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &p.attr_0_enabled); CheckGLESError();
-        glGetVertexAttribiv((GLuint)1, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &p.attr_1_enabled); CheckGLESError();
-        glGetVertexAttribiv((GLuint)2, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &p.attr_2_enabled); CheckGLESError();
-        glGetVertexAttribiv((GLuint)3, (GLenum)GL_VERTEX_ATTRIB_ARRAY_ENABLED, &p.attr_3_enabled); CheckGLESError();
+        glGetIntegerv(static_cast<GLenum>(GL_CURRENT_PROGRAM), &p.ProgramId); CheckGLESError();
+        glGetVertexAttribiv(static_cast<GLuint>(0), static_cast<GLenum>(GL_VERTEX_ATTRIB_ARRAY_ENABLED), &p.attr_0_enabled); CheckGLESError();
+        glGetVertexAttribiv(static_cast<GLuint>(1), static_cast<GLenum>(GL_VERTEX_ATTRIB_ARRAY_ENABLED), &p.attr_1_enabled); CheckGLESError();
+        glGetVertexAttribiv(static_cast<GLuint>(2), static_cast<GLenum>(GL_VERTEX_ATTRIB_ARRAY_ENABLED), &p.attr_2_enabled); CheckGLESError();
+        glGetVertexAttribiv(static_cast<GLuint>(3), static_cast<GLenum>(GL_VERTEX_ATTRIB_ARRAY_ENABLED), &p.attr_3_enabled); CheckGLESError();
         return p;
     }
 
@@ -422,9 +422,9 @@ private:
             glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indSize, &Indices.front()); CheckGLESError();
         }
 
-        glVertexAttribPointer(Attributes::SDF_ATTRIB_POSITION, static_cast<GLint>(2), (GLenum)GL_FLOAT, (GLboolean)GL_FALSE, static_cast<GLsizei>(0), (const GLvoid*)static_cast<GLsizeiptr>(UV.size() * sizeof(UV.front()))); CheckGLESError();
-        glVertexAttribPointer(Attributes::SDF_ATTRIB_UV, UVElementLogicalSize, (GLenum)GL_FLOAT, (GLboolean)GL_FALSE, static_cast<GLsizei>(0), nullptr); CheckGLESError();
-        glDrawElements((GLenum)GL_TRIANGLES, static_cast<GLsizei>(Indices.size()), (GLenum)GL_UNSIGNED_SHORT, nullptr); CheckGLESError();
+        glVertexAttribPointer(Attributes::SDF_ATTRIB_POSITION, static_cast<GLint>(2), static_cast<GLenum>(GL_FLOAT), static_cast<GLboolean>(GL_FALSE), static_cast<GLsizei>(0), (const GLvoid*)static_cast<GLsizeiptr>(UV.size() * sizeof(UV.front()))); CheckGLESError();
+        glVertexAttribPointer(Attributes::SDF_ATTRIB_UV, UVElementLogicalSize, static_cast<GLenum>(GL_FLOAT), static_cast<GLboolean>(GL_FALSE), static_cast<GLsizei>(0), nullptr); CheckGLESError();
+        glDrawElements(static_cast<GLenum>(GL_TRIANGLES), static_cast<GLsizei>(Indices.size()), static_cast<GLenum>(GL_UNSIGNED_SHORT), nullptr); CheckGLESError();
 
         // переходим к следующему буфферу, который будет использоваться при следующем обращении
         if (++VBO.CurrentBuffer >= VBO.constBufferSize) {
@@ -465,12 +465,12 @@ private:
         const auto openGLState = BackupOpenGLState();
         {
             // эти два атрибута нужно включить, если они выключены
-            if (openGLState.attr_0_enabled == GL_FALSE) { glEnableVertexAttribArray((GLuint)0); CheckGLESError(); }
-            if (openGLState.attr_1_enabled == GL_FALSE) { glEnableVertexAttribArray((GLuint)1); CheckGLESError(); }
+            if (openGLState.attr_0_enabled == GL_FALSE) { glEnableVertexAttribArray(static_cast<GLuint>(0)); CheckGLESError(); }
+            if (openGLState.attr_1_enabled == GL_FALSE) { glEnableVertexAttribArray(static_cast<GLuint>(1)); CheckGLESError(); }
 
             // эти атрибуты выключаем всегда, если они включены
-            if (openGLState.attr_2_enabled != GL_FALSE) { glDisableVertexAttribArray((GLuint)2); CheckGLESError(); }
-            if (openGLState.attr_3_enabled != GL_FALSE) { glDisableVertexAttribArray((GLuint)3); CheckGLESError(); }
+            if (openGLState.attr_2_enabled != GL_FALSE) { glDisableVertexAttribArray(static_cast<GLuint>(2)); CheckGLESError(); }
+            if (openGLState.attr_3_enabled != GL_FALSE) { glDisableVertexAttribArray(static_cast<GLuint>(3)); CheckGLESError(); }
         }
 
         if (openGLState.ProgramId != this->shaderLinearProgram) {
@@ -485,11 +485,11 @@ private:
 
         { // возвращаем все исходное состояние
           // в рамках обработки градиента мы включили эти атрибуты. Возвращаем их в исходное состояние
-            if (openGLState.attr_0_enabled == GL_FALSE) { glDisableVertexAttribArray((GLuint)0); CheckGLESError(); }
-            if (openGLState.attr_1_enabled == GL_FALSE) { glDisableVertexAttribArray((GLuint)1); CheckGLESError(); }
+            if (openGLState.attr_0_enabled == GL_FALSE) { glDisableVertexAttribArray(static_cast<GLuint>(0)); CheckGLESError(); }
+            if (openGLState.attr_1_enabled == GL_FALSE) { glDisableVertexAttribArray(static_cast<GLuint>(1)); CheckGLESError(); }
 
-            if (openGLState.attr_2_enabled != GL_FALSE) { glEnableVertexAttribArray((GLuint)2); CheckGLESError(); }
-            if (openGLState.attr_3_enabled != GL_FALSE) { glEnableVertexAttribArray((GLuint)3); CheckGLESError(); }
+            if (openGLState.attr_2_enabled != GL_FALSE) { glEnableVertexAttribArray(static_cast<GLuint>(2)); CheckGLESError(); }
+            if (openGLState.attr_3_enabled != GL_FALSE) { glEnableVertexAttribArray(static_cast<GLuint>(3)); CheckGLESError(); }
         }
     }
 
@@ -546,7 +546,7 @@ public:
                 Dest.w, Dest.y
             });
 
-        const decltype(Indices)::value_type PointsCnt0 = (Indices.size() / 6) * 4;
+        const decltype(Indices)::value_type PointsCnt0 = static_cast<decltype(Indices)::value_type>((Indices.size() / 6) * 4);
         const decltype(PointsCnt0) PointsCnt1 = PointsCnt0 + 1;
         const decltype(PointsCnt0) PointsCnt2 = PointsCnt0 + 2;
         const decltype(PointsCnt0) PointsCnt3 = PointsCnt0 + 3;
