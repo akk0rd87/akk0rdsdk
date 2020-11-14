@@ -17,4 +17,6 @@ public static int wtf(...);
 -optimizations !code/simplification/arithmetic,!code/allocation/variable
 -keep class **
 -keepclassmembers class *{*;}
--keepattributes *
+-keepattributes *Annotation*
+-keepattributes SourceFile,LineNumberTable        # Keep file names and line numbers.
+-keep public class * extends java.lang.Exception  # Optional: Keep custom exceptions.
