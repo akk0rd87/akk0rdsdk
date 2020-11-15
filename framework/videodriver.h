@@ -35,7 +35,7 @@ public:
         akkordTexture.LoadFromMemory(Buffer, Size, AkkordTexture::TextureType::PNG);
         return true;
     };
-    bool Draw(VideoBuffer* sdfVideoBuffer, bool Outline, const AkkordColor& FontColor, const AkkordColor& OutlineColor, float Scale, float Border, int Spread);
+    bool Draw(std::unique_ptr<VideoBuffer>& sdfVideoBuffer, bool Outline, const AkkordColor& FontColor, const AkkordColor& OutlineColor, float Scale, float Border, int Spread);
     AkkordPoint GetSize() const { return akkordTexture.GetSize(); };
     ~SDFGLTexture() { Clear(); };
 

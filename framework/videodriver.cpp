@@ -50,7 +50,7 @@ static struct { // разделяемый буффер, который испо�
     std::vector<float> floatVector;
 } SharedPool;
 
-bool SDFGLTexture::Draw(VideoBuffer* sdfVideoBuffer, bool Outline, const AkkordColor& FontColor, const AkkordColor& OutlineColor, float Scale, float Border, int Spread)
+bool SDFGLTexture::Draw(std::unique_ptr<VideoBuffer>& sdfVideoBuffer, bool Outline, const AkkordColor& FontColor, const AkkordColor& OutlineColor, float Scale, float Border, int Spread)
 {
     if (sdfVideoBuffer) {
         VideoSDFBufferDrawParams SDFParams;
@@ -133,7 +133,7 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
 bool SDFTexture::Flush()
 {
     if (this->videoBuffer) {
-        Texture.Draw(this->videoBuffer.get(), Outline, this->Color, this->OutlineColor, Scale, Border, Spread);
+        Texture.Draw(this->videoBuffer, Outline, this->Color, this->OutlineColor, Scale, Border, Spread);
     }
     Clear();
     return true;
@@ -311,7 +311,7 @@ void SDFFontBuffer::Reserve(unsigned Count) {
 }
 
 void SDFFontBuffer::Flush() {
-    sdfFont->FontAtlas.Draw(videoBuffer.get(), outline, color, outlineColor, scaleX, Border, sdfFont->Spread);
+    sdfFont->FontAtlas.Draw(videoBuffer, outline, color, outlineColor, scaleX, Border, sdfFont->Spread);
     Clear();
 }
 
