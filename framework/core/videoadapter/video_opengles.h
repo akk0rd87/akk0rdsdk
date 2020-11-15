@@ -525,6 +525,10 @@ public:
         const float& py1 = Dest.w;
         const float& py2 = Dest.h;
 
+        const auto initialSizeUV = UV.size();
+        const auto initialSizeSV = squareVertices.size();
+        const auto initialSizeIndices = Indices.size();
+
         UV.insert(UV.cend(),
             {
                 px1, py1,
@@ -556,6 +560,14 @@ public:
                 PointsCnt0, PointsCnt1, PointsCnt2,
                 PointsCnt1, PointsCnt2, PointsCnt3
             });
+
+        // если вставка хотя бы в один вектор прошла неуспешно, надо откатить их в предыдущее состояние
+        if ((initialSizeUV + 8 != UV.size()) || (initialSizeSV + 8 != squareVertices.size()) || (initialSizeIndices + 6 != Indices.size())) {
+            logError("Error append element to SDF Buffer");
+            UV.erase(UV.begin() + initialSizeUV, UV.end());
+            squareVertices.erase(squareVertices.begin() + initialSizeSV, squareVertices.end());
+            Indices.erase(Indices.begin() + initialSizeIndices, Indices.end());
+        }
     };
 
     virtual void DrawSDF(const VideoSDFBufferDrawParams& Params) override {
