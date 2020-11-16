@@ -232,6 +232,7 @@ class VideoDriver {
 public:
     enum struct Feature : Uint8 { SDF = 1, SDF_Outline = 2, Gradient = 4 };
     static bool Init(const VideoDriver::Feature Features);
+    static void ShutDown();
     static bool DrawLinearGradientRect(const AkkordRect& Rect, const AkkordColor& X0Y0, const AkkordColor& X1Y0, const AkkordColor& X1Y1, const AkkordColor& X0Y1);
 };
 

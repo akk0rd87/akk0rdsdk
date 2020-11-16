@@ -624,6 +624,12 @@ bool VideoDriver::Init(const VideoDriver::Feature Features) {
     return true;
 };
 
+void VideoDriver::ShutDown() {
+    if (videoAdapter) {
+        videoAdapter.reset();
+    }
+};
+
 bool VideoDriver::DrawLinearGradientRect(const AkkordRect& Rect, const AkkordColor& X0Y0, const AkkordColor& X1Y0, const AkkordColor& X1Y1, const AkkordColor& X0Y1) {
     BWrapper::FlushRenderer();
     videoAdapter->DrawLinearGradientRect(Rect, X0Y0, X1Y0, X1Y1, X0Y1);

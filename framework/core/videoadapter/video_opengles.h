@@ -5,6 +5,21 @@
 #include "video_interface.h"
 #include <array>
 
+class GLESBaseProgram {
+public:
+    GLuint programId{ 0 }, vertexShader{ 0 }, fragmentShader{ 0 };
+    virtual ~GLESBaseProgram() {};
+};
+
+class GLESLinearGradientProgram : public GLESBaseProgram {
+};
+
+class GLESSDFProgram : public GLESBaseProgram {
+public:
+    GLint sdf_outline_color{ 0 }, font_color{ 0 }, smooth{ 0 }, border{ 0 };
+    GLESSDFProgram() : GLESBaseProgram() {}
+};
+
 // выборочный список OPENGLES2-функций из файла "../src/render/opengles2/SDL_gles2funcs.h"
 // некоторых нижеперечисленных ф-ий нет в файле "../src/render/opengles2/SDL_gles2funcs.h"
 #if __NACL__ || __ANDROID__
@@ -28,6 +43,9 @@ DEFINE_glShaderSource \
 SDL_PROC(void, glBufferData, (GLenum, GLsizeiptr, const GLvoid *, GLenum)) \
 SDL_PROC(void, glBufferSubData, (GLenum, GLintptr, GLsizeiptr, const GLvoid *)) \
 SDL_PROC(void, glGenBuffers, (GLsizei, GLuint *)) \
+SDL_PROC(void, glDeleteBuffers, (GLsizei, const GLuint *)) \
+SDL_PROC(void, glDeleteProgram, (GLuint)) \
+SDL_PROC(void, glDeleteShader, (GLuint)) \
 SDL_PROC(void, glBindBuffer, (GLenum, GLuint)) \
 SDL_PROC(void, glBlendFunc, (GLenum, GLenum)) \
 SDL_PROC(void, glGetShaderSource, (GLuint, GLsizei, GLsizei*, GLchar*)) \
@@ -64,18 +82,25 @@ class VideoAdapter_OPENGLES : public VideoAdapter {
 public:
     virtual std::unique_ptr<VideoBuffer> CreateVideoBuffer() override; // forward declaration
 
+    ~VideoAdapter_OPENGLES() {
+        DeleteProgram(&SDFPlainProgram);
+        DeleteProgram(&SDFOutlineProgram);
+        DeleteProgram(&LinearGradientProgram);
+
+        glDeleteBuffers(VBO.constBufferSize, &VBO.ArrayBufferID.front()); CheckGLESError();
+        glDeleteBuffers(VBO.constBufferSize, &VBO.ElementBufferID.front()); CheckGLESError();
+    }
+
     virtual void PreInit() override {
         LoadFuncs();
         InitVBO();
-        SDFPlainProgram.shaderProgram = 0;
-        SDFOutlineProgram.shaderProgram = 0;
-        shaderLinearProgram = 0;
+        SDFOutlineProgram.programId = SDFPlainProgram.programId = LinearGradientProgram.programId = 0;
     };
 
     virtual void PostInit() override {};
 
     virtual void InitSDFPlain() override {
-        if (!CompileSDFPlain(SDFPlainProgram.shaderProgram)) {
+        if (!CompileSDFPlain()) {
             logError("error compile SDFPlainProgram");
             return;
         }
@@ -87,7 +112,7 @@ public:
     };
 
     virtual void InitSDFOutline() override {
-        if (!CompileSDFOutline(SDFOutlineProgram.shaderProgram)) {
+        if (!CompileSDFOutline()) {
             logError("error compile SDFPlainProgram");
             return;
         }
@@ -99,23 +124,26 @@ public:
     };
 
     virtual void InitGradient() override {
-        if (!CompileLinearGradient(shaderLinearProgram)) {
+        if (!CompileLinearGradient()) {
             logError("error compile SDFPlainProgram");
             return;
         }
 
-        glBindAttribLocation(this->shaderLinearProgram, Attributes::SDF_ATTRIB_UV, "vertex_color"); CheckGLESError(); PrintGLESProgamLog(this->shaderLinearProgram);
-        glBindAttribLocation(this->shaderLinearProgram, Attributes::SDF_ATTRIB_POSITION, "a_position"); CheckGLESError(); PrintGLESProgamLog(this->shaderLinearProgram);
-        glLinkProgram(this->shaderLinearProgram); CheckGLESError(); PrintGLESProgamLog(this->shaderLinearProgram);
-        GLint oldProgramId;
-        glGetIntegerv(GL_CURRENT_PROGRAM, &oldProgramId);
-        glUseProgram(this->shaderLinearProgram); CheckGLESError(); PrintGLESProgamLog(this->shaderLinearProgram);
+        glBindAttribLocation(LinearGradientProgram.programId, Attributes::SDF_ATTRIB_UV, "vertex_color"); CheckGLESError(); PrintGLESProgamLog(LinearGradientProgram.programId);
+        glBindAttribLocation(LinearGradientProgram.programId, Attributes::SDF_ATTRIB_POSITION, "a_position"); CheckGLESError(); PrintGLESProgamLog(LinearGradientProgram.programId);
+        glLinkProgram(LinearGradientProgram.programId); CheckGLESError(); PrintGLESProgamLog(LinearGradientProgram.programId);
+        GLint oldProgramId{ 0 };
+        glGetIntegerv(static_cast<GLenum>(GL_CURRENT_PROGRAM), &oldProgramId);
+        glUseProgram(LinearGradientProgram.programId); CheckGLESError(); PrintGLESProgamLog(LinearGradientProgram.programId);
 
         if (oldProgramId > 0) {
             glUseProgram(oldProgramId);
         }
     };
 protected:
+    GLESSDFProgram SDFPlainProgram, SDFOutlineProgram;
+    GLESLinearGradientProgram LinearGradientProgram;
+
     static constexpr const GLchar* SDF_outlineVertexSource =
         "#define SDF_OUTLINE \n"
         "varying highp vec4 result_color; \
@@ -192,21 +220,21 @@ void main() \
 gl_FragColor = result_color; \
 }";
 
-    bool CompileGLProgram(GLuint& ProgramID, const char* VertextShader, const char* FragmentShader) {
+    bool CompileGLProgram(GLESBaseProgram* Program, const char* VertextShader, const char* FragmentShader) {
         // Create and compile the fragment shader
-        GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER); CheckGLESError(); PrintGLESShaderLog(vertexShader);
-        glShaderSource(vertexShader, 1, &VertextShader, NULL); CheckGLESError(); PrintGLESShaderLog(vertexShader);
-        glCompileShader(vertexShader); CheckGLESError(); PrintGLESShaderLog(vertexShader);
+        Program->vertexShader = glCreateShader(GL_VERTEX_SHADER); CheckGLESError(); PrintGLESShaderLog(Program->vertexShader);
+        glShaderSource(Program->vertexShader, 1, &VertextShader, NULL); CheckGLESError(); PrintGLESShaderLog(Program->vertexShader);
+        glCompileShader(Program->vertexShader); CheckGLESError(); PrintGLESShaderLog(Program->vertexShader);
 
         // Create and compile the fragment shader
-        GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER); CheckGLESError(); PrintGLESShaderLog(fragmentShader);
-        glShaderSource(fragmentShader, 1, &FragmentShader, NULL); CheckGLESError(); PrintGLESShaderLog(fragmentShader);
-        glCompileShader(fragmentShader); CheckGLESError(); PrintGLESShaderLog(fragmentShader);
+        Program->fragmentShader = glCreateShader(GL_FRAGMENT_SHADER); CheckGLESError(); PrintGLESShaderLog(Program->fragmentShader);
+        glShaderSource(Program->fragmentShader, 1, &FragmentShader, NULL); CheckGLESError(); PrintGLESShaderLog(Program->fragmentShader);
+        glCompileShader(Program->fragmentShader); CheckGLESError(); PrintGLESShaderLog(Program->fragmentShader);
 
         // Link the vertex and fragment shader into a shader program
-        ProgramID = glCreateProgram(); CheckGLESError(); PrintGLESProgamLog(ProgramID);
-        glAttachShader(ProgramID, vertexShader); CheckGLESError(); PrintGLESProgamLog(ProgramID);
-        glAttachShader(ProgramID, fragmentShader); CheckGLESError(); PrintGLESProgamLog(ProgramID);
+        Program->programId = glCreateProgram(); CheckGLESError(); PrintGLESProgamLog(Program->programId);
+        glAttachShader(Program->programId, Program->vertexShader); CheckGLESError(); PrintGLESProgamLog(Program->programId);
+        glAttachShader(Program->programId, Program->fragmentShader); CheckGLESError(); PrintGLESProgamLog(Program->programId);
 
         return true;
     }
@@ -224,14 +252,19 @@ private:
         };
     };
 
-    struct SDFShaderProgramStruct
-    {
-        GLuint shaderProgram{ 0 };
-        GLint sdf_outline_color{ 0 }, font_color{ 0 }, smooth{ 0 }, border{ 0 };
-        ~SDFShaderProgramStruct() { shaderProgram = 0; }
-    } SDFPlainProgram, SDFOutlineProgram;
+    void DeleteProgram(GLESBaseProgram* Program) {
+        if (Program->vertexShader > 0) {
+            glDeleteShader(Program->vertexShader);
+        }
 
-    GLuint shaderLinearProgram;
+        if (Program->fragmentShader > 0) {
+            glDeleteShader(Program->fragmentShader);
+        }
+
+        if (Program->programId > 0) {
+            glDeleteProgram(Program->programId);
+        }
+    };
 
     void LoadFuncs() {
 #undef  SDL_PROC
@@ -324,8 +357,9 @@ private:
     } VBO;
 
     struct OpenGLState {
-        GLint attr_0_enabled{ GL_FALSE }, attr_1_enabled{ GL_FALSE }, attr_2_enabled{ GL_FALSE }, attr_3_enabled{ GL_FALSE };
-        GLint ProgramId{ 0 };
+        GLint attr_0_enabled, attr_1_enabled, attr_2_enabled, attr_3_enabled;
+        GLint ProgramId;
+        OpenGLState() : attr_0_enabled(GL_FALSE), attr_1_enabled(GL_FALSE), attr_2_enabled(GL_FALSE), attr_3_enabled(GL_FALSE), ProgramId(0) {}
     };
 
     void InitVBO() {
@@ -348,46 +382,46 @@ private:
         return p;
     }
 
-    virtual bool CompileSDFPlain(GLuint& ProgramID) {
+    virtual bool CompileSDFPlain() {
         const auto SDF_vertexSource = std::strchr(SDF_outlineVertexSource, '\n') + 1;
         const auto SDF_fragmentSource = std::strchr(SDF_outlineFragmentSource, '\n') + 1;
-        if (!CompileGLProgram(ProgramID, SDF_vertexSource, SDF_fragmentSource)) {
+        if (!CompileGLProgram(&SDFPlainProgram, SDF_vertexSource, SDF_fragmentSource)) {
             logError("SDF program compilation error!");
             return false;
         }
         return true;
     }
 
-    virtual bool CompileSDFOutline(GLuint& ProgramID) {
-        if (!CompileGLProgram(ProgramID, SDF_outlineVertexSource, SDF_outlineFragmentSource)) {
+    virtual bool CompileSDFOutline() {
+        if (!CompileGLProgram(&SDFOutlineProgram, SDF_outlineVertexSource, SDF_outlineFragmentSource)) {
             logError("SDF Outline program compilation error!");
             return false;
         }
         return true;
     }
 
-    virtual bool CompileLinearGradient(GLuint& ProgramID) {
-        if (!CompileGLProgram(ProgramID, Gradient_vertexSource, Gradient_fragmentSource)) {
+    virtual bool CompileLinearGradient() {
+        if (!CompileGLProgram(&LinearGradientProgram, Gradient_vertexSource, Gradient_fragmentSource)) {
             logError("SDF LinearGradient program compilation error!");
             return false;
         }
         return true;
     }
 
-    bool BindSDFProgram(SDFShaderProgramStruct& SDFProgam) {
-        glBindAttribLocation(SDFProgam.shaderProgram, Attributes::SDF_ATTRIB_POSITION, "a_position"); CheckGLESError(); PrintGLESProgamLog(SDFProgam.shaderProgram);
-        glBindAttribLocation(SDFProgam.shaderProgram, Attributes::SDF_ATTRIB_UV, "a_texCoord"); CheckGLESError(); PrintGLESProgamLog(SDFProgam.shaderProgram);
-        glLinkProgram(SDFProgam.shaderProgram); CheckGLESError(); PrintGLESProgamLog(SDFProgam.shaderProgram);
+    bool BindSDFProgram(GLESSDFProgram& SDFProgam) {
+        glBindAttribLocation(SDFProgam.programId, Attributes::SDF_ATTRIB_POSITION, "a_position"); CheckGLESError(); PrintGLESProgamLog(SDFProgam.programId);
+        glBindAttribLocation(SDFProgam.programId, Attributes::SDF_ATTRIB_UV, "a_texCoord"); CheckGLESError(); PrintGLESProgamLog(SDFProgam.programId);
+        glLinkProgram(SDFProgam.programId); CheckGLESError(); PrintGLESProgamLog(SDFProgam.programId);
 
-        GLint oldProgramId;
-        glGetIntegerv(GL_CURRENT_PROGRAM, &oldProgramId);
-        glUseProgram(SDFProgam.shaderProgram); CheckGLESError(); PrintGLESProgamLog(SDFProgam.shaderProgram);
+        GLint oldProgramId = 0;
+        glGetIntegerv(static_cast<GLenum>(GL_CURRENT_PROGRAM), &oldProgramId);
+        glUseProgram(SDFProgam.programId); CheckGLESError(); PrintGLESProgamLog(SDFProgam.programId);
 
-        const auto base_texture = glGetUniformLocation(SDFProgam.shaderProgram, "base_texture"); CheckGLESError(); PrintGLESProgamLog(SDFProgam.shaderProgram);
-        SDFProgam.sdf_outline_color = glGetUniformLocation(SDFProgam.shaderProgram, "sdf_outline_color"); CheckGLESError(); PrintGLESProgamLog(SDFProgam.shaderProgram);
-        SDFProgam.font_color = glGetUniformLocation(SDFProgam.shaderProgram, "font_color"); CheckGLESError(); PrintGLESProgamLog(SDFProgam.shaderProgram);
-        SDFProgam.smooth = glGetUniformLocation(SDFProgam.shaderProgram, "smooth_param"); CheckGLESError(); PrintGLESProgamLog(SDFProgam.shaderProgram);
-        SDFProgam.border = glGetUniformLocation(SDFProgam.shaderProgram, "border"); CheckGLESError(); PrintGLESProgamLog(SDFProgam.shaderProgram);
+        const auto base_texture = glGetUniformLocation(SDFProgam.programId, "base_texture"); CheckGLESError(); PrintGLESProgamLog(SDFProgam.programId);
+        SDFProgam.sdf_outline_color = glGetUniformLocation(SDFProgam.programId, "sdf_outline_color"); CheckGLESError(); PrintGLESProgamLog(SDFProgam.programId);
+        SDFProgam.font_color = glGetUniformLocation(SDFProgam.programId, "font_color"); CheckGLESError(); PrintGLESProgamLog(SDFProgam.programId);
+        SDFProgam.smooth = glGetUniformLocation(SDFProgam.programId, "smooth_param"); CheckGLESError(); PrintGLESProgamLog(SDFProgam.programId);
+        SDFProgam.border = glGetUniformLocation(SDFProgam.programId, "border"); CheckGLESError(); PrintGLESProgamLog(SDFProgam.programId);
 
         glUniform1i(base_texture, 0);
         if (oldProgramId > 0) {
@@ -433,7 +467,7 @@ private:
     }
 
     void DrawLinearGradientRect(const AkkordRect& Rect, const AkkordColor& X0Y0, const AkkordColor& X1Y0, const AkkordColor& X1Y1, const AkkordColor& X0Y1) override {
-        if (!this->shaderLinearProgram) {
+        if (!LinearGradientProgram.programId) {
             logError("Gradient program is initialized!");
             return;
         }
@@ -473,13 +507,13 @@ private:
             if (openGLState.attr_3_enabled != GL_FALSE) { glDisableVertexAttribArray(static_cast<GLuint>(3)); CheckGLESError(); }
         }
 
-        if (openGLState.ProgramId != this->shaderLinearProgram) {
-            glUseProgram(this->shaderLinearProgram); CheckGLESError(); PrintGLESProgamLog(this->shaderLinearProgram);
+        if (openGLState.ProgramId != LinearGradientProgram.programId) {
+            glUseProgram(LinearGradientProgram.programId); CheckGLESError(); PrintGLESProgamLog(LinearGradientProgram.programId);
         }
 
         DrawElements(UV, squareVertices, Indices, 4);
 
-        if (this->shaderLinearProgram != openGLState.ProgramId && openGLState.ProgramId > 0) {
+        if (LinearGradientProgram.programId != openGLState.ProgramId && openGLState.ProgramId > 0) {
             glUseProgram(openGLState.ProgramId); CheckGLESError();
         }
 
@@ -592,16 +626,16 @@ std::unique_ptr<VideoBuffer> VideoAdapter_OPENGLES::CreateVideoBuffer() {
 
 void VideoAdapter_OPENGLES::DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, const VideoSDFBufferDrawParams& Params) {
     BWrapper::FlushRenderer();
-    decltype(SDFPlainProgram)* shaderProgram{ nullptr };
+    GLESSDFProgram* shaderProgram{ nullptr };
     if (Params.Outline) {
-        if (!SDFOutlineProgram.shaderProgram) {
+        if (!SDFOutlineProgram.programId) {
             logError("SDF Outline program not initialized!");
             return;
         }
         shaderProgram = &SDFOutlineProgram;
     }
     else {
-        if (!SDFPlainProgram.shaderProgram) {
+        if (!SDFPlainProgram.programId) {
             logError("SDF program not initialized!");
             return;
         }
@@ -619,8 +653,8 @@ void VideoAdapter_OPENGLES::DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, co
         if (openGLState.attr_3_enabled != GL_FALSE) { glDisableVertexAttribArray(static_cast<GLuint>(3)); CheckGLESError(); }
     }
 
-    if (openGLState.ProgramId != shaderProgram->shaderProgram) {
-        glUseProgram(shaderProgram->shaderProgram); CheckGLESError(); PrintGLESProgamLog(shaderProgram->shaderProgram);
+    if (openGLState.ProgramId != shaderProgram->programId) {
+        glUseProgram(shaderProgram->programId); CheckGLESError(); PrintGLESProgamLog(shaderProgram->programId);
     }
     SDL_GL_BindTexture(Params.Texture, nullptr, nullptr);
     glUniform4f(shaderProgram->font_color, GLfloat(Params.Color->GetR()) / 255.0F, GLfloat(Params.Color->GetG()) / 255.0F, GLfloat(Params.Color->GetB()) / 255.0F, GLfloat(Params.Color->GetA()) / 255.0F); CheckGLESError();
@@ -647,7 +681,7 @@ void VideoAdapter_OPENGLES::DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, co
     // unbind texture
     SDL_GL_UnbindTexture(Params.Texture);
 
-    if (shaderProgram->shaderProgram != openGLState.ProgramId && openGLState.ProgramId > 0) {
+    if (shaderProgram->programId != openGLState.ProgramId && openGLState.ProgramId > 0) {
         glUseProgram(openGLState.ProgramId); CheckGLESError();
     }
 
