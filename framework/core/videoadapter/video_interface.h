@@ -47,6 +47,7 @@ public:
     virtual void DrawLinearGradientRect(const AkkordRect& Rect, const AkkordColor& X0Y0, const AkkordColor& X1Y0, const AkkordColor& X1Y1, const AkkordColor& X0Y1) = 0;
 
     static std::unique_ptr<VideoAdapter> CreateVideoAdapter();
+    static VideoAdapter* GetInstance();
     virtual ~VideoAdapter() {}
 protected:
     static constexpr const char* adapterOpenGLES = "opengles2";

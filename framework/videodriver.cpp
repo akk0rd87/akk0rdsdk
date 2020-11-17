@@ -1,7 +1,8 @@
 #include "videodriver.h"
 #include "core/videoadapter/video_interface.h"
 
-static std::unique_ptr<VideoAdapter> videoAdapter = nullptr;
+//static std::unique_ptr<VideoAdapter> videoAdapter = nullptr;
+static VideoAdapter* videoAdapter = nullptr;
 
 /*
 https://github.com/libgdx/libgdx/wiki/Hiero
@@ -598,7 +599,8 @@ repeat_again:
 };
 
 bool VideoDriver::Init(const VideoDriver::Feature Features) {
-    videoAdapter = VideoAdapter::CreateVideoAdapter();
+    //videoAdapter = VideoAdapter::CreateVideoAdapter();
+    videoAdapter = VideoAdapter::GetInstance();
     if (videoAdapter) {
         videoAdapter->PreInit();
 
@@ -625,9 +627,9 @@ bool VideoDriver::Init(const VideoDriver::Feature Features) {
 };
 
 void VideoDriver::ShutDown() {
-    if (videoAdapter) {
-        videoAdapter.reset();
-    }
+    //if (videoAdapter) {
+    //    videoAdapter.reset();
+    //}
 };
 
 bool VideoDriver::DrawLinearGradientRect(const AkkordRect& Rect, const AkkordColor& X0Y0, const AkkordColor& X1Y0, const AkkordColor& X1Y1, const AkkordColor& X0Y1) {
