@@ -44,6 +44,6 @@ LOCAL_CPPFLAGS  = -Wall -std=c++14
 #APP_CFLAGS += -std=c++11
 #LOCAL_CFLAGS+= -std=c++11
 #LOCAL_LDLIBS := -ldl -lGLESv1_CM -lGLESv2 -llog -landroid
-LOCAL_LDLIBS =  -landroid
+LOCAL_LDLIBS =  -landroid -lGLESv2
 
 include $(BUILD_SHARED_LIBRARY)

@@ -39,6 +39,6 @@ LOCAL_CFLAGS += -DGL_GLEXT_PROTOTYPES
 #APP_CFLAGS += -std=c++11
 LOCAL_CFLAGS+= -std=c++11
 #LOCAL_LDLIBS := -ldl -lGLESv1_CM -lGLESv2 -llog -landroid
-LOCAL_LDLIBS =  -landroid -latomic
+LOCAL_LDLIBS =  -landroid -lGLESv2 -latomic
 
 include $(BUILD_SHARED_LIBRARY)
