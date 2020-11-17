@@ -210,7 +210,7 @@ public:
 
     // сейчас это int, возможно для этой функции сделать отдельный тип со float
     AkkordPoint GetTextSize(const char* Text) const { return GetTextSizeByLine(Text, nullptr); };
-    AkkordPoint GetTextSize(const std::string& Text) const { return (Text.empty() ? AkkordPoint(0, 0) : GetTextSizeByLine(Text.c_str(), nullptr)); };
+    AkkordPoint GetTextSize(const std::string& Text) const { return (Text.empty() ? AkkordPoint(0, 0) : GetTextSize(Text.c_str())); };
     void        WrapText(const char* Text, float ScaleMutiplier, std::string& ResultString, float& UsedScale, AkkordPoint& Size);
     void        WrapText(const std::string& Text, float ScaleMutiplier, std::string& ResultString, float& UsedScale, AkkordPoint& Size) { WrapText(Text.c_str(), ScaleMutiplier, ResultString, UsedScale, Size); };
     AkkordPoint DrawText(int X, int Y, const char* Text);
