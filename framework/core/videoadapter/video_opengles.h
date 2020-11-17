@@ -5,6 +5,11 @@
 #include "video_interface.h"
 #include <array>
 
+// На Android не требуется явно получать адреса GLES-функций
+#ifndef __ANDROID__
+#define __AKKORD_SDK_GETGLESPROCADDR__
+#endif
+
 class GLESBaseProgram {
 public:
     GLuint programId{ 0 }, vertexShader{ 0 }, fragmentShader{ 0 };
@@ -20,14 +25,6 @@ public:
     GLESSDFProgram() : GLESBaseProgram() {}
 };
 
-// выборочный список OPENGLES2-функций из файла "../src/render/opengles2/SDL_gles2funcs.h"
-// некоторых нижеперечисленных ф-ий нет в файле "../src/render/opengles2/SDL_gles2funcs.h"
-#if __NACL__ || __ANDROID__
-#define DEFINE_glShaderSource SDL_PROC(void, glShaderSource, (GLuint, GLsizei, const GLchar **, const GLint *))
-#else
-#define DEFINE_glShaderSource SDL_PROC(void, glShaderSource, (GLuint, GLsizei, const GLchar* const*, const GLint *))
-#endif
-
 #ifdef __AKK0RD_SDK_DEBUG_MACRO__
 #define CheckGLESError()            CheckError    (         __FILE__, __FUNCTION__, __LINE__)
 #define PrintGLESProgamLog(Program) PrintProgamLog(Program, __FILE__, __FUNCTION__, __LINE__)
@@ -38,44 +35,12 @@ public:
 #define PrintGLESShaderLog(Shader)
 #endif
 
-#define OPENGLES2_FUCNTION_LIST \
-DEFINE_glShaderSource \
-SDL_PROC(void, glBufferData, (GLenum, GLsizeiptr, const GLvoid *, GLenum)) \
-SDL_PROC(void, glBufferSubData, (GLenum, GLintptr, GLsizeiptr, const GLvoid *)) \
-SDL_PROC(void, glGenBuffers, (GLsizei, GLuint *)) \
-SDL_PROC(void, glDeleteBuffers, (GLsizei, const GLuint *)) \
-SDL_PROC(void, glDeleteProgram, (GLuint)) \
-SDL_PROC(void, glDeleteShader, (GLuint)) \
-SDL_PROC(void, glBindBuffer, (GLenum, GLuint)) \
-SDL_PROC(void, glBlendFunc, (GLenum, GLenum)) \
-SDL_PROC(void, glGetShaderSource, (GLuint, GLsizei, GLsizei*, GLchar*)) \
-SDL_PROC(void, glDrawElements, (GLenum, GLsizei, GLenum, const GLvoid*)) \
-SDL_PROC(GLuint, glCreateShader, (GLenum)) \
-SDL_PROC(void, glCompileShader, (GLuint)) \
-SDL_PROC(GLuint, glCreateProgram, (void)) \
-SDL_PROC(void, glAttachShader, (GLuint, GLuint)) \
-SDL_PROC(void, glBindAttribLocation, (GLuint, GLuint, const char*)) \
-SDL_PROC(void, glLinkProgram, (GLuint)) \
-SDL_PROC(void, glGetIntegerv, (GLenum, GLint*)) \
-SDL_PROC(void, glUseProgram, (GLuint)) \
-SDL_PROC(GLint, glGetUniformLocation, (GLuint, const char*)) \
-SDL_PROC(void, glUniformMatrix4fv, (GLint, GLsizei, GLboolean, const GLfloat*)) \
-SDL_PROC(void, glUniform1i, (GLint, GLint)) \
-SDL_PROC(void, glGenTextures, (GLsizei, GLuint*)) \
-SDL_PROC(void, glBindTexture, (GLenum, GLuint)) \
-SDL_PROC(void, glTexParameteri, (GLenum, GLenum, GLint)) \
-SDL_PROC(void, glTexImage2D, (GLenum, GLint, GLint, GLsizei, GLsizei, GLint, GLenum, GLenum, const void*)) \
-SDL_PROC(void, glEnableVertexAttribArray, (GLuint)) \
-SDL_PROC(void, glVertexAttribPointer, (GLuint, GLint, GLenum, GLboolean, GLsizei, const void*)) \
+#ifdef __AKKORD_SDK_GETGLESPROCADDR__
+#define OPENGLES2_ADDITIONAL_FUNC_LIST \
+SDL_PROC(void, glGetVertexAttribiv, (GLuint, GLenum, GLint*)) \
 SDL_PROC(void, glUniform1f, (GLint, GLfloat)) \
-SDL_PROC(void, glUniform4f, (GLint, GLfloat, GLfloat, GLfloat, GLfloat)) \
-SDL_PROC(void, glDisableVertexAttribArray, (GLuint)) \
-SDL_PROC(GLenum, glGetError, (void)) \
-SDL_PROC(void, glGetProgramInfoLog, (GLuint, GLsizei, GLsizei*, GLchar*)) \
-SDL_PROC(void, glGetProgramiv, (GLuint, GLenum, GLint*)) \
-SDL_PROC(void, glGetShaderInfoLog, (GLuint, GLsizei, GLsizei*, char*)) \
-SDL_PROC(void, glGetShaderiv, (GLuint, GLenum, GLint*)) \
-SDL_PROC(void, glGetVertexAttribiv, (GLuint, GLenum, GLint*))
+SDL_PROC(void, glDrawElements, (GLenum, GLsizei, GLenum, const GLvoid*))
+#endif
 
 class VideoBuffer_OPENGLES;
 class VideoAdapter_OPENGLES : public VideoAdapter {
@@ -92,7 +57,13 @@ public:
     }
 
     virtual void PreInit() override {
-        LoadFuncs();
+#ifdef __AKKORD_SDK_GETGLESPROCADDR__
+#define SDL_PROC(ret,func,params) func = (func##_fnc)SDL_GL_GetProcAddress(#func); if(func) logVerbose("GLESDriver:: " #func " pointer was loaded successfully"); else logError("GLESDriver:: " #func " pointer was not loaded");
+#include "../src/render/opengles2/SDL_gles2funcs.h"
+        OPENGLES2_ADDITIONAL_FUNC_LIST // включаем дополнительные OPENGLES-функции
+#undef SDL_PROC
+#endif
+            ;
         InitVBO();
         SDFOutlineProgram.programId = SDFPlainProgram.programId = LinearGradientProgram.programId = 0;
     };
@@ -240,9 +211,12 @@ gl_FragColor = result_color; \
     }
 
 private:
-#define SDL_PROC(ret,func,params) typedef ret (APIENTRY * func##_fnc)params; func##_fnc func = 0;
-    OPENGLES2_FUCNTION_LIST // включаем дополнительные OPENGLES-функции
-
+#ifdef __AKKORD_SDK_GETGLESPROCADDR__
+#define SDL_PROC(ret,func,params) typedef ret (APIENTRY * func##_fnc)params; func##_fnc func = nullptr;
+#include "../src/render/opengles2/SDL_gles2funcs.h"
+    OPENGLES2_ADDITIONAL_FUNC_LIST // включаем дополнительные OPENGLES-функции
+#undef SDL_PROC
+#endif
         struct Attributes {
         enum : GLuint {
             SDF_ATTRIB_POSITION = 0, // Начинаем не с нуля, чтобы индексы не пересеклись с другими программами
@@ -266,17 +240,9 @@ private:
         }
     };
 
-    void LoadFuncs() {
-#undef  SDL_PROC
-#define SDL_PROC(ret,func,params) func = (func##_fnc)SDL_GL_GetProcAddress(#func); if(func) logVerbose("GLESDriver:: " #func " pointer was loaded successfully"); else logError("GLESDriver:: " #func " pointer was not loaded");
-        //#include "../src/render/opengles2/SDL_gles2funcs.h"
-        OPENGLES2_FUCNTION_LIST // включаем дополнительные OPENGLES-функции
-#undef SDL_PROC
-    }
-
     bool CheckError(const char* File, const char* Function, unsigned Line) {
 #ifdef __AKK0RD_SDK_DEBUG_MACRO__
-        const auto glErr = this->glGetError();
+        const auto glErr = glGetError();
         if (glErr != GL_NO_ERROR)
         {
             std::string ErrorMsg;
@@ -700,8 +666,8 @@ void VideoAdapter_OPENGLES::DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, co
 #undef PrintGLESShaderLog
 
 #undef DEFINE_glShaderSource
-#undef OPENGLES2_FUCNTION_LIST
-
+#undef OPENGLES2_ADDITIONAL_FUNC_LIST
+#undef __AKKORD_SDK_GETGLESPROCADDR__
 #undef SDL_PROC
 
 #endif // __AKK0RD_SDK_VIDEOADAPTER_OPENGLES_H__
