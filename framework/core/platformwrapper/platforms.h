@@ -35,6 +35,7 @@ public:
     int                      GetAudioOutputRate() { return vGetAudioOutputRate(); };       // only for Android
     int                      GetAudioOutputBufferSize() { return vGetAudioOutputBufferSize(); }; // only for Android
     bool                     LaunchAppReviewIfAvailable() { return vLaunchAppReviewIfAvailable(); }
+    bool                     RequestFlexibleUpdateIfAvailable() { return vRequestFlexibleUpdateIfAvailable(); } // only for Android
 
     virtual ~PlatformWrapper() {}
 
@@ -66,6 +67,7 @@ private:
     virtual int                      vGetAudioOutputRate() { return -1; };       // only for Android
     virtual int                      vGetAudioOutputBufferSize() { return -1; }; // only for Android
     virtual bool                     vLaunchAppReviewIfAvailable() { return false; }
+    virtual bool                     vRequestFlexibleUpdateIfAvailable() { return false; }
 };
 
 #ifdef __ANDROID__

@@ -21,6 +21,7 @@ class AndroidPlatformWrapper : public PlatformWrapper {
         jmethodID midGetAudioOutputRate       { nullptr };
         jmethodID midGetAudioOutputBufferSize { nullptr };
         jmethodID midLaunchAppReviewIfAvailable { nullptr };
+        jmethodID midRequestFlexibleUpdateIfAvailable { nullptr };
         jmethodID midGetAppVersionInfo        { nullptr };
 
         std::string sLanguage;
@@ -126,6 +127,8 @@ class AndroidPlatformWrapper : public PlatformWrapper {
         AndroidWrapperState.midGetAssetManager             = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "GetAssetManager", "()Landroid/content/res/AssetManager;", true);
         AndroidWrapperState.midShareText                   = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "shareText", "(Ljava/lang/String;Ljava/lang/String;)V", true);
         AndroidWrapperState.midLaunchAppReviewIfAvailable  = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "LaunchAppReviewIfAvailable", "()V", true);
+        AndroidWrapperState.midRequestFlexibleUpdateIfAvailable = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "RequestFlexibleUpdateIfAvailable", "()V", true);
+
         AndroidWrapperState.midGetAppVersionInfo           = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "GetAppVersionInfo", "()Ljava/lang/String;", true);
         // пока комментим, так как для Android требуется FileProvider
         //AndroidWrapperState.midSharePNG                  = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "sharePNG", "(Ljava/lang/String;Ljava/lang/String;)V", true);
@@ -344,6 +347,16 @@ class AndroidPlatformWrapper : public PlatformWrapper {
         }
         JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
         env->CallStaticVoidMethod(AndroidWrapperState.UtilsClass, AndroidWrapperState.midLaunchAppReviewIfAvailable);
+        return true;
+    }
+
+    bool vRequestFlexibleUpdateIfAvailable() override {
+        if(!AndroidWrapperState.midRequestFlexibleUpdateIfAvailable) {
+            logError("AndroidWrapper RequestFlexibleUpdateIfAvailable Java method not Found");
+            return false;
+        }
+        JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
+        env->CallStaticVoidMethod(AndroidWrapperState.UtilsClass, AndroidWrapperState.midRequestFlexibleUpdateIfAvailable);
         return true;
     }
 

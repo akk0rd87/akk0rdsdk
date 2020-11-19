@@ -1048,6 +1048,11 @@ bool BWrapper::LaunchAppReviewIfAvailable() {
     return PlatformWrapper::GetInstance().LaunchAppReviewIfAvailable();
 }
 
+bool BWrapper::RequestFlexibleUpdateIfAvailable()
+{
+    return PlatformWrapper::GetInstance().RequestFlexibleUpdateIfAvailable();
+}
+
 bool DirContentReader::Next(DirContentElement*& Element)
 {
     if (0 < Size && Pointer < Size)

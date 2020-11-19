@@ -24,6 +24,15 @@ import com.google.android.play.core.review.ReviewInfo;
 import com.google.android.play.core.review.ReviewManagerFactory;
 import com.google.android.play.core.review.ReviewInfo;
 
+import com.google.android.play.core.appupdate.AppUpdateManager;
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
+import com.google.android.play.core.install.model.UpdateAvailability;
+import com.google.android.play.core.install.model.AppUpdateType;
+import com.google.android.play.core.appupdate.AppUpdateInfo;
+import com.google.android.play.core.install.InstallStateUpdatedListener;
+import com.google.android.play.core.install.model.InstallStatus;
+import com.google.android.material.snackbar.Snackbar;
+
 public class Utils {
     private static  final String TAG = "SDL";
     private static  AkkordActivity _context = null;
@@ -583,6 +592,72 @@ public class Utils {
                     }
                 });
             }
+        }
+        catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+    }
+
+    public static void RequestFlexibleUpdateIfAvailable() {
+        try {
+            Log.d(TAG, "RequestFlexibleUpdateIfAvailable");
+            // Creates instance of the manager.
+            AppUpdateManager appUpdateManager = AppUpdateManagerFactory.create(_context);
+
+            // Returns an intent object that you use to check for an update.
+            Task<AppUpdateInfo> appUpdateInfoTask = appUpdateManager.getAppUpdateInfo();
+
+            // Checks that the platform will allow the specified type of update.
+            appUpdateInfoTask.addOnSuccessListener(appUpdateInfo -> {
+                try {
+                    Log.d(TAG, "add OnSuccessListener");
+                    if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
+                        // For a flexible update, use AppUpdateType.FLEXIBLE
+                        && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)) {
+                            // Request the update.
+
+                        Log.d(TAG, "OnSuccessListener Request the update.");
+                        InstallStateUpdatedListener listener = state -> {
+                            // (Optional) Provide a download progress bar.
+                            if (state.installStatus() == InstallStatus.DOWNLOADED) {
+                                try {
+                                    Log.d(TAG, "DOWNLOADED. Snackbar.make");
+                                    Snackbar snackbar = Snackbar.make(
+                                        _context.getWindow().getDecorView().getRootView(),
+                                        "An update has just been downloaded.",
+                                        Snackbar.LENGTH_LONG
+                                    );
+                                    Log.d(TAG, "setAction RESTART");
+                                    snackbar.setAction("RESTART", view -> appUpdateManager.completeUpdate());
+                                    //snackbar.setActionTextColor(getResources().getColor(R.color.snackbar_action_text_color));
+                                    Log.d(TAG, "setAction Color");
+                                    snackbar.show();
+                                }
+                                catch (Exception e) {
+                                    Log.e(TAG, e.getMessage());
+                                }
+                            }
+                            // Log state or install the update.
+                        };
+
+                        // Before starting an update, register a listener for updates.
+                        appUpdateManager.registerListener(listener);
+
+                        appUpdateManager.startUpdateFlowForResult(
+                            // Pass the intent that is returned by 'getAppUpdateInfo()'.
+                            appUpdateInfo,
+                            // Or 'AppUpdateType.FLEXIBLE' for flexible updates.
+                            AppUpdateType.FLEXIBLE,
+                            // The current activity making the update request.
+                            _context,
+                            // Include a request code to later monitor this update request.
+                            -100999);
+                    }
+                }
+                catch (Exception e) {
+                    Log.e(TAG, e.getMessage());
+                }
+            });
         }
         catch (Exception e) {
             Log.e(TAG, e.getMessage());
