@@ -31,7 +31,7 @@ import com.google.android.play.core.install.model.AppUpdateType;
 import com.google.android.play.core.appupdate.AppUpdateInfo;
 import com.google.android.play.core.install.InstallStateUpdatedListener;
 import com.google.android.play.core.install.model.InstallStatus;
-import com.google.android.material.snackbar.Snackbar;
+//import com.google.android.material.snackbar.Snackbar;
 
 public class Utils {
     private static  final String TAG = "SDL";
@@ -600,6 +600,7 @@ public class Utils {
 
     public static void RequestFlexibleUpdateIfAvailable() {
         try {
+             /*
             Log.d(TAG, "RequestFlexibleUpdateIfAvailable");
             // Creates instance of the manager.
             AppUpdateManager appUpdateManager = AppUpdateManagerFactory.create(_context);
@@ -658,6 +659,7 @@ public class Utils {
                     Log.e(TAG, e.getMessage());
                 }
             });
+            */
         }
         catch (Exception e) {
             Log.e(TAG, e.getMessage());
