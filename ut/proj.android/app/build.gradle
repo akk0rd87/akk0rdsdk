@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 def akkord_sdk_path        = System.getenv('AKKORD_SDK_HOME')
-def proGuardParamsFile     = System.getenv('AKKORD_SDK_HOME') + "/framework/core/platformwrapper/android/proguard/proguard-rules.pro"
+def proGuardParamsDir      = System.getenv('AKKORD_SDK_HOME') + "/framework/core/platformwrapper/android/proguard/"
 def keystoreFile           = System.getenv('ANDROID_KEYSTORE_HOME') + "/keystore.keystore"
 def keystoreParamsFile     = System.getenv('ANDROID_KEYSTORE_HOME') + "/keystore.params"
 
@@ -55,7 +55,7 @@ android {
     buildTypes {
         release {
             minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), file(proGuardParamsFile).absolutePath
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), file(proGuardParamsDir + 'proguard-rules_release.pro').absolutePath
             signingConfig signingConfigs.release
         }
     }

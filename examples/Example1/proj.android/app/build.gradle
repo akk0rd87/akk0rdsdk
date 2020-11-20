@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 def akkord_sdk_path        = System.getenv('AKKORD_SDK_HOME')
-def proGuardParamsFile     = System.getenv('AKKORD_SDK_HOME') + "/framework/core/platformwrapper/android/proguard/proguard-rules.pro"
+def proGuardParamsDir      = System.getenv('AKKORD_SDK_HOME') + "/framework/core/platformwrapper/android/proguard/"
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -39,7 +39,7 @@ android {
     buildTypes {
         release {
             minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), file(proGuardParamsFile).absolutePath
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), file(proGuardParamsDir + 'proguard-rules_release.pro').absolutePath
         }
         debug {
         }
