@@ -1,13 +1,3 @@
--assumenosideeffects class android.util.Log {
-public static boolean isLoggable(...);
-public static int d(...);
-public static int v(...);
-public static int i(...);
-public static int w(...);
-public static int e(...);
-public static int wtf(...);
-    }
-
 -dontwarn **
 -target 1.7
 -dontusemixedcaseclassnames
@@ -20,3 +10,13 @@ public static int wtf(...);
 -keepattributes *Annotation*
 -keepattributes SourceFile,LineNumberTable        # Keep file names and line numbers.
 -keep public class * extends java.lang.Exception  # Optional: Keep custom exceptions.
+
+-assumenosideeffects class android.util.Log {
+public static boolean isLoggable(...);
+public static int d(...);
+public static int v(...);
+public static int i(...);
+public static int w(...);
+public static int e(...);
+public static int wtf(...);
+    }
