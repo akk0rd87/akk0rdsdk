@@ -1,3 +1,4 @@
+// На Android не требуется явно получать адреса GLES-функций
 #include "video_opengles.h"
 
 static VideoAdapter_OPENGLES glesAdapter;

@@ -5,11 +5,6 @@
 #include "video_interface.h"
 #include <array>
 
-// На Android не требуется явно получать адреса GLES-функций
-#ifndef __ANDROID__
-#define __AKKORD_SDK_GETGLESPROCADDR__
-#endif
-
 class GLESBaseProgram {
 public:
     GLuint programId{ 0 }, vertexShader{ 0 }, fragmentShader{ 0 };
@@ -665,9 +660,7 @@ void VideoAdapter_OPENGLES::DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, co
 #undef PrintGLESProgamLog
 #undef PrintGLESShaderLog
 
-#undef DEFINE_glShaderSource
 #undef OPENGLES2_ADDITIONAL_FUNC_LIST
-#undef __AKKORD_SDK_GETGLESPROCADDR__
 #undef SDL_PROC
 
 #endif // __AKK0RD_SDK_VIDEOADAPTER_OPENGLES_H__
