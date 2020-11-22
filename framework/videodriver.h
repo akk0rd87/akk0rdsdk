@@ -212,7 +212,7 @@ public:
     // сейчас это int, возможно для этой функции сделать отдельный тип со float
     AkkordPoint GetTextSize(const char* Text) const {
         const auto fp = GetTextSizeByLine(Text, scaleX, scaleY, nullptr);
-        return AkkordPoint(static_cast<decltype(AkkordPoint::x)>(std::ceil(fp.first)), static_cast<decltype(AkkordPoint::x)>(std::ceil(fp.second)));
+        return AkkordPoint(static_cast<decltype(AkkordPoint::x)>(std::ceil(fp.first)), static_cast<decltype(AkkordPoint::y)>(std::ceil(fp.second)));
     };
     AkkordPoint GetTextSize(const std::string& Text) const { return  GetTextSize(Text.c_str()); };
     void        WrapText(const char* Text, float ScaleMutiplier, std::string& ResultString, float& UsedScale, AkkordPoint& Size);

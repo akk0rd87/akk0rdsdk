@@ -384,7 +384,7 @@ AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text) {
         appendParams.ScrenH = static_cast<decltype(appendParams.ScrenH)>(ScreenSize.y);
 
         SharedPool.floatVector.clear();
-        auto size = GetTextSizeByLine(Text, scaleX, scaleY, &SharedPool.floatVector);
+        const auto size = GetTextSizeByLine(Text, scaleX, scaleY, &SharedPool.floatVector);
         float x_start, x_current, y_current{ static_cast<float>(Y) };
         unsigned i{ 0 }, line{ 0 };
 
