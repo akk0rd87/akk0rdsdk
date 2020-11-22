@@ -70,28 +70,6 @@ static SDL_joylist_item *SDL_joylist_tail = NULL;
 static int numjoysticks = 0;
 
 
-/* Public domain CRC implementation adapted from:
-   http://home.thep.lu.se/~bjorn/crc/crc32_simple.c
-*/
-static Uint32 crc32_for_byte(Uint32 r)
-{
-    int i;
-    for(i = 0; i < 8; ++i) {
-        r = (r & 1? 0: (Uint32)0xEDB88320L) ^ r >> 1;
-    }
-    return r ^ (Uint32)0xFF000000L;
-}
-
-static Uint32 crc32(const void *data, size_t count)
-{
-    Uint32 crc = 0;
-    int i;
-    for(i = 0; i < count; ++i) {
-        crc = crc32_for_byte((Uint8)crc ^ ((const Uint8*)data)[i]) ^ crc >> 8;
-    }
-    return crc;
-}
-
 /* Function to convert Android keyCodes into SDL ones.
  * This code manipulation is done to get a sequential list of codes.
  * FIXME: This is only suited for the case where we use a fixed number of buttons determined by ANDROID_MAX_NBUTTONS
@@ -138,16 +116,16 @@ keycode_to_SDL(int keycode)
             button = SDL_CONTROLLER_BUTTON_GUIDE;
             break;
         case AKEYCODE_BUTTON_L2:
-            button = SDL_CONTROLLER_BUTTON_MAX; /* Not supported by GameController */
+            button = 15;
             break;
         case AKEYCODE_BUTTON_R2:
-            button = SDL_CONTROLLER_BUTTON_MAX+1; /* Not supported by GameController */
+            button = 16;
             break;
         case AKEYCODE_BUTTON_C:
-            button = SDL_CONTROLLER_BUTTON_MAX+2; /* Not supported by GameController */
+            button = 17;
             break;
         case AKEYCODE_BUTTON_Z:
-            button = SDL_CONTROLLER_BUTTON_MAX+3; /* Not supported by GameController */
+            button = 18;
             break;
                         
         /* D-Pad key codes (API 1) */
@@ -165,7 +143,7 @@ keycode_to_SDL(int keycode)
             break;
         case AKEYCODE_DPAD_CENTER:
             /* This is handled better by applications as the A button */
-            /*button = SDL_CONTROLLER_BUTTON_MAX+4;*/ /* Not supported by GameController */
+            /*button = 19;*/
             button = SDL_CONTROLLER_BUTTON_A;
             break;
 
@@ -186,7 +164,7 @@ keycode_to_SDL(int keycode)
         case AKEYCODE_BUTTON_14:
         case AKEYCODE_BUTTON_15:
         case AKEYCODE_BUTTON_16:
-            button = keycode - AKEYCODE_BUTTON_1 + SDL_CONTROLLER_BUTTON_MAX + 5;
+            button = 20 + (keycode - AKEYCODE_BUTTON_1);
             break;
             
         default:
@@ -391,7 +369,8 @@ Android_AddJoystick(int device_id, const char *name, const char *desc, int vendo
         *guid16++ = SDL_SwapLE16(product_id);
         *guid16++ = 0;
     } else {
-        Uint32 crc = crc32(desc, SDL_strlen(desc));
+        Uint32 crc = 0;
+        SDL_crc32(crc, desc, SDL_strlen(desc));
         SDL_memcpy(guid16, desc, SDL_min(2*sizeof(*guid16), SDL_strlen(desc)));
         guid16 += 2;
         *(Uint32 *)guid16 = SDL_SwapLE32(crc);
@@ -633,6 +612,30 @@ ANDROID_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uin
     return SDL_Unsupported();
 }
 
+static int
+ANDROID_JoystickRumbleTriggers(SDL_Joystick * joystick, Uint16 left_rumble, Uint16 right_rumble)
+{
+    return SDL_Unsupported();
+}
+
+static SDL_bool
+ANDROID_JoystickHasLED(SDL_Joystick * joystick)
+{
+    return SDL_FALSE;
+}
+
+static int
+ANDROID_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
+{
+    return SDL_Unsupported();
+}
+
+static int
+ANDROID_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+{
+    return SDL_Unsupported();
+}
+
 static void
 ANDROID_JoystickUpdate(SDL_Joystick * joystick)
 {
@@ -711,6 +714,10 @@ SDL_JoystickDriver SDL_ANDROID_JoystickDriver =
     ANDROID_JoystickGetDeviceInstanceID,
     ANDROID_JoystickOpen,
     ANDROID_JoystickRumble,
+    ANDROID_JoystickRumbleTriggers,
+    ANDROID_JoystickHasLED,
+    ANDROID_JoystickSetLED,
+    ANDROID_JoystickSetSensorsEnabled,
     ANDROID_JoystickUpdate,
     ANDROID_JoystickClose,
     ANDROID_JoystickQuit,

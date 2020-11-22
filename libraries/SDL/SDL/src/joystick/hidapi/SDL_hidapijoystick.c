@@ -63,6 +63,9 @@ static SDL_HIDAPI_DeviceDriver *SDL_HIDAPI_drivers[] = {
 #ifdef SDL_JOYSTICK_HIDAPI_PS4
     &SDL_HIDAPI_DriverPS4,
 #endif
+#ifdef SDL_JOYSTICK_HIDAPI_PS5
+    &SDL_HIDAPI_DriverPS5,
+#endif
 #ifdef SDL_JOYSTICK_HIDAPI_STEAM
     &SDL_HIDAPI_DriverSteam,
 #endif
@@ -387,6 +390,27 @@ HIDAPI_ShutdownDiscovery()
 #endif
 }
 
+void
+HIDAPI_DumpPacket(const char *prefix, Uint8 *data, int size)
+{
+    int i;
+    char *buffer;
+    size_t length = SDL_strlen(prefix) + 11*(USB_PACKET_LENGTH/8) + (5*USB_PACKET_LENGTH*2) + 1 + 1;
+    int start = 0, amount = size;
+
+    buffer = (char *)SDL_malloc(length);
+    SDL_snprintf(buffer, length, prefix, size);
+    for (i = start; i < start+amount; ++i) {
+        if ((i % 8) == 0) {
+            SDL_snprintf(&buffer[SDL_strlen(buffer)], length - SDL_strlen(buffer), "\n%.2d:      ", i);
+        }
+        SDL_snprintf(&buffer[SDL_strlen(buffer)], length - SDL_strlen(buffer), " 0x%.2x", data[i]);
+    }
+    SDL_strlcat(buffer, "\n", length);
+    SDL_Log("%s", buffer);
+    SDL_free(buffer);
+}
+
 static void HIDAPI_JoystickDetect(void);
 static void HIDAPI_JoystickClose(SDL_Joystick * joystick);
 
@@ -666,6 +690,24 @@ HIDAPI_JoystickGetCount(void)
     return SDL_HIDAPI_numjoysticks;
 }
 
+static char *
+HIDAPI_ConvertString(const wchar_t *wide_string)
+{
+    char *string = NULL;
+
+    if (wide_string) {
+        string = SDL_iconv_string("UTF-8", "WCHAR_T", (char*)wide_string, (SDL_wcslen(wide_string)+1)*sizeof(wchar_t));
+        if (!string) {
+            if (sizeof(wchar_t) == sizeof(Uint16)) {
+                string = SDL_iconv_string("UTF-8", "UCS-2-INTERNAL", (char*)wide_string, (SDL_wcslen(wide_string)+1)*sizeof(wchar_t));
+            } else if (sizeof(wchar_t) == sizeof(Uint32)) {
+                string = SDL_iconv_string("UTF-8", "UCS-4-INTERNAL", (char*)wide_string, (SDL_wcslen(wide_string)+1)*sizeof(wchar_t));
+            }
+        }
+    }
+    return string;
+}
+
 static void
 HIDAPI_AddDevice(struct hid_device_info *info)
 {
@@ -719,29 +761,9 @@ HIDAPI_AddDevice(struct hid_device_info *info)
 
     /* Need the device name before getting the driver to know whether to ignore this device */
     {
-        char *manufacturer_string = NULL;
-        char *product_string = NULL;
-
-        if (info->manufacturer_string) {
-            manufacturer_string = SDL_iconv_string("UTF-8", "WCHAR_T", (char*)info->manufacturer_string, (SDL_wcslen(info->manufacturer_string)+1)*sizeof(wchar_t));
-            if (!manufacturer_string) {
-                if (sizeof(wchar_t) == sizeof(Uint16)) {
-                    manufacturer_string = SDL_iconv_string("UTF-8", "UCS-2-INTERNAL", (char*)info->manufacturer_string, (SDL_wcslen(info->manufacturer_string)+1)*sizeof(wchar_t));
-                } else if (sizeof(wchar_t) == sizeof(Uint32)) {
-                    manufacturer_string = SDL_iconv_string("UTF-8", "UCS-4-INTERNAL", (char*)info->manufacturer_string, (SDL_wcslen(info->manufacturer_string)+1)*sizeof(wchar_t));
-                }
-            }
-        }
-        if (info->product_string) {
-            product_string = SDL_iconv_string("UTF-8", "WCHAR_T", (char*)info->product_string, (SDL_wcslen(info->product_string)+1)*sizeof(wchar_t));
-            if (!product_string) {
-                if (sizeof(wchar_t) == sizeof(Uint16)) {
-                    product_string = SDL_iconv_string("UTF-8", "UCS-2-INTERNAL", (char*)info->product_string, (SDL_wcslen(info->product_string)+1)*sizeof(wchar_t));
-                } else if (sizeof(wchar_t) == sizeof(Uint32)) {
-                    product_string = SDL_iconv_string("UTF-8", "UCS-4-INTERNAL", (char*)info->product_string, (SDL_wcslen(info->product_string)+1)*sizeof(wchar_t));
-                }
-            }
-        }
+        char *manufacturer_string = HIDAPI_ConvertString(info->manufacturer_string);
+        char *product_string = HIDAPI_ConvertString(info->product_string);
+        char *serial_number = HIDAPI_ConvertString(info->serial_number);
 
         device->name = SDL_CreateJoystickName(device->vendor_id, device->product_id, manufacturer_string, product_string);
 
@@ -752,7 +774,14 @@ HIDAPI_AddDevice(struct hid_device_info *info)
             SDL_free(product_string);
         }
 
+        if (serial_number && *serial_number) {
+            device->serial = serial_number;
+        } else {
+            SDL_free(serial_number);
+        }
+
         if (!device->name) {
+            SDL_free(device->serial);
             SDL_free(device->path);
             SDL_free(device);
             return;
@@ -769,7 +798,7 @@ HIDAPI_AddDevice(struct hid_device_info *info)
     HIDAPI_SetupDeviceDriver(device);
 
 #ifdef DEBUG_HIDAPI
-    SDL_Log("Added HIDAPI device '%s' VID 0x%.4x, PID 0x%.4x, version %d, interface %d, interface_class %d, interface_subclass %d, interface_protocol %d, usage page 0x%.4x, usage 0x%.4x, path = %s, driver = %s (%s)\n", device->name, device->vendor_id, device->product_id, device->version, device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol, device->usage_page, device->usage, device->path, device->driver ? device->driver->hint : "NONE", device->driver && device->driver->enabled ? "ENABLED" : "DISABLED");
+    SDL_Log("Added HIDAPI device '%s' VID 0x%.4x, PID 0x%.4x, version %d, serial %s, interface %d, interface_class %d, interface_subclass %d, interface_protocol %d, usage page 0x%.4x, usage 0x%.4x, path = %s, driver = %s (%s)\n", device->name, device->vendor_id, device->product_id, device->version, device->serial ? device->serial : "NONE", device->interface_number, device->interface_class, device->interface_subclass, device->interface_protocol, device->usage_page, device->usage, device->path, device->driver ? device->driver->hint : "NONE", device->driver && device->driver->enabled ? "ENABLED" : "DISABLED");
 #endif
 }
 
@@ -789,6 +818,7 @@ HIDAPI_DelDevice(SDL_HIDAPI_Device *device)
             HIDAPI_CleanupDeviceDriver(device);
 
             SDL_DestroyMutex(device->dev_lock);
+            SDL_free(device->serial);
             SDL_free(device->name);
             SDL_free(device->path);
             SDL_free(device);
@@ -1027,6 +1057,10 @@ HIDAPI_JoystickOpen(SDL_Joystick * joystick, int device_index)
         return -1;
     }
 
+    if (!joystick->serial && device->serial) {
+        joystick->serial = SDL_strdup(device->serial);
+    }
+
     joystick->hwdata = hwdata;
     return 0;
 }
@@ -1042,6 +1076,71 @@ HIDAPI_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint
         result = device->driver->RumbleJoystick(device, joystick, low_frequency_rumble, high_frequency_rumble);
     } else {
         SDL_SetError("Rumble failed, device disconnected");
+        result = -1;
+    }
+
+    return result;
+}
+
+static int
+HIDAPI_JoystickRumbleTriggers(SDL_Joystick * joystick, Uint16 left_rumble, Uint16 right_rumble)
+{
+    int result;
+
+    if (joystick->hwdata) {
+        SDL_HIDAPI_Device *device = joystick->hwdata->device;
+
+        result = device->driver->RumbleJoystickTriggers(device, joystick, left_rumble, right_rumble);
+    } else {
+        SDL_SetError("Rumble failed, device disconnected");
+        result = -1;
+    }
+
+    return result;
+}
+
+static SDL_bool
+HIDAPI_JoystickHasLED(SDL_Joystick * joystick)
+{
+    SDL_bool result = SDL_FALSE;
+
+    if (joystick->hwdata) {
+        SDL_HIDAPI_Device *device = joystick->hwdata->device;
+
+        result = device->driver->HasJoystickLED(device, joystick);
+    }
+
+    return result;
+}
+
+static int
+HIDAPI_JoystickSetLED(SDL_Joystick * joystick, Uint8 red, Uint8 green, Uint8 blue)
+{
+    int result;
+
+    if (joystick->hwdata) {
+        SDL_HIDAPI_Device *device = joystick->hwdata->device;
+
+        result = device->driver->SetJoystickLED(device, joystick, red, green, blue);
+    } else {
+        SDL_SetError("SetLED failed, device disconnected");
+        result = -1;
+    }
+
+    return result;
+}
+
+static int
+HIDAPI_JoystickSetSensorsEnabled(SDL_Joystick * joystick, SDL_bool enabled)
+{
+    int result;
+
+    if (joystick->hwdata) {
+        SDL_HIDAPI_Device *device = joystick->hwdata->device;
+
+        result = device->driver->SetJoystickSensorsEnabled(device, joystick, enabled);
+    } else {
+        SDL_SetError("SetSensorsEnabled failed, device disconnected");
         result = -1;
     }
 
@@ -1121,6 +1220,10 @@ SDL_JoystickDriver SDL_HIDAPI_JoystickDriver =
     HIDAPI_JoystickGetDeviceInstanceID,
     HIDAPI_JoystickOpen,
     HIDAPI_JoystickRumble,
+    HIDAPI_JoystickRumbleTriggers,
+    HIDAPI_JoystickHasLED,
+    HIDAPI_JoystickSetLED,
+    HIDAPI_JoystickSetSensorsEnabled,
     HIDAPI_JoystickUpdate,
     HIDAPI_JoystickClose,
     HIDAPI_JoystickQuit,

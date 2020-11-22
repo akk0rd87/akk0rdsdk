@@ -84,6 +84,7 @@ typedef unsigned int uintptr_t;
 #define HAVE_XINPUT_H 1
 #define HAVE_MMDEVICEAPI_H 1
 #define HAVE_AUDIOCLIENT_H 1
+#define HAVE_SENSORSAPI_H
 
 /* This is disabled by default to avoid C runtime dependencies and manifest requirements */
 #ifdef HAVE_LIBC
@@ -172,6 +173,8 @@ typedef unsigned int uintptr_t;
 #define HAVE_VSSCANF 1
 #define HAVE_SCALBN 1
 #define HAVE_SCALBNF 1
+#define HAVE_TRUNC  1
+#define HAVE_TRUNCF 1
 #endif
 /* This function is available with at least the VC++ 2008 C runtime library */
 #if _MSC_VER >= 1400

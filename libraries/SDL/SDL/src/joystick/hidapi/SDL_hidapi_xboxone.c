@@ -47,34 +47,36 @@
 static const Uint8 xboxone_init0[] = {
     0x04, 0x20, 0x00, 0x00
 };
-/* Initial ack */
-static const Uint8 xboxone_init1[] = {
-    0x01, 0x20, 0x01, 0x09, 0x00, 0x04, 0x20, 0x3a,
-    0x00, 0x00, 0x00, 0x80, 0x00
-};
 /* Start controller - extended? */
-static const Uint8 xboxone_init2[] = {
+static const Uint8 xboxone_init1[] = {
     0x05, 0x20, 0x00, 0x0F, 0x06, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x55, 0x53, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00
 };
 /* Start controller with input */
-static const Uint8 xboxone_init3[] = {
+static const Uint8 xboxone_init2[] = {
     0x05, 0x20, 0x03, 0x01, 0x00
 };
 /* Enable LED */
-static const Uint8 xboxone_init4[] = {
+static const Uint8 xboxone_init3[] = {
     0x0A, 0x20, 0x00, 0x03, 0x00, 0x01, 0x14
 };
 /* Start input reports? */
-static const Uint8 xboxone_init5[] = {
+static const Uint8 xboxone_init4[] = {
     0x06, 0x20, 0x00, 0x02, 0x01, 0x00
 };
 /* Start rumble? */
-static const Uint8 xboxone_init6[] = {
+static const Uint8 xboxone_init5[] = {
     0x09, 0x00, 0x00, 0x09, 0x00, 0x0F, 0x00, 0x00,
     0x00, 0x00, 0xFF, 0x00, 0xEB
 };
+
+#ifdef REQUEST_SERIAL_NUMBER
+/* Request serial number */
+static const Uint8 xboxone_init_serial[] = {
+    0x1E, 0x30, 0x07, 0x01, 0x04
+};
+#endif
 
 /*
  * This specifies the selection of init packets that a gamepad
@@ -94,17 +96,20 @@ typedef struct {
 
 
 static const SDL_DriverXboxOne_InitPacket xboxone_init_packets[] = {
-    { 0x0000, 0x0000, 0x0000, 0x0000, xboxone_init0, sizeof(xboxone_init0), { 0x04, 0xf0 } },
-    { 0x0000, 0x0000, 0x0000, 0x0000, xboxone_init1, sizeof(xboxone_init1), { 0x04, 0xb0 } },
+    { 0x0000, 0x0000, 0x0000, 0x0000, xboxone_init0, sizeof(xboxone_init0), { 0x04, 0xb0 } },
+    { 0x0000, 0x0000, 0x0000, 0x0000, xboxone_init1, sizeof(xboxone_init1), { 0x00, 0x00 } },
     { 0x0000, 0x0000, 0x0000, 0x0000, xboxone_init2, sizeof(xboxone_init2), { 0x00, 0x00 } },
     { 0x0000, 0x0000, 0x0000, 0x0000, xboxone_init3, sizeof(xboxone_init3), { 0x00, 0x00 } },
-    { 0x0000, 0x0000, 0x0000, 0x0000, xboxone_init4, sizeof(xboxone_init4), { 0x00, 0x00 } },
 
     /* These next packets are required for third party controllers (PowerA, PDP, HORI),
        but aren't the correct protocol for Microsoft Xbox controllers.
      */
+    { 0x0000, 0x0000, 0x045e, 0x0000, xboxone_init4, sizeof(xboxone_init4), { 0x00, 0x00 } },
     { 0x0000, 0x0000, 0x045e, 0x0000, xboxone_init5, sizeof(xboxone_init5), { 0x00, 0x00 } },
-    { 0x0000, 0x0000, 0x045e, 0x0000, xboxone_init6, sizeof(xboxone_init6), { 0x00, 0x00 } },
+
+#ifdef REQUEST_SERIAL_NUMBER
+    { 0x0000, 0x0000, 0x0000, 0x0000, xboxone_init_serial, sizeof(xboxone_init_serial), { 0x00, 0x00 } },
+#endif
 };
 
 typedef enum {
@@ -125,30 +130,14 @@ typedef struct {
     Uint8 sequence;
     Uint8 last_state[USB_PACKET_LENGTH];
     SDL_bool has_paddles;
+    SDL_bool has_trigger_rumble;
+    SDL_bool has_share_button;
+    Uint8 low_frequency_rumble;
+    Uint8 high_frequency_rumble;
+    Uint8 left_trigger_rumble;
+    Uint8 right_trigger_rumble;
 } SDL_DriverXboxOne_Context;
 
-
-#ifdef DEBUG_XBOX_PROTOCOL
-static void
-DumpPacket(const char *prefix, Uint8 *data, int size)
-{
-    int i;
-    char *buffer;
-    size_t length = SDL_strlen(prefix) + 11*(USB_PACKET_LENGTH/8) + (5*USB_PACKET_LENGTH) + 1 + 1;
-
-    buffer = (char *)SDL_malloc(length);
-    SDL_snprintf(buffer, length, prefix, size);
-    for (i = 0; i < size; ++i) {
-        if ((i % 8) == 0) {
-            SDL_snprintf(&buffer[SDL_strlen(buffer)], length - SDL_strlen(buffer), "\n%.2d:      ", i);
-        }
-        SDL_snprintf(&buffer[SDL_strlen(buffer)], length - SDL_strlen(buffer), " 0x%.2x", data[i]);
-    }
-    SDL_strlcat(buffer, "\n", length);
-    SDL_Log("%s", buffer);
-    SDL_free(buffer);
-}
-#endif /* DEBUG_XBOX_PROTOCOL */
 
 static SDL_bool
 IsBluetoothXboxOneController(Uint16 vendor_id, Uint16 product_id)
@@ -167,13 +156,19 @@ IsBluetoothXboxOneController(Uint16 vendor_id, Uint16 product_id)
 static SDL_bool
 ControllerHasPaddles(Uint16 vendor_id, Uint16 product_id)
 {
-    if (vendor_id == USB_VENDOR_MICROSOFT) {
-        if (product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_1 ||
-            product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2) {
-            return SDL_TRUE;
-        }
-    }
-    return SDL_FALSE;
+    return SDL_IsJoystickXboxOneElite(vendor_id, product_id);
+}
+
+static SDL_bool
+ControllerHasTriggerRumble(Uint16 vendor_id, Uint16 product_id)
+{
+    return SDL_IsJoystickXboxOneElite(vendor_id, product_id);
+}
+
+static SDL_bool
+ControllerHasShareButton(Uint16 vendor_id, Uint16 product_id)
+{
+    return SDL_IsJoystickXboxOneSeriesX(vendor_id, product_id);
 }
 
 /* Return true if this controller sends the 0x02 "waiting for init" packet */
@@ -195,6 +190,24 @@ ControllerSendsWaitingForInit(Uint16 vendor_id, Uint16 product_id)
     /* It doesn't hurt to reinit, especially if a driver has misconfigured the controller */
     /*return SDL_TRUE;*/
     return SDL_FALSE;
+}
+
+static void
+SendAckIfNeeded(SDL_HIDAPI_Device *device, Uint8 *data, int size)
+{
+    if ((data[1] & 0x30) == 0x30) {
+        Uint8 ack_packet[] = { 0x01, 0x20, data[2], 0x09, 0x00, data[0], 0x20, data[3], 0x00, 0x00, 0x00, 0x00, 0x00 };
+
+        /* The initial ack needs 0x80 added to the response, for some reason */
+        if (data[0] == 0x04 && data[1] == 0xF0) {
+            ack_packet[11] = 0x80;
+        }
+
+#ifdef DEBUG_XBOX_PROTOCOL
+        HIDAPI_DumpPacket("Xbox One sending ACK packet: size = %d", ack_packet, sizeof(ack_packet));
+#endif
+        hid_write(device->dev, ack_packet, sizeof(ack_packet));
+    }
 }
 
 static SDL_bool
@@ -228,6 +241,9 @@ SendControllerInit(SDL_HIDAPI_Device *device, SDL_DriverXboxOne_Context *ctx)
         if (init_packet[0] != 0x01) {
             init_packet[2] = ctx->sequence++;
         }
+#ifdef DEBUG_XBOX_PROTOCOL
+        HIDAPI_DumpPacket("Xbox One sending INIT packet: size = %d", init_packet, packet->size);
+#endif
         if (hid_write(device->dev, init_packet, packet->size) != packet->size) {
             SDL_SetError("Couldn't write Xbox One initialization packet");
             return SDL_FALSE;
@@ -244,11 +260,12 @@ SendControllerInit(SDL_HIDAPI_Device *device, SDL_DriverXboxOne_Context *ctx)
 
                 while ((size = hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
 #ifdef DEBUG_XBOX_PROTOCOL
-                    DumpPacket("Xbox One INIT packet: size = %d", data, size);
+                    HIDAPI_DumpPacket("Xbox One INIT packet: size = %d", data, size);
 #endif
                     if (size >= 2 && data[0] == packet->response[0] && data[1] == packet->response[1]) {
                         got_response = SDL_TRUE;
                     }
+                    SendAckIfNeeded(device, data, size);
                 }
             }
 #ifdef DEBUG_XBOX_PROTOCOL
@@ -327,9 +344,17 @@ HIDAPI_DriverXboxOne_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joyst
     ctx->input_ready = SDL_TRUE;
     ctx->sequence = 1;
     ctx->has_paddles = ControllerHasPaddles(ctx->vendor_id, ctx->product_id);
+    ctx->has_trigger_rumble = ControllerHasTriggerRumble(ctx->vendor_id, ctx->product_id);
+    ctx->has_share_button = ControllerHasShareButton(ctx->vendor_id, ctx->product_id);
 
     /* Initialize the joystick capabilities */
-    joystick->nbuttons = ctx->has_paddles ? SDL_CONTROLLER_BUTTON_MAX : (SDL_CONTROLLER_BUTTON_MAX + 4);
+    joystick->nbuttons = 15;
+    if (ctx->has_share_button) {
+        joystick->nbuttons += 1;
+    }
+    if (ctx->has_paddles) {
+        joystick->nbuttons += 4;
+    }
     joystick->naxes = SDL_CONTROLLER_AXIS_MAX;
     joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
 
@@ -337,15 +362,17 @@ HIDAPI_DriverXboxOne_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joyst
 }
 
 static int
-HIDAPI_DriverXboxOne_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+HIDAPI_DriverXboxOne_UpdateRumble(SDL_HIDAPI_Device *device)
 {
     SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)device->context;
 
     if (ctx->bluetooth) {
         Uint8 rumble_packet[] = { 0x03, 0x0F, 0x00, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00 };
 
-        rumble_packet[4] = (low_frequency_rumble >> 8);
-        rumble_packet[5] = (high_frequency_rumble >> 8);
+        rumble_packet[2] = ctx->left_trigger_rumble;
+        rumble_packet[3] = ctx->right_trigger_rumble;
+        rumble_packet[4] = ctx->low_frequency_rumble;
+        rumble_packet[5] = ctx->high_frequency_rumble;
 
         if (SDL_HIDAPI_SendRumble(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
             return SDL_SetError("Couldn't send rumble packet");
@@ -353,15 +380,63 @@ HIDAPI_DriverXboxOne_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joy
     } else {
         Uint8 rumble_packet[] = { 0x09, 0x00, 0x00, 0x09, 0x00, 0x0F, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF };
 
-        /* Magnitude is 1..100 so scale the 16-bit input here */
-        rumble_packet[8] = low_frequency_rumble / 655;
-        rumble_packet[9] = high_frequency_rumble / 655;
+        rumble_packet[6] = ctx->left_trigger_rumble;
+        rumble_packet[7] = ctx->right_trigger_rumble;
+        rumble_packet[8] = ctx->low_frequency_rumble;
+        rumble_packet[9] = ctx->high_frequency_rumble;
 
         if (SDL_HIDAPI_SendRumble(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
             return SDL_SetError("Couldn't send rumble packet");
         }
     }
     return 0;
+}
+
+static int
+HIDAPI_DriverXboxOne_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+{
+    SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)device->context;
+
+    /* Magnitude is 1..100 so scale the 16-bit input here */
+    ctx->low_frequency_rumble = low_frequency_rumble / 655;
+    ctx->high_frequency_rumble = high_frequency_rumble / 655;
+
+    return HIDAPI_DriverXboxOne_UpdateRumble(device);
+}
+
+static int
+HIDAPI_DriverXboxOne_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+{
+    SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)device->context;
+
+    if (!ctx->has_trigger_rumble) {
+        return SDL_Unsupported();
+    }
+
+    /* Magnitude is 1..100 so scale the 16-bit input here */
+    ctx->left_trigger_rumble = left_rumble / 655;
+    ctx->right_trigger_rumble = right_rumble / 655;
+
+    return HIDAPI_DriverXboxOne_UpdateRumble(device);
+}
+
+static SDL_bool
+HIDAPI_DriverXboxOne_HasJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+{
+    /* Doesn't have an RGB LED, so don't return true here */
+    return SDL_FALSE;
+}
+
+static int
+HIDAPI_DriverXboxOne_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+{
+    return SDL_Unsupported();
+}
+
+static int
+HIDAPI_DriverXboxOne_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_bool enabled)
+{
+    return SDL_Unsupported();
 }
 
 static void
@@ -395,15 +470,27 @@ HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, 
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_RIGHTSTICK, (data[5] & 0x80) ? SDL_PRESSED : SDL_RELEASED);
     }
 
+    if (ctx->has_share_button) {
+        /* Version 1 of the firmware for Xbox One Series X */
+        if (ctx->last_state[18] != data[18]) {
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1, (data[18] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+        }
+
+        /* Version 2 of the firmware for Xbox One Series X */
+        if (ctx->last_state[22] != data[22]) {
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MISC1, (data[22] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
+        }
+    }
+
     /* Xbox One S report is 18 bytes
        Xbox One Elite Series 1 report is 33 bytes, paddles in data[32], mode in data[32] & 0x10, both modes have mapped paddles by default
         Paddle bits:
-            UL: 0x01 (A)    UR: 0x02 (B)
-            LL: 0x04 (X)    LR: 0x08 (Y)
+            P3: 0x01 (A)    P1: 0x02 (B)
+            P4: 0x04 (X)    P2: 0x08 (Y)
        Xbox One Elite Series 2 report is 38 bytes, paddles in data[18], mode in data[19], mode 0 has no mapped paddles by default
         Paddle bits:
-            UL: 0x04 (A)    UR: 0x01 (B)
-            LL: 0x08 (X)    LR: 0x02 (Y)
+            P3: 0x04 (A)    P1: 0x01 (B)
+            P4: 0x08 (X)    P2: 0x02 (Y)
     */
     if (ctx->has_paddles && (size == 33 || size == 38)) {
         int paddle_index;
@@ -416,10 +503,10 @@ HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, 
         if (size == 33) {
             /* XBox One Elite Series 1 */
             paddle_index = 32;
-            button1_bit = 0x01;
-            button2_bit = 0x02;
-            button3_bit = 0x04;
-            button4_bit = 0x08;
+            button1_bit = 0x02;
+            button2_bit = 0x08;
+            button3_bit = 0x01;
+            button4_bit = 0x04;
 
             /* The mapped controller state is at offset 4, the raw state is at offset 18, compare them to see if the paddles are mapped */
             paddles_mapped = (SDL_memcmp(&data[4], &data[18], 14) != 0);
@@ -427,10 +514,10 @@ HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, 
         } else /* if (size == 38) */ {
             /* XBox One Elite Series 2 */
             paddle_index = 18;
-            button1_bit = 0x04;
-            button2_bit = 0x01;
-            button3_bit = 0x08;
-            button4_bit = 0x02;
+            button1_bit = 0x01;
+            button2_bit = 0x02;
+            button3_bit = 0x04;
+            button4_bit = 0x08;
             paddles_mapped = (data[19] != 0);
         }
 #ifdef DEBUG_XBOX_PROTOCOL
@@ -449,10 +536,11 @@ HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, 
         }
 
         if (ctx->last_state[paddle_index] != data[paddle_index]) {
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MAX+0, (data[paddle_index] & button1_bit) ? SDL_PRESSED : SDL_RELEASED);
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MAX+1, (data[paddle_index] & button2_bit) ? SDL_PRESSED : SDL_RELEASED);
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MAX+2, (data[paddle_index] & button3_bit) ? SDL_PRESSED : SDL_RELEASED);
-            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_MAX+3, (data[paddle_index] & button4_bit) ? SDL_PRESSED : SDL_RELEASED);
+            int nButton = SDL_CONTROLLER_BUTTON_MISC1 + ctx->has_share_button; /* Next available button */
+            SDL_PrivateJoystickButton(joystick, nButton++, (data[paddle_index] & button1_bit) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_PrivateJoystickButton(joystick, nButton++, (data[paddle_index] & button2_bit) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_PrivateJoystickButton(joystick, nButton++, (data[paddle_index] & button3_bit) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_PrivateJoystickButton(joystick, nButton++, (data[paddle_index] & button4_bit) ? SDL_PRESSED : SDL_RELEASED);
         }
     }
 
@@ -489,13 +577,6 @@ HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, 
 static void
 HIDAPI_DriverXboxOne_HandleModePacket(SDL_Joystick *joystick, hid_device *dev, SDL_DriverXboxOne_Context *ctx, Uint8 *data, int size)
 {
-    if (data[1] == 0x30) {
-        /* The Xbox One S controller needs acks for mode reports */
-        const Uint8 seqnum = data[2];
-        const Uint8 ack[] = { 0x01, 0x20, seqnum, 0x09, 0x00, 0x07, 0x20, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00 };
-        hid_write(dev, ack, sizeof(ack));
-    }
-
     SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data[4] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
 }
 
@@ -666,6 +747,61 @@ HIDAPI_DriverXboxOneBluetooth_HandleStatePacketV2(SDL_Joystick *joystick, hid_de
         SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_DPAD_LEFT, dpad_left);
     }
 
+    /*
+        Paddle bits:
+            P3: 0x04 (A)    P1: 0x01 (B)
+            P4: 0x08 (X)    P2: 0x02 (Y)
+    */
+    if (ctx->has_paddles && (size == 39 || size == 55)) {
+        int paddle_index;
+        int button1_bit;
+        int button2_bit;
+        int button3_bit;
+        int button4_bit;
+        SDL_bool paddles_mapped;
+
+        if (size == 55) {
+            /* Initial firmware for the Xbox Elite Series 2 controller */
+            paddle_index = 33;
+            button1_bit = 0x01;
+            button2_bit = 0x02;
+            button3_bit = 0x04;
+            button4_bit = 0x08;
+            paddles_mapped = (data[35] != 0);
+        } else /* if (size == 39) */ {
+            /* Updated firmware for the Xbox Elite Series 2 controller */
+            paddle_index = 17;
+            button1_bit = 0x01;
+            button2_bit = 0x02;
+            button3_bit = 0x04;
+            button4_bit = 0x08;
+            paddles_mapped = (data[19] != 0);
+        }
+
+#ifdef DEBUG_XBOX_PROTOCOL
+        SDL_Log(">>> Paddles: %d,%d,%d,%d mapped = %s\n",
+            (data[paddle_index] & button1_bit) ? 1 : 0,
+            (data[paddle_index] & button2_bit) ? 1 : 0,
+            (data[paddle_index] & button3_bit) ? 1 : 0,
+            (data[paddle_index] & button4_bit) ? 1 : 0,
+            paddles_mapped ? "TRUE" : "FALSE"
+        );
+#endif
+
+        if (paddles_mapped) {
+            /* Respect that the paddles are being used for other controls and don't pass them on to the app */
+            data[paddle_index] = 0;
+        }
+
+        if (ctx->last_state[paddle_index] != data[paddle_index]) {
+            int nButton = SDL_CONTROLLER_BUTTON_MISC1; /* Next available button */
+            SDL_PrivateJoystickButton(joystick, nButton++, (data[paddle_index] & button1_bit) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_PrivateJoystickButton(joystick, nButton++, (data[paddle_index] & button2_bit) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_PrivateJoystickButton(joystick, nButton++, (data[paddle_index] & button3_bit) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_PrivateJoystickButton(joystick, nButton++, (data[paddle_index] & button4_bit) ? SDL_PRESSED : SDL_RELEASED);
+        }
+    }
+
     axis = (int)*(Uint16*)(&data[1]) - 0x8000;
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, axis);
     axis = (int)*(Uint16*)(&data[3]) - 0x8000;
@@ -727,20 +863,19 @@ HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
 
     while ((size = hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
 #ifdef DEBUG_XBOX_PROTOCOL
-        DumpPacket("Xbox One packet: size = %d", data, size);
+        HIDAPI_DumpPacket("Xbox One packet: size = %d", data, size);
 #endif
         if (ctx->bluetooth) {
             switch (data[0]) {
             case 0x01:
-                switch (size) {
-                case 16:
+                if (size == 16) {
                     HIDAPI_DriverXboxOneBluetooth_HandleStatePacketV1(joystick, device->dev, ctx, data, size);
-                    break;
-                case 17:
+                } else if (size > 16) {
                     HIDAPI_DriverXboxOneBluetooth_HandleStatePacketV2(joystick, device->dev, ctx, data, size);
-                    break;
-                default:
-                    break;
+                } else {
+#ifdef DEBUG_JOYSTICK
+                    SDL_Log("Unknown Xbox One Bluetooth packet size: %d\n", size);
+#endif
                 }
                 break;
             case 0x02:
@@ -754,8 +889,30 @@ HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
             }
         } else {
             switch (data[0]) {
+            case 0x01:
+                /* ACK packet */
+                /* The data bytes are:
+                    0x01 0x20 NN 0x09, where NN is the packet sequence
+                    then 0x00
+                    then a byte of the sequence being acked
+                    then 0x20
+                    then 16-bit LE value, the size of the previous packet payload when it's a single packet
+                    then 4 bytes of unknown data, often all zero
+                 */
+                break;
             case 0x02:
                 /* Controller is connected and waiting for initialization */
+                /* The data bytes are:
+                   0x02 0x20 NN 0x1c, where NN is the packet sequence
+                   then 6 bytes of wireless MAC address
+                   then 2 bytes padding
+                   then 16-bit VID
+                   then 16-bit PID
+                   then 16-bit firmware version quartet AA.BB.CC.DD
+                        e.g. 0x05 0x00 0x05 0x00 0x51 0x0a 0x00 0x00
+                             is firmware version 5.5.2641.0, and product version 0x0505 = 1285
+                   then 8 bytes of unknown data
+                */
                 if (!ctx->initialized) {
 #ifdef DEBUG_XBOX_PROTOCOL
                     SDL_Log("Delay after init: %ums\n", SDL_GetTicks() - ctx->start_time);
@@ -772,6 +929,26 @@ HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
             case 0x03:
                 /* Controller heartbeat */
                 break;
+            case 0x04:
+                /* Unknown chatty controller information, sent by both sides */
+                break;
+            case 0x06:
+                /* Unknown chatty controller information, sent by both sides */
+                break;
+            case 0x07:
+                HIDAPI_DriverXboxOne_HandleModePacket(joystick, device->dev, ctx, data, size);
+                break;
+            case 0x1E:
+                /* If the packet starts with this:
+                    0x1E 0x30 0x07 0x10 0x04 0x00
+                    then the next 14 bytes are the controller serial number
+                        e.g. 0x30 0x39 0x37 0x31 0x32 0x33 0x33 0x32 0x33 0x35 0x34 0x30 0x33 0x36
+                        is serial number "3039373132333332333534303336"
+
+                   The controller sends that in response to this request:
+                    0x1E 0x30 0x07 0x01 0x04
+                */
+                break;
             case 0x20:
                 if (!ctx->input_ready) {
                     if (!SDL_TICKS_PASSED(SDL_GetTicks(), ctx->initialized_time + CONTROLLER_INPUT_DELAY_MS)) {
@@ -784,15 +961,13 @@ HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
                 }
                 HIDAPI_DriverXboxOne_HandleStatePacket(joystick, device->dev, ctx, data, size);
                 break;
-            case 0x07:
-                HIDAPI_DriverXboxOne_HandleModePacket(joystick, device->dev, ctx, data, size);
-                break;
             default:
 #ifdef DEBUG_JOYSTICK
                 SDL_Log("Unknown Xbox One packet: 0x%.2x\n", data[0]);
 #endif
                 break;
             }
+            SendAckIfNeeded(device, data, size);
         }
     }
 
@@ -830,6 +1005,10 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne =
     HIDAPI_DriverXboxOne_UpdateDevice,
     HIDAPI_DriverXboxOne_OpenJoystick,
     HIDAPI_DriverXboxOne_RumbleJoystick,
+    HIDAPI_DriverXboxOne_RumbleJoystickTriggers,
+    HIDAPI_DriverXboxOne_HasJoystickLED,
+    HIDAPI_DriverXboxOne_SetJoystickLED,
+    HIDAPI_DriverXboxOne_SetJoystickSensorsEnabled,
     HIDAPI_DriverXboxOne_CloseJoystick,
     HIDAPI_DriverXboxOne_FreeDevice,
     NULL

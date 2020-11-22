@@ -493,6 +493,7 @@ extern "C" {
  *      XboxOne
  *      PS3
  *      PS4
+ *      PS5
  *      SwitchPro
  *
  *  This hint affects what driver is used, and must be set before calling SDL_Init(SDL_INIT_GAMECONTROLLER)
@@ -602,6 +603,17 @@ extern "C" {
  *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_PS4 "SDL_JOYSTICK_HIDAPI_PS4"
+
+/**
+ *  \brief  A variable controlling whether the HIDAPI driver for PS5 controllers should be used.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - HIDAPI driver is not used
+ *    "1"       - HIDAPI driver is used
+ *
+ *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_PS5 "SDL_JOYSTICK_HIDAPI_PS5"
 
 /**
  *  \brief  A variable controlling whether extended input reports should be used for PS4 controllers when using the HIDAPI driver.
@@ -787,8 +799,31 @@ extern "C" {
 *
 *  pthread hint values are "current", "other", "fifo" and "rr".
 *  Currently no other platform hint values are defined but may be in the future.
+*
+*  \note On Linux, the kernel may send SIGKILL to realtime tasks which exceed the distro
+*  configured execution budget for rtkit. This budget can be queried through RLIMIT_RTTIME
+*  after calling SDL_SetThreadPriority().
 */
 #define SDL_HINT_THREAD_PRIORITY_POLICY         "SDL_THREAD_PRIORITY_POLICY"
+
+/**
+ *  \brief Specifies whether SDL_THREAD_PRIORITY_TIME_CRITICAL should be treated as realtime.
+ *
+ *  On some platforms, like Linux, a realtime priority thread may be subject to restrictions
+ *  that require special handling by the application. This hint exists to let SDL know that
+ *  the app is prepared to handle said restrictions.
+ * 
+ *  On Linux, SDL will apply the following configuration to any thread that becomes realtime:
+ *   * The SCHED_RESET_ON_FORK bit will be set on the scheduling policy,
+ *   * An RLIMIT_RTTIME budget will be configured to the rtkit specified limit.
+ *     * Exceeding this limit will result in the kernel sending SIGKILL to the app,
+ *     * Refer to the man pages for more information.
+ * 
+ *  This variable can be set to the following values:
+ *    "0"       - default platform specific behaviour
+ *    "1"       - Force SDL_THREAD_PRIORITY_TIME_CRITICAL to a realtime scheduling policy
+ */
+#define SDL_HINT_THREAD_FORCE_REALTIME_TIME_CRITICAL "SDL_THREAD_FORCE_REALTIME_TIME_CRITICAL"
 
 /**
  *  \brief If set to 1, then do not allow high-DPI windows. ("Retina" on Mac and iOS)

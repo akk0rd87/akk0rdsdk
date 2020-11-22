@@ -172,6 +172,8 @@
 #cmakedefine HAVE_SQRTF 1
 #cmakedefine HAVE_TAN 1
 #cmakedefine HAVE_TANF 1
+#cmakedefine HAVE_TRUNC 1
+#cmakedefine HAVE_TRUNCF 1
 #cmakedefine HAVE_FOPEN64 1
 #cmakedefine HAVE_FSEEKO 1
 #cmakedefine HAVE_FSEEKO64 1
@@ -219,6 +221,7 @@
 
 #cmakedefine HAVE_MMDEVICEAPI_H @HAVE_MMDEVICEAPI_H@
 #cmakedefine HAVE_AUDIOCLIENT_H @HAVE_AUDIOCLIENT_H@
+#cmakedefine HAVE_SENSORSAPI_H @HAVE_SENSORSAPI_H@
 
 #cmakedefine HAVE_XINPUT_GAMEPAD_EX @HAVE_XINPUT_GAMEPAD_EX@
 #cmakedefine HAVE_XINPUT_STATE_EX @HAVE_XINPUT_STATE_EX@
@@ -305,6 +308,7 @@
 /* Enable various sensor drivers */
 #cmakedefine SDL_SENSOR_ANDROID @SDL_SENSOR_ANDROID@
 #cmakedefine SDL_SENSOR_COREMOTION @SDL_SENSOR_COREMOTION@
+#cmakedefine SDL_SENSOR_WINDOWS @SDL_SENSOR_WINDOWS@
 #cmakedefine SDL_SENSOR_DUMMY @SDL_SENSOR_DUMMY@
 
 /* Enable various shared object loading systems */
@@ -409,12 +413,6 @@
 #cmakedefine SDL_POWER_HAIKU @SDL_POWER_HAIKU@
 #cmakedefine SDL_POWER_EMSCRIPTEN @SDL_POWER_EMSCRIPTEN@
 #cmakedefine SDL_POWER_HARDWIRED @SDL_POWER_HARDWIRED@
-
-/* Enable sensor support */
-#cmakedefine SDL_SENSOR_ANDROID @SDL_SENSOR_ANDROID@
-#cmakedefine SDL_SENSOR_WINDOWS @SDL_SENSOR_WINDOWS@
-#cmakedefine SDL_SENSOR_COREMOTION @SDL_SENSOR_COREMOTION@
-#cmakedefine SDL_SENSOR_DUMMY @SDL_SENSOR_DUMMY@
 
 /* Enable system filesystem support */
 #cmakedefine SDL_FILESYSTEM_ANDROID @SDL_FILESYSTEM_ANDROID@

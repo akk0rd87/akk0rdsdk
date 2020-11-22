@@ -61,7 +61,20 @@ extern char *SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *v
 extern SDL_GameControllerType SDL_GetJoystickGameControllerTypeFromGUID(SDL_JoystickGUID guid, const char *name);
 extern SDL_GameControllerType SDL_GetJoystickGameControllerType(const char *name, Uint16 vendor, Uint16 product, int interface_number, int interface_class, int interface_subclass, int interface_protocol);
 
+/* Function to return whether a joystick is an Xbox One Elite controller */
+extern SDL_bool SDL_IsJoystickXboxOneElite(Uint16 vendor_id, Uint16 product_id);
+
+/* Function to return whether a joystick is an Xbox One Series X controller */
+extern SDL_bool SDL_IsJoystickXboxOneSeriesX(Uint16 vendor_id, Uint16 product_id);
+
+/* Function to return whether a joystick is a PS4 controller */
+extern SDL_bool SDL_IsJoystickPS4(Uint16 vendor_id, Uint16 product_id);
+
+/* Function to return whether a joystick is a PS5 controller */
+extern SDL_bool SDL_IsJoystickPS5(Uint16 vendor_id, Uint16 product_id);
+
 /* Function to return whether a joystick is a Nintendo Switch Pro controller */
+extern SDL_bool SDL_IsJoystickNintendoSwitchPro(Uint16 vendor_id, Uint16 product_id);
 extern SDL_bool SDL_IsJoystickNintendoSwitchProInputOnly(Uint16 vendor_id, Uint16 product_id);
 
 /* Function to return whether a joystick is a Steam Controller */
@@ -95,21 +108,27 @@ extern SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUI
 extern void SDL_GameControllerHandleDelayedGuideButton(SDL_Joystick *joystick);
 
 /* Internal event queueing functions */
+extern void SDL_PrivateJoystickAddTouchpad(SDL_Joystick *joystick, int nfingers);
+extern void SDL_PrivateJoystickAddSensor(SDL_Joystick *joystick, SDL_SensorType type);
 extern void SDL_PrivateJoystickAdded(SDL_JoystickID device_instance);
 extern void SDL_PrivateJoystickRemoved(SDL_JoystickID device_instance);
-extern int SDL_PrivateJoystickAxis(SDL_Joystick * joystick,
+extern int SDL_PrivateJoystickAxis(SDL_Joystick *joystick,
                                    Uint8 axis, Sint16 value);
-extern int SDL_PrivateJoystickBall(SDL_Joystick * joystick,
+extern int SDL_PrivateJoystickBall(SDL_Joystick *joystick,
                                    Uint8 ball, Sint16 xrel, Sint16 yrel);
-extern int SDL_PrivateJoystickHat(SDL_Joystick * joystick,
+extern int SDL_PrivateJoystickHat(SDL_Joystick *joystick,
                                   Uint8 hat, Uint8 value);
-extern int SDL_PrivateJoystickButton(SDL_Joystick * joystick,
+extern int SDL_PrivateJoystickButton(SDL_Joystick *joystick,
                                      Uint8 button, Uint8 state);
-extern void SDL_PrivateJoystickBatteryLevel(SDL_Joystick * joystick,
+extern int SDL_PrivateJoystickTouchpad(SDL_Joystick *joystick,
+                                       int touchpad, int finger, Uint8 state, float x, float y, float pressure);
+extern int SDL_PrivateJoystickSensor(SDL_Joystick *joystick,
+                                     SDL_SensorType type, const float *data, int num_values);
+extern void SDL_PrivateJoystickBatteryLevel(SDL_Joystick *joystick,
                                             SDL_JoystickPowerLevel ePowerLevel);
 
 /* Internal sanity checking functions */
-extern SDL_bool SDL_PrivateJoystickValid(SDL_Joystick * joystick);
+extern SDL_bool SDL_PrivateJoystickValid(SDL_Joystick *joystick);
 
 typedef enum
 {

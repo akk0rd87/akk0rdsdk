@@ -30,6 +30,10 @@
 
 #include "SDL_config.h"
 
+#ifdef __APPLE__
+#define _DARWIN_C_SOURCE /* for memset_pattern4() */
+#endif
+
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
@@ -412,6 +416,8 @@ extern DECLSPEC int SDLCALL SDL_isupper(int x);
 extern DECLSPEC int SDLCALL SDL_islower(int x);
 extern DECLSPEC int SDLCALL SDL_toupper(int x);
 extern DECLSPEC int SDLCALL SDL_tolower(int x);
+
+extern DECLSPEC Uint32 SDLCALL SDL_crc32(Uint32 crc, const void *data, size_t len);
 
 extern DECLSPEC void *SDLCALL SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len);
 

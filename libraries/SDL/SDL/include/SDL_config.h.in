@@ -176,6 +176,8 @@
 #undef HAVE_SQRTF
 #undef HAVE_TAN
 #undef HAVE_TANF
+#undef HAVE_TRUNC
+#undef HAVE_TRUNCF
 #undef HAVE_FOPEN64
 #undef HAVE_FSEEKO
 #undef HAVE_FSEEKO64
@@ -215,8 +217,11 @@
 #undef HAVE_DSOUND_H
 #undef HAVE_DXGI_H
 #undef HAVE_XINPUT_H
+
 #undef HAVE_MMDEVICEAPI_H
 #undef HAVE_AUDIOCLIENT_H
+#undef HAVE_SENSORSAPI_H
+
 #undef HAVE_XINPUT_GAMEPAD_EX
 #undef HAVE_XINPUT_STATE_EX
 
@@ -276,6 +281,7 @@
 
 /* Enable various input drivers */
 #undef SDL_INPUT_LINUXEV
+#undef SDL_INPUT_FBSDKBIO
 #undef SDL_INPUT_LINUXKD
 #undef SDL_INPUT_TSLIB
 #undef SDL_JOYSTICK_HAIKU
@@ -283,6 +289,7 @@
 #undef SDL_JOYSTICK_XINPUT
 #undef SDL_JOYSTICK_DUMMY
 #undef SDL_JOYSTICK_IOKIT
+#undef SDL_JOYSTICK_MFI
 #undef SDL_JOYSTICK_LINUX
 #undef SDL_JOYSTICK_ANDROID
 #undef SDL_JOYSTICK_WINMM
@@ -301,6 +308,8 @@
 
 /* Enable various sensor drivers */
 #undef SDL_SENSOR_ANDROID
+#undef SDL_SENSOR_COREMOTION
+#undef SDL_SENSOR_WINDOWS
 #undef SDL_SENSOR_DUMMY
 
 /* Enable various shared object loading systems */

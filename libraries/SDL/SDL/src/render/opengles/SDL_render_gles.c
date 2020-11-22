@@ -562,6 +562,48 @@ GLES_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
 }
 
 static int
+GLES_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
+{
+    int i;
+    const size_t vertlen = (sizeof (GLfloat) * 2) * count;
+    GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, vertlen, 0, &cmd->data.draw.first);
+    if (!verts) {
+        return -1;
+    }
+    cmd->data.draw.count = count;
+
+    /* Offset to hit the center of the pixel. */
+    for (i = 0; i < count; i++) {
+        *(verts++) = 0.5f + points[i].x;
+        *(verts++) = 0.5f + points[i].y;
+    }
+
+    /* Make the last line segment one pixel longer, to satisfy the
+       diamond-exit rule. */
+    verts -= 4;
+    {
+        const GLfloat xstart = verts[0];
+        const GLfloat ystart = verts[1];
+        const GLfloat xend = verts[2];
+        const GLfloat yend = verts[3];
+
+        if (ystart == yend) {  /* horizontal line */
+            verts[2] += (xend > xstart) ? 1.0f : -1.0f;
+        } else if (xstart == xend) {  /* vertical line */
+            verts[3] += (yend > ystart) ? 1.0f : -1.0f;
+        } else {  /* bump a pixel in the direction we are moving in. */
+            const GLfloat deltax = xend - xstart;
+            const GLfloat deltay = yend - ystart;
+            const GLfloat angle = SDL_atan2f(deltay, deltax);
+            verts[2] += SDL_cosf(angle);
+            verts[3] += SDL_sinf(angle);
+        }
+    }
+
+    return 0;
+}
+
+static int
 GLES_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count)
 {
     GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * 8 * sizeof (GLfloat), 0, &cmd->data.draw.first);
@@ -901,16 +943,10 @@ GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
             case SDL_RENDERCMD_DRAW_LINES: {
                 const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
                 const size_t count = cmd->data.draw.count;
+                SDL_assert(count >= 2);
                 SetDrawState(data, cmd);
                 data->glVertexPointer(2, GL_FLOAT, 0, verts);
-                if (count > 2 && (verts[0] == verts[(count-1)*2]) && (verts[1] == verts[(count*2)-1])) {
-                    /* GL_LINE_LOOP takes care of the final segment */
-                    data->glDrawArrays(GL_LINE_LOOP, 0, (GLsizei) (count - 1));
-                } else {
-                    data->glDrawArrays(GL_LINE_STRIP, 0, (GLsizei) count);
-                    /* We need to close the endpoint of the line */
-                    data->glDrawArrays(GL_POINTS, (GLsizei) (count - 1), 1);
-                }
+                data->glDrawArrays(GL_LINE_STRIP, 0, (GLsizei) count);
                 break;
             }
 
@@ -1159,7 +1195,7 @@ GLES_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->QueueSetViewport = GLES_QueueSetViewport;
     renderer->QueueSetDrawColor = GLES_QueueSetViewport;  /* SetViewport and SetDrawColor are (currently) no-ops. */
     renderer->QueueDrawPoints = GLES_QueueDrawPoints;
-    renderer->QueueDrawLines = GLES_QueueDrawPoints;  /* lines and points queue vertices the same way. */
+    renderer->QueueDrawLines = GLES_QueueDrawLines;
     renderer->QueueFillRects = GLES_QueueFillRects;
     renderer->QueueCopy = GLES_QueueCopy;
     renderer->QueueCopyEx = GLES_QueueCopyEx;

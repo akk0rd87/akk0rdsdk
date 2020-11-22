@@ -2246,8 +2246,8 @@ AS_HELP_STRING([--enable-video-kmsdrm], [use KMSDRM video driver [[default=no]]]
     if test x$enable_video = xyes -a x$enable_video_kmsdrm = xyes; then
         video_kmsdrm=no
 
-        PKG_CHECK_MODULES([LIBDRM], [libdrm >= 2.4.82], libdrm_avail=yes, libdrm_avail=no)
-        PKG_CHECK_MODULES([LIBGBM], [gbm >= 17.1.0], libgbm_avail=yes, libgbm_avail=no)
+        PKG_CHECK_MODULES([LIBDRM], [libdrm >= 1.4.82], libdrm_avail=yes, libdrm_avail=no)
+        PKG_CHECK_MODULES([LIBGBM], [gbm >= 11.1.0], libgbm_avail=yes, libgbm_avail=no)
 
         if test x$libdrm_avail = xyes -a x$libgbm_avail = xyes; then
             video_kmsdrm=yes
@@ -2374,6 +2374,7 @@ CheckOpenGLESX11()
           #define LINUX
           #define EGL_API_FB
           #define MESA_EGL_NO_X11_HEADERS
+          #define EGL_NO_X11
           #include <EGL/egl.h>
           #include <EGL/eglext.h>
         ],[
@@ -2640,6 +2641,28 @@ CheckInputKD()
     if test x$use_input_kd = xyes; then
         AC_DEFINE(SDL_INPUT_LINUXKD, 1, [ ])
         SUMMARY_input="${SUMMARY_input} linuxkd"
+    fi
+}
+
+
+dnl See if we can use the FreeBSD kernel kbio.h header
+CheckInputKBIO()
+{
+    AC_MSG_CHECKING(for FreeBSD kbio.h)
+    use_input_kbio=no
+    AC_TRY_COMPILE([
+      #include <sys/kbio.h>
+      #include <sys/ioctl.h>
+    ],[
+    	accentmap_t accTable;
+        ioctl(0, KDENABIO, 1);
+    ],[
+    use_input_kbio=yes
+    ])
+    AC_MSG_RESULT($use_input_kbio)
+    if test x$use_input_kbio = xyes; then
+        AC_DEFINE(SDL_INPUT_FBSDKBIO, 1, [ ])
+        SUMMARY_input="${SUMMARY_input} fbsdkbio"
     fi
 }
 
@@ -3286,47 +3309,45 @@ CheckUSBHID()
 dnl Check for HIDAPI joystick drivers
 CheckHIDAPI()
 {
-    # The hidraw support doesn't catch Xbox, PS4 and Nintendo controllers,
-    # so we'll just use libusb when it's available.
-    case "$host" in
-        # libusb does not support iOS
-        *-ios-* )
-            skiplibusb=yes
-            ;;
-        # On the other hand, *BSD specifically uses libusb only
-        *-*-*bsd* )
-            onlylibusb=yes
-            ;;
-        # RAWINPUT is only available on Win32, but can be enabled if HIDAPI is
-        *-*-cygwin* | *-*-mingw32*)
-            userawinput=yes
-            ;;
-    esac
-
     AC_ARG_ENABLE(hidapi,
-AS_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[default=no]]]),
-                  , enable_hidapi=no)
+AS_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[default=yes]]]),
+                  , enable_hidapi=yes)
+    AC_ARG_ENABLE(hidapi-libusb,
+AS_HELP_STRING([--enable-hidapi-libusb], [use libusb for low level joystick drivers [[default=maybe]]]),
+                  , enable_hidapi_libusb=maybe)
+
     if test x$enable_joystick = xyes -a x$enable_hidapi = xyes; then
-        if test x$skiplibusb = xyes; then
-            hidapi_support=yes
-        else
+        case "$host" in
+            # libusb does not support iOS
+            *-ios-* )
+                enable_hidapi_libusb=no
+                ;;
+            # On the other hand, *BSD specifically uses libusb only
+            *-*-*bsd* )
+                enable_hidapi_libusb=yes
+                require_hidapi_libusb=yes
+                ;;
+            # RAWINPUT is only available on Win32, but can be enabled if HIDAPI is
+            *-*-cygwin* | *-*-mingw32*)
+                enable_joystick_rawinput=yes
+                ;;
+        esac
+
+		hidapi_support=yes
+        if test x$enable_hidapi_libusb = xyes; then
             PKG_CHECK_MODULES([LIBUSB], [libusb-1.0], have_libusb=yes, have_libusb=no)
             save_CFLAGS="$CFLAGS"
             CFLAGS="$save_CFLAGS $LIBUSB_CFLAGS"
             AC_CHECK_HEADER(libusb.h, have_libusb_h=yes)
             CFLAGS="$save_CFLAGS"
-            if test x$have_libusb_h = xyes; then
-                hidapi_support=yes
-            elif test x$onlylibusb = xyes; then
+            if test x$have_libusb_h = xno && test x$require_hidapi_libusb = xyes; then
                 hidapi_support=no
-            else
-                hidapi_support=yes
             fi
         fi
 
         if test x$hidapi_support = xyes; then
             AC_DEFINE(SDL_JOYSTICK_HIDAPI, 1, [ ])
-            if test x$userawinput = xyes; then
+            if test x$enable_joystick_rawinput = xyes; then
                 AC_DEFINE(SDL_JOYSTICK_RAWINPUT, 1, [ ])
             fi
             EXTRA_CFLAGS="$EXTRA_CFLAGS -I$srcdir/src/hidapi/hidapi"
@@ -3335,7 +3356,7 @@ AS_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[d
 
             if test x$have_libusb_h = xyes; then
                 EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBUSB_CFLAGS"
-                if test x$onlylibusb = xyes; then
+                if test x$require_hidapi_libusb = xyes; then
                     SOURCES="$SOURCES $srcdir/src/hidapi/libusb/hid.c"
                     EXTRA_LDFLAGS="$EXTRA_LDFLAGS $LIBUSB_LIBS"
                 else
@@ -3524,6 +3545,9 @@ case "$host" in
           linux)
               CheckInputKD
           ;;
+          freebsd)
+              CheckInputKBIO
+          ;;
         esac
         CheckTslib
         CheckUSBHID
@@ -3575,7 +3599,7 @@ case "$host" in
         # Set up files for the joystick library
         if test x$enable_joystick = xyes; then
           case $ARCH in
-            linux)
+            linux|freebsd)
                 AC_DEFINE(SDL_JOYSTICK_LINUX, 1, [ ])
                 SOURCES="$SOURCES $srcdir/src/joystick/linux/*.c"
                 SOURCES="$SOURCES $srcdir/src/joystick/steam/*.c"
@@ -3592,7 +3616,7 @@ case "$host" in
         # Set up files for the haptic library
         if test x$enable_haptic = xyes; then
           case $ARCH in
-            linux)
+            linux|freebsd)
                 if test x$use_input_events = xyes; then
                     AC_DEFINE(SDL_HAPTIC_LINUX, 1, [ ])
                     SOURCES="$SOURCES $srcdir/src/haptic/linux/*.c"
@@ -3658,9 +3682,12 @@ case "$host" in
         fi
         # Set up files for evdev input
         if test x$use_input_events = xyes; then
-            SOURCES="$SOURCES $srcdir/src/core/linux/SDL_evdev*.c"
+            SOURCES="$SOURCES $srcdir/src/core/linux/SDL_evdev.c"
+            SOURCES="$SOURCES $srcdir/src/core/linux/SDL_evdev_kbd.c"
+            SOURCES="$SOURCES $srcdir/src/core/freebsd/SDL_evdev_kbd_freebsd.c"
         fi       
         # Set up other core UNIX files
+        SOURCES="$SOURCES $srcdir/src/core/linux/SDL_evdev_capabilities.c"
         SOURCES="$SOURCES $srcdir/src/core/linux/SDL_threadprio.c"
         SOURCES="$SOURCES $srcdir/src/core/unix/*.c"
         ;;
@@ -3759,7 +3786,11 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             fi
         fi
         # Set up files for the sensor library
-        if test x$enable_sensor = xyes; then
+        AC_CHECK_HEADER(sensorsapi.h,have_winsensors=yes,have_winsensors=no)
+        if test x$have_winsensors = xyes; then
+            AC_DEFINE(HAVE_SENSORSAPI_H, 1, [ ])
+        fi
+        if test x$enable_sensor = xyes -a x$have_winsensors = xyes; then
             AC_DEFINE(SDL_SENSOR_WINDOWS, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/sensor/windows/*.c"
             have_sensor=yes
@@ -4022,7 +4053,10 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         # Set up files for the joystick library
         if test x$enable_joystick = xyes; then
             AC_DEFINE(SDL_JOYSTICK_IOKIT, 1, [ ])
+            AC_DEFINE(SDL_JOYSTICK_MFI, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/joystick/darwin/*.c"
+            SOURCES="$SOURCES $srcdir/src/joystick/iphoneos/*.m"
+            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-weak_framework,CoreHaptics -Wl,-weak_framework,GameController"
             have_joystick=yes
         fi
         # Set up files for the haptic library
@@ -4153,6 +4187,9 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         CheckOSS
         CheckPTHREAD
         CheckClockGettime
+
+        SOURCES="$SOURCES $srcdir/src/misc/riscos/*.c"
+        have_misc=yes
 
         # Set up files for the timer library
         if test x$enable_timers = xyes; then

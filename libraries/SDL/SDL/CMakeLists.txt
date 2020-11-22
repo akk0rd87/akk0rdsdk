@@ -794,7 +794,7 @@ if(LIBC)
       check_include_file("${_HEADER}" ${_HAVE_H})
     endforeach()
 
-    set(STDC_HEADER_NAMES "dlfcn.h;stdint.h;stddef.h;inttypes.h;stdlib.h;stdio.h;strings.h;wchar.h;string.h;float.h")
+    set(STDC_HEADER_NAMES "stddef.h;stdarg.h;stdlib.h;string.h;stdio.h;wchar.h;float.h")
     check_include_files("${STDC_HEADER_NAMES}" STDC_HEADERS)
     check_type_size("size_t" SIZEOF_SIZE_T)
     check_symbol_exists(M_PI math.h HAVE_M_PI)
@@ -841,14 +841,22 @@ if(LIBC)
     endif()
 
     check_library_exists(iconv iconv_open "" HAVE_LIBICONV)
-    if(HAVE_LIBICONV)
+    check_library_exists(c iconv_open "" HAVE_BUILTIN_ICONV)
+    if(HAVE_BUILTIN_ICONV)
+      set(HAVE_ICONV 1)
+    elseif(HAVE_LIBICONV)
       list(APPEND EXTRA_LIBS iconv)
       set(HAVE_ICONV 1)
     endif()
 
     if(NOT APPLE)
       check_include_file(alloca.h HAVE_ALLOCA_H)
-      check_symbol_exists(alloca "alloca.h" HAVE_ALLOCA)
+      check_symbol_exists(alloca "alloca.h" HAVE_ALLOCA1)
+      check_symbol_exists(alloca "stdlib.h" HAVE_ALLOCA2)
+      check_symbol_exists(alloca "malloc.h" HAVE_ALLOCA3)
+      if(HAVE_ALLOCA1 OR HAVE_ALLOCA2 OR HAVE_ALLOCA3)
+        set(HAVE_ALLOCA 1)
+      endif()
     else()
       set(HAVE_ALLOCA_H 1)
       set(HAVE_ALLOCA 1)
@@ -1258,6 +1266,7 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT RISCOS)
     endif()
 
     # Always compiled for Linux, unconditionally:
+    set(SOURCE_FILES ${SOURCE_FILES} "${SDL2_SOURCE_DIR}/src/core/linux/SDL_evdev_capabilities.c")
     set(SOURCE_FILES ${SOURCE_FILES} "${SDL2_SOURCE_DIR}/src/core/linux/SDL_threadprio.c")
 
     # src/core/unix/*.c is included in a generic if(UNIX) section, elsewhere.
@@ -1431,6 +1440,7 @@ elseif(WINDOWS)
   # headers needed elsewhere
   check_include_file(mmdeviceapi.h HAVE_MMDEVICEAPI_H)
   check_include_file(audioclient.h HAVE_AUDIOCLIENT_H)
+  check_include_file(sensorsapi.h HAVE_SENSORSAPI_H)
 
   if(SDL_AUDIO)
     set(SDL_AUDIO_DRIVER_WINMM 1)
@@ -1482,7 +1492,7 @@ elseif(WINDOWS)
     set(HAVE_SDL_THREADS TRUE)
   endif()
 
-  if(SDL_SENSOR)
+  if(SDL_SENSOR AND HAVE_SENSORSAPI_H)
     set(SDL_SENSOR_WINDOWS 1)
     set(HAVE_SDL_SENSORS TRUE)
     file(GLOB WINDOWS_SENSOR_SOURCES ${SDL2_SOURCE_DIR}/src/sensor/windows/*.c)
@@ -1918,6 +1928,10 @@ elseif(HAIKU)
   CheckPTHREAD()
 
 elseif(RISCOS)
+  file(GLOB MISC_SOURCES ${SDL2_SOURCE_DIR}/src/misc/riscos/*.c)
+  set(SOURCE_FILES ${SOURCE_FILES} ${MISC_SOURCES})
+  set(HAVE_SDL_MISC TRUE)
+
   if(SDL_TIMERS)
     set(SDL_TIMER_UNIX 1)
     file(GLOB TIMER_SOURCES ${SDL2_SOURCE_DIR}/src/timer/unix/*.c)
@@ -1952,7 +1966,6 @@ endif()
 if(NOT HAVE_SDL_JOYSTICK)
   set(SDL_JOYSTICK_DUMMY 1)
   if(SDL_JOYSTICK AND NOT APPLE) # results in unresolved symbols on OSX
-
     file(GLOB JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/dummy/*.c)
     set(SOURCE_FILES ${SOURCE_FILES} ${JOYSTICK_SOURCES})
   endif()
@@ -2028,10 +2041,11 @@ listtostr(EXTRA_CFLAGS _EXTRA_CFLAGS)
 set(EXTRA_CFLAGS ${_EXTRA_CFLAGS})
 
 # Compat helpers for the configuration files
-if(NOT WINDOWS OR CYGWIN)
+if(NOT CMAKE_HOST_WIN32)
   # TODO: we need a Windows script, too
   execute_process(COMMAND sh ${SDL2_SOURCE_DIR}/build-scripts/updaterev.sh)
-
+endif()
+if(NOT WINDOWS OR CYGWIN)
   set(prefix ${CMAKE_INSTALL_PREFIX})
   set(exec_prefix "\${prefix}")
   set(libdir "\${exec_prefix}/lib${LIB_SUFFIX}")

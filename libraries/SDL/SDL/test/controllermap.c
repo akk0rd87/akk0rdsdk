@@ -24,13 +24,8 @@
 /* Define this for verbose output while mapping controllers */
 #define DEBUG_CONTROLLERMAP
 
-#ifdef __IPHONEOS__
-#define SCREEN_WIDTH    320
-#define SCREEN_HEIGHT   480
-#else
 #define SCREEN_WIDTH    512
 #define SCREEN_HEIGHT   320
-#endif
 
 #define MARKER_BUTTON 1
 #define MARKER_AXIS 2
@@ -64,7 +59,7 @@ static struct
     { 342, 132, 0.0, MARKER_BUTTON }, /* SDL_CONTROLLER_BUTTON_X */
     { 389, 101, 0.0, MARKER_BUTTON }, /* SDL_CONTROLLER_BUTTON_Y */
     { 174, 132, 0.0, MARKER_BUTTON }, /* SDL_CONTROLLER_BUTTON_BACK */
-    { 233, 132, 0.0, MARKER_BUTTON }, /* SDL_CONTROLLER_BUTTON_GUIDE */
+    { 232, 128, 0.0, MARKER_BUTTON }, /* SDL_CONTROLLER_BUTTON_GUIDE */
     { 289, 132, 0.0, MARKER_BUTTON }, /* SDL_CONTROLLER_BUTTON_START */
     {  75, 154, 0.0, MARKER_BUTTON }, /* SDL_CONTROLLER_BUTTON_LEFTSTICK */
     { 305, 230, 0.0, MARKER_BUTTON }, /* SDL_CONTROLLER_BUTTON_RIGHTSTICK */
@@ -74,6 +69,11 @@ static struct
     { 154, 249, 0.0, MARKER_BUTTON }, /* SDL_CONTROLLER_BUTTON_DPAD_DOWN */
     { 116, 217, 0.0, MARKER_BUTTON }, /* SDL_CONTROLLER_BUTTON_DPAD_LEFT */
     { 186, 217, 0.0, MARKER_BUTTON }, /* SDL_CONTROLLER_BUTTON_DPAD_RIGHT */
+    { 232, 174, 0.0, MARKER_BUTTON }, /* SDL_CONTROLLER_BUTTON_MISC1 */
+    { 132, 135, 0.0, MARKER_BUTTON }, /* SDL_CONTROLLER_BUTTON_PADDLE1 */
+    { 330, 135, 0.0, MARKER_BUTTON }, /* SDL_CONTROLLER_BUTTON_PADDLE2 */
+    { 132, 175, 0.0, MARKER_BUTTON }, /* SDL_CONTROLLER_BUTTON_PADDLE3 */
+    { 330, 175, 0.0, MARKER_BUTTON }, /* SDL_CONTROLLER_BUTTON_PADDLE4 */
     {  74, 153, 270.0, MARKER_AXIS }, /* SDL_CONTROLLER_BINDING_AXIS_LEFTX_NEGATIVE */
     {  74, 153, 90.0,  MARKER_AXIS }, /* SDL_CONTROLLER_BINDING_AXIS_LEFTX_POSITIVE */
     {  74, 153, 0.0,   MARKER_AXIS }, /* SDL_CONTROLLER_BINDING_AXIS_LEFTY_NEGATIVE */
@@ -112,6 +112,11 @@ static int s_arrBindingOrder[BINDING_COUNT] = {
     SDL_CONTROLLER_BUTTON_BACK,
     SDL_CONTROLLER_BUTTON_GUIDE,
     SDL_CONTROLLER_BUTTON_START,
+    SDL_CONTROLLER_BUTTON_MISC1,
+    SDL_CONTROLLER_BUTTON_PADDLE1,
+    SDL_CONTROLLER_BUTTON_PADDLE2,
+    SDL_CONTROLLER_BUTTON_PADDLE3,
+    SDL_CONTROLLER_BUTTON_PADDLE4,
 };
 
 typedef struct
@@ -361,7 +366,7 @@ static void
 WatchJoystick(SDL_Joystick * joystick)
 {
     SDL_Renderer *screen = NULL;
-    SDL_Texture *background, *button, *axis, *marker;
+    SDL_Texture *background_front, *background_back, *button, *axis, *marker;
     const char *name = NULL;
     SDL_Event event;
     SDL_Rect dst;
@@ -375,7 +380,8 @@ WatchJoystick(SDL_Joystick * joystick)
         return;
     }
     
-    background = LoadTexture(screen, "controllermap.bmp", SDL_FALSE);
+    background_front = LoadTexture(screen, "controllermap.bmp", SDL_FALSE);
+    background_back = LoadTexture(screen, "controllermap_back.bmp", SDL_FALSE);
     button = LoadTexture(screen, "button.bmp", SDL_TRUE);
     axis = LoadTexture(screen, "axis.bmp", SDL_TRUE);
     SDL_RaiseWindow(window);
@@ -442,7 +448,12 @@ WatchJoystick(SDL_Joystick * joystick)
 
         SDL_SetRenderDrawColor(screen, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(screen);
-        SDL_RenderCopy(screen, background, NULL, NULL);
+        if (s_arrBindingOrder[s_iCurrentBinding] >= SDL_CONTROLLER_BUTTON_PADDLE1 &&
+            s_arrBindingOrder[s_iCurrentBinding] <= SDL_CONTROLLER_BUTTON_PADDLE4) {
+            SDL_RenderCopy(screen, background_back, NULL, NULL);
+        } else {
+            SDL_RenderCopy(screen, background_front, NULL, NULL);
+        }
         SDL_SetTextureAlphaMod(marker, alpha);
         SDL_SetTextureColorMod(marker, 10, 255, 21);
         SDL_RenderCopyEx(screen, marker, NULL, &dst, s_arrBindingDisplay[iElement].angle, NULL, SDL_FLIP_NONE);
@@ -704,6 +715,8 @@ main(int argc, char *argv[])
     const char *name;
     int i;
     SDL_Joystick *joystick;
+
+    SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
