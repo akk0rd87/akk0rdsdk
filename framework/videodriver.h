@@ -2,6 +2,7 @@
 #define __AKK0RD_SDK_VIDEODRIVER_H__
 
 #include <unordered_map>
+#include <utility>
 #include "basewrapper.h"
 
 // https://github.com/libgdx/libgdx/wiki/distance-field-fonts
@@ -173,7 +174,7 @@ class SDFFontBuffer
     AkkordColor color, outlineColor;
     std::unique_ptr<VideoBuffer> videoBuffer;
 
-    AkkordPoint GetTextSizeByLine(const char* Text, std::vector<float>* VecSize) const;
+    std::pair<float, float> GetTextSizeByLine(const char* Text, float ParamScaleX, float ParamScaleY, std::vector<float>* VecSize) const;
 public:
 
     void SetFont(SDFFont* Font) { this->sdfFont = Font; };
@@ -209,15 +210,25 @@ public:
     void Flush();
 
     // сейчас это int, возможно для этой функции сделать отдельный тип со float
-    AkkordPoint GetTextSize(const char* Text) const { return GetTextSizeByLine(Text, nullptr); };
-    AkkordPoint GetTextSize(const std::string& Text) const { return (Text.empty() ? AkkordPoint(0, 0) : GetTextSize(Text.c_str())); };
+    AkkordPoint GetTextSize(const char* Text) const {
+        const auto fp = GetTextSizeByLine(Text, scaleX, scaleY, nullptr);
+        return AkkordPoint(static_cast<decltype(AkkordPoint::x)>(std::ceil(fp.first)), static_cast<decltype(AkkordPoint::x)>(std::ceil(fp.second)));
+    };
+    AkkordPoint GetTextSize(const std::string& Text) const { return  GetTextSize(Text.c_str()); };
     void        WrapText(const char* Text, float ScaleMutiplier, std::string& ResultString, float& UsedScale, AkkordPoint& Size);
     void        WrapText(const std::string& Text, float ScaleMutiplier, std::string& ResultString, float& UsedScale, AkkordPoint& Size) { WrapText(Text.c_str(), ScaleMutiplier, ResultString, UsedScale, Size); };
     AkkordPoint DrawText(int X, int Y, const char* Text);
     AkkordPoint DrawText(const AkkordPoint& Position, const char* Text) { return DrawText(Position.x, Position.y, Text); };
 
-    AkkordPoint DrawText(int X, int Y, const std::string& Text) { return (Text.empty() ? AkkordPoint(0, 0) : DrawText(X, Y, Text.c_str())); };
+    AkkordPoint DrawText(int X, int Y, const std::string& Text) { return DrawText(X, Y, Text.c_str()); };
     AkkordPoint DrawText(const AkkordPoint& Position, const std::string& Text) { return DrawText(Position.x, Position.y, Text); };
+
+    float GetTextScale(int W, int H, const char* Text) const {
+        const float localScale = 1.0F;
+        const auto fp = GetTextSizeByLine(Text, localScale, localScale, nullptr);
+        return localScale * std::min(static_cast<float>(W) / fp.first, static_cast<float>(H) / fp.second);
+    }
+    float GetTextScale(int W, int H, const std::string& Text) const { return GetTextScale(W, H, Text.c_str()); }
 
     SDFFontBuffer();
     SDFFontBuffer(SDFFont* Font, unsigned int DigitsCount, const AkkordColor& Color);

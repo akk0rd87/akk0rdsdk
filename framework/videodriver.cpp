@@ -316,13 +316,12 @@ void SDFFontBuffer::Flush() {
     Clear();
 }
 
-AkkordPoint SDFFontBuffer::GetTextSizeByLine(const char* Text, std::vector<float>* VecSize) const
+std::pair<float, float> SDFFontBuffer::GetTextSizeByLine(const char* Text, float ParamScaleX, float ParamScaleY, std::vector<float>* VecSize) const
 {
     // VecSize - вектор строк (в надписи может быть несколько строк, нужно считать длину каждой строки отдельно - для выравнивания)
-    AkkordPoint pt(0, 0);
+    std::pair<float, float> pt(0.0F, 0.0F); // вместо точки с X и Y
     if (Text != nullptr) {
-        unsigned i{ 0 }, linesCount{ 0 };
-        //decltype(pt.x) localPointX{ 0 };
+        unsigned i{ 0 }, linesCount{ 0 };;
         float localPointX{ 0.0F };
         SDFFont::SDFCharInfo charParams;
         while (true) {
@@ -337,7 +336,7 @@ AkkordPoint SDFFontBuffer::GetTextSizeByLine(const char* Text, std::vector<float
                 if (VecSize) {
                     VecSize->push_back(localPointX);
                 }
-                pt.x = std::max(pt.x, static_cast<decltype(pt.x)>(localPointX));
+                pt.first = std::max(pt.first, localPointX);
                 localPointX = 0.0F;
                 break;
 
@@ -346,7 +345,7 @@ AkkordPoint SDFFontBuffer::GetTextSizeByLine(const char* Text, std::vector<float
 
             default:
                 sdfFont->GetCharInfo(a, charParams);
-                localPointX += scaleX * (charParams.xoffset + charParams.xadvance);
+                localPointX += ParamScaleX * (charParams.xoffset + charParams.xadvance);
                 break;
             }
         }
@@ -356,9 +355,9 @@ AkkordPoint SDFFontBuffer::GetTextSizeByLine(const char* Text, std::vector<float
         if (VecSize) {
             VecSize->push_back(localPointX);
         }
-        pt.x = std::max(pt.x, static_cast<decltype(pt.x)>(std::ceil(localPointX)));
+        pt.first = std::max(pt.first, localPointX);
         // надо учесть общую высоту строки
-        pt.y = static_cast<decltype(pt.y)>(std::ceil(scaleY * sdfFont->GetLineHeight() * static_cast<decltype(scaleY)>(linesCount)));
+        pt.second = ParamScaleY * sdfFont->GetLineHeight() * static_cast<decltype(ParamScaleY)>(linesCount);
     }
     return pt;
 }
@@ -385,7 +384,7 @@ AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text) {
         appendParams.ScrenH = static_cast<decltype(appendParams.ScrenH)>(ScreenSize.y);
 
         SharedPool.floatVector.clear();
-        AkkordPoint size(GetTextSizeByLine(Text, &SharedPool.floatVector));
+        auto size = GetTextSizeByLine(Text, scaleX, scaleY, &SharedPool.floatVector);
         float x_start, x_current, y_current{ static_cast<float>(Y) };
         unsigned i{ 0 }, line{ 0 };
 
@@ -394,10 +393,10 @@ AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text) {
         switch (alignV)
         {
         case SDFFont::AlignV::Center:
-            y_current += (rectH - static_cast<decltype(y_current)>(size.y)) / 2;
+            y_current += (rectH - size.second) / 2;
             break;
         case SDFFont::AlignV::Bottom:
-            y_current += (rectH - static_cast<decltype(y_current)>(size.y));
+            y_current += (rectH - size.second);
             break;
         default: // в остальных случаях ничего не делаем, координату Y не меняем
             break;
