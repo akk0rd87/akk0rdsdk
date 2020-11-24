@@ -449,7 +449,7 @@ AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text) {
                 destRect.x = x_current;
                 destRect.y = y_current + scaleY * charParams.yoffset;
                 destRect.w = scaleX * charParams.w;
-                destRect.h = scaleX * charParams.h;
+                destRect.h = scaleY * charParams.h;
 
                 videoBuffer->Append(appendParams);
 
