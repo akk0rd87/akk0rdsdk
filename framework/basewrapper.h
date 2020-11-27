@@ -249,7 +249,8 @@ public:
     static bool                LaunchAppReviewIfAvailable(); // only for Android
     static bool                RequestFlexibleUpdateIfAvailable(); // only for Android
 
-    static std::string         GetAppVersionInfo();
+    static std::string         GetAppVersionName();
+    static std::string         GetAppVersionCode();
 
     static constexpr BWrapper::OS GetDeviceOS()
     {

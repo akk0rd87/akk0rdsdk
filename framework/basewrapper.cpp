@@ -833,8 +833,12 @@ bool BWrapper::OpenURL(const char* url)
     return false;
 };
 
-std::string BWrapper::GetAppVersionInfo() {
-    return PlatformWrapper::GetInstance().GetAppVersionInfo();
+std::string BWrapper::GetAppVersionCode() {
+    return PlatformWrapper::GetInstance().GetAppVersionCode();
+};
+
+std::string BWrapper::GetAppVersionName() {
+    return PlatformWrapper::GetInstance().GetAppVersionName();
 };
 
 Locale::Lang BWrapper::GetDeviceLanguage()

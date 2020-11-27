@@ -11,7 +11,6 @@ class AndroidPlatformWrapper : public PlatformWrapper {
         AAssetManager *AssetMgr               { nullptr };
         jclass    UtilsClass                  { nullptr } ;
         jmethodID midDirectoryDelete          { nullptr };
-        //jmethodID midOpenURL                  { nullptr };
         jmethodID midShowToast                { nullptr };
         jmethodID midMkDir                    { nullptr };
         jmethodID midShowMessageBox           { nullptr };
@@ -22,7 +21,8 @@ class AndroidPlatformWrapper : public PlatformWrapper {
         jmethodID midGetAudioOutputBufferSize { nullptr };
         jmethodID midLaunchAppReviewIfAvailable { nullptr };
         jmethodID midRequestFlexibleUpdateIfAvailable { nullptr };
-        jmethodID midGetAppVersionInfo        { nullptr };
+        jmethodID midGetAppVersionCode        { nullptr };
+        jmethodID midGetAppVersionName        { nullptr };
 
         std::string sLanguage;
         //std::string sInternalDir;
@@ -103,7 +103,6 @@ class AndroidPlatformWrapper : public PlatformWrapper {
         AndroidWrapperState.AssetMgr                    = nullptr;
         AndroidWrapperState.UtilsClass                  = nullptr;
         AndroidWrapperState.midDirectoryDelete          = nullptr;
-        //AndroidWrapperState.midOpenURL                  = nullptr;
         AndroidWrapperState.midShowToast                = nullptr;
         AndroidWrapperState.midMkDir                    = nullptr;
         AndroidWrapperState.midShowMessageBox           = nullptr;
@@ -120,7 +119,6 @@ class AndroidPlatformWrapper : public PlatformWrapper {
             return false;
         }
         AndroidWrapperState.midDirectoryDelete             = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "DirectoryDelete", "(Ljava/lang/String;I)I", true);
-        //AndroidWrapperState.midOpenURL                     = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "openURL", "(Ljava/lang/String;)V", true);
         AndroidWrapperState.midShowToast                   = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "showToast", "(Ljava/lang/String;IIII)V", true);
         AndroidWrapperState.midMkDir                       = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "MkDir", "(Ljava/lang/String;)I", true);
         AndroidWrapperState.midShowMessageBox              = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "showMessageBox", "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)V", true);
@@ -129,7 +127,8 @@ class AndroidPlatformWrapper : public PlatformWrapper {
         AndroidWrapperState.midLaunchAppReviewIfAvailable  = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "LaunchAppReviewIfAvailable", "()V", true);
         AndroidWrapperState.midRequestFlexibleUpdateIfAvailable = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "RequestFlexibleUpdateIfAvailable", "()V", true);
 
-        AndroidWrapperState.midGetAppVersionInfo           = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "GetAppVersionInfo", "()Ljava/lang/String;", true);
+        AndroidWrapperState.midGetAppVersionCode           = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "GetAppVersionCode", "()Ljava/lang/String;", true);
+        AndroidWrapperState.midGetAppVersionName           = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "GetAppVersionName", "()Ljava/lang/String;", true);
         // пока комментим, так как для Android требуется FileProvider
         //AndroidWrapperState.midSharePNG                  = getJavaStaticMethod(env, AndroidWrapperState.UtilsClass, "sharePNG", "(Ljava/lang/String;Ljava/lang/String;)V", true);
 
@@ -258,24 +257,6 @@ class AndroidPlatformWrapper : public PlatformWrapper {
         return true;
     };
 
-    // Activity functions
-    /*
-    bool vOpenURL(const char* url)  override {
-        JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-        //logDebug("GetStaticMethodID before");
-        //logDebug("GetStaticMethodID after");
-        if(!AndroidWrapperState.midOpenURL) {
-            logError("AndroidWrapper: OpenURL Java method not Found");
-            return false;
-        }
-        jstring url_jstring = (jstring)env->NewStringUTF(url);
-        //logDebug("Call Method");
-        env->CallStaticVoidMethod(AndroidWrapperState.UtilsClass, AndroidWrapperState.midOpenURL, url_jstring);
-        env->DeleteLocalRef(url_jstring);
-        return true;
-    };
-    */
-
     void vMessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS)  override {
         JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
         if(!AndroidWrapperState.midShowMessageBox)
@@ -360,14 +341,28 @@ class AndroidPlatformWrapper : public PlatformWrapper {
         return true;
     }
 
-    std::string vGetAppVersionInfo() override {
-        if(!AndroidWrapperState.midGetAppVersionInfo) {
-            logError("AndroidWrapper GetAppVersionInfo Java method not Found");
+    std::string vGetAppVersionCode() override {
+        if(!AndroidWrapperState.midGetAppVersionCode) {
+            logError("AndroidWrapper GetAppVersionCode Java method not Found");
             return "Unknown";
         }
 
         JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-        jstring jstrVersion = (jstring)env->CallStaticObjectMethod(AndroidWrapperState.UtilsClass, AndroidWrapperState.midGetAppVersionInfo);
+        jstring jstrVersion = (jstring)env->CallStaticObjectMethod(AndroidWrapperState.UtilsClass, AndroidWrapperState.midGetAppVersionCode);
+        const char* VersionStr = env->GetStringUTFChars(jstrVersion, 0);
+        const std::string versionString(VersionStr);
+        env->ReleaseStringUTFChars(jstrVersion, VersionStr);
+        return versionString;
+    }
+
+    std::string vGetAppVersionName() override {
+        if(!AndroidWrapperState.midGetAppVersionName) {
+            logError("AndroidWrapper GetAppVersionName Java method not Found");
+            return "Unknown";
+        }
+
+        JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
+        jstring jstrVersion = (jstring)env->CallStaticObjectMethod(AndroidWrapperState.UtilsClass, AndroidWrapperState.midGetAppVersionName);
         const char* VersionStr = env->GetStringUTFChars(jstrVersion, 0);
         const std::string versionString(VersionStr);
         env->ReleaseStringUTFChars(jstrVersion, VersionStr);

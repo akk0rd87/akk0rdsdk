@@ -96,13 +96,6 @@ class WinDesktopWrapper : public PlatformWrapper {
         FindClose(Handle);
         return true;
     };
-    ;
-
-    // Activity functions
-    //bool vOpenURL(const char* url)  override {
-    //    ShellExecute(NULL, "open", url, NULL, NULL, SW_SHOWNORMAL);
-    //    return true;
-    //};
 
     void vMessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS)  override {
         SDL_MessageBoxButtonData buttons[3];

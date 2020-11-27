@@ -18,7 +18,8 @@ public:
     std::string              GetInternalWriteDir() { return vGetInternalWriteDir(); }
     std::string              GetInternalAssetsDir() { return vGetInternalAssetsDir(); }
 
-    std::string              GetAppVersionInfo() { return vGetAppVersionInfo(); }
+    std::string              GetAppVersionCode() { return vGetAppVersionCode(); }
+    std::string              GetAppVersionName() { return vGetAppVersionName(); }
 
     bool                     DirCreate(const char* Dir) { return vDirCreate(Dir); };
     bool                     DirExists(const char* Dir) { return vDirExists(Dir); };
@@ -49,7 +50,8 @@ private:
     //virtual std::string              vGetInternalDir() = 0;
     virtual std::string              vGetInternalWriteDir() = 0;
     virtual std::string              vGetInternalAssetsDir() { return "assets/"; };
-    virtual std::string              vGetAppVersionInfo() { return ""; }
+    virtual std::string              vGetAppVersionCode() { return ""; }
+    virtual std::string              vGetAppVersionName() { return ""; }
 
     virtual bool                     vDirCreate(const char* Dir) = 0;
     virtual bool                     vDirExists(const char* Dir) = 0;

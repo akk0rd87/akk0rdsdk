@@ -142,19 +142,6 @@ public class Utils {
 //        System.exit(0);
 //    }
 
-    //public static void openURL(String url) {
-    //    try
-    //    {
-    //        _context.openURL(url);
-    //        //Intent browseIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-    //        //_context.startActivity(browseIntent);
-    //    }
-    //    catch(Exception e)
-    //    {
-    //        Log.e(TAG, e.getMessage());
-    //    }
-    //}
-
     public static void showMessageBox(int Code, String Title, String Message, String Button1, String Button2, String Button3, long TimeOut)
     {
         class OneShotTask implements Runnable {
@@ -537,17 +524,25 @@ public class Utils {
         }
     }
 
-    public static String GetAppVersionInfo() {
+    public static String GetAppVersionName() {
         try {
-            PackageInfo pInfo = _context.getPackageManager().getPackageInfo(_context.getPackageName(), 0);
-            String Result = "versionName=" + pInfo.versionName + "\nversionCode=";
-            if (android.os.Build.VERSION.SDK_INT >= 28) {
-                Result += pInfo.getLongVersionCode();
+            final PackageInfo pInfo = _context.getPackageManager().getPackageInfo(_context.getPackageName(), 0);
+            return pInfo.versionName;
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+            return "";
+        }
+    }
+
+    public static String GetAppVersionCode() {
+        try {
+            final PackageInfo pInfo = _context.getPackageManager().getPackageInfo(_context.getPackageName(), 0);
+            if (android.os.Build.VERSION.SDK_INT < 28) {
+                return Long.toString(pInfo.versionCode);
             }
             else {
-                Result += pInfo.versionCode;
+                return Long.toString(pInfo.getLongVersionCode());
             }
-            return Result;
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
             return "";
