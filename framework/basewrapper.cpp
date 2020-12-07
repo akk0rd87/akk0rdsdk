@@ -1169,6 +1169,9 @@ bool FileReader::ReadLine(std::string& Line)
         return false;
     }
     if (std::getline(*in, Line)) {
+        while (Line.back() == '\r' || Line.back() == '\n') {
+            Line.pop_back();
+        }
         return true;
     }
     return false;
