@@ -21,7 +21,7 @@ public:
     IndexType GetIndexBySpriteName(IndexType AtlasIndex, const char* SpriteName);
 
     // Draw Sprite
-    void DrawSprite(IndexType SpriteIndex, const AkkordRect& Rect, unsigned char Flip = AkkordTexture::Flip::None, double Angle = 0, AkkordPoint* Point = nullptr);
+    void DrawSprite(IndexType SpriteIndex, const AkkordRect& Rect, AkkordTexture::Flip Flip = AkkordTexture::Flip::None, double Angle = 0, AkkordPoint* Point = nullptr);
 
     // Return Sprite postion in Atlas
     AkkordPoint GetSpriteSize(IndexType SpriteIndex);

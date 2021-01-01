@@ -93,7 +93,7 @@ AkkordTexture* AtlasManager::GetAtlasBySprite(IndexType SpriteIndex)
     return nullptr;
 };
 
-void AtlasManager::DrawSprite(IndexType SpriteIndex, const AkkordRect& Rect, unsigned char Flip, double Angle, AkkordPoint* Point)
+void AtlasManager::DrawSprite(IndexType SpriteIndex, const AkkordRect& Rect, AkkordTexture::Flip Flip, double Angle, AkkordPoint* Point)
 {
     if (IsValidSpriteIndex(SpriteIndex))
         AtlasTextureList[Sprites[SpriteIndex].altasIndex].Draw(Rect, &Sprites[SpriteIndex].rect, Flip, Angle, Point);

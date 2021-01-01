@@ -267,7 +267,7 @@ public:
 #endif
 
         return BWrapper::OS::Unknown;
-};
+    };
 
     static constexpr bool IsReleaseBuild()
     {
@@ -292,13 +292,13 @@ private:
     std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> tex;
 public:
     enum struct TextureType : unsigned char { BMP, PNG, JPEG, SVG };
-    struct Flip { enum : unsigned char { None = SDL_FLIP_NONE, Horizontal = SDL_FLIP_HORIZONTAL, Vertical = SDL_FLIP_VERTICAL }; };
+    enum struct Flip : unsigned char { None = SDL_FLIP_NONE, Horizontal = SDL_FLIP_HORIZONTAL, Vertical = SDL_FLIP_VERTICAL };
     void Destroy() { tex.reset(); };
     bool LoadFromFile(const char* FileName, TextureType Type, const BWrapper::FileSearchPriority SearchPriority = BWrapper::FileSearchPriority::Assets, float Scale = 1.0f);
     bool LoadFromMemory(const char* Buffer, int Size, TextureType Type, float Scale = 1.0f);
     bool CreateFromSurface(SDL_Surface* Surface);
     bool Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas = nullptr) const;
-    bool Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas, unsigned char Flip, double Angle, AkkordPoint* Point) const;
+    bool Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas, AkkordTexture::Flip Flip, double Angle, AkkordPoint* Point) const;
     AkkordPoint GetSize() const;
     bool SetColorMod(Uint8 R, Uint8 G, Uint8 B);
     bool SetColorMod(const AkkordColor& ModColor) { return SetColorMod(ModColor.GetR(), ModColor.GetG(), ModColor.GetB()); };

@@ -532,7 +532,7 @@ bool AkkordTexture::Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas
     return true;
 };
 
-bool AkkordTexture::Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas, unsigned char Flip, double Angle, AkkordPoint* Point) const
+bool AkkordTexture::Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas, AkkordTexture::Flip Flip, double Angle, AkkordPoint* Point) const
 {
     SDL_Rect NativeDstRect;
     ConvertRect2Native(Rect, &NativeDstRect); // Rect must be always set
@@ -558,7 +558,7 @@ bool AkkordTexture::Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas
     }
 
     // converting Flip
-    const SDL_RendererFlip flip = (SDL_RendererFlip)Flip;
+    const auto flip = static_cast<SDL_RendererFlip>(Flip);
 
     auto res = SDL_RenderCopyEx(CurrentContext.CurrentRenderer, tex.get(), NativeSrcRect_ptr, &NativeDstRect, Angle, point_ptr, flip);
 
@@ -1130,7 +1130,7 @@ bool FileReader::Open(const char* Fname, BWrapper::FileSearchPriority SearchPrio
             opened = true;
         }
         return opened;
-}
+    }
 #else
     if (BWrapper::FileSearchPriority::Assets == SearchPriority)
         Path = PlatformWrapper::GetInstance().GetInternalAssetsDir() + "/";
