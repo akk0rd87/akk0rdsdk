@@ -291,8 +291,8 @@ class AkkordTexture
 private:
     std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> tex;
 public:
-    enum struct TextureType : unsigned char { BMP, PNG, JPEG, SVG };
-    enum struct Flip : unsigned char { None = SDL_FLIP_NONE, Horizontal = SDL_FLIP_HORIZONTAL, Vertical = SDL_FLIP_VERTICAL };
+    enum struct TextureType : Uint8 { BMP, PNG, JPEG, SVG };
+    enum struct Flip : Uint8 { None = SDL_FLIP_NONE, Horizontal = SDL_FLIP_HORIZONTAL, Vertical = SDL_FLIP_VERTICAL };
     void Destroy() { tex.reset(); };
     bool LoadFromFile(const char* FileName, TextureType Type, const BWrapper::FileSearchPriority SearchPriority = BWrapper::FileSearchPriority::Assets, float Scale = 1.0f);
     bool LoadFromMemory(const char* Buffer, int Size, TextureType Type, float Scale = 1.0f);
@@ -312,6 +312,23 @@ public:
     AkkordTexture(AkkordTexture&& rhs) = default; // Перемещающий: конструктор
     AkkordTexture& operator= (AkkordTexture&& rhs) = default; // Оператор перемещающего присваивания
 };
+
+inline AkkordTexture::Flip operator | (AkkordTexture::Flip a, AkkordTexture::Flip b) {
+    return static_cast<AkkordTexture::Flip>(static_cast<Uint8>(a) | static_cast<Uint8>(b));
+}
+
+inline AkkordTexture::Flip operator & (AkkordTexture::Flip a, AkkordTexture::Flip b) {
+    return static_cast<AkkordTexture::Flip>(static_cast<Uint8>(a) & static_cast<Uint8>(b));
+}
+
+inline AkkordTexture::Flip operator |= (AkkordTexture::Flip a, AkkordTexture::Flip b) {
+    a = a | b;
+    return a;
+}
+
+inline bool operator!(AkkordTexture::Flip a) {
+    return (static_cast<Uint8>(a) == 0);
+}
 
 class DirContentReader
 {
