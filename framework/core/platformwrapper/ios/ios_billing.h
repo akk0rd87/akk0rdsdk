@@ -9,12 +9,11 @@
 class iOSBillingManager
 {
 public:
-    static bool Init();
+    static bool Init(BillingCallbackObserver* Observer);
     static bool QueryProductDetails(const std::vector<std::string>& ProdList);
     static bool RestorePurchases();
     static bool PurchaseProdItem(const char* ProductCode);
     static bool ConsumeProductItem(const char* PurchaseToken);
-    static void SetPurchaseUpdatedCallback (const BillingManager::PurchaseUpdatedCallbackFunction& Function);
 };
 
 #endif // __AKK0RD_SDK_IOS_INAPP_BILLING_H__

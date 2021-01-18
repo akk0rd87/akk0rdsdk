@@ -6,8 +6,7 @@ struct BillingContextStruct
     decltype(SDL_RegisterEvents(1)) BillingEventCode;
 
 #ifdef __ANDROID__
-    BillingManager::PurchaseUpdatedCallbackFunction updateCallBackFunction = nullptr;
-    BillingManager::PurchaseUpdatedConsumedFunction consumedCallBackFunction = nullptr;
+    BillingCallbackObserver* callbackObserver = nullptr;
 #endif
 };
 
@@ -46,9 +45,9 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseQueried(JNIEnv
 
     logDebug("PurchaseQueried %s %s %s", PToken, PCode, (ActionType == 0 ? "restored" : "bought"));
 
-    if (BillingContext.updateCallBackFunction != nullptr)
+    if (BillingContext.callbackObserver)
     {
-        BillingContext.updateCallBackFunction(PToken, PCode, (BillingManager::OperAction)ActionType);
+        BillingContext.callbackObserver->PurchaseUpdatedCallback(PToken, PCode, (BillingManager::OperAction)ActionType);
     }
     else
     {
@@ -63,9 +62,9 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseConsumed(JNIEn
 {
     const char* PToken = env->GetStringUTFChars(PurchaseToken, 0);
 
-    if (BillingContext.consumedCallBackFunction != nullptr)
+    if (BillingContext.callbackObserver)
     {
-        BillingContext.consumedCallBackFunction(PToken);
+        BillingContext.callbackObserver->PurchaseConsumedCallback(PToken);
     }
     else
     {
@@ -84,16 +83,17 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseConsumed(JNIEn
 //////  API
 ////////////////////////////////////////
 
-bool BillingManager::Init()
+bool BillingManager::Init(BillingCallbackObserver* Observer)
 {
     BillingContext.BillingEventCode = SDL_RegisterEvents(1);
 
 #ifdef __ANDROID__
+    BillingContext.callbackObserver = Observer;
     return AndroidBillingManager::Init();
 #endif
 
 #ifdef __APPLE__
-    return iOSBillingManager::Init();
+    return iOSBillingManager::Init(Observer);
 #endif
 
 #ifdef __WINDOWS__
@@ -148,22 +148,6 @@ bool BillingManager::ConsumeProductItem(const char* PurchaseToken)
 
     return false;
 }
-
-void BillingManager::SetPurchaseUpdatedCallback(const PurchaseUpdatedCallbackFunction& Function) {
-#ifdef __ANDROID__
-    BillingContext.updateCallBackFunction = Function;
-#endif
-
-#ifdef __APPLE__
-    iOSBillingManager::SetPurchaseUpdatedCallback(Function);
-#endif
-};
-
-void BillingManager::SetPurchaseConsumedCallback(const PurchaseUpdatedConsumedFunction& Function) {
-#ifdef __ANDROID__
-    BillingContext.consumedCallBackFunction = Function;
-#endif
-};
 
 decltype(SDL_RegisterEvents(1)) BillingManager::GetEventCode()
 {

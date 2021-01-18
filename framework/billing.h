@@ -4,23 +4,20 @@
 
 #include "basewrapper.h"
 #include <functional>
+
+class BillingCallbackObserver;
+
 class BillingManager
 {
 public:
     enum struct OperAction : int { Restored = 0, Bought = 1 };
 
-    using PurchaseUpdatedCallbackFunction = std::function<void(const char* PurchaseToken, const char* SKUid, BillingManager::OperAction Action)>;
-    using PurchaseUpdatedConsumedFunction = std::function<void(const char* PurchaseToken)>;
-
-    static bool                             Init();
+    static bool                             Init(BillingCallbackObserver* Observer);
     static int                              GetStatus();
     static bool                             QueryProductDetails(const std::vector<std::string>& ProdList);
     static bool                             RestorePurchases();
     static bool                             PurchaseProdItem(const char* ProductCode);
     static bool                             ConsumeProductItem(const char* PurchaseToken);
-
-    static void                             SetPurchaseUpdatedCallback(const PurchaseUpdatedCallbackFunction& Function);
-    static void                             SetPurchaseConsumedCallback(const PurchaseUpdatedConsumedFunction& Function);
 
     static decltype(SDL_RegisterEvents(1))  GetEventCode();
 
@@ -34,6 +31,14 @@ public:
     BillingManager(BillingManager&& rhs) = delete; // Перемещающий: конструктор
     BillingManager& operator= (const BillingManager& rhs) = delete; // Оператор копирующего присваивания
     BillingManager& operator= (BillingManager&& rhs) = delete; // Оператор перемещающего присваивания
+};
+
+class BillingCallbackObserver {
+public:
+    virtual void PurchaseUpdatedCallback(const char* PurchaseToken, const char* SKUid, BillingManager::OperAction Action) = 0;
+    virtual void PurchaseConsumedCallback(const char* PurchaseToken) = 0;
+
+    virtual ~BillingCallbackObserver() {}
 };
 
 #endif // __AKK0RD_SDK_INAPP_BILLING_H__

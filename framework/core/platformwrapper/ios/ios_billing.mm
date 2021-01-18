@@ -6,10 +6,10 @@
 class IosBillingStateClass
 {
 public:
-    BillingManager::PurchaseUpdatedCallbackFunction callbackFunction;
-    IosBillingStateClass() : callbackFunction(nullptr) {}
+    BillingManager::BillingCallbackObserver callbackObserver;
+    IosBillingStateClass() : callbackObserver(nullptr) {}
 };
-IosBillingStateClass IosBillingState;
+static IosBillingStateClass IosBillingState;
 
 @interface FSProductStore : NSObject
 + (FSProductStore *)defaultStore;
@@ -219,12 +219,12 @@ IosBillingStateClass IosBillingState;
     //[self recordTransaction:transaction];
     //[self purchaseSuccess:transaction.originalTransaction.payment.productIdentifier];
 
-    if(IosBillingState.Callback != nullptr)
+    if(IosBillingState.callbackObserver)
     {
         std::string TransactionID = std::string([transaction.originalTransaction.transactionIdentifier UTF8String]);
         std::string ProdID = std::string([transaction.originalTransaction.payment.productIdentifier UTF8String]);
 
-        IosBillingState.Callback(TransactionID.c_str(), ProdID.c_str(), BillingManager::OperAction::Restored);
+        IosBillingState.callbackObserver->PurchaseUpdatedCallback(TransactionID.c_str(), ProdID.c_str(), BillingManager::OperAction::Restored);
 
         [[SKPaymentQueue defaultQueue] finishTransaction: transaction];
     }
@@ -255,8 +255,9 @@ IosBillingStateClass IosBillingState;
 // API
 //
 
-bool iOSBillingManager::Init()
+bool iOSBillingManager::Init(BillingCallbackObserver* Observer)
 {
+    IosBillingState.callbackObserver = Observer;
    // _IosBillingProdRequestDelegate = [[IosBillingProdRequestDelegate alloc] init];
     [[FSProductStore defaultStore] registerObserver];
 
@@ -285,9 +286,5 @@ bool iOSBillingManager::QueryProductDetails(const std::vector<std::string>& Prod
     [[FSProductStore defaultStore] startProductRequestWithIdentifier:ProdList];
 
     return true;
-};
-
-void iOSBillingManager::SetPurchaseUpdatedCallback (const BillingManager::PurchaseUpdatedCallbackFunction& Function) {
-    IosBillingState.callbackFunction = Function;
 };
 };
