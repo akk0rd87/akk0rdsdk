@@ -3,13 +3,11 @@
 #import <Foundation/Foundation.h>
 #import <StoreKit/StoreKit.h>
 
-//static BillingManager::BillingPurchaseUpdatedCallback _BillingPurchaseUpdatedCallback;
-
 class IosBillingStateClass
 {
 public:
-    BillingManager::BillingPurchaseUpdatedCallback* Callback;
-    IosBillingStateClass(){Callback = nullptr;};
+    BillingManager::PurchaseUpdatedCallbackFunction callbackFunction;
+    IosBillingStateClass() : callbackFunction(nullptr) {}
 };
 IosBillingStateClass IosBillingState;
 
@@ -201,18 +199,18 @@ IosBillingStateClass IosBillingState;
 
 - (void)completeTransaction: (SKPaymentTransaction *)transaction
 {
-    if(IosBillingState.Callback != nullptr)
+    if(IosBillingState.callbackFunction != nullptr)
     {
         std::string TransactionID = std::string([transaction.transactionIdentifier UTF8String]);
         std::string ProdID = std::string([transaction.payment.productIdentifier UTF8String]);
 
-        IosBillingState.Callback(TransactionID.c_str(), ProdID.c_str(), BillingManager::OperAction::Bought);
+        IosBillingState.callbackFunction(TransactionID.c_str(), ProdID.c_str(), BillingManager::OperAction::Bought);
 
         [[SKPaymentQueue defaultQueue] finishTransaction: transaction];
     }
     else
     {
-        logError("Callback for transaction update is not set");
+        logError("callbackFunction for transaction update is not set");
     }
 }
 
@@ -289,7 +287,7 @@ bool iOSBillingManager::QueryProductDetails(const std::vector<std::string>& Prod
     return true;
 };
 
-void iOSBillingManager::SetPurchaseUpdatedCallback (BillingManager::BillingPurchaseUpdatedCallback * Callback)
-{
-    IosBillingState.Callback = Callback;
+void iOSBillingManager::SetPurchaseUpdatedCallback (const BillingManager::PurchaseUpdatedCallbackFunction& Function) {
+    IosBillingState.callbackFunction = Function;
+};
 };

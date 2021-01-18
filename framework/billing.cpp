@@ -6,8 +6,8 @@ struct BillingContextStruct
     decltype(SDL_RegisterEvents(1)) BillingEventCode;
 
 #ifdef __ANDROID__
-    BillingManager::BillingPurchaseUpdatedCallback*  AppPurchaseUpdated  = nullptr;
-    BillingManager::BillingPurchaseConsumedCallback* AppPurchaseConsumed = nullptr;
+    BillingManager::PurchaseUpdatedCallbackFunction updateCallBackFunction = nullptr;
+    BillingManager::PurchaseUpdatedConsumedFunction consumedCallBackFunction = nullptr;
 #endif
 };
 
@@ -41,18 +41,18 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_BillingDisconnected(JN
 JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseQueried(JNIEnv* env, jclass, jstring PurchaseToken, jstring ProductCode, jint Type)  /* Type: 0 - restored, 1- bought */
 {
     const char* PToken = env->GetStringUTFChars(PurchaseToken, 0);
-    const char* PCode  = env->GetStringUTFChars(ProductCode, 0);
+    const char* PCode = env->GetStringUTFChars(ProductCode, 0);
     int ActionType = (int)Type;
 
     logDebug("PurchaseQueried %s %s %s", PToken, PCode, (ActionType == 0 ? "restored" : "bought"));
 
-    if(BillingContext.AppPurchaseUpdated != nullptr)
+    if (BillingContext.updateCallBackFunction != nullptr)
     {
-        BillingContext.AppPurchaseUpdated(PToken, PCode, (BillingManager::OperAction)ActionType);
+        BillingContext.updateCallBackFunction(PToken, PCode, (BillingManager::OperAction)ActionType);
     }
     else
     {
-        logError("AppPurchaseUpdated is not set");
+        logError("updateCallBackFunction is not set");
     }
 
     env->ReleaseStringUTFChars(PurchaseToken, PToken);
@@ -63,16 +63,15 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseConsumed(JNIEn
 {
     const char* PToken = env->GetStringUTFChars(PurchaseToken, 0);
 
-    //logDebug("Purchase consumed: %s", PToken);
-
-    if (BillingContext.AppPurchaseConsumed != nullptr)
+    if (BillingContext.consumedCallBackFunction != nullptr)
     {
-        BillingContext.AppPurchaseConsumed(PToken);
+        BillingContext.consumedCallBackFunction(PToken);
     }
     else
     {
-        logError("AppPurchaseConsumed is not set");
+        logError("consumedCallBackFunction is not set");
     }
+
     env->ReleaseStringUTFChars(PurchaseToken, PToken);
 }
 #endif
@@ -150,21 +149,19 @@ bool BillingManager::ConsumeProductItem(const char* PurchaseToken)
     return false;
 }
 
-void BillingManager::SetPurchaseUpdatedCallback(BillingPurchaseUpdatedCallback* Callback)
-{
+void BillingManager::SetPurchaseUpdatedCallback(const PurchaseUpdatedCallbackFunction& Function) {
 #ifdef __ANDROID__
-    BillingContext.AppPurchaseUpdated = Callback;
+    BillingContext.updateCallBackFunction = Function;
 #endif
 
 #ifdef __APPLE__
-    iOSBillingManager::SetPurchaseUpdatedCallback(Callback);
+    iOSBillingManager::SetPurchaseUpdatedCallback(Function);
 #endif
 };
 
-void BillingManager::SetPurchaseConsumedCallback(BillingPurchaseConsumedCallback* Callback)
-{
+void BillingManager::SetPurchaseConsumedCallback(const PurchaseUpdatedConsumedFunction& Function) {
 #ifdef __ANDROID__
-    BillingContext.AppPurchaseConsumed = Callback;
+    BillingContext.consumedCallBackFunction = Function;
 #endif
 };
 
