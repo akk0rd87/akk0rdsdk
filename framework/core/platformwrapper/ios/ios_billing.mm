@@ -6,7 +6,7 @@
 class IosBillingStateClass
 {
 public:
-    BillingManager::BillingCallbackObserver callbackObserver;
+    BillingCallbackObserver* callbackObserver;
     IosBillingStateClass() : callbackObserver(nullptr) {}
 };
 static IosBillingStateClass IosBillingState;
@@ -199,12 +199,12 @@ static IosBillingStateClass IosBillingState;
 
 - (void)completeTransaction: (SKPaymentTransaction *)transaction
 {
-    if(IosBillingState.callbackFunction != nullptr)
+    if(IosBillingState.callbackObserver)
     {
-        std::string TransactionID = std::string([transaction.transactionIdentifier UTF8String]);
-        std::string ProdID = std::string([transaction.payment.productIdentifier UTF8String]);
+        const std::string TransactionID = std::string([transaction.transactionIdentifier UTF8String]);
+        const std::string ProdID = std::string([transaction.payment.productIdentifier UTF8String]);
 
-        IosBillingState.callbackFunction(TransactionID.c_str(), ProdID.c_str(), BillingManager::OperAction::Bought);
+        IosBillingState.callbackObserver->PurchaseUpdatedCallback(TransactionID.c_str(), ProdID.c_str(), BillingManager::OperAction::Bought);
 
         [[SKPaymentQueue defaultQueue] finishTransaction: transaction];
     }
@@ -286,5 +286,4 @@ bool iOSBillingManager::QueryProductDetails(const std::vector<std::string>& Prod
     [[FSProductStore defaultStore] startProductRequestWithIdentifier:ProdList];
 
     return true;
-};
 };
