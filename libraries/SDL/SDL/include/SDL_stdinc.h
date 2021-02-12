@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -31,7 +31,9 @@
 #include "SDL_config.h"
 
 #ifdef __APPLE__
-#define _DARWIN_C_SOURCE /* for memset_pattern4() */
+#ifndef _DARWIN_C_SOURCE
+#define _DARWIN_C_SOURCE 1 /* for memset_pattern4() */
+#endif
 #endif
 
 #ifdef HAVE_SYS_TYPES_H
@@ -221,7 +223,7 @@ typedef uint64_t Uint64;
 
 /* @} *//* Basic data types */
 
-/* Make sure we have macros for printing 64 bit values.
+/* Make sure we have macros for printing width-based integers.
  * <stdint.h> should define these but this is not true all platforms.
  * (for example win32) */
 #ifndef SDL_PRIs64
@@ -266,6 +268,34 @@ typedef uint64_t Uint64;
 #define SDL_PRIX64 "lX"
 #else
 #define SDL_PRIX64 "llX"
+#endif
+#endif
+#ifndef SDL_PRIs32
+#ifdef PRId32
+#define SDL_PRIs32 PRId32
+#else
+#define SDL_PRIs32 "d"
+#endif
+#endif
+#ifndef SDL_PRIu32
+#ifdef PRIu32
+#define SDL_PRIu32 PRIu32
+#else
+#define SDL_PRIu32 "u"
+#endif
+#endif
+#ifndef SDL_PRIx32
+#ifdef PRIx32
+#define SDL_PRIx32 PRIx32
+#else
+#define SDL_PRIx32 "x"
+#endif
+#endif
+#ifndef SDL_PRIX32
+#ifdef PRIX32
+#define SDL_PRIX32 PRIX32
+#else
+#define SDL_PRIX32 "X"
 #endif
 #endif
 
@@ -469,6 +499,8 @@ extern DECLSPEC wchar_t *SDLCALL SDL_wcsstr(const wchar_t *haystack, const wchar
 
 extern DECLSPEC int SDLCALL SDL_wcscmp(const wchar_t *str1, const wchar_t *str2);
 extern DECLSPEC int SDLCALL SDL_wcsncmp(const wchar_t *str1, const wchar_t *str2, size_t maxlen);
+extern DECLSPEC int SDLCALL SDL_wcscasecmp(const wchar_t *str1, const wchar_t *str2);
+extern DECLSPEC int SDLCALL SDL_wcsncasecmp(const wchar_t *str1, const wchar_t *str2, size_t len);
 
 extern DECLSPEC size_t SDLCALL SDL_strlen(const char *str);
 extern DECLSPEC size_t SDLCALL SDL_strlcpy(SDL_OUT_Z_CAP(maxlen) char *dst, const char *src, size_t maxlen);
@@ -545,6 +577,10 @@ extern DECLSPEC double SDLCALL SDL_log10(double x);
 extern DECLSPEC float SDLCALL SDL_log10f(float x);
 extern DECLSPEC double SDLCALL SDL_pow(double x, double y);
 extern DECLSPEC float SDLCALL SDL_powf(float x, float y);
+extern DECLSPEC double SDLCALL SDL_round(double x);
+extern DECLSPEC float SDLCALL SDL_roundf(float x);
+extern DECLSPEC long SDLCALL SDL_lround(double x);
+extern DECLSPEC long SDLCALL SDL_lroundf(float x);
 extern DECLSPEC double SDLCALL SDL_scalbn(double x, int n);
 extern DECLSPEC float SDLCALL SDL_scalbnf(float x, int n);
 extern DECLSPEC double SDLCALL SDL_sin(double x);

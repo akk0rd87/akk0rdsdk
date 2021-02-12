@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -361,6 +361,50 @@ SDL_powf(float x, float y)
     return powf(x, y);
 #else
     return (float)SDL_pow((double)x, (double)y);
+#endif
+}
+
+double
+SDL_round(double arg)
+{
+#if defined HAVE_ROUND
+    return round(arg);
+#else
+    if (arg >= 0.0) {
+        return SDL_floor(arg + 0.5);
+    } else {
+        return SDL_ceil(arg - 0.5);
+    }
+#endif
+}
+
+float
+SDL_roundf(float arg)
+{
+#if defined HAVE_ROUNDF
+    return roundf(arg);
+#else
+    return (float)SDL_round((double)arg);
+#endif
+}
+
+long
+SDL_lround(double arg)
+{
+#if defined HAVE_LROUND
+    return lround(arg);
+#else
+    return (long)SDL_round(arg);
+#endif
+}
+
+long
+SDL_lroundf(float arg)
+{
+#if defined HAVE_LROUNDF
+    return lroundf(arg);
+#else
+    return (long)SDL_round((double)arg);
 #endif
 }
 

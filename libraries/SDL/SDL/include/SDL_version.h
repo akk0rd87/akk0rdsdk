@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -59,7 +59,7 @@ typedef struct SDL_version
 */
 #define SDL_MAJOR_VERSION   2
 #define SDL_MINOR_VERSION   0
-#define SDL_PATCHLEVEL      13
+#define SDL_PATCHLEVEL      15
 
 /**
  *  \brief Macro to determine SDL version program was compiled against.
@@ -142,13 +142,15 @@ extern DECLSPEC void SDLCALL SDL_GetVersion(SDL_version * ver);
 extern DECLSPEC const char *SDLCALL SDL_GetRevision(void);
 
 /**
- *  \brief Get the revision number of SDL that is linked against your program.
+ *  \brief Obsolete function, do not use.
  *
- *  Returns a number uniquely identifying the exact revision of the SDL
- *  library in use. It is an incrementing number based on commits to
- *  hg.libsdl.org.
+ *  When SDL was hosted in a Mercurial repository, and was built carefully,
+ *  this would return the revision number that the build was created from.
+ *  This number was not reliable for several reasons, but more importantly,
+ *  SDL is now hosted in a git repository, which does not offer numbers at
+ *  all, only hashes. This function only ever returns zero now. Don't use it.
  */
-extern DECLSPEC int SDLCALL SDL_GetRevisionNumber(void);
+extern SDL_DEPRECATED DECLSPEC int SDLCALL SDL_GetRevisionNumber(void);
 
 
 /* Ends C function definitions when using C++ */

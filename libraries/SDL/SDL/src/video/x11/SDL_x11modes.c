@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -257,7 +257,7 @@ static int
 CalculateXRandRRefreshRate(const XRRModeInfo *info)
 {
     return (info->hTotal && info->vTotal) ?
-        round(((double)info->dotClock / (double)(info->hTotal * info->vTotal))) : 0;
+        SDL_round(((double)info->dotClock / (double)(info->hTotal * info->vTotal))) : 0;
 }
 
 static SDL_bool

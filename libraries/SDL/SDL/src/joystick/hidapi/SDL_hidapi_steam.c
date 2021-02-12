@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -971,7 +971,7 @@ HIDAPI_DriverSteam_GetDeviceName(Uint16 vendor_id, Uint16 product_id)
 static SDL_bool
 HIDAPI_DriverSteam_InitDevice(SDL_HIDAPI_Device *device)
 {
-    return HIDAPI_JoystickConnected(device, NULL, SDL_FALSE);
+    return HIDAPI_JoystickConnected(device, NULL);
 }
 
 static int
@@ -1016,14 +1016,18 @@ HIDAPI_DriverSteam_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystic
     return SDL_TRUE;
 
 error:
-    if (device->dev) {
-        hid_close(device->dev);
-        device->dev = NULL;
+    SDL_LockMutex(device->dev_lock);
+    {
+        if (device->dev) {
+            hid_close(device->dev);
+            device->dev = NULL;
+        }
+        if (device->context) {
+            SDL_free(device->context);
+            device->context = NULL;
+        }
     }
-    if (device->context) {
-        SDL_free(device->context);
-        device->context = NULL;
-    }
+    SDL_UnlockMutex(device->dev_lock);
     return SDL_FALSE;
 }
 
@@ -1160,7 +1164,7 @@ HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
 
         if (r <= 0) {
             /* Failed to read from controller */
-            HIDAPI_JoystickDisconnected(device, device->joysticks[0], SDL_FALSE);
+            HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
             return SDL_FALSE;
         }
     }
@@ -1170,12 +1174,17 @@ HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
 static void
 HIDAPI_DriverSteam_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    CloseSteamController(device->dev);
-    hid_close(device->dev);
-    device->dev = NULL;
+    SDL_LockMutex(device->dev_lock);
+    {
+        CloseSteamController(device->dev);
 
-    SDL_free(device->context);
-    device->context = NULL;
+        hid_close(device->dev);
+        device->dev = NULL;
+
+        SDL_free(device->context);
+        device->context = NULL;
+    }
+    SDL_UnlockMutex(device->dev_lock);
 }
 
 static void
@@ -1201,7 +1210,6 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteam =
     HIDAPI_DriverSteam_SetSensorsEnabled,
     HIDAPI_DriverSteam_CloseJoystick,
     HIDAPI_DriverSteam_FreeDevice,
-    NULL
 };
 
 #endif /* SDL_JOYSTICK_HIDAPI_STEAM */

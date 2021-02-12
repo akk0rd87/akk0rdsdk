@@ -1,0 +1,5 @@
+# https://github.com/alexkaratarakis/gitattributes
+# https://stackoverflow.com/questions/1967370/git-replacing-lf-with-crlf
+[core]
+    autocrlf=false
+    whitespace=-cr-at-eol,trailing-space,space-before-tab,tab-in-indent

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -468,7 +468,7 @@ SDL_GetRevision(void)
 int
 SDL_GetRevisionNumber(void)
 {
-    return SDL_REVISION_NUMBER;
+    return 0;  /* doesn't make sense without Mercurial. */
 }
 
 /* Get the name of the platform */

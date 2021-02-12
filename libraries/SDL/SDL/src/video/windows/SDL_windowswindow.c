@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,13 +24,11 @@
 
 #include "../../core/windows/SDL_windows.h"
 
-#include "SDL_assert.h"
 #include "../SDL_sysvideo.h"
 #include "../SDL_pixels_c.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
 
-#include "../../joystick/windows/SDL_rawinputjoystick_c.h"
 #include "SDL_windowsvideo.h"
 #include "SDL_windowswindow.h"
 #include "SDL_hints.h"
@@ -49,8 +47,8 @@
 
 /* Fake window to help with DirectInput events. */
 HWND SDL_HelperWindow = NULL;
-static WCHAR *SDL_HelperWindowClassName = TEXT("SDLHelperWindowInputCatcher");
-static WCHAR *SDL_HelperWindowName = TEXT("SDLHelperWindowInputMsgWindow");
+static const TCHAR *SDL_HelperWindowClassName = TEXT("SDLHelperWindowInputCatcher");
+static const TCHAR *SDL_HelperWindowName = TEXT("SDLHelperWindowInputMsgWindow");
 static ATOM SDL_HelperWindowClass = 0;
 
 /* For borderless Windows, still want the following flags:
@@ -284,7 +282,7 @@ SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, HWND parent, SDL_bool cre
         window->flags |= SDL_WINDOW_INPUT_FOCUS;
         SDL_SetKeyboardFocus(data->window);
 
-        if (window->flags & SDL_WINDOW_INPUT_GRABBED) {
+        if (window->flags & SDL_WINDOW_MOUSE_GRABBED) {
             RECT rect;
             GetClientRect(hwnd, &rect);
             ClientToScreen(hwnd, (LPPOINT) & rect);
@@ -710,7 +708,7 @@ WIN_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp)
     HDC hdc;
     BOOL succeeded = FALSE;
 
-    hdc = CreateDC(data->DeviceName, NULL, NULL, NULL);
+    hdc = CreateDCW(data->DeviceName, NULL, NULL, NULL);
     if (hdc) {
         succeeded = SetDeviceGammaRamp(hdc, (LPVOID)ramp);
         if (!succeeded) {
@@ -729,7 +727,7 @@ WIN_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp)
     HDC hdc;
     BOOL succeeded = FALSE;
 
-    hdc = CreateDC(data->DeviceName, NULL, NULL, NULL);
+    hdc = CreateDCW(data->DeviceName, NULL, NULL, NULL);
     if (hdc) {
         succeeded = GetDeviceGammaRamp(hdc, (LPVOID)ramp);
         if (!succeeded) {
@@ -740,8 +738,52 @@ WIN_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp)
     return succeeded ? 0 : -1;
 }
 
+static void WIN_GrabKeyboard(SDL_Window *window)
+{
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    HMODULE module;
+
+    if (data->keyboard_hook) {
+        return;
+    }
+
+    /* SetWindowsHookEx() needs to know which module contains the hook we
+       want to install. This is complicated by the fact that SDL can be
+       linked statically or dynamically. Fortunately XP and later provide
+       this nice API that will go through the loaded modules and find the
+       one containing our code.
+    */
+    if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT | GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+                           (LPTSTR)WIN_KeyboardHookProc,
+                           &module)) {
+        return;
+    }
+
+    /* Capture a snapshot of the current keyboard state before the hook */
+    if (!GetKeyboardState(data->videodata->pre_hook_key_state)) {
+        return;
+    }
+
+    /* To grab the keyboard, we have to install a low-level keyboard hook to
+       intercept keys that would normally be captured by the OS. Intercepting
+       all key events on the system is rather invasive, but it's what Microsoft
+       actually documents that you do to capture these.
+    */
+    data->keyboard_hook = SetWindowsHookEx(WH_KEYBOARD_LL, WIN_KeyboardHookProc, module, 0);
+}
+
+void WIN_UngrabKeyboard(SDL_Window *window)
+{
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+
+    if (data->keyboard_hook) {
+        UnhookWindowsHookEx(data->keyboard_hook);
+        data->keyboard_hook = NULL;
+    }
+}
+
 void
-WIN_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
+WIN_SetWindowMouseGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
     WIN_UpdateClipCursor(window);
 
@@ -756,11 +798,24 @@ WIN_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 }
 
 void
+WIN_SetWindowKeyboardGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
+{
+    if (grabbed) {
+        WIN_GrabKeyboard(window);
+    } else {
+        WIN_UngrabKeyboard(window);
+    }
+}
+
+void
 WIN_DestroyWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 
     if (data) {
+        if (data->keyboard_hook) {
+            UnhookWindowsHookEx(data->keyboard_hook);
+        }
         ReleaseDC(data->hwnd, data->hdc);
         RemoveProp(data->hwnd, TEXT("SDL_WindowData"));
         if (data->created) {
@@ -811,18 +866,8 @@ WIN_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
     }
 }
 
-static LRESULT CALLBACK SDL_HelperWindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-#if SDL_JOYSTICK_RAWINPUT
-    if (RAWINPUT_WindowProc(hWnd, msg, wParam, lParam) == 0) {
-        return 0;
-    }
-#endif
-    return DefWindowProc(hWnd, msg, wParam, lParam);
-}
-
 /*
- * Creates a HelperWindow used for DirectInput and RawInput events.
+ * Creates a HelperWindow used for DirectInput.
  */
 int
 SDL_HelperWindowCreate(void)
@@ -837,8 +882,8 @@ SDL_HelperWindowCreate(void)
 
     /* Create the class. */
     SDL_zero(wce);
-    wce.lpfnWndProc = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_RAWINPUT, SDL_TRUE) ? SDL_HelperWindowProc : DefWindowProc;
-    wce.lpszClassName = (LPCWSTR) SDL_HelperWindowClassName;
+    wce.lpfnWndProc = DefWindowProc;
+    wce.lpszClassName = SDL_HelperWindowClassName;
     wce.hInstance = hInstance;
 
     /* Register the class. */
@@ -933,7 +978,7 @@ WIN_UpdateClipCursor(SDL_Window *window)
         return;
     }
 
-    if ((mouse->relative_mode || (window->flags & SDL_WINDOW_INPUT_GRABBED)) &&
+    if ((mouse->relative_mode || (window->flags & SDL_WINDOW_MOUSE_GRABBED)) &&
         (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
         if (mouse->relative_mode && !mouse->relative_mode_warp) {
             if (GetWindowRect(data->hwnd, &rect)) {
@@ -965,9 +1010,18 @@ WIN_UpdateClipCursor(SDL_Window *window)
                 }
             }
         }
-    } else if (SDL_memcmp(&clipped_rect, &data->cursor_clipped_rect, sizeof(clipped_rect)) == 0) {
-        ClipCursor(NULL);
-        SDL_zero(data->cursor_clipped_rect);
+    } else {
+        POINT first, second;
+
+        first.x = clipped_rect.left;
+        first.y = clipped_rect.top;
+        second.x = clipped_rect.right - 1;
+        second.y = clipped_rect.bottom - 1;
+        if (PtInRect(&data->cursor_clipped_rect, first) &&
+            PtInRect(&data->cursor_clipped_rect, second)) {
+            ClipCursor(NULL);
+            SDL_zero(data->cursor_clipped_rect);
+        }
     }
     data->last_updated_clipcursor = SDL_GetTicks();
 }

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,6 @@
 
 #if SDL_VIDEO_RENDER_OGL_ES && !SDL_RENDER_DISABLED
 
-#include "SDL_assert.h"
 #include "SDL_hints.h"
 #include "SDL_opengles.h"
 #include "../SDL_sysrender.h"
@@ -588,9 +587,9 @@ GLES_QueueDrawLines(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_F
         const GLfloat yend = verts[3];
 
         if (ystart == yend) {  /* horizontal line */
-            verts[2] += (xend > xstart) ? 1.0f : -1.0f;
+            verts[(xend > xstart) ? 2 : 0] += 1.0f;
         } else if (xstart == xend) {  /* vertical line */
-            verts[3] += (yend > ystart) ? 1.0f : -1.0f;
+            verts[(yend > ystart) ? 3 : 1] += 1.0f;
         } else {  /* bump a pixel in the direction we are moving in. */
             const GLfloat deltax = xend - xstart;
             const GLfloat deltay = yend - ystart;
@@ -1165,7 +1164,7 @@ GLES_CreateRenderer(SDL_Window * window, Uint32 flags)
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, RENDERER_CONTEXT_MAJOR);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, RENDERER_CONTEXT_MINOR);
 
-        if (SDL_RecreateWindow(window, window_flags | SDL_WINDOW_OPENGL) < 0) {
+        if (SDL_RecreateWindow(window, (window_flags & ~(SDL_WINDOW_VULKAN | SDL_WINDOW_METAL)) | SDL_WINDOW_OPENGL) < 0) {
             goto error;
         }
     }

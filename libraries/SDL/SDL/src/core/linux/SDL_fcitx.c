@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -144,8 +144,17 @@ DBus_MessageFilter(DBusConnection *conn, DBusMessage *msg, void *data)
         dbus->message_iter_init(msg, &iter);
         dbus->message_iter_get_basic(&iter, &text);
 
-        if (text)
-            SDL_SendKeyboardText(text);
+        if (text && *text) {
+            char buf[SDL_TEXTINPUTEVENT_TEXT_SIZE];
+            size_t text_bytes = SDL_strlen(text), i = 0;
+
+            while (i < text_bytes) {
+                size_t sz = SDL_utf8strlcpy(buf, text+i, sizeof(buf));
+                SDL_SendKeyboardText(buf);
+
+                i += sz;
+            }
+        }
 
         return DBUS_HANDLER_RESULT_HANDLED;
     }

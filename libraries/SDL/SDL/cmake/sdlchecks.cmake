@@ -400,7 +400,7 @@ macro(CheckX11)
 
     check_include_file(X11/Xcursor/Xcursor.h HAVE_XCURSOR_H)
     check_include_file(X11/extensions/Xinerama.h HAVE_XINERAMA_H)
-    check_include_file(X11/extensions/XInput2.h HAVE_XINPUT_H)
+    check_include_file(X11/extensions/XInput2.h HAVE_XINPUT2_H)
     check_include_file(X11/extensions/Xrandr.h HAVE_XRANDR_H)
     check_include_file(X11/extensions/Xrender.h HAVE_XRENDER_H)
     check_include_file(X11/extensions/scrnsaver.h HAVE_XSS_H)
@@ -498,7 +498,7 @@ macro(CheckX11)
         set(SDL_VIDEO_DRIVER_X11_XINERAMA 1)
       endif()
 
-      if(VIDEO_X11_XINPUT AND HAVE_XINPUT_H)
+      if(VIDEO_X11_XINPUT AND HAVE_XINPUT2_H)
         set(HAVE_VIDEO_X11_XINPUT TRUE)
         if(HAVE_X11_SHARED AND XI_LIB)
           set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XINPUT2 "\"${XI_LIB_SONAME}\"")
@@ -564,7 +564,7 @@ macro(CheckX11)
   endif()
 endmacro()
 
-macro(WaylandProtocolGen _SCANNER _XML _PROTL)
+macro(WaylandProtocolGen _SCANNER _CODE_MODE _XML _PROTL)
     set(_WAYLAND_PROT_C_CODE "${CMAKE_CURRENT_BINARY_DIR}/wayland-generated-protocols/${_PROTL}-protocol.c")
     set(_WAYLAND_PROT_H_CODE "${CMAKE_CURRENT_BINARY_DIR}/wayland-generated-protocols/${_PROTL}-client-protocol.h")
 
@@ -579,7 +579,7 @@ macro(WaylandProtocolGen _SCANNER _XML _PROTL)
         OUTPUT "${_WAYLAND_PROT_C_CODE}"
         DEPENDS "${_WAYLAND_PROT_H_CODE}"
         COMMAND "${_SCANNER}"
-        ARGS code "${_XML}" "${_WAYLAND_PROT_C_CODE}"
+        ARGS "${_CODE_MODE}" "${_XML}" "${_WAYLAND_PROT_C_CODE}"
     )
 
     set(SOURCE_FILES ${SOURCE_FILES} "${_WAYLAND_PROT_C_CODE}")
@@ -594,6 +594,7 @@ endmacro()
 macro(CheckWayland)
   if(VIDEO_WAYLAND)
     pkg_check_modules(WAYLAND wayland-client wayland-scanner wayland-egl wayland-cursor egl xkbcommon)
+    pkg_check_modules(WAYLAND_SCANNER_1_15 "wayland-scanner>=1.15")
 
     if(WAYLAND_FOUND)
       execute_process(
@@ -610,6 +611,12 @@ macro(CheckWayland)
     endif()
 
     if(WAYLAND_FOUND)
+      if(WAYLAND_SCANNER_1_15_FOUND)
+        set(WAYLAND_SCANNER_CODE_MODE "private-code")
+      else()
+        set(WAYLAND_SCANNER_CODE_MODE "code")
+      endif()
+
       link_directories(
           ${WAYLAND_LIBRARY_DIRS}
       )
@@ -629,7 +636,7 @@ macro(CheckWayland)
       file(GLOB WAYLAND_PROTOCOLS_XML RELATIVE "${SDL2_SOURCE_DIR}/wayland-protocols/" "${SDL2_SOURCE_DIR}/wayland-protocols/*.xml")
       foreach(_XML ${WAYLAND_PROTOCOLS_XML})
         string(REGEX REPLACE "\\.xml$" "" _PROTL "${_XML}")
-        WaylandProtocolGen("${WAYLAND_SCANNER}" "${SDL2_SOURCE_DIR}/wayland-protocols/${_XML}" "${_PROTL}")
+        WaylandProtocolGen("${WAYLAND_SCANNER}" "${WAYLAND_SCANNER_CODE_MODE}" "${SDL2_SOURCE_DIR}/wayland-protocols/${_XML}" "${_PROTL}")
       endforeach()
 
       if(VIDEO_WAYLAND_QT_TOUCH)
@@ -753,6 +760,25 @@ macro(CheckOpenGLX11)
       set(SDL_VIDEO_OPENGL 1)
       set(SDL_VIDEO_OPENGL_GLX 1)
       set(SDL_VIDEO_RENDER_OGL 1)
+    endif()
+  endif()
+endmacro()
+
+# Requires:
+# - PkgCheckModules
+macro(CheckEGLKMSDRM)
+  if (HAVE_VIDEO_OPENGLES OR HAVE_VIDEO_OPENGL)
+    pkg_check_modules(EGL egl)
+    set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${EGL_CFLAGS}")
+    check_c_source_compiles("
+	#define EGL_API_FB
+	#define MESA_EGL_NO_X11_HEADERS
+	#define EGL_NO_X11
+	#include <EGL/egl.h>
+	#include <EGL/eglext.h>
+	int main (int argc, char** argv) {}" HAVE_VIDEO_OPENGL_EGL)
+    if(HAVE_VIDEO_OPENGL_EGL)
+	set(SDL_VIDEO_OPENGL_EGL 1)
     endif()
   endif()
 endmacro()
@@ -973,8 +999,8 @@ macro(CheckUSBHID)
         #include <usb.h>
         #endif
         #ifdef __DragonFly__
-        # include <bus/usb/usb.h>
-        # include <bus/usb/usbhid.h>
+        # include <bus/u4b/usb.h>
+        # include <bus/u4b/usbhid.h>
         #else
         # include <dev/usb/usb.h>
         # include <dev/usb/usbhid.h>
@@ -999,8 +1025,8 @@ macro(CheckUSBHID)
           #include <usb.h>
           #endif
           #ifdef __DragonFly__
-          # include <bus/usb/usb.h>
-          # include <bus/usb/usbhid.h>
+          # include <bus/u4b/usb.h>
+          # include <bus/u4b/usbhid.h>
           #else
           # include <dev/usb/usb.h>
           # include <dev/usb/usbhid.h>
@@ -1027,8 +1053,8 @@ macro(CheckUSBHID)
           #include <usb.h>
           #endif
           #ifdef __DragonFly__
-          #include <bus/usb/usb.h>
-          #include <bus/usb/usbhid.h>
+          #include <bus/u4b/usb.h>
+          #include <bus/u4b/usbhid.h>
           #else
           #include <dev/usb/usb.h>
           #include <dev/usb/usbhid.h>
@@ -1056,7 +1082,7 @@ macro(CheckUSBHID)
             return 0;
         }" HAVE_MACHINE_JOYSTICK)
     if(HAVE_MACHINE_JOYSTICK)
-      set(SDL_JOYSTICK_USBHID_MACHINE_JOYSTICK_H 1)
+      set(SDL_HAVE_MACHINE_JOYSTICK_H 1)
     endif()
     set(SDL_JOYSTICK_USBHID 1)
     file(GLOB BSD_JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/bsd/*.c)
@@ -1077,7 +1103,7 @@ macro(CheckHIDAPI)
       set(HAVE_HIDAPI TRUE)
     else()
       set(HAVE_HIDAPI FALSE)
-      pkg_check_modules(LIBUSB libusb)
+      pkg_check_modules(LIBUSB libusb-1.0)
       if (LIBUSB_FOUND)
         check_include_file(libusb.h HAVE_LIBUSB_H ${LIBUSB_CFLAGS})
         if (HAVE_LIBUSB_H)
@@ -1152,7 +1178,7 @@ endmacro(CheckRPI)
 macro(CheckKMSDRM)
   if(VIDEO_KMSDRM)
     pkg_check_modules(KMSDRM libdrm gbm egl)
-    if(KMSDRM_FOUND)
+    if(KMSDRM_FOUND AND HAVE_VIDEO_OPENGL_EGL)
       link_directories(
         ${KMSDRM_LIBRARY_DIRS}
       )

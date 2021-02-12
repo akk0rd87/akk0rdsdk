@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -205,12 +205,9 @@ static HWND _makeDlg(const SDL_MessageBoxData *messageboxdata)
         pSDLBtnData =  (SDL_MessageBoxButtonData *)messageboxdata->buttons;
     ULONG               cSDLBtnData = messageboxdata->numbuttons;
 
-    PSZ                 pszTitle = (messageboxdata->title == NULL)? NULL :
-                                    OS2_UTF8ToSys((PSZ) messageboxdata->title);
+    PSZ                 pszTitle = OS2_UTF8ToSys((PSZ) messageboxdata->title);
     ULONG               cbTitle = (pszTitle == NULL)? 0 : strlen(pszTitle);
-
-    PSZ                 pszText = (messageboxdata->message == NULL)? NULL :
-                                   OS2_UTF8ToSys((PSZ) messageboxdata->message);
+    PSZ                 pszText = OS2_UTF8ToSys((PSZ) messageboxdata->message);
     ULONG               cbText = (pszText == NULL)? 0 : strlen(pszText);
 
     PDLGTEMPLATE        pTemplate;

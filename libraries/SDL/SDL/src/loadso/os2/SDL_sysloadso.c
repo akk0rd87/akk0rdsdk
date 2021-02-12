@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -37,9 +37,15 @@ SDL_LoadObject(const char *sofile)
 {
     ULONG   ulRC;
     HMODULE hModule;
-    PSZ     pszModName = OS2_UTF8ToSys(sofile);
     CHAR    acError[256];
+    PSZ     pszModName;
 
+    if (!sofile) {
+        SDL_SetError("NULL sofile");
+        return NULL;
+    }
+
+    pszModName = OS2_UTF8ToSys(sofile);
     ulRC = DosLoadModule(acError, sizeof(acError), pszModName, &hModule);
     SDL_free(pszModName);
     if (ulRC != NO_ERROR) {

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -39,7 +39,6 @@
 #include "SDL_hints.h"
 #include "SDL_timer.h"
 #include "SDL_syswm.h"
-#include "SDL_assert.h"
 
 #include <stdio.h>
 
@@ -433,8 +432,12 @@ X11_DispatchFocusOut(_THIS, SDL_WindowData *data)
 static void
 X11_DispatchMapNotify(SDL_WindowData *data)
 {
-    SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_RESTORED, 0, 0);
-    SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_SHOWN, 0, 0);
+    SDL_Window *window = data->window;
+    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESTORED, 0, 0);
+    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_SHOWN, 0, 0);
+    if (!(window->flags & SDL_WINDOW_HIDDEN) && (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
+        SDL_UpdateWindowGrab(window);
+    }
 }
 
 static void
@@ -805,6 +808,9 @@ X11_DispatchEvent(_THIS)
             if (!mouse->relative_mode) {
                 SDL_SendMouseMotion(data->window, 0, 0, xevent.xcrossing.x, xevent.xcrossing.y);
             }
+
+            /* We ungrab in LeaveNotify, so we may need to grab again here */
+            SDL_UpdateWindowGrab(data->window);
         }
         break;
         /* Losing mouse coverage? */
@@ -826,6 +832,13 @@ X11_DispatchEvent(_THIS)
             if (xevent.xcrossing.mode != NotifyGrab &&
                 xevent.xcrossing.mode != NotifyUngrab &&
                 xevent.xcrossing.detail != NotifyInferior) {
+                
+                /* In order for interaction with the window decorations and menu to work properly
+                   on Mutter, we need to ungrab the keyboard when the the mouse leaves. */
+                if (!(data->window->flags & SDL_WINDOW_FULLSCREEN)) {
+                    X11_SetWindowKeyboardGrab(_this, data->window, SDL_FALSE);
+                }
+
                 SDL_SetMouseFocus(NULL);
             }
         }

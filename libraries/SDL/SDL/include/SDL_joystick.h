@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -104,6 +104,11 @@ typedef enum
     SDL_JOYSTICK_POWER_WIRED,
     SDL_JOYSTICK_POWER_MAX
 } SDL_JoystickPowerLevel;
+
+/* Set max recognized G-force from accelerometer
+   See src/joystick/uikit/SDL_sysjoystick.m for notes on why this is needed
+ */
+#define SDL_IPHONE_MAX_GFORCE 5.0
 
 
 /* Function prototypes */

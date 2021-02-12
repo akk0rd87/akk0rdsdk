@@ -1,15 +1,14 @@
-obj/*
-VisualC/.vs
-android-project/.project
 android-project/.gradle
+android-project/.project
 android-project/.settings
-android-project/app/.classpath
-android-project/app/.project
-android-project/app/.settings
-VisualC/tests/testyuv/*.bmp
-VisualC/tests/controllermap/*.bmp
-
-syntax:glob
+VisualC/tests/controllermap/axis.bmp
+VisualC/tests/controllermap/button.bmp
+VisualC/tests/controllermap/controllermap.bmp
+VisualC/tests/controllermap/controllermap_back.bmp
+VisualC/tests/testgamecontroller/controllermap_back.bmp
+VisualC/tests/testyuv/testyuv.bmp
+VisualC/.vs
+obj/**/*.d
 aclocal.m4
 autom4te*
 config.cache
@@ -59,6 +58,7 @@ xcuserdata
 *.xcworkspace
 
 # for Visual C++
+.vs
 Debug
 Release
 *.user
@@ -89,8 +89,6 @@ VisualC/visualtest/testsprite2_sample.parameters
 
 # for Android
 android-project/local.properties
-
-sdl.pc
 
 test/aclocal.m4
 test/autom4te*

@@ -31,6 +31,7 @@ libraries/SDL/SDL/VisualC/tests/**/*.wav
 
 libraries/SDL/SDL/obj/*
 libraries/SDL/SDL/libs/*
+libraries/SDL/android/obj/
 
 libraries/SDL/win32/**/*.exp
 

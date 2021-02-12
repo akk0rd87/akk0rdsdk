@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -88,7 +88,7 @@ HAIKU_CreateDevice(int devindex)
     device->SetWindowFullscreen = HAIKU_SetWindowFullscreen;
     device->SetWindowGammaRamp = HAIKU_SetWindowGammaRamp;
     device->GetWindowGammaRamp = HAIKU_GetWindowGammaRamp;
-    device->SetWindowGrab = HAIKU_SetWindowGrab;
+    device->SetWindowMouseGrab = HAIKU_SetWindowMouseGrab;
     device->DestroyWindow = HAIKU_DestroyWindow;
     device->GetWindowWMInfo = HAIKU_GetWindowWMInfo;
     device->CreateWindowFramebuffer = HAIKU_CreateWindowFramebuffer;

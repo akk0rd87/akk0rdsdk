@@ -1025,10 +1025,10 @@ std::string BWrapper::GetSDKVersionInfo()
     std::string VersionString;
     SDL_version version;
     SDL_VERSION(&version);
-    VersionString = std::string("Compiled version: ") + std::to_string(version.major) + "." + std::to_string(version.minor) + std::to_string(version.patch) + "; ";
+    VersionString = std::string("Compiled version: ") + std::to_string(version.major) + "." + std::to_string(version.minor) + "." + std::to_string(version.patch) + "; ";
 
     SDL_GetVersion(&version);
-    VersionString += std::string("Linked version: ") + std::to_string(version.major) + "." + std::to_string(version.minor) + std::to_string(version.patch) + ", Revision: " + SDL_GetRevision();
+    VersionString += std::string("Linked version: ") + std::to_string(version.major) + "." + std::to_string(version.minor) + "." + std::to_string(version.patch);
     return VersionString;
 }
 

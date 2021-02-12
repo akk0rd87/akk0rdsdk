@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -113,6 +113,10 @@ typedef void *EGLSurface;
 #endif
 #endif /* SDL_PROTOTYPES_ONLY */
 
+#if defined(SDL_VIDEO_DRIVER_KMSDRM)
+struct gbm_device;
+#endif
+
 
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */
@@ -138,7 +142,8 @@ typedef enum
     SDL_SYSWM_ANDROID,
     SDL_SYSWM_VIVANTE,
     SDL_SYSWM_OS2,
-    SDL_SYSWM_HAIKU
+    SDL_SYSWM_HAIKU,
+    SDL_SYSWM_KMSDRM
 } SDL_SYSWM_TYPE;
 
 /**
@@ -274,9 +279,10 @@ struct SDL_SysWMinfo
 #if defined(SDL_VIDEO_DRIVER_WAYLAND)
         struct
         {
-            struct wl_display *display;            /**< Wayland display */
-            struct wl_surface *surface;            /**< Wayland surface */
+            struct wl_display *display;             /**< Wayland display */
+            struct wl_surface *surface;             /**< Wayland surface */
             struct wl_shell_surface *shell_surface; /**< Wayland shell_surface (window manager handle) */
+            struct wl_egl_window *egl_window;       /**< Wayland EGL window (native window) */
         } wl;
 #endif
 #if defined(SDL_VIDEO_DRIVER_MIR)  /* no longer available, left for API/ABI compatibility. Remove in 2.1! */
@@ -309,6 +315,15 @@ struct SDL_SysWMinfo
             EGLNativeDisplayType display;
             EGLNativeWindowType window;
         } vivante;
+#endif
+
+#if defined(SDL_VIDEO_DRIVER_KMSDRM)
+        struct
+        {
+            int dev_index;               /**< Device index (ex: the X in /dev/dri/cardX) */
+            int drm_fd;                  /**< DRM FD (unavailable on Vulkan windows) */
+            struct gbm_device *gbm_dev;  /**< GBM device (unavailable on Vulkan windows) */
+        } kmsdrm;
 #endif
 
         /* Make sure this union is always 64 bytes (8 64-bit pointers). */

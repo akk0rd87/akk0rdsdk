@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,7 +27,6 @@
 #include "SDL_cpuinfo.h"
 #include "SDL_blit.h"
 
-#include "SDL_assert.h"
 
 /* General optimized routines that write char by char */
 #define HAVE_FAST_WRITE_INT8 1

@@ -318,8 +318,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             return;
         }
 
-        /*
-        */
         SDLActivity.handleNativeState();
     }
 
@@ -331,8 +329,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
            return;
         }
 
-        /*
-        */
         SDLActivity.handleNativeState();
     }
 
@@ -465,12 +461,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     protected void onDestroy() {
         Log.v(TAG, "onDestroy()");
 
-        /*
-        if (mHIDDeviceManager != null) {
-            HIDDeviceManager.release(mHIDDeviceManager);
-            mHIDDeviceManager = null;
-        }
-        */
+        //if (mHIDDeviceManager != null) {
+        //    HIDDeviceManager.release(mHIDDeviceManager);
+        //    mHIDDeviceManager = null;
+        //}
 
         if (SDLActivity.mBrokenLibraries) {
            super.onDestroy();

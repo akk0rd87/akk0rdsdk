@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -34,7 +34,6 @@
 
 #include "SDL_hints.h"
 #include "SDL_video.h"
-#include "SDL_assert.h"
 #include "SDL_endian.h"
 #include "SDL_pixels_c.h"
 
@@ -307,7 +306,7 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
         }
     }
     if (biWidth <= 0 || biHeight == 0) {
-        SDL_SetError("BMP file with bad dimensions (%dx%d)", biWidth, biHeight);
+        SDL_SetError("BMP file with bad dimensions (%" SDL_PRIs32 "x%" SDL_PRIs32 ")", biWidth, biHeight);
         was_error = SDL_TRUE;
         goto done;
     }

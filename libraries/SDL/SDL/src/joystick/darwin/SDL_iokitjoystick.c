@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2020 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -152,14 +152,17 @@ FreeDevice(recDevice *removeDevice)
         /* save next device prior to disposing of this device */
         pDeviceNext = removeDevice->pNext;
 
-        if ( gpDeviceList == removeDevice ) {
+        if (gpDeviceList == removeDevice) {
             gpDeviceList = pDeviceNext;
         } else if (gpDeviceList) {
-            recDevice *device = gpDeviceList;
-            while (device->pNext != removeDevice) {
-                device = device->pNext;
+            recDevice *device;
+
+            for (device = gpDeviceList; device; device = device->pNext) {
+                if (device->pNext == removeDevice) {
+                    device->pNext = pDeviceNext;
+                    break;
+                }
             }
-            device->pNext = pDeviceNext;
         }
         removeDevice->pNext = NULL;
 
@@ -526,11 +529,15 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
 static SDL_bool
 JoystickAlreadyKnown(IOHIDDeviceRef ioHIDDeviceObject)
 {
+    recDevice *i;
+
+#if defined(SDL_JOYSTICK_MFI)
     extern SDL_bool IOS_SupportedHIDDevice(IOHIDDeviceRef device);
     if (IOS_SupportedHIDDevice(ioHIDDeviceObject)) {
         return SDL_TRUE;
     }
-    recDevice *i;
+#endif
+
     for (i = gpDeviceList; i != NULL; i = i->pNext) {
         if (i->deviceRef == ioHIDDeviceObject) {
             return SDL_TRUE;
