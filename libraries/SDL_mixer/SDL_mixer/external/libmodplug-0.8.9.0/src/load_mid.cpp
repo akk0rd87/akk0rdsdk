@@ -30,13 +30,21 @@
 #include <math.h>
 #include <ctype.h>
 #ifndef _WIN32
-#include <unistd.h> // for sleep
+#include <unistd.h> /* sleep() */
 #endif
 
 #include "stdafx.h"
 #include "sndfile.h"
 
-#ifndef NO_MIDIFORMATS
+#ifndef MIDIFMT_SUPPORT
+BOOL CSoundFile::TestMID(const BYTE *lpStream, DWORD dwMemLength) {
+	return FALSE;
+}
+BOOL CSoundFile::ReadMID(const BYTE *lpStream, DWORD dwMemLength) {
+	return FALSE;
+}
+
+#else
 
 #define PAN_LEFT    0x30
 #define PAN_RIGHT   0xD0
@@ -91,7 +99,7 @@ typedef struct _MIDTRACK
 	BYTE instr;	// current instrument for this track
 } MIDTRACK;
 
-#if defined(WIN32) && defined(_mm_free)
+#if defined(_WIN32) && defined(_mm_free)
 #undef _mm_free
 #endif
 
@@ -259,18 +267,18 @@ static void mid_adjust_for_optimal_tempo(MIDHANDLE *h, int maxtempo)
 static MIDEVENT *mid_new_event(MIDHANDLE *h)
 // =====================================================================================
 {
-    MIDEVENT   *retval;
+	MIDEVENT   *retval;
 
-    retval = (MIDEVENT *)_mm_calloc(h->trackhandle, 1,sizeof(MIDEVENT));
-		retval->next      = NULL;
-    retval->tracktick = h->tracktime;
-		retval->flg       = 0;
-		retval->note      = 0;
-		retval->volume    = 0;
-		retval->smpno     = 0;
-		retval->fx        = none;
-		retval->fxparam   = 0;
-    return retval;
+	retval = (MIDEVENT *)_mm_calloc(h->trackhandle, 1,sizeof(MIDEVENT));
+	retval->next      = NULL;
+	retval->tracktick = h->tracktime;
+	retval->flg       = 0;
+	retval->note      = 0;
+	retval->volume    = 0;
+	retval->smpno     = 0;
+	retval->fx        = none;
+	retval->fxparam   = 0;
+	return retval;
 }
 
 // =====================================================================================
@@ -1585,4 +1593,4 @@ BOOL CSoundFile::ReadMID(const BYTE *lpStream, DWORD dwMemLength)
 	avoid_reentry = 0; // it is safe now, I'm finished
 	return TRUE;
 }
-#endif // NO_MIDIFORMATS
+#endif // MIDIFMT_SUPPORT

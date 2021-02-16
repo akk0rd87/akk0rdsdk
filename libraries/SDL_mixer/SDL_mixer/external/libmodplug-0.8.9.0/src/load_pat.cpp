@@ -33,22 +33,30 @@
 #include <string.h>
 #include <math.h>
 #include <ctype.h>
+#include <limits.h> /* PATH_MAX */
 #ifndef _WIN32
-#include <limits.h> // for PATH_MAX
-#include <unistd.h> // for sleep
-#endif
-#ifndef PATH_MAX
-#define PATH_MAX 256
+#include <unistd.h>  /* sleep() */
 #endif
 
 #include "stdafx.h"
 #include "sndfile.h"
+#ifndef PATH_MAX
+#define PATH_MAX 256
+#endif
 
-#ifndef NO_MIDIFORMATS
+#ifndef MIDIFMT_SUPPORT
+BOOL CSoundFile::TestPAT(const BYTE *lpStream, DWORD dwMemLength) {
+	return FALSE;
+}
+BOOL CSoundFile::ReadPAT(const BYTE *lpStream, DWORD dwMemLength) {
+	return FALSE;
+}
+
+#else
 
 #include "load_pat.h"
 
-#ifdef _WIN32
+#if defined(_WIN32)||defined(__OS2__)
 #define DIRDELIM		'\\'
 #define TIMIDITYCFG	"C:\\TIMIDITY\\TIMIDITY.CFG"
 #define PATHFORPAT	"C:\\TIMIDITY\\INSTRUMENTS"
@@ -62,9 +70,10 @@
 
 // 128 gm and 63 drum
 #define MAXSMP				191
+
 static char midipat[MAXSMP][PATH_MAX];
-static char pathforpat[PATH_MAX] = {};
-static char timiditycfg[PATH_MAX] = {};
+static char pathforpat[PATH_MAX];
+static char timiditycfg[PATH_MAX];
 
 #pragma pack(1)
 
@@ -274,7 +283,7 @@ typedef float (*PAT_SAMPLE_FUN)(int);
 
 static PAT_SAMPLE_FUN pat_fun[] = { pat_sinus, pat_square, pat_sawtooth };
 
-#if defined(WIN32) && defined(_mm_free)
+#if defined(_WIN32) && defined(_mm_free)
 #undef _mm_free
 #endif
 
@@ -1258,4 +1267,4 @@ BOOL CSoundFile::ReadPAT(const BYTE *lpStream, DWORD dwMemLength)
 	PAT_Cleanup(h);	// we dont need it anymore
 	return 1;
 }
-#endif // NO_MIDIFORMATS
+#endif // MIDIFMT_SUPPORT

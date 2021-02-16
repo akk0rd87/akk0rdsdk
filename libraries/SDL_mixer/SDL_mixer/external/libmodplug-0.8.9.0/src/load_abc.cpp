@@ -31,13 +31,21 @@
 #include <math.h>
 #include <ctype.h>
 #ifndef _WIN32
-#include <unistd.h> // for sleep
-#endif // _WIN32
+#include <unistd.h>  /* sleep() */
+#endif
 
 #include "stdafx.h"
 #include "sndfile.h"
 
-#ifndef NO_MIDIFORMATS
+#ifndef MIDIFMT_SUPPORT
+BOOL CSoundFile::TestABC(const BYTE *lpStream, DWORD dwMemLength) {
+	return FALSE;
+}
+BOOL CSoundFile::ReadABC(const BYTE *lpStream, DWORD dwMemLength) {
+	return FALSE;
+}
+
+#else
 
 #include "load_pat.h"
 
@@ -395,7 +403,7 @@ static void abc_dumptracks(ABCHANDLE *h, const char *p)
 	}
 }
 
-#if defined(WIN32) && defined(_mm_free)
+#if defined(_WIN32) && defined(_mm_free)
 #undef _mm_free
 #endif
 
@@ -1476,7 +1484,7 @@ static void	abc_add_chord(const char *p, ABCHANDLE *h, ABCTRACK *tp, uint32_t tr
 			d[chordnote] = i;
 			break;
 		}
-	p++;
+	if (*p) p++;
 	switch(*p) {
 		case 'b':
 			d[chordnote]--;
@@ -1498,7 +1506,7 @@ static void	abc_add_chord(const char *p, ABCHANDLE *h, ABCTRACK *tp, uint32_t tr
 				d[chordbase] = i;
 				break;
 			}
-		p++;
+		if (*p) p++;
 		switch(*p) {
 			case 'b':
 				d[chordbase]--;
@@ -2362,8 +2370,8 @@ static ABCHANDLE *ABC_Init(void)
 		}
 	}
 	else {
-		srandom((uint32_t)time(0));	// initialize random generator with seed
-		retval->pickrandom = 1+(int)(10000.0*random()/(RAND_MAX+1.0));
+		srand((unsigned int)time(0));	// initialize random generator with seed
+		retval->pickrandom = 1+(int)(10000.0*rand()/(RAND_MAX+1.0));
 		// can handle pickin' from songbooks with 10.000 songs
 		sprintf(buf,"%s=-%ld",ABC_ENV_NORANDOMPICK,retval->pickrandom); // xmms preloads the file
 		putenv(buf);
@@ -2635,10 +2643,11 @@ static int ABC_ReadPatterns(MODCOMMAND *pattern[], WORD psize[], ABCHANDLE *h, i
 static int ABC_Key(const char *p)
 {
 	int i,j;
-	char c[8] = {}; // initialize all to zero.
+	char c[8];
 	const char *q;
 	while( isspace(*p) ) p++;
 	q = p;
+	memset(c, 0, 8);
 	for( i=0; i<8 && *p && *p != ']'; p++ ) {
 		if( isspace(*p) ) {
 			while( isspace(*p) ) p++;
@@ -2931,9 +2940,10 @@ static void abc_MIDI_voice(const char *p, ABCTRACK *tp, ABCHANDLE *h)
 static void abc_MIDI_chordname(const char *p)
 {
 	char name[20];
-	int i, notes[6] = {};
+	int i;
 
-	for( ; *p && isspace(*p); p++ ) ;
+	for(; *p && isspace(*p); p++)
+		;
 	i = 0;
 	while ((i < 19) && (*p != ' ') && (*p != '\0')) {
 		name[i] = *p;
@@ -2945,9 +2955,12 @@ static void abc_MIDI_chordname(const char *p)
 		abc_message("Failure: Bad format for chordname command, %s", p);
 	}
 	else {
+		int notes[6];
 		i = 0;
+		memset(notes, 0, sizeof(notes));
 		while ((i < 6) && isspace(*p)) {
-			for( ; *p && isspace(*p); p++ ) ;
+			for(; *p && isspace(*p); p++)
+				;
 			p += abc_getnumber(p, &notes[i]);
 			i = i + 1;
 		}
@@ -4870,4 +4883,4 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 	ABC_Cleanup(h);	// we dont need it anymore
 	return 1;
 }
-#endif // NO_MIDIFORMATS
+#endif // MIDIFMT_SUPPORT

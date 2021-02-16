@@ -97,8 +97,9 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
-DIST_COMMON = $(srcdir)/Makefile.am $(libmodpluginclude_HEADERS) \
-	$(noinst_HEADERS) $(am__DIST_COMMON)
+DIST_COMMON = $(srcdir)/Makefile.am \
+	$(am__libmodpluginclude_HEADERS_DIST) $(noinst_HEADERS) \
+	$(am__DIST_COMMON)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES =
@@ -139,8 +140,8 @@ am_libmodplug_la_OBJECTS = sndmix.lo sndfile.lo snd_fx.lo snd_flt.lo \
 	load_umx.lo load_ult.lo load_stm.lo load_s3m.lo load_ptm.lo \
 	load_okt.lo load_mtm.lo load_mod.lo load_med.lo load_mdl.lo \
 	load_it.lo load_far.lo load_dsm.lo load_dmf.lo load_dbm.lo \
-	load_ams.lo load_amf.lo load_669.lo load_j2b.lo load_mt2.lo \
-	load_psm.lo load_abc.lo load_mid.lo load_pat.lo modplug.lo
+	load_ams.lo load_amf.lo load_669.lo load_mt2.lo load_psm.lo \
+	load_abc.lo load_mid.lo load_pat.lo modplug.lo
 libmodplug_la_OBJECTS = $(am_libmodplug_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -209,6 +210,8 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
+am__libmodpluginclude_HEADERS_DIST = modplug.h libmodplug/stdafx.h \
+	libmodplug/sndfile.h libmodplug/it_defs.h
 HEADERS = $(libmodpluginclude_HEADERS) $(noinst_HEADERS)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) \
 	$(LISP)config.h.in
@@ -392,7 +395,6 @@ libmodplug_la_SOURCES = tables.h         \
                         load_ams.cpp       \
                         load_amf.cpp       \
                         load_669.cpp       \
-                        load_j2b.cpp       \
                         load_mt2.cpp       \
                         load_psm.cpp       \
                         load_abc.cpp       \
@@ -401,7 +403,8 @@ libmodplug_la_SOURCES = tables.h         \
                         modplug.cpp
 
 libmodplugincludedir = $(includedir)/libmodplug
-libmodpluginclude_HEADERS = libmodplug/stdafx.h libmodplug/sndfile.h libmodplug/it_defs.h modplug.h
+@EXPORT_CXX_TRUE@HEADERS_CXX = libmodplug/stdafx.h libmodplug/sndfile.h libmodplug/it_defs.h
+libmodpluginclude_HEADERS = modplug.h $(HEADERS_CXX)
 noinst_HEADERS = load_pat.h
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -507,7 +510,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/load_dsm.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/load_far.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/load_it.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/load_j2b.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/load_mdl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/load_med.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/load_mid.Plo@am__quote@

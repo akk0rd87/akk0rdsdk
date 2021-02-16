@@ -8,10 +8,6 @@
 #include "libmodplug/sndfile.h"
 #include "tables.h"
 
-#ifdef MODPLUG_TRACKER
-#define ENABLE_STEREOVU
-#endif
-
 // Volume ramp length, in 1/10 ms
 #define VOLUMERAMPLEN	146	// 1.46ms = 64 samples at 44.1kHz
 
@@ -80,7 +76,7 @@ static const UINT PreAmpAGCTable[16] =
 // Return (a*b)/c - no divide error
 int _muldiv(long a, long b, long c)
 {
-#ifdef MSC_VER
+#if defined(_MSC_VER) && defined(_M_IX86)
 	int sign, result;
 	_asm {
 	mov eax, a
@@ -123,11 +119,10 @@ rneg:
 #endif
 }
 
-
 // Return (a*b+c/2)/c - no divide error
 int _muldivr(long a, long b, long c)
 {
-#ifdef MSC_VER
+#if defined(_MSC_VER) && defined(_M_IX86)
 	int sign, result;
 	_asm {
 	mov eax, a
@@ -340,7 +335,6 @@ MixDone:
 }
 
 
-
 /////////////////////////////////////////////////////////////////////////////
 // Handles navigation/effects
 
@@ -504,9 +498,6 @@ BOOL CSoundFile::ReadNote()
 		if ((pChn->dwFlags & CHN_MUTE) || ((nChn >= m_nChannels) && (!pChn->nLength)))
 		{
 			pChn->nVUMeter = 0;
-#ifdef ENABLE_STEREOVU
-			pChn->nLeftVU = pChn->nRightVU = 0;
-#endif
 			continue;
 		}
 		// Reset channel data
@@ -1038,56 +1029,17 @@ BOOL CSoundFile::ReadNote()
 				}
 			}
 		}
-#ifdef MODPLUG_PLAYER
-		// Limit CPU -> > 80% -> don't ramp
-		if ((gnCPUUsage >= 80) && (!pChn->nRealVolume))
-		{
-			pChn->nLeftVol = pChn->nRightVol = 0;
-		}
-#endif // MODPLUG_PLAYER
 		// Volume ramping
 		pChn->dwFlags &= ~CHN_VOLUMERAMP;
 		if ((pChn->nRealVolume) || (pChn->nLeftVol) || (pChn->nRightVol))
 			pChn->dwFlags |= CHN_VOLUMERAMP;
-#ifdef MODPLUG_PLAYER
-		// Decrease VU-Meter
-		if (pChn->nVUMeter > VUMETER_DECAY)	pChn->nVUMeter -= VUMETER_DECAY; else pChn->nVUMeter = 0;
-#endif // MODPLUG_PLAYER
-#ifdef ENABLE_STEREOVU
-		if (pChn->nLeftVU > VUMETER_DECAY) pChn->nLeftVU -= VUMETER_DECAY; else pChn->nLeftVU = 0;
-		if (pChn->nRightVU > VUMETER_DECAY) pChn->nRightVU -= VUMETER_DECAY; else pChn->nRightVU = 0;
-#endif
 		// Check for too big nInc
 		if (((pChn->nInc >> 16) + 1) >= (LONG)(pChn->nLoopEnd - pChn->nLoopStart)) pChn->dwFlags &= ~CHN_LOOP;
 		pChn->nNewRightVol = pChn->nNewLeftVol = 0;
 		pChn->pCurrentSample = ((pChn->pSample) && (pChn->nLength) && (pChn->nInc)) ? pChn->pSample : NULL;
 		if (pChn->pCurrentSample)
 		{
-			// Update VU-Meter (nRealVolume is 14-bit)
-#ifdef MODPLUG_PLAYER
-			UINT vutmp = pChn->nRealVolume >> (14 - 8);
-			if (vutmp > 0xFF) vutmp = 0xFF;
-			if (pChn->nVUMeter >= 0x100) pChn->nVUMeter = vutmp;
-			vutmp >>= 1;
-			if (pChn->nVUMeter < vutmp)	pChn->nVUMeter = vutmp;
-#endif // MODPLUG_PLAYER
-#ifdef ENABLE_STEREOVU
-			UINT vul = (pChn->nRealVolume * pChn->nRealPan) >> 14;
-			if (vul > 127) vul = 127;
-			if (pChn->nLeftVU > 127) pChn->nLeftVU = (BYTE)vul;
-			vul >>= 1;
-			if (pChn->nLeftVU < vul) pChn->nLeftVU = (BYTE)vul;
-			UINT vur = (pChn->nRealVolume * (256-pChn->nRealPan)) >> 14;
-			if (vur > 127) vur = 127;
-			if (pChn->nRightVU > 127) pChn->nRightVU = (BYTE)vur;
-			vur >>= 1;
-			if (pChn->nRightVU < vur) pChn->nRightVU = (BYTE)vur;
-#endif
-#ifdef MODPLUG_TRACKER
-			UINT kChnMasterVol = (pChn->dwFlags & CHN_EXTRALOUD) ? 0x100 : nMasterVol;
-#else
 #define		kChnMasterVol	nMasterVol
-#endif // MODPLUG_TRACKER
 			// Adjusting volumes
 			if (gnChannels >= 2)
 			{
@@ -1196,11 +1148,6 @@ BOOL CSoundFile::ReadNote()
 			if (m_nMixChannels >= MAX_CHANNELS) break;
 		} else
 		{
-#ifdef ENABLE_STEREOVU
-			// Note change but no sample
-			if (pChn->nLeftVU > 128) pChn->nLeftVU = 0;
-			if (pChn->nRightVU > 128) pChn->nRightVU = 0;
-#endif
 			if (pChn->nVUMeter > 0xFF) pChn->nVUMeter = 0;
 			pChn->nLeftVol = pChn->nRightVol = 0;
 			pChn->nLength = 0;
