@@ -110,6 +110,26 @@ protected:
     GLESSDFProgram SDFPlainProgram, SDFOutlineProgram;
     GLESLinearGradientProgram LinearGradientProgram;
 
+    bool CompileGLProgram(GLESBaseProgram* Program, const char* VertextShader, const char* FragmentShader) {
+        // Create and compile the fragment shader
+        Program->vertexShader = glCreateShader(GL_VERTEX_SHADER); CheckGLESError(); PrintGLESShaderLog(Program->vertexShader);
+        glShaderSource(Program->vertexShader, 1, &VertextShader, NULL); CheckGLESError(); PrintGLESShaderLog(Program->vertexShader);
+        glCompileShader(Program->vertexShader); CheckGLESError(); PrintGLESShaderLog(Program->vertexShader);
+
+        // Create and compile the fragment shader
+        Program->fragmentShader = glCreateShader(GL_FRAGMENT_SHADER); CheckGLESError(); PrintGLESShaderLog(Program->fragmentShader);
+        glShaderSource(Program->fragmentShader, 1, &FragmentShader, NULL); CheckGLESError(); PrintGLESShaderLog(Program->fragmentShader);
+        glCompileShader(Program->fragmentShader); CheckGLESError(); PrintGLESShaderLog(Program->fragmentShader);
+
+        // Link the vertex and fragment shader into a shader program
+        Program->programId = glCreateProgram(); CheckGLESError(); PrintGLESProgamLog(Program->programId);
+        glAttachShader(Program->programId, Program->vertexShader); CheckGLESError(); PrintGLESProgamLog(Program->programId);
+        glAttachShader(Program->programId, Program->fragmentShader); CheckGLESError(); PrintGLESProgamLog(Program->programId);
+
+        return true;
+    }
+
+private:
     static constexpr const GLchar* SDF_outlineVertexSource =
         "#define SDF_OUTLINE \n"
         "varying highp vec4 result_color; \
@@ -186,26 +206,6 @@ void main() \
 gl_FragColor = result_color; \
 }";
 
-    bool CompileGLProgram(GLESBaseProgram* Program, const char* VertextShader, const char* FragmentShader) {
-        // Create and compile the fragment shader
-        Program->vertexShader = glCreateShader(GL_VERTEX_SHADER); CheckGLESError(); PrintGLESShaderLog(Program->vertexShader);
-        glShaderSource(Program->vertexShader, 1, &VertextShader, NULL); CheckGLESError(); PrintGLESShaderLog(Program->vertexShader);
-        glCompileShader(Program->vertexShader); CheckGLESError(); PrintGLESShaderLog(Program->vertexShader);
-
-        // Create and compile the fragment shader
-        Program->fragmentShader = glCreateShader(GL_FRAGMENT_SHADER); CheckGLESError(); PrintGLESShaderLog(Program->fragmentShader);
-        glShaderSource(Program->fragmentShader, 1, &FragmentShader, NULL); CheckGLESError(); PrintGLESShaderLog(Program->fragmentShader);
-        glCompileShader(Program->fragmentShader); CheckGLESError(); PrintGLESShaderLog(Program->fragmentShader);
-
-        // Link the vertex and fragment shader into a shader program
-        Program->programId = glCreateProgram(); CheckGLESError(); PrintGLESProgamLog(Program->programId);
-        glAttachShader(Program->programId, Program->vertexShader); CheckGLESError(); PrintGLESProgamLog(Program->programId);
-        glAttachShader(Program->programId, Program->fragmentShader); CheckGLESError(); PrintGLESProgamLog(Program->programId);
-
-        return true;
-    }
-
-private:
 #ifdef __AKKORD_SDK_GETGLESPROCADDR__
 #define SDL_PROC(ret,func,params) typedef ret (APIENTRY * func##_fnc)params; func##_fnc func = nullptr;
 #include "../src/render/opengles2/SDL_gles2funcs.h"
@@ -253,7 +253,7 @@ private:
             // тут именно вызов функции напрямую, а не через макрос, чтбоы не терять информацию о месте возникнования события
             BWrapper::Log(BWrapper::LogPriority::Error, File, Function, Line, "glGetError() = %u, Msg = %s", glErr, ErrorMsg.c_str());
             return true;
-        }
+}
 #endif
         return false;
     }
