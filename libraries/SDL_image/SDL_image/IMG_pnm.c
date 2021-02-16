@@ -1,6 +1,6 @@
 /*
   SDL_image:  An example image loading library for use with SDL
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -73,7 +73,7 @@ static int ReadNumber(SDL_RWops *src)
     /* Skip leading whitespace */
     do {
         if ( ! SDL_RWread(src, &ch, 1, 1) ) {
-            return(0);
+            return(-1);
         }
         /* Eat comments as whitespace */
         if ( ch == '#' ) {  /* Comment is '#' to end of line */
@@ -86,7 +86,14 @@ static int ReadNumber(SDL_RWops *src)
     } while ( SDL_isspace(ch) );
 
     /* Add up the number */
+    if (!SDL_isdigit(ch)) {
+        return -1;
+    }
     do {
+        /* Protect from possible overflow */
+        if (number >= (SDL_MAX_SINT32 / 10)) {
+            return -1;
+        }
         number *= 10;
         number += ch-'0';
 
@@ -237,6 +244,9 @@ done:
 }
 
 #else
+#if _MSC_VER >= 1300
+#pragma warning(disable : 4100) /* warning C4100: 'op' : unreferenced formal parameter */
+#endif
 
 /* See if an image is contained in a data source */
 int IMG_isPNM(SDL_RWops *src)

@@ -1,6 +1,6 @@
 /*
   SDL_image:  An example image loading library for use with SDL
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -49,8 +49,11 @@
 #define sqrt    SDL_sqrt
 #define sqrtf   SDL_sqrtf
 #define sscanf  SDL_sscanf
+#undef strchr
 #define strchr  SDL_strchr
+#undef strcmp
 #define strcmp  SDL_strcmp
+#undef strncmp
 #define strncmp SDL_strncmp
 #undef strncpy
 #define strncpy SDL_strlcpy
@@ -64,6 +67,7 @@
 #endif
 #undef HAVE_STDIO_H
 
+#define NSVG_EXPORT static
 #define NANOSVG_IMPLEMENTATION
 #include "nanosvg.h"
 #define NANOSVGRAST_IMPLEMENTATION
@@ -141,6 +145,9 @@ SDL_Surface *IMG_LoadSVG_RW(SDL_RWops *src)
 }
 
 #else
+#if _MSC_VER >= 1300
+#pragma warning(disable : 4100) /* warning C4100: 'op' : unreferenced formal parameter */
+#endif
 
 /* See if an image is contained in a data source */
 int IMG_isSVG(SDL_RWops *src)

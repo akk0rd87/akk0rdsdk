@@ -1,6 +1,6 @@
 /*
   SDL_image:  An example image loading library for use with SDL
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -21,10 +21,10 @@
 
 /* This is a JPEG image file loading framework */
 
+#include "SDL_image.h"
+
 #include <stdio.h>
 #include <setjmp.h>
-
-#include "SDL_image.h"
 
 #if !(defined(__APPLE__) || defined(SDL_IMAGE_USE_WIC_BACKEND)) || defined(SDL_IMAGE_USE_COMMON_BACKEND)
 
@@ -199,6 +199,7 @@ typedef struct {
 static void init_source (j_decompress_ptr cinfo)
 {
     /* We don't actually need to do anything */
+    (void)cinfo;
     return;
 }
 
@@ -263,6 +264,7 @@ static void skip_input_data (j_decompress_ptr cinfo, long num_bytes)
 static void term_source (j_decompress_ptr cinfo)
 {
     /* We don't actually need to do anything */
+    (void)cinfo;
     return;
 }
 
@@ -314,6 +316,7 @@ static void my_error_exit(j_common_ptr cinfo)
 static void output_no_message(j_common_ptr cinfo)
 {
     /* do nothing */
+    (void)cinfo;
 }
 
 /* Load a JPEG type image from an SDL datasource */
@@ -339,6 +342,9 @@ SDL_Surface *IMG_LoadJPG_RW(SDL_RWops *src)
     cinfo.err = lib.jpeg_std_error(&jerr.errmgr);
     jerr.errmgr.error_exit = my_error_exit;
     jerr.errmgr.output_message = output_no_message;
+#ifdef _MSC_VER
+#pragma warning(disable:4611)   /* warning C4611: interaction between '_setjmp' and C++ object destruction is non-portable */
+#endif
     if(setjmp(jerr.escape)) {
         /* If we get here, libjpeg found an error */
         lib.jpeg_destroy_decompress(&cinfo);
@@ -422,6 +428,7 @@ typedef struct {
 static void init_destination(j_compress_ptr cinfo)
 {
     /* We don't actually need to do anything */
+    (void)cinfo;
     return;
 }
 
@@ -479,7 +486,7 @@ static int IMG_SaveJPG_RW_jpeglib(SDL_Surface *surface, SDL_RWops *dst, int free
     int result = -1;
 
     if (!dst) {
-        SDL_SetError("Passed NULL dst");
+        IMG_SetError("Passed NULL dst");
         goto done;
     }
 
@@ -535,6 +542,9 @@ done:
 }
 
 #else
+#if _MSC_VER >= 1300
+#pragma warning(disable : 4100) /* warning C4100: 'op' : unreferenced formal parameter */
+#endif
 
 int IMG_InitJPG()
 {

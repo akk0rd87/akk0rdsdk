@@ -849,7 +849,15 @@ typedef mz_bool (*tdefl_put_buf_func_ptr)(const void* pBuf, int len, void *pUser
 // tdefl_compress_mem_to_output() compresses a block to an output stream. The above helpers use this function internally.
 MINIZ_STATIC mz_bool tdefl_compress_mem_to_output(const void *pBuf, size_t buf_len, tdefl_put_buf_func_ptr pPut_buf_func, void *pPut_buf_user, int flags);
 
-enum { TDEFL_MAX_HUFF_TABLES = 3, TDEFL_MAX_HUFF_SYMBOLS_0 = 288, TDEFL_MAX_HUFF_SYMBOLS_1 = 32, TDEFL_MAX_HUFF_SYMBOLS_2 = 19, TDEFL_LZ_DICT_SIZE = 32768, TDEFL_LZ_DICT_SIZE_MASK = TDEFL_LZ_DICT_SIZE - 1, TDEFL_MIN_MATCH_LEN = 3, TDEFL_MAX_MATCH_LEN = 258 };
+//enum { TDEFL_MAX_HUFF_TABLES = 3, TDEFL_MAX_HUFF_SYMBOLS_0 = 288, TDEFL_MAX_HUFF_SYMBOLS_1 = 32, TDEFL_MAX_HUFF_SYMBOLS_2 = 19, TDEFL_LZ_DICT_SIZE = 32768, TDEFL_LZ_DICT_SIZE_MASK = TDEFL_LZ_DICT_SIZE - 1, TDEFL_MIN_MATCH_LEN = 3, TDEFL_MAX_MATCH_LEN = 258 };
+#define TDEFL_MAX_HUFF_TABLES	3
+#define TDEFL_MAX_HUFF_SYMBOLS_0 288
+#define TDEFL_MAX_HUFF_SYMBOLS_1 32
+#define TDEFL_MAX_HUFF_SYMBOLS_2 19
+#define TDEFL_LZ_DICT_SIZE 32768
+#define TDEFL_LZ_DICT_SIZE_MASK	( TDEFL_LZ_DICT_SIZE - 1 )
+#define TDEFL_MIN_MATCH_LEN	3
+#define TDEFL_MAX_MATCH_LEN 258
 
 // TDEFL_OUT_BUF_SIZE MUST be large enough to hold a single entire compressed output block (using static/fixed Huffman codes).
 #if TDEFL_LESS_MEMORY
@@ -939,6 +947,11 @@ MINIZ_STATIC mz_uint tdefl_create_comp_flags_from_zip_params(int level, int wind
 // ------------------- End of Header: Implementation follows. (If you only want the header, define MINIZ_HEADER_FILE_ONLY.)
 
 #ifndef MINIZ_HEADER_FILE_ONLY
+
+#ifdef _MSC_VER
+#pragma warning (push)
+#pragma warning (disable:4505) // unreferenced local function has been removed
+#endif
 
 typedef unsigned char mz_validate_uint16[sizeof(mz_uint16)==2 ? 1 : -1];
 typedef unsigned char mz_validate_uint32[sizeof(mz_uint32)==4 ? 1 : -1];
@@ -2834,8 +2847,17 @@ MINIZ_STATIC void *tdefl_write_image_to_png_file_in_memory_ex(const void *pImage
   {
     static const mz_uint8 chans[] = {0x00, 0x00, 0x04, 0x02, 0x06};
     mz_uint8 pnghdr[41]={0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a,0x00,0x00,0x00,0x0d,0x49,0x48,0x44,0x52,
-      0,0,(mz_uint8)(w>>8),(mz_uint8)w,0,0,(mz_uint8)(h>>8),(mz_uint8)h,8,chans[num_chans],0,0,0,0,0,0,0,
-      (mz_uint8)(*pLen_out>>24),(mz_uint8)(*pLen_out>>16),(mz_uint8)(*pLen_out>>8),(mz_uint8)*pLen_out,0x49,0x44,0x41,0x54};
+      0, 0, 0/*[18]*/, 0/*[19]*/, 0, 0, 0/*[22]*/, 0/*[23]*/, 8, 0/*[25]*/, 0,0,0,0,0,0,0,
+      0/*[33]*/, 0/*[34]*/, 0/*[35]*/, 0/*[36]*/, 0x49, 0x44, 0x41, 0x54};
+    pnghdr[18] = (mz_uint8)(w>>8);
+    pnghdr[19] = (mz_uint8)w;
+    pnghdr[22] = (mz_uint8)(h>>8);
+    pnghdr[23] = (mz_uint8)h;
+    pnghdr[25] = chans[num_chans];
+    pnghdr[33] = (mz_uint8)(*pLen_out>>24);
+    pnghdr[34] = (mz_uint8)(*pLen_out>>16);
+    pnghdr[35] = (mz_uint8)(*pLen_out>>8);
+    pnghdr[36] = (mz_uint8)*pLen_out;
     c=(mz_uint32)mz_crc32(MZ_CRC32_INIT,pnghdr+12,17); for (i=0; i<4; ++i, c<<=8) ((mz_uint8*)(pnghdr+29))[i]=(mz_uint8)(c>>24);
     memcpy(out_buf.m_pBuf, pnghdr, 41);
   }
@@ -4901,6 +4923,10 @@ void *mz_zip_extract_archive_file_to_heap(const char *pZip_filename, const char 
 
 #ifdef __cplusplus
 }
+#endif
+
+#ifdef _MSC_VER
+#pragma warning (pop)
 #endif
 
 #endif // MINIZ_HEADER_FILE_ONLY

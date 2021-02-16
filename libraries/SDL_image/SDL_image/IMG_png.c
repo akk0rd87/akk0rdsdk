@@ -1,6 +1,6 @@
 /*
   SDL_image:  An example image loading library for use with SDL
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,44 +23,16 @@
 
 #include "SDL_image.h"
 
+/* We'll always have PNG save support */
+#define SAVE_PNG
+
 #if !(defined(__APPLE__) || defined(SDL_IMAGE_USE_WIC_BACKEND)) || defined(SDL_IMAGE_USE_COMMON_BACKEND)
 
 #ifdef LOAD_PNG
 
 #define USE_LIBPNG
 
-/*=============================================================================
-        File: SDL_png.c
-     Purpose: A PNG loader and saver for the SDL library
-    Revision:
-  Created by: Philippe Lavoie          (2 November 1998)
-              lavoie@zeus.genie.uottawa.ca
- Modified by:
-
- Copyright notice:
-          Copyright (C) 1998 Philippe Lavoie
-
-          This library is free software; you can redistribute it and/or
-          modify it under the terms of the GNU Library General Public
-          License as published by the Free Software Foundation; either
-          version 2 of the License, or (at your option) any later version.
-
-          This library is distributed in the hope that it will be useful,
-          but WITHOUT ANY WARRANTY; without even the implied warranty of
-          MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-          Library General Public License for more details.
-
-          You should have received a copy of the GNU Library General Public
-          License along with this library; if not, write to the Free
-          Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-
-    Comments: The load and save routine are basically the ones you can find
-             in the example.c file from the libpng distribution.
-
-  Changes:
-    5/17/99 - Modified to use the new SDL data sources - Sam Lantinga
-
-=============================================================================*/
+/* This code was originally written by Philippe Lavoie (2 November 1998) */
 
 #include "SDL_endian.h"
 
@@ -70,30 +42,47 @@
 #include <png.h>
 
 /* Check for the older version of libpng */
-#if (PNG_LIBPNG_VER_MAJOR == 1) 
+#if (PNG_LIBPNG_VER_MAJOR == 1)
 #if (PNG_LIBPNG_VER_MINOR < 5)
 #define LIBPNG_VERSION_12
 typedef png_bytep png_const_bytep;
+typedef png_color *png_const_colorp;
+#endif
+#if (PNG_LIBPNG_VER_MINOR < 4)
+typedef png_structp png_const_structp;
+typedef png_infop png_const_infop;
 #endif
 #if (PNG_LIBPNG_VER_MINOR < 6)
-typedef png_structp png_const_structrp;
-typedef png_infop png_const_inforp;
 typedef png_structp png_structrp;
 typedef png_infop png_inforp;
-typedef const png_color * png_const_colorp;
+typedef png_const_structp png_const_structrp;
+typedef png_const_infop png_const_inforp;
+/* noconst15: version < 1.6 doesn't have const, >= 1.6 adds it */
+/* noconst16: version < 1.6 does have const, >= 1.6 removes it */
+typedef png_structp png_noconst15_structrp;
+typedef png_inforp png_noconst15_inforp;
+typedef png_const_inforp png_noconst16_inforp;
+#else
+typedef png_const_structp png_noconst15_structrp;
+typedef png_const_inforp png_noconst15_inforp;
+typedef png_inforp png_noconst16_inforp;
 #endif
+#else
+typedef png_const_structp png_noconst15_structrp;
+typedef png_const_inforp png_noconst15_inforp;
+typedef png_inforp png_noconst16_inforp;
 #endif
 
 static struct {
     int loaded;
     void *handle;
-    png_infop (*png_create_info_struct) (png_const_structrp png_ptr);
+    png_infop (*png_create_info_struct) (png_noconst15_structrp png_ptr);
     png_structp (*png_create_read_struct) (png_const_charp user_png_ver, png_voidp error_ptr, png_error_ptr error_fn, png_error_ptr warn_fn);
     void (*png_destroy_read_struct) (png_structpp png_ptr_ptr, png_infopp info_ptr_ptr, png_infopp end_info_ptr_ptr);
-    png_uint_32 (*png_get_IHDR) (png_const_structrp png_ptr, png_const_inforp info_ptr, png_uint_32 *width, png_uint_32 *height, int *bit_depth, int *color_type, int *interlace_method, int *compression_method, int *filter_method);
-    png_voidp (*png_get_io_ptr) (png_const_structrp png_ptr);
+    png_uint_32 (*png_get_IHDR) (png_noconst15_structrp png_ptr, png_noconst15_inforp info_ptr, png_uint_32 *width, png_uint_32 *height, int *bit_depth, int *color_type, int *interlace_method, int *compression_method, int *filter_method);
+    png_voidp (*png_get_io_ptr) (png_noconst15_structrp png_ptr);
     png_byte (*png_get_channels) (png_const_structrp png_ptr, png_const_inforp info_ptr);
-    png_uint_32 (*png_get_PLTE) (png_const_structrp png_ptr, png_inforp info_ptr, png_colorp *palette, int *num_palette);
+    png_uint_32 (*png_get_PLTE) (png_const_structrp png_ptr, png_noconst16_inforp info_ptr, png_colorp *palette, int *num_palette);
     png_uint_32 (*png_get_tRNS) (png_const_structrp png_ptr, png_inforp info_ptr, png_bytep *trans, int *num_trans, png_color_16p *trans_values);
     png_uint_32 (*png_get_valid) (png_const_structrp png_ptr, png_const_inforp info_ptr, png_uint_32 flag);
     void (*png_read_image) (png_structrp png_ptr, png_bytepp image);
@@ -106,17 +95,21 @@ static struct {
     void (*png_set_strip_16) (png_structrp png_ptr);
     int (*png_set_interlace_handling) (png_structrp png_ptr);
     int (*png_sig_cmp) (png_const_bytep sig, png_size_t start, png_size_t num_to_check);
+#ifdef PNG_SETJMP_SUPPORTED
 #ifndef LIBPNG_VERSION_12
     jmp_buf* (*png_set_longjmp_fn) (png_structrp, png_longjmp_ptr, size_t);
 #endif
+#endif
+#ifdef SAVE_PNG
     png_structp (*png_create_write_struct) (png_const_charp user_png_ver, png_voidp error_ptr, png_error_ptr error_fn, png_error_ptr warn_fn);
     void (*png_destroy_write_struct) (png_structpp png_ptr_ptr, png_infopp info_ptr_ptr);
     void (*png_set_write_fn) (png_structrp png_ptr, png_voidp io_ptr, png_rw_ptr write_data_fn, png_flush_ptr output_flush_fn);
-    void (*png_set_IHDR) (png_const_structrp png_ptr, png_inforp info_ptr, png_uint_32 width, png_uint_32 height, int bit_depth, int color_type, int interlace_type, int compression_type, int filter_type);
-    void (*png_write_info) (png_structrp png_ptr, png_const_inforp info_ptr);
-    void (*png_set_rows) (png_const_structrp png_ptr, png_inforp info_ptr, png_bytepp row_pointers);
+    void (*png_set_IHDR) (png_noconst15_structrp png_ptr, png_inforp info_ptr, png_uint_32 width, png_uint_32 height, int bit_depth, int color_type, int interlace_type, int compression_type, int filter_type);
+    void (*png_write_info) (png_structrp png_ptr, png_noconst15_inforp info_ptr);
+    void (*png_set_rows) (png_noconst15_structrp png_ptr, png_inforp info_ptr, png_bytepp row_pointers);
     void (*png_write_png) (png_structrp png_ptr, png_inforp info_ptr, int transforms, png_voidp params);
     void (*png_set_PLTE) (png_structrp png_ptr, png_inforp info_ptr, png_const_colorp palette, int num_palette);
+#endif
 } lib;
 
 #ifdef LOAD_PNG_DYNAMIC
@@ -137,13 +130,13 @@ int IMG_InitPNG()
             return -1;
         }
 #endif
-        FUNCTION_LOADER(png_create_info_struct, png_infop (*) (png_const_structrp png_ptr))
+        FUNCTION_LOADER(png_create_info_struct, png_infop (*) (png_noconst15_structrp png_ptr))
         FUNCTION_LOADER(png_create_read_struct, png_structp (*) (png_const_charp user_png_ver, png_voidp error_ptr, png_error_ptr error_fn, png_error_ptr warn_fn))
         FUNCTION_LOADER(png_destroy_read_struct, void (*) (png_structpp png_ptr_ptr, png_infopp info_ptr_ptr, png_infopp end_info_ptr_ptr))
-        FUNCTION_LOADER(png_get_IHDR, png_uint_32 (*) (png_const_structrp png_ptr, png_const_inforp info_ptr, png_uint_32 *width, png_uint_32 *height, int *bit_depth, int *color_type, int *interlace_method, int *compression_method, int *filter_method))
-        FUNCTION_LOADER(png_get_io_ptr, png_voidp (*) (png_const_structrp png_ptr))
+        FUNCTION_LOADER(png_get_IHDR, png_uint_32 (*) (png_noconst15_structrp png_ptr, png_noconst15_inforp info_ptr, png_uint_32 *width, png_uint_32 *height, int *bit_depth, int *color_type, int *interlace_method, int *compression_method, int *filter_method))
+        FUNCTION_LOADER(png_get_io_ptr, png_voidp (*) (png_noconst15_structrp png_ptr))
         FUNCTION_LOADER(png_get_channels, png_byte (*) (png_const_structrp png_ptr, png_const_inforp info_ptr))
-        FUNCTION_LOADER(png_get_PLTE, png_uint_32 (*) (png_const_structrp png_ptr, png_inforp info_ptr, png_colorp *palette, int *num_palette))
+        FUNCTION_LOADER(png_get_PLTE, png_uint_32 (*) (png_const_structrp png_ptr, png_noconst16_inforp info_ptr, png_colorp *palette, int *num_palette))
         FUNCTION_LOADER(png_get_tRNS, png_uint_32 (*) (png_const_structrp png_ptr, png_inforp info_ptr, png_bytep *trans, int *num_trans, png_color_16p *trans_values))
         FUNCTION_LOADER(png_get_valid, png_uint_32 (*) (png_const_structrp png_ptr, png_const_inforp info_ptr, png_uint_32 flag))
         FUNCTION_LOADER(png_read_image, void (*) (png_structrp png_ptr, png_bytepp image))
@@ -156,17 +149,21 @@ int IMG_InitPNG()
         FUNCTION_LOADER(png_set_strip_16, void (*) (png_structrp png_ptr))
         FUNCTION_LOADER(png_set_interlace_handling, int (*) (png_structrp png_ptr))
         FUNCTION_LOADER(png_sig_cmp, int (*) (png_const_bytep sig, png_size_t start, png_size_t num_to_check))
+#ifdef PNG_SETJMP_SUPPORTED
 #ifndef LIBPNG_VERSION_12
         FUNCTION_LOADER(png_set_longjmp_fn, jmp_buf* (*) (png_structrp, png_longjmp_ptr, size_t))
 #endif
+#endif
+#ifdef SAVE_PNG
         FUNCTION_LOADER(png_create_write_struct, png_structp (*) (png_const_charp user_png_ver, png_voidp error_ptr, png_error_ptr error_fn, png_error_ptr warn_fn))
         FUNCTION_LOADER(png_destroy_write_struct, void (*) (png_structpp png_ptr_ptr, png_infopp info_ptr_ptr))
         FUNCTION_LOADER(png_set_write_fn, void (*) (png_structrp png_ptr, png_voidp io_ptr, png_rw_ptr write_data_fn, png_flush_ptr output_flush_fn))
-        FUNCTION_LOADER(png_set_IHDR, void (*) (png_const_structrp png_ptr, png_inforp info_ptr, png_uint_32 width, png_uint_32 height, int bit_depth, int color_type, int interlace_type, int compression_type, int filter_type))
-        FUNCTION_LOADER(png_write_info, void (*) (png_structrp png_ptr, png_const_inforp info_ptr))
-        FUNCTION_LOADER(png_set_rows, void (*) (png_const_structrp png_ptr, png_inforp info_ptr, png_bytepp row_pointers))
+        FUNCTION_LOADER(png_set_IHDR, void (*) (png_noconst15_structrp png_ptr, png_inforp info_ptr, png_uint_32 width, png_uint_32 height, int bit_depth, int color_type, int interlace_type, int compression_type, int filter_type))
+        FUNCTION_LOADER(png_write_info, void (*) (png_structrp png_ptr, png_noconst15_inforp info_ptr))
+        FUNCTION_LOADER(png_set_rows, void (*) (png_noconst15_structrp png_ptr, png_inforp info_ptr, png_bytepp row_pointers))
         FUNCTION_LOADER(png_write_png, void (*) (png_structrp png_ptr, png_inforp info_ptr, int transforms, png_voidp params))
         FUNCTION_LOADER(png_set_PLTE, void (*) (png_structrp png_ptr, png_inforp info_ptr, png_const_colorp palette, int num_palette))
+#endif
     }
     ++lib.loaded;
 
@@ -270,6 +267,11 @@ SDL_Surface *IMG_LoadPNG_RW(SDL_RWops *src)
      * the normal method of doing things with libpng).  REQUIRED unless you
      * set up your own error handlers in png_create_read_struct() earlier.
      */
+
+#ifdef PNG_SETJMP_SUPPORTED
+#ifdef _MSC_VER
+#pragma warning(disable:4611)   /* warning C4611: interaction between '_setjmp' and C++ object destruction is non-portable */
+#endif
 #ifndef LIBPNG_VERSION_12
     if ( setjmp(*lib.png_set_longjmp_fn(png_ptr, longjmp, sizeof (jmp_buf))) )
 #else
@@ -279,7 +281,7 @@ SDL_Surface *IMG_LoadPNG_RW(SDL_RWops *src)
         error = "Error reading the PNG file.";
         goto done;
     }
-
+#endif
     /* Set up the input control */
     lib.png_set_read_fn(png_ptr, src, png_read_data);
 
@@ -444,6 +446,9 @@ done:   /* Clean up and return */
 }
 
 #else
+#if _MSC_VER >= 1300
+#pragma warning(disable : 4100) /* warning C4100: 'op' : unreferenced formal parameter */
+#endif
 
 int IMG_InitPNG()
 {
@@ -470,9 +475,6 @@ SDL_Surface *IMG_LoadPNG_RW(SDL_RWops *src)
 #endif /* LOAD_PNG */
 
 #endif /* !defined(__APPLE__) || defined(SDL_IMAGE_USE_COMMON_BACKEND) */
-
-/* We'll always have PNG save support */
-#define SAVE_PNG
 
 #ifdef SAVE_PNG
 
@@ -502,6 +504,7 @@ static void png_write_data(png_structp png_ptr, png_bytep src, png_size_t size)
 
 static void png_flush_data(png_structp png_ptr)
 {
+    (void)png_ptr;
 }
 
 static int IMG_SavePNG_RW_libpng(SDL_Surface *surface, SDL_RWops *dst, int freedst)
@@ -516,25 +519,26 @@ static int IMG_SavePNG_RW_libpng(SDL_Surface *surface, SDL_RWops *dst, int freed
 
         png_ptr = lib.png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
         if (png_ptr == NULL) {
-            SDL_SetError("Couldn't allocate memory for PNG file or incompatible PNG dll");
+            IMG_SetError("Couldn't allocate memory for PNG file or incompatible PNG dll");
             return -1;
         }
 
         info_ptr = lib.png_create_info_struct(png_ptr);
         if (info_ptr == NULL) {
             lib.png_destroy_write_struct(&png_ptr, NULL);
-            SDL_SetError("Couldn't create image information for PNG file");
+            IMG_SetError("Couldn't create image information for PNG file");
             return -1;
         }
-
+#ifdef PNG_SETJMP_SUPPORTED
 #ifndef LIBPNG_VERSION_12
         if (setjmp(*lib.png_set_longjmp_fn(png_ptr, longjmp, sizeof (jmp_buf))))
 #else
         if (setjmp(png_ptr->jmpbuf))
 #endif
+#endif
         {
             lib.png_destroy_write_struct(&png_ptr, &info_ptr);
-            SDL_SetError("Error writing the PNG file.");
+            IMG_SetError("Error writing the PNG file.");
             return -1;
         }
 
@@ -543,11 +547,11 @@ static int IMG_SavePNG_RW_libpng(SDL_Surface *surface, SDL_RWops *dst, int freed
             const int ncolors = palette->ncolors;
             int i;
 
-            color_ptr = SDL_malloc(sizeof(png_colorp) * ncolors);
+            color_ptr = (png_colorp)SDL_malloc(sizeof(png_colorp) * ncolors);
             if (color_ptr == NULL)
             {
                 lib.png_destroy_write_struct(&png_ptr, &info_ptr);
-                SDL_SetError("Couldn't create palette for PNG file");
+                IMG_SetError("Couldn't create palette for PNG file");
                 return -1;
             }
             for (i = 0; i < ncolors; i++) {
@@ -575,7 +579,7 @@ static int IMG_SavePNG_RW_libpng(SDL_Surface *surface, SDL_RWops *dst, int freed
             row_pointers = (png_bytep *) SDL_malloc(sizeof(png_bytep) * source->h);
             if (!row_pointers) {
                 lib.png_destroy_write_struct(&png_ptr, &info_ptr);
-                SDL_SetError("Out of memory");
+                IMG_SetError("Out of memory");
                 return -1;
             }
             for (row = 0; row < (int)source->h; row++) {
@@ -598,7 +602,7 @@ static int IMG_SavePNG_RW_libpng(SDL_Surface *surface, SDL_RWops *dst, int freed
             SDL_RWclose(dst);
         }
     } else {
-        SDL_SetError("Passed NULL dst");
+        IMG_SetError("Passed NULL dst");
         return -1;
     }
     return 0;
@@ -611,6 +615,8 @@ static int IMG_SavePNG_RW_libpng(SDL_Surface *surface, SDL_RWops *dst, int freed
 #define MINIZ_NO_TIME
 #define MINIZ_SDL_MALLOC
 #define MZ_ASSERT(x) SDL_assert(x)
+#undef memcpy
+#define memcpy  SDL_memcpy
 #undef memset
 #define memset  SDL_memset
 #define strlen  SDL_strlen
@@ -640,13 +646,13 @@ static int IMG_SavePNG_RW_miniz(SDL_Surface *surface, SDL_RWops *dst, int freeds
             }
             SDL_free(png);
         } else {
-            SDL_SetError("Failed to convert and save image");
+            IMG_SetError("Failed to convert and save image");
         }
         if (freedst) {
             SDL_RWclose(dst);
         }
     } else {
-        SDL_SetError("Passed NULL dst");
+        IMG_SetError("Passed NULL dst");
     }
     return result;
 }

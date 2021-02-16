@@ -30,6 +30,7 @@ JPEG support requires the JPEG library: http://www.ijg.org/
 PNG support requires the PNG library: http://www.libpng.org/pub/png/libpng.html
     and the Zlib library: http://www.gzip.org/zlib/
 TIFF support requires the TIFF library: ftp://ftp.sgi.com/graphics/tiff/
+    and the Zlib library: http://www.gzip.org/zlib/
 
 If you have these libraries installed in non-standard places, you can
 try adding those paths to the configure script, e.g.

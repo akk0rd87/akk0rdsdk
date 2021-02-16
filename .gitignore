@@ -37,6 +37,7 @@ libraries/SDL/win32/**/*.exp
 
 libraries/SDL_image/SDL_image/obj/*
 libraries/SDL_image/SDL_image/libs/*
+libraries/SDL_image/android/obj/*
 libraries/SDL_mixer/SDL_mixer/obj/*
 libraries/SDL_mixer/SDL_mixer/libs/*
 
