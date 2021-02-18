@@ -23,7 +23,7 @@ extern "C" {
     JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_BillingSetupFinished(JNIEnv*, jclass, jint);
     JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_BillingDisconnected(JNIEnv*, jclass);
     JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseQueried(JNIEnv*, jclass, jstring, jstring, jint);
-    JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseConsumed(JNIEnv*, jclass, jstring);
+    JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseConsumed(JNIEnv*, jclass, jstring, jstring);
 }
 JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_BillingSetupFinished(JNIEnv*, jclass, jint ResponseCode)
 {
@@ -58,20 +58,20 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseQueried(JNIEnv
     env->ReleaseStringUTFChars(ProductCode, PCode);
 }
 
-JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseConsumed(JNIEnv* env, jclass, jstring PurchaseToken)
+JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseConsumed(JNIEnv* env, jclass, jstring PurchaseToken, jstring ProductSKU)
 {
-    const char* PToken = env->GetStringUTFChars(PurchaseToken, 0);
+    const char* purchToken = env->GetStringUTFChars(PurchaseToken, 0);
+    const char* prodToken  = env->GetStringUTFChars(ProductSKU   , 0);
 
-    if (BillingContext.callbackObserver)
-    {
-        BillingContext.callbackObserver->PurchaseConsumedCallback(PToken);
+    if (BillingContext.callbackObserver) {
+        BillingContext.callbackObserver->PurchaseConsumedCallback(purchToken, prodToken);
     }
-    else
-    {
+    else {
         logError("consumedCallBackFunction is not set");
     }
 
-    env->ReleaseStringUTFChars(PurchaseToken, PToken);
+    env->ReleaseStringUTFChars(PurchaseToken, purchToken);
+    env->ReleaseStringUTFChars(ProductSKU   , prodToken );
 }
 #endif
 
@@ -140,10 +140,10 @@ bool BillingManager::PurchaseProdItem(const char* ProductCode)
     return false;
 }
 
-bool BillingManager::ConsumeProductItem(const char* PurchaseToken)
+bool BillingManager::ConsumeProductItem(const char* PurchaseToken, const char* ProductCode)
 {
 #ifdef __ANDROID__
-    return AndroidBillingManager::ConsumeProductItem(PurchaseToken);
+    return AndroidBillingManager::ConsumeProductItem(PurchaseToken, ProductCode);
 #endif
 
     return false;

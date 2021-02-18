@@ -19,10 +19,10 @@ private:
 
 public:
     static bool Init();
-    static bool QueryProductDetails(const std::vector<std::string>& ProdList);
+    static bool QueryProductDetails(const std::vector<std::string>& ProductSKUList);
     static bool RestorePurchases();
-    static bool PurchaseProdItem(const char* ProductCode);
-    static bool ConsumeProductItem(const char* PurchaseToken);
+    static bool PurchaseProdItem(const char* ProductSKU);
+    static bool ConsumeProductItem(const char* PurchaseToken, const char* ProductSKU);
 
     //Запрещаем создавать экземпляр класса AndroidBillingManager
     AndroidBillingManager() = delete;
@@ -63,7 +63,7 @@ bool AndroidBillingManager::Init()
     midQueryProductDetails = env->GetStaticMethodID(AndroidBillingClass, "QueryProductDetails", "([Ljava/lang/String;)V");
     midRestorePurchases    = env->GetStaticMethodID(AndroidBillingClass, "RestorePurchases", "()V");
     midPurchaseProdItem    = env->GetStaticMethodID(AndroidBillingClass, "PurchaseProdItem", "(Ljava/lang/String;)V");
-    midConsumeProductItem  = env->GetStaticMethodID(AndroidBillingClass, "ConsumeProductItem", "(Ljava/lang/String;)V");
+    midConsumeProductItem  = env->GetStaticMethodID(AndroidBillingClass, "ConsumeProductItem", "(Ljava/lang/String;Ljava/lang/String;)V");
 
     if(midQueryProductDetails == nullptr) { Result = false; logError("Java midQueryProductDetails load error"); }
     if(midRestorePurchases    == nullptr) { Result = false; logError("Java midRestorePurchases    load error"); }
@@ -73,7 +73,7 @@ bool AndroidBillingManager::Init()
     return Result;
 }
 
-bool AndroidBillingManager::QueryProductDetails(const std::vector<std::string>& ProdList)
+bool AndroidBillingManager::QueryProductDetails(const std::vector<std::string>& ProductSKUList)
 {
     JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
     //https://communities.ca.com/docs/DOC-99575135
@@ -84,13 +84,12 @@ bool AndroidBillingManager::QueryProductDetails(const std::vector<std::string>& 
         return false;
     }
 
-    jobjectArray Java_array = env->NewObjectArray(ProdList.size(), env->FindClass("java/lang/String"), env->NewStringUTF(""));
+    jobjectArray Java_array = env->NewObjectArray(ProductSKUList.size(), env->FindClass("java/lang/String"), env->NewStringUTF(""));
 
     //https://stackoverflow.com/questions/20819004/call-jar-file-from-c-how-to-get-and-send-args
     // how to release https://stackoverflow.com/questions/12207941/proper-way-to-clean-up-new-object-array-in-jni
     int i = 0;
-    for(auto v : ProdList)
-    {
+    for(const auto& v : ProductSKUList) {
         env->SetObjectArrayElement(Java_array, i, env->NewStringUTF(v.c_str()));
         ++i;
     }
@@ -114,7 +113,7 @@ bool AndroidBillingManager::RestorePurchases()
     return true;
 }
 
-bool AndroidBillingManager::PurchaseProdItem(const char* ProductCode)
+bool AndroidBillingManager::PurchaseProdItem(const char* ProductSKU)
 {
     JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
 
@@ -124,14 +123,14 @@ bool AndroidBillingManager::PurchaseProdItem(const char* ProductCode)
         return false;
     }
 
-    jstring prod_jstring = (jstring)env->NewStringUTF(ProductCode);
+    jstring prod_jstring = (jstring)env->NewStringUTF(ProductSKU);
     env->CallStaticVoidMethod(AndroidBillingClass, midPurchaseProdItem, prod_jstring);
     env->DeleteLocalRef(prod_jstring);
 
     return true;
 }
 
-bool AndroidBillingManager::ConsumeProductItem(const char* PurchaseToken)
+bool AndroidBillingManager::ConsumeProductItem(const char* PurchaseToken, const char* ProductSKU)
 {
     JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
 
@@ -142,8 +141,10 @@ bool AndroidBillingManager::ConsumeProductItem(const char* PurchaseToken)
     }
 
     jstring purch_jstring = (jstring)env->NewStringUTF(PurchaseToken);
-    env->CallStaticVoidMethod(AndroidBillingClass, midConsumeProductItem, purch_jstring);
+    jstring prod_jstring  = (jstring)env->NewStringUTF(ProductSKU);
+    env->CallStaticVoidMethod(AndroidBillingClass, midConsumeProductItem, purch_jstring, prod_jstring);
     env->DeleteLocalRef(purch_jstring);
+    env->DeleteLocalRef(prod_jstring);
 
     return true;
 }

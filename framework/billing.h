@@ -14,10 +14,10 @@ public:
 
     static bool                             Init(BillingCallbackObserver* Observer);
     static int                              GetStatus();
-    static bool                             QueryProductDetails(const std::vector<std::string>& ProdList);
+    static bool                             QueryProductDetails(const std::vector<std::string>& ProductSKUList);
     static bool                             RestorePurchases();
-    static bool                             PurchaseProdItem(const char* ProductCode);
-    static bool                             ConsumeProductItem(const char* PurchaseToken);
+    static bool                             PurchaseProdItem(const char* ProductSKU);
+    static bool                             ConsumeProductItem(const char* PurchaseToken, const char* ProductSKU);
 
     static decltype(SDL_RegisterEvents(1))  GetEventCode();
 
@@ -35,8 +35,8 @@ public:
 
 class BillingCallbackObserver {
 public:
-    virtual void PurchaseUpdatedCallback(const char* PurchaseToken, const char* SKUid, BillingManager::OperAction Action) = 0;
-    virtual void PurchaseConsumedCallback(const char* PurchaseToken) = 0;
+    virtual void PurchaseUpdatedCallback(const char* PurchaseToken, const char* ProductSKU, BillingManager::OperAction Action) = 0;
+    virtual void PurchaseConsumedCallback(const char* PurchaseToken, const char* ProductSKU) = 0;
 
     virtual ~BillingCallbackObserver() {}
 };
