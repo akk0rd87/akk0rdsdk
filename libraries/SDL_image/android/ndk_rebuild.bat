@@ -1,4 +1,8 @@
 call cls
+set APP_ALLOW_MISSING_DEPS=true
+set LOCAL_ALLOW_UNDEFINED_SYMBOLS=true
+set LOCAL_C_INCLUDES       =%AKKORD_SDK_HOME%/libraries/SDL/SDL/include;
+set LOCAL_EXPORT_C_INCLUDES=%AKKORD_SDK_HOME%/libraries/SDL/SDL/include
 set APP_STL := c++_shared
 set APP_PLATFORM=android-16
 set NDK_PROJECT_PATH=%AKKORD_SDK_HOME%\libraries\SDL_image\SDL_image
