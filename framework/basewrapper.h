@@ -2,8 +2,6 @@
 #ifndef __AKK0RD_SDK_BASE_BASEWRAPPER_H__
 #define __AKK0RD_SDK_BASE_BASEWRAPPER_H__
 
-#define _CRT_SECURE_NO_WARNINGS
-
 #include "framework_defines.h"
 #include "core/locale.h"
 
