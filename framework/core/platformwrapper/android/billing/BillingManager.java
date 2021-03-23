@@ -81,13 +81,18 @@ class BillingManager implements PurchaseHistoryResponseListener, PurchasesUpdate
     }
 
     private static void checkBillingConnection() {
-        if(mBillingClient.isReady()) {
-            return;
-        }
+        try {
+            if(mBillingClient.isReady()) {
+                return;
+            }
 
-        if(billingClientLocked.compareAndSet(false, true)) {
-            mBillingClient.startConnection(billingManager);
-        };
+            if(billingClientLocked.compareAndSet(false, true)) {
+                mBillingClient.startConnection(billingManager);
+            };
+        }
+        catch(Exception e) {
+            Log.v(TAG, e.getMessage());
+        }
     }
 
     public static void Initialize()
@@ -116,10 +121,15 @@ class BillingManager implements PurchaseHistoryResponseListener, PurchasesUpdate
 
             executeServiceRequest(new Runnable() {
                 public void run() {
-                    // Query the purchase async
-                    SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
-                    params.setSkusList(skuList).setType(SkuType.INAPP);
-                    mBillingClient.querySkuDetailsAsync(params.build(), billingManager);
+                    try {
+                        // Query the purchase async
+                        SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
+                        params.setSkusList(skuList).setType(SkuType.INAPP);
+                        mBillingClient.querySkuDetailsAsync(params.build(), billingManager);
+                    }
+                    catch(Exception e) {
+                        Log.v(TAG, e.getMessage());
+                    }
                 }
             });
         }
@@ -189,10 +199,15 @@ class BillingManager implements PurchaseHistoryResponseListener, PurchasesUpdate
                     if(CachedSKUMap.containsKey(ProductSKU)) {
                         executeServiceRequest(new Runnable() {
                             public void run() {
-                                mBillingClient.launchBillingFlow(
-                                    Utils.GetContext(),
-                                    BillingFlowParams.newBuilder().setSkuDetails(CachedSKUMap.get(ProductSKU)).build()
-                                );
+                                try {
+                                    mBillingClient.launchBillingFlow(
+                                        Utils.GetContext(),
+                                        BillingFlowParams.newBuilder().setSkuDetails(CachedSKUMap.get(ProductSKU)).build()
+                                    );
+                                }
+                                catch(Exception e) {
+                                    Log.e(TAG, e.getMessage());
+                                }
                             }
                         });
                         return; // выходим из обработки
@@ -213,29 +228,39 @@ class BillingManager implements PurchaseHistoryResponseListener, PurchasesUpdate
             final List<String> skuList = Arrays.asList(new String[]{ProductSKU});
             executeServiceRequest(new Runnable() {
                 public void run() {
-                    // Query the skuList async
-                    Log.d(TAG, "Query the skuList async: " + ProductSKU);
-                    SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
-                    params.setSkusList(skuList).setType(SkuType.INAPP);
-                    mBillingClient.querySkuDetailsAsync(params.build(),
-                        new SkuDetailsResponseListener() {
-                            @Override
-                            public void onSkuDetailsResponse(BillingResult billingResult, final List<SkuDetails> skuDetailsList) {
-                                if (BillingResponseCode.OK == billingResult.getResponseCode()) {
-                                    if (skuDetailsList != null) {
-                                        if(skuDetailsList.size() == 1) {
-                                            for (SkuDetails skuDetails : skuDetailsList) {
-                                                mBillingClient.launchBillingFlow(
-                                                    Utils.GetContext(),
-                                                    BillingFlowParams.newBuilder().setSkuDetails(skuDetails).build()
-                                                );
+                    try {
+                        // Query the skuList async
+                        Log.d(TAG, "Query the skuList async: " + ProductSKU);
+                        SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
+                        params.setSkusList(skuList).setType(SkuType.INAPP);
+                        mBillingClient.querySkuDetailsAsync(params.build(),
+                            new SkuDetailsResponseListener() {
+                                @Override
+                                public void onSkuDetailsResponse(BillingResult billingResult, final List<SkuDetails> skuDetailsList) {
+                                    try {
+                                        if (BillingResponseCode.OK == billingResult.getResponseCode()) {
+                                            if (skuDetailsList != null) {
+                                                if(skuDetailsList.size() == 1) {
+                                                    for (SkuDetails skuDetails : skuDetailsList) {
+                                                        mBillingClient.launchBillingFlow(
+                                                            Utils.GetContext(),
+                                                            BillingFlowParams.newBuilder().setSkuDetails(skuDetails).build()
+                                                        );
+                                                    }
+                                                }
                                             }
                                         }
                                     }
-                                }
-                            };
-                        }
-                    );
+                                    catch(Exception e) {
+                                        Log.e(TAG, e.getMessage());
+                                    }
+                                };
+                            }
+                        );
+                    }
+                    catch(Exception e) {
+                        Log.e(TAG, e.getMessage());
+                    }
                 }
             });
 
@@ -251,23 +276,28 @@ class BillingManager implements PurchaseHistoryResponseListener, PurchasesUpdate
         try {
             executeServiceRequest(new Runnable() {
                 public void run() {
-                    Log.v(TAG, "Consume: " + SKU + " " + PurchaseToken);
-                    mBillingClient.consumeAsync(ConsumeParams.newBuilder().setPurchaseToken(PurchaseToken).build(),
-                        new ConsumeResponseListener() {
-                            @Override
-                            public void onConsumeResponse(BillingResult billingResult, final String purchaseToken) {
-                                try {
-                                    Log.v(TAG, "onConsumeResponse Result: " + DecodeBillingResponse(billingResult.getResponseCode()) + " Token:" + purchaseToken + "; " + billingResult.getDebugMessage());
-                                    if (BillingResponseCode.OK == billingResult.getResponseCode()) {
-                                        PurchaseConsumed(purchaseToken, SKU);
+                    try {
+                        Log.v(TAG, "Consume: " + SKU + " " + PurchaseToken);
+                        mBillingClient.consumeAsync(ConsumeParams.newBuilder().setPurchaseToken(PurchaseToken).build(),
+                            new ConsumeResponseListener() {
+                                @Override
+                                public void onConsumeResponse(BillingResult billingResult, final String purchaseToken) {
+                                    try {
+                                        Log.v(TAG, "onConsumeResponse Result: " + DecodeBillingResponse(billingResult.getResponseCode()) + " Token:" + purchaseToken + "; " + billingResult.getDebugMessage());
+                                        if (BillingResponseCode.OK == billingResult.getResponseCode()) {
+                                            PurchaseConsumed(purchaseToken, SKU);
+                                        }
+                                    }
+                                    catch(Exception e) {
+                                        Log.e(TAG, e.getMessage());
                                     }
                                 }
-                                catch(Exception e) {
-                                    Log.e(TAG, e.getMessage());
-                                }
                             }
-                        }
-                    );
+                        );
+                    }
+                    catch(Exception e) {
+                        Log.e(TAG, e.getMessage());
+                    }
                 }
             });
         }
@@ -281,17 +311,27 @@ class BillingManager implements PurchaseHistoryResponseListener, PurchasesUpdate
         try {
             executeServiceRequest(new Runnable() {
                 public void run() {
-                    mBillingClient.acknowledgePurchase(AcknowledgePurchaseParams.newBuilder().setPurchaseToken(PurchaseToken).build(),
-                        new AcknowledgePurchaseResponseListener() {
-                            @Override
-                            public void onAcknowledgePurchaseResponse(BillingResult billingResult) {
-                                if (BillingResponseCode.OK == billingResult.getResponseCode()) {
-                                    Log.v(TAG, "onAcknowledgePurchaseResponse Result: " + DecodeBillingResponse(billingResult.getResponseCode()) + "; " + billingResult.getDebugMessage());
-                                    PurchaseQueried(PurchaseToken, SKU, PURCHASE_BOUGHT);
-                                }
-                            };
-                        }
-                    );
+                    try {
+                        mBillingClient.acknowledgePurchase(AcknowledgePurchaseParams.newBuilder().setPurchaseToken(PurchaseToken).build(),
+                            new AcknowledgePurchaseResponseListener() {
+                                @Override
+                                public void onAcknowledgePurchaseResponse(BillingResult billingResult) {
+                                    try {
+                                        if (BillingResponseCode.OK == billingResult.getResponseCode()) {
+                                            Log.v(TAG, "onAcknowledgePurchaseResponse Result: " + DecodeBillingResponse(billingResult.getResponseCode()) + "; " + billingResult.getDebugMessage());
+                                            PurchaseQueried(PurchaseToken, SKU, PURCHASE_BOUGHT);
+                                        }
+                                    }
+                                    catch(Exception e) {
+                                        Log.e(TAG, e.getMessage());
+                                    }
+                                };
+                            }
+                        );
+                    }
+                    catch(Exception e) {
+                        Log.e(TAG, e.getMessage());
+                    }
                 }
             });
         }
@@ -305,7 +345,12 @@ class BillingManager implements PurchaseHistoryResponseListener, PurchasesUpdate
         try {
             executeServiceRequest(new Runnable() {
                 public void run() {
-                    mBillingClient.queryPurchaseHistoryAsync(SkuType.INAPP, billingManager);
+                    try {
+                        mBillingClient.queryPurchaseHistoryAsync(SkuType.INAPP, billingManager);
+                    }
+                    catch(Exception e) {
+                        Log.e(TAG, e.getMessage());
+                    }
                 }
             });
         }
@@ -316,28 +361,38 @@ class BillingManager implements PurchaseHistoryResponseListener, PurchasesUpdate
     }
 
     private static void processRunnableQueue() {
-        if((runnableQueue.size() > 0) && mBillingClient.isReady()) {
-            Runnable r = new Runnable() {
-                public void run() {
-                    // тут тоже можно поставить concurrent проверку, специфичную только для этого процесса
-                    while(runnableQueue.size() > 0 && mBillingClient.isReady()) {
+        try {
+            if((runnableQueue.size() > 0) && mBillingClient.isReady()) {
+                Runnable r = new Runnable() {
+                    public void run() {
                         try {
-                            Runnable rTask = runnableQueue.take();
-                            rTask.run();
+                            // тут тоже можно поставить concurrent проверку, специфичную только для этого процесса
+                            while(runnableQueue.size() > 0 && mBillingClient.isReady()) {
+                                try {
+                                    Runnable rTask = runnableQueue.take();
+                                    rTask.run();
+                                }
+                                catch(Exception e) {
+                                    Log.e(TAG, e.getMessage());
+                                }
+                            };
                         }
                         catch(Exception e) {
                             Log.e(TAG, e.getMessage());
                         }
                     };
                 };
-            };
-            r.run();
+                r.run();
+            }
+        }
+        catch(Exception e) {
+            Log.v(TAG, e.getMessage());
         }
     }
 
     private static void executeServiceRequest(final Runnable R) {
-        Log.v(TAG, "starting executeServiceRequest");
         try{
+            Log.v(TAG, "starting executeServiceRequest");
             runnableQueue.add(R);
             if(mBillingClient.isReady()) {
                 processRunnableQueue();
@@ -398,17 +453,22 @@ class BillingManager implements PurchaseHistoryResponseListener, PurchasesUpdate
     ///////////////////////////////////////
     @Override
     public void onSkuDetailsResponse(BillingResult billingResult, final List<SkuDetails> skuDetailsList) {
-        Log.v(TAG, "onSkuDetailsResponse Response = " + DecodeBillingResponse(billingResult.getResponseCode()));
-        if (BillingResponseCode.OK == billingResult.getResponseCode()) {
-            if (skuDetailsList != null)
-                for (SkuDetails skuDetails : skuDetailsList) { // кешируем список товаров
-                    CachedSKUMap.put(skuDetails.getSku(), skuDetails);
-                }
+        try {
+            Log.v(TAG, "onSkuDetailsResponse Response = " + DecodeBillingResponse(billingResult.getResponseCode()));
+            if (BillingResponseCode.OK == billingResult.getResponseCode()) {
+                if (skuDetailsList != null)
+                    for (SkuDetails skuDetails : skuDetailsList) { // кешируем список товаров
+                        CachedSKUMap.put(skuDetails.getSku(), skuDetails);
+                    }
 
-            if(true) { // logging
-                for(HashMap.Entry<String, SkuDetails> entry : CachedSKUMap.entrySet())
-                    Log.v(TAG, "cache SKU ID: " + entry.getKey());
+                if(true) { // logging
+                    for(HashMap.Entry<String, SkuDetails> entry : CachedSKUMap.entrySet())
+                        Log.v(TAG, "cache SKU ID: " + entry.getKey());
+                }
             }
+        }
+        catch(Exception e) {
+            Log.v(TAG, e.getMessage());
         }
     }
 
@@ -417,7 +477,12 @@ class BillingManager implements PurchaseHistoryResponseListener, PurchasesUpdate
     ////////////////////////////////////
     @Override
     public void onPurchaseHistoryResponse(BillingResult billingResult, final List<PurchaseHistoryRecord> purchaseHistoryRecordList) {
-        Log.v(TAG, "onPurchaseHistoryResponse Result: " + DecodeBillingResponse(billingResult.getResponseCode()) + "; " + billingResult.getDebugMessage());
+        try {
+            Log.v(TAG, "onPurchaseHistoryResponse Result: " + DecodeBillingResponse(billingResult.getResponseCode()) + "; " + billingResult.getDebugMessage());
+        }
+        catch(Exception e) {
+            Log.v(TAG, e.getMessage());
+        }
     }
 
     ////////////////////////////////////
@@ -425,24 +490,34 @@ class BillingManager implements PurchaseHistoryResponseListener, PurchasesUpdate
     ////////////////////////////////////
     @Override
     public void onBillingSetupFinished(BillingResult billingResult) {
-        Log.v(TAG, "Setup finished. Response: " + DecodeBillingResponse(billingResult.getResponseCode()));
-        BillingSetupFinished(billingResult.getResponseCode());
-        billingClientLocked.set(false);
+        try {
+            Log.v(TAG, "Setup finished. Response: " + DecodeBillingResponse(billingResult.getResponseCode()));
+            BillingSetupFinished(billingResult.getResponseCode());
+            billingClientLocked.set(false);
 
-        if(runnableQueue.size() > 0) { // тут нужно отпроцессить очередь
-            processRunnableQueue();
+            if(runnableQueue.size() > 0) { // тут нужно отпроцессить очередь
+                processRunnableQueue();
+            }
+        }
+        catch(Exception e) {
+            Log.v(TAG, e.getMessage());
         }
     }
 
     @Override
     public void onBillingServiceDisconnected() {
-        Log.v(TAG, "onBillingServiceDisconnected");
-        BillingDisconnected();
-        billingClientLocked.set(false);
+        try {
+            Log.v(TAG, "onBillingServiceDisconnected");
+            BillingDisconnected();
+            billingClientLocked.set(false);
 
-        // если очередь непуста, то делаем рестар connection
-        if(runnableQueue.size() > 0) {
-            checkBillingConnection();
+            // если очередь непуста, то делаем рестар connection
+            if(runnableQueue.size() > 0) {
+                checkBillingConnection();
+            }
+        }
+        catch(Exception e) {
+            Log.v(TAG, e.getMessage());
         }
     }
 }

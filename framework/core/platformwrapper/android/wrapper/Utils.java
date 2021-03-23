@@ -661,5 +661,5 @@ public class Utils {
         }
     }
 
-    public static native void runOnGameThread(Runnable task);
+    //public static native void runOnGameThread(Runnable task);
 }

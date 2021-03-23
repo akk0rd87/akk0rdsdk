@@ -44,11 +44,25 @@ public class AdMobAdapter extends AdListener implements RewardedVideoAdListener 
 
     private static String RewardedVideoUnitID;
 
-    public static native void AdCallback(int AdType, int EventType, int Code);
+    private static native void AdCallback(int AdType, int EventType, int Code);
+
+    private static void AdCallback_Local(int AdType, int EventType, int Code) {
+        try {
+            AdCallback(AdType, EventType, Code);
+        }
+        catch(Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+    };
 
     public static void Initialize(String AdMobAppID)
     {
-        MobileAds.initialize(Utils.GetContext(), AdMobAppID);
+        try {
+            MobileAds.initialize(Utils.GetContext(), AdMobAppID);
+        }
+        catch(Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
     }
 
     private static void InterstitialReCreate()
@@ -56,7 +70,6 @@ public class AdMobAdapter extends AdListener implements RewardedVideoAdListener 
         try {
             mInterstitialAd = new InterstitialAd(Utils.GetContext());
             mInterstitialAd.setAdListener(adMobAdapter);
-
         }
         catch(Exception e)
         {
@@ -75,8 +88,13 @@ public class AdMobAdapter extends AdListener implements RewardedVideoAdListener 
             Activity ctx = Utils.GetContext();
             ctx.runOnUiThread(new Runnable() {
                 public void run() {
-                    mRewardedVideoAd = MobileAds.getRewardedVideoAdInstance(Utils.GetContext());
-                    mRewardedVideoAd.setRewardedVideoAdListener(adMobAdapter);
+                    try {
+                        mRewardedVideoAd = MobileAds.getRewardedVideoAdInstance(Utils.GetContext());
+                        mRewardedVideoAd.setRewardedVideoAdListener(adMobAdapter);
+                    }
+                    catch(Exception e) {
+                        Log.e(TAG, e.getMessage());
+                    }
                 }
             });
         }
@@ -146,12 +164,11 @@ public class AdMobAdapter extends AdListener implements RewardedVideoAdListener 
             Activity ctx = Utils.GetContext();
             ctx.runOnUiThread(new Runnable() {
                 public void run() {
-                    try{
-                          mInterstitialAd.loadAd(new AdRequest.Builder().build());
-                        }
-                    catch(Exception e)
-                    {
-
+                    try {
+                        mInterstitialAd.loadAd(new AdRequest.Builder().build());
+                    }
+                    catch(Exception e) {
+                        Log.e(TAG, e.getMessage());
                     }
                 }
             });
@@ -170,11 +187,10 @@ public class AdMobAdapter extends AdListener implements RewardedVideoAdListener 
             ctx.runOnUiThread(new Runnable() {
                 public void run() {
                     try {
-                        mRewardedVideoAd.loadAd(/*"ca-app-pub-3940256099942544/5224354917"*/ RewardedVideoUnitID, new AdRequest.Builder().build());
+                        mRewardedVideoAd.loadAd(RewardedVideoUnitID, new AdRequest.Builder().build());
                     }
-                    catch(Exception e)
-                    {
-
+                    catch(Exception e) {
+                        Log.e(TAG, e.getMessage());
                     }
                 }
             });
@@ -197,11 +213,10 @@ public class AdMobAdapter extends AdListener implements RewardedVideoAdListener 
                             mInterstitialAd.show();
                         }
                     }
-                    catch(Exception e)
-                    {
-
+                    catch(Exception e) {
+                        Log.e(TAG, e.getMessage());
                     }
-                   }
+                }
             });
 
             return 0;
@@ -225,11 +240,10 @@ public class AdMobAdapter extends AdListener implements RewardedVideoAdListener 
                             mRewardedVideoAd.show();
                         }
                     }
-                    catch(Exception e)
-                    {
-
+                    catch(Exception e) {
+                        Log.e(TAG, e.getMessage());
                     }
-                   }
+                }
             });
 
             return 0;
@@ -247,7 +261,7 @@ public class AdMobAdapter extends AdListener implements RewardedVideoAdListener 
     ///////////////////////////////
     @Override
     public void onAdLoaded() {
-        AdCallback(AD_INTERSTITIAL, EVENT_INTERSTITIAL_LOADED, 0);
+        AdCallback_Local(AD_INTERSTITIAL, EVENT_INTERSTITIAL_LOADED, 0);
     }
 
     @Override
@@ -270,25 +284,25 @@ public class AdMobAdapter extends AdListener implements RewardedVideoAdListener 
                 error = "Unknown";
         }
         //Log.v(TAG, "Interstitial FailedToLoad!!! [" + errorCode + ": " + error);
-        AdCallback(AD_INTERSTITIAL, EVENT_INTERSTITIAL_FAILED, errorCode);
+        AdCallback_Local(AD_INTERSTITIAL, EVENT_INTERSTITIAL_FAILED, errorCode);
     }
 
     @Override
     public void onAdOpened() {
         //Log.v(TAG, "Interstitial Opened!!!");
-        AdCallback(AD_INTERSTITIAL, EVENT_INTERSTITIAL_OPENED, 0);
+        AdCallback_Local(AD_INTERSTITIAL, EVENT_INTERSTITIAL_OPENED, 0);
     }
 
     @Override
     public void onAdLeftApplication() {
         //Log.v(TAG, "Interstitial onAdLeftApplication!!!");
-        AdCallback(AD_INTERSTITIAL, 4, EVENT_INTERSTITIAL_LEFTAPPLICATION);
+        AdCallback_Local(AD_INTERSTITIAL, 4, EVENT_INTERSTITIAL_LEFTAPPLICATION);
     }
 
     @Override
     public void onAdClosed() {
         //Log.v(TAG, "Interstitial Closed!!!");
-        AdCallback(AD_INTERSTITIAL, EVENT_INTERSTITIAL_CLOSED, 0);
+        AdCallback_Local(AD_INTERSTITIAL, EVENT_INTERSTITIAL_CLOSED, 0);
     }
 
     ///////////////////////////////
@@ -296,41 +310,41 @@ public class AdMobAdapter extends AdListener implements RewardedVideoAdListener 
     ///////////////////////////////
     @Override
     public void onRewardedVideoAdLoaded() {
-        AdCallback(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_LOADED, 0);
+        AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_LOADED, 0);
     }
 
     @Override
     public void onRewardedVideoAdOpened() {
-        AdCallback(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_OPENED, 0);
+        AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_OPENED, 0);
     }
 
     @Override
     public void onRewardedVideoStarted() {
-        AdCallback(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_STARTED, 0);
+        AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_STARTED, 0);
     }
 
     @Override
     public void onRewardedVideoAdClosed() {
-        AdCallback(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_CLOSED, 0);
+        AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_CLOSED, 0);
     }
 
     @Override
     public void onRewarded(RewardItem rewardItem) {
-        AdCallback(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_REWARDED, 0);
+        AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_REWARDED, 0);
     }
 
     @Override
     public void onRewardedVideoAdLeftApplication() {
-        AdCallback(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_LEFTAPPLICATION, 0);
+        AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_LEFTAPPLICATION, 0);
     }
 
     @Override
     public void onRewardedVideoAdFailedToLoad(int errorCode) {
-        AdCallback(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_FAILED, errorCode);
+        AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_FAILED, errorCode);
     }
 
     @Override
     public void onRewardedVideoCompleted() {
-        AdCallback(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_COMPLETED, 0);
+        AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_COMPLETED, 0);
     }
 }
