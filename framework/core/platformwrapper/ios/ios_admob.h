@@ -8,7 +8,7 @@
 class AdMobiOS
 {
 public:
-    static bool Init(const char* AdMobAppID, int Formats);
+    static bool Init();
 
     static bool InterstitialSetUnitId(const char* UnitId);
     static bool InterstitialLoad();

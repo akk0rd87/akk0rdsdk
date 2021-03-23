@@ -234,7 +234,7 @@ bool AdMob::Init(const char* AdMobAppID, int Formats)
 #endif
 
 #ifdef __APPLE__
-    if (AdMobiOS::Init(AdMobAppID, Formats))
+    if (AdMobiOS::Init())
     {
         // нужно проставить Callback для отлова событий
         AdMobiOS::SetAdEventCallback(&AdMob_ProcessAdEvent);

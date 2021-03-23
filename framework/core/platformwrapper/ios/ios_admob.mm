@@ -221,7 +221,7 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
 //
 // INTERFACE METHODS
 //
-bool AdMobiOS::Init(const char* AdMobAppID, int Formats) {
+bool AdMobiOS::Init() {
     [[GADMobileAds sharedInstance] startWithCompletionHandler:nil];
     return true;
 }
