@@ -284,11 +284,6 @@ bool BWrapper::FileRename(const char* OldName, const char* NewName)
 /////////
 ////////////////////////////////
 
-void inline ConvertRect2Native(const AkkordRect& Rect, SDL_Rect* sRect)
-{
-    sRect->x = Rect.GetX(); sRect->y = Rect.GetY(); sRect->w = Rect.GetW(); sRect->h = Rect.GetH();
-}
-
 AkkordWindow* BWrapper::CreateRenderWindow(const char* Title, int X, int Y, int W, int H, Uint32 Flags)
 {
     auto wnd = SDL_CreateWindow(Title, X, Y, W, H, Flags/* SDL_WINDOW_SHOWN*/);
@@ -510,64 +505,22 @@ bool AkkordTexture::SetAlphaMod(Uint8 A)
 
 bool AkkordTexture::Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas) const
 {
-    SDL_Rect  NativeDstRect, NativeSrcRect;
-    SDL_Rect* NativeSrcRect_ptr = nullptr;
-
-    ConvertRect2Native(Rect, &NativeDstRect); // Rect must be always set
-
-    if (RectFromAtlas)
-    {
-        ConvertRect2Native(*RectFromAtlas, &NativeSrcRect);
-        NativeSrcRect_ptr = &NativeSrcRect;
-    }
-
-    auto res = SDL_RenderCopy(CurrentContext.CurrentRenderer, tex.get(), NativeSrcRect_ptr, &NativeDstRect);
-
-    if (res != 0)
-    {
+    if (SDL_RenderCopy(CurrentContext.CurrentRenderer, tex.get(), RectFromAtlas, &Rect) != 0) {
         logError("Error draw image %s", SDL_GetError());
         return false;
     }
-
     return true;
 };
 
 bool AkkordTexture::Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas, AkkordTexture::Flip Flip, double Angle, AkkordPoint* Point) const
 {
-    SDL_Rect NativeDstRect;
-    ConvertRect2Native(Rect, &NativeDstRect); // Rect must be always set
-
-    // Converting Source Rect if exists
-    SDL_Rect  NativeSrcRect;
-    SDL_Rect* NativeSrcRect_ptr = nullptr;
-    if (RectFromAtlas)
-    {
-        ConvertRect2Native(*RectFromAtlas, &NativeSrcRect);
-        NativeSrcRect_ptr = &NativeSrcRect;
-    }
-
-    // Converting Angle Point if exists
-    SDL_Point point;
-    SDL_Point* point_ptr = nullptr;
-
-    if (Point)
-    {
-        point.x = Point->x;
-        point.y = Point->y;
-        point_ptr = &point;
-    }
-
     // converting Flip
     const auto flip = static_cast<SDL_RendererFlip>(Flip);
 
-    auto res = SDL_RenderCopyEx(CurrentContext.CurrentRenderer, tex.get(), NativeSrcRect_ptr, &NativeDstRect, Angle, point_ptr, flip);
-
-    if (res != 0)
-    {
+    if (SDL_RenderCopyEx(CurrentContext.CurrentRenderer, tex.get(), RectFromAtlas, &Rect, Angle, Point, flip) != 0) {
         logError("Error draw image %s", SDL_GetError());
         return false;
     }
-
     return true;
 };
 
@@ -603,9 +556,7 @@ bool BWrapper::SetCurrentColor(const AkkordColor& Color)
 
 bool BWrapper::DrawRect(const AkkordRect& Rect)
 {
-    SDL_Rect NativeRect;
-    ConvertRect2Native(Rect, &NativeRect);
-    if (SDL_RenderDrawRect(CurrentContext.CurrentRenderer, &NativeRect) == 0) return true;
+    if (SDL_RenderDrawRect(CurrentContext.CurrentRenderer, &Rect) == 0) return true;
     logError("Draw error %s", SDL_GetError());
     return false;
 };
@@ -617,9 +568,7 @@ bool BWrapper::DrawRect(int X, int Y, int W, int H)
 
 bool BWrapper::FillRect(const AkkordRect& Rect)
 {
-    SDL_Rect NativeRect;
-    ConvertRect2Native(Rect, &NativeRect);
-    if (SDL_RenderFillRect(CurrentContext.CurrentRenderer, &NativeRect) == 0) return true;
+    if (SDL_RenderFillRect(CurrentContext.CurrentRenderer, &Rect) == 0) return true;
     logError("Draw error %s", SDL_GetError());
     return false;
 };

@@ -5,13 +5,12 @@
 #include "framework_defines.h"
 #include "core/locale.h"
 
-class AkkordPoint
+class AkkordPoint : public SDL_Point
 {
 public:
-    int x, y;
-    constexpr AkkordPoint() : x(0), y(0) {};
-    constexpr AkkordPoint(int X, int Y) : x(X), y(Y) {};
-    constexpr AkkordPoint(const AkkordPoint& Point) : x(Point.x), y(Point.y) {};
+    constexpr AkkordPoint() : SDL_Point() { x = y = 0; };
+    constexpr AkkordPoint(int X, int Y) : SDL_Point() { x = X;  y = Y; };
+    constexpr AkkordPoint(const AkkordPoint& Point) : SDL_Point() { x = Point.x; y = Point.y; };
     bool operator== (const AkkordPoint& Point) const { return Point.x == x && Point.y == y; };
     bool operator!= (const AkkordPoint& Point) const { return !(Point == *this); };
 
@@ -22,14 +21,13 @@ public:
     int GetY() const { return y; }
 };
 
-class AkkordRect
+class AkkordRect : public SDL_Rect
 {
 public:
-    int x, y, w, h;
-    constexpr AkkordRect() : x(0), y(0), w(0), h(0) {};
-    constexpr AkkordRect(const AkkordRect& Rect) : x(Rect.x), y(Rect.y), w(Rect.w), h(Rect.h) {};
-    constexpr AkkordRect(int X, int Y, int W, int H) : x(X), y(Y), w(W), h(H) {};
-    constexpr AkkordRect(const AkkordPoint& Point1, const AkkordPoint& Point2) : x(Point1.x), y(Point1.y), w(Point2.x), h(Point2.y) {};
+    constexpr AkkordRect() : SDL_Rect() { x = y = w = h = 0; };
+    constexpr AkkordRect(const AkkordRect& Rect) : SDL_Rect() { x = Rect.x;  y = Rect.y; w = Rect.w; h = Rect.h; };
+    constexpr AkkordRect(int X, int Y, int W, int H) : SDL_Rect() { x = X; y = Y; w = W; h = H; };
+    constexpr AkkordRect(const AkkordPoint& Point1, const AkkordPoint& Point2) : SDL_Rect() { x = Point1.x; y = Point1.y;  w = Point2.x; h = Point2.y; };
 
     AkkordRect& SetW(int W) { w = W; return *this; };
     AkkordRect& SetH(int H) { h = H; return *this; };
