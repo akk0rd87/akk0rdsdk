@@ -16,18 +16,14 @@ public:
 
     //std::string              GetInternalDir() { return vGetInternalDir(); };
     std::string              GetInternalWriteDir() {
-        const auto dir = vGetInternalWriteDir();
-        if (dir.back() != '/' && dir.back() != '\\') {
-            return dir + '/';
-        }
+        auto dir = vGetInternalWriteDir();
+        FormatDir(dir);
         return dir;
     }
 
     std::string              GetInternalAssetsDir() {
-        const auto dir = vGetInternalAssetsDir();
-        if (dir.back() != '/' && dir.back() != '\\') {
-            return dir + '/';
-        }
+        auto dir = vGetInternalAssetsDir();
+        FormatDir(dir);
         return dir;
     }
 
@@ -83,6 +79,12 @@ private:
     virtual int                      vGetAudioOutputBufferSize() { return -1; }; // only for Android
     virtual bool                     vLaunchAppReviewIfAvailable() { return false; }
     virtual bool                     vRequestFlexibleUpdateIfAvailable() { return false; }
+
+    void FormatDir(std::string& Dir) {
+        if (Dir.back() != '/' && Dir.back() != '\\') {
+            Dir + '/';
+        }
+    }
 };
 
 #ifdef __ANDROID__
