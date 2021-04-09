@@ -82,7 +82,7 @@ private:
 
     void FormatDir(std::string& Dir) {
         if (Dir.back() != '/' && Dir.back() != '\\') {
-            Dir + '/';
+            Dir += '/';
         }
     }
 };
