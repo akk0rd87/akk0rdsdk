@@ -15,8 +15,21 @@ public:
     std::string              GetEnvVariable(const char* Variable) { return vGetEnvVariable(Variable); } // Only for windows
 
     //std::string              GetInternalDir() { return vGetInternalDir(); };
-    std::string              GetInternalWriteDir() { return vGetInternalWriteDir(); }
-    std::string              GetInternalAssetsDir() { return vGetInternalAssetsDir(); }
+    std::string              GetInternalWriteDir() {
+        const auto dir = vGetInternalWriteDir();
+        if (dir.back() != '/' && dir.back() != '\\') {
+            return dir + '/';
+        }
+        return dir;
+    }
+
+    std::string              GetInternalAssetsDir() {
+        const auto dir = vGetInternalAssetsDir();
+        if (dir.back() != '/' && dir.back() != '\\') {
+            return dir + '/';
+        }
+        return dir;
+    }
 
     std::string              GetAppVersionCode() { return vGetAppVersionCode(); }
     std::string              GetAppVersionName() { return vGetAppVersionName(); }

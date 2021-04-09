@@ -56,12 +56,7 @@ class iOSPlatformWrapper : public PlatformWrapper {
         NSArray *docdirs = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
         NSString *documents = docdirs[0];
 
-        auto dir = std::string([documents UTF8String]);
-        if(dir.back() != '/' && dir.back() != '\\') {
-            dir += '/';
-        }
-
-        return dir;
+        return std::string([documents UTF8String]);
     }
 
     bool vDirExists(const char* Dir) override {
