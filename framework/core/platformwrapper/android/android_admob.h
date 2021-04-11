@@ -22,7 +22,7 @@ class AdMobAndroid
 private:
 
 public:
-    static bool Init(const char* AdMobAppID, int Formats);
+    static bool Init(int Formats);
 
     static bool InterstitialSetUnitId(const char* UnitId);
     static bool InterstitialLoad();
@@ -34,7 +34,7 @@ public:
 };
 
 
-bool AdMobAndroid::Init(const char* AdMobAppID, int Formats)
+bool AdMobAndroid::Init(int Formats)
 {
     bool Result = true;
     JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
@@ -49,16 +49,14 @@ bool AdMobAndroid::Init(const char* AdMobAppID, int Formats)
     AdMobClass = reinterpret_cast<jclass>(env->NewGlobalRef(localClass));
     env->DeleteLocalRef(localClass);
 
-    jmethodID AdmobInit = env->GetStaticMethodID(AdMobClass, "Initialize", "(Ljava/lang/String;)V");
+    jmethodID AdmobInit = env->GetStaticMethodID(AdMobClass, "Initialize", "()V");
     if(!AdmobInit)
     {
         logError("Initialize Java method not Found");
         return false;
     }
 
-    jstring url_jstring = (jstring)env->NewStringUTF(AdMobAppID);
-    env->CallStaticVoidMethod(AdMobClass, AdmobInit, url_jstring);
-    env->DeleteLocalRef(url_jstring);
+    env->CallStaticVoidMethod(AdMobClass, AdmobInit);
 
     if(Formats & AdMob::Format::Interstitial)
     {

@@ -64,6 +64,7 @@ bool AdMob_ProcessInterstitialAdEvent(const AdMob::AdEvent* Event)
     case AdMob::InterstitialEvent::Closed:
     case AdMob::InterstitialEvent::Failed:
     case AdMob::InterstitialEvent::LeftApplication:
+    case AdMob::InterstitialEvent::Opened:
         AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::Inited);
         //logDebug("Interstitial Inited");
         return true;
@@ -71,12 +72,6 @@ bool AdMob_ProcessInterstitialAdEvent(const AdMob::AdEvent* Event)
     case AdMob::InterstitialEvent::Loaded:
         AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::Loaded);
         //logDebug("Interstitial Loaded");
-        return true;
-        break;
-
-    case AdMob::InterstitialEvent::Opened:
-        AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::Opened);
-        //logDebug("Interstitial Opened");
         return true;
         break;
 
@@ -99,22 +94,14 @@ bool AdMob_ProcessRewardedVideoAdEvent(const AdMob::AdEvent* Event)
     case AdMob::RewardedVideoEvent::Failed:
     case AdMob::RewardedVideoEvent::LeftApplication:
     case AdMob::RewardedVideoEvent::Rewarded:
+    case AdMob::RewardedVideoEvent::Opened:
+    case AdMob::RewardedVideoEvent::Started:
         AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::Inited);
         return true;
         break;
 
     case AdMob::RewardedVideoEvent::Loaded:
         AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::Loaded);
-        return true;
-        break;
-
-    case AdMob::RewardedVideoEvent::Opened:
-        AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::Opened);
-        return true;
-        break;
-
-    case AdMob::RewardedVideoEvent::Started:
-        AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::Started);
         return true;
         break;
 
@@ -212,7 +199,7 @@ Uint32 AdMob::GetEventCode()
     return AdContext.GetAdMobEventCode();
 }
 
-bool AdMob::Init(const char* AdMobAppID, int Formats)
+bool AdMob::Init(int Formats)
 {
     AdContext.SetAdMobEventCode();
     bool inited = false;
@@ -227,7 +214,7 @@ bool AdMob::Init(const char* AdMobAppID, int Formats)
 #endif
 
 #ifdef __ANDROID__
-    if (AdMobAndroid::Init(AdMobAppID, Formats))
+    if (AdMobAndroid::Init(Formats))
     {
         inited = true;
     };
