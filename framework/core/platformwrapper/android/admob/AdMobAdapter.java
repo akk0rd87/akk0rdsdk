@@ -211,6 +211,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
     public static void Initialize()
     {
         try {
+            mAdMobInitializationCompleted = false;
             MobileAds.initialize(Utils.GetContext(), adMobAdapter);
         }
         catch(Exception e) {
