@@ -61,11 +61,11 @@ static bool AdMob_ProcessInterstitialAdEvent(const AdMob::AdEvent* Event)
     auto EventType = (AdMob::InterstitialEvent)Event->EventType;
     switch (EventType)
     {
+        // Нижеперечисленные события не меняют наш статус объявления
     case AdMob::InterstitialEvent::Closed:
     case AdMob::InterstitialEvent::Failed:
     case AdMob::InterstitialEvent::LeftApplication:
     case AdMob::InterstitialEvent::Opened:
-        AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::Inited);
         //logDebug("Interstitial Inited");
         return true;
 
@@ -90,13 +90,13 @@ static bool AdMob_ProcessRewardedVideoAdEvent(const AdMob::AdEvent* Event)
 
     switch (EventType)
     {
+        // Нижеперечисленные события не меняют наш статус объявления
     case AdMob::RewardedVideoEvent::Closed:
     case AdMob::RewardedVideoEvent::Failed:
     case AdMob::RewardedVideoEvent::LeftApplication:
     case AdMob::RewardedVideoEvent::Rewarded:
     case AdMob::RewardedVideoEvent::Opened:
     case AdMob::RewardedVideoEvent::Started:
-        AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::Inited);
         return true;
         break;
 
@@ -289,7 +289,7 @@ bool AdMob::InterstitialShow()
         return false;
     }
 
-    AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::TryingToShow);
+    AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::Inited);
 
 #ifdef __ANDROID__
     return AdMobAndroid::InterstitialShow();
@@ -352,7 +352,7 @@ bool AdMob::RewardedVideoShow()
         return false;
     }
 
-    AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::TryingToShow);
+    AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::Inited);
 #ifdef __ANDROID__
     return AdMobAndroid::RewardedVideoShow();
 #endif
