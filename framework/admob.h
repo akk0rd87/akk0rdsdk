@@ -11,10 +11,10 @@ private:
 public:
     enum struct Format : int { Interstitial = 1, RewardedVideo = 2, NativeAdsAdvanced = 4, Unknown = 0 };
 
-    enum struct InterstitialEvent : int { Loaded = 1, Opened = 2, Closed = 3, Failed = 4, LeftApplication = 5 }; // Совпадает с Java-кодами
+    enum struct InterstitialEvent : int { Loaded = 1, Opened = 2, Closed = 3, FailedToLoad = 4, LeftApplication = 5, FailedToShow = 6 }; // Совпадает с Java-кодами
     enum struct InterstitialStatus : int { NotInited, Inited, TryingToLoad, Loaded };
 
-    enum struct RewardedVideoEvent : int { Loaded = 101, Opened = 102, Closed = 103, Failed = 104, LeftApplication = 105, Started = 106, Completed = 107, Rewarded = 108 }; // Совпадает с Java-кодами
+    enum struct RewardedVideoEvent : int { Loaded = 101, Opened = 102, Closed = 103, FailedToLoad = 104, LeftApplication = 105, Started = 106, Completed = 107, Rewarded = 108, FailedToShow = 109 }; // Совпадает с Java-кодами
     enum struct RewardedVideoStatus : int { NotInited, Inited, TryingToLoad, Loaded };
 
     static bool                        Init(const char* AdMobAppID, AdMob::Format Formats) { return AdMob::Init(Formats); }; // Deprecated Method

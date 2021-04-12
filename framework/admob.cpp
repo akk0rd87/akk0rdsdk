@@ -63,10 +63,14 @@ static bool AdMob_ProcessInterstitialAdEvent(const AdMob::AdEvent* Event)
     {
         // Нижеперечисленные события не меняют наш статус объявления
     case AdMob::InterstitialEvent::Closed:
-    case AdMob::InterstitialEvent::Failed:
     case AdMob::InterstitialEvent::LeftApplication:
     case AdMob::InterstitialEvent::Opened:
+    case AdMob::InterstitialEvent::FailedToShow:
         //logDebug("Interstitial Inited");
+        return true;
+
+    case AdMob::InterstitialEvent::FailedToLoad:
+        AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::Inited);
         return true;
 
     case AdMob::InterstitialEvent::Loaded:
@@ -92,13 +96,17 @@ static bool AdMob_ProcessRewardedVideoAdEvent(const AdMob::AdEvent* Event)
     {
         // Нижеперечисленные события не меняют наш статус объявления
     case AdMob::RewardedVideoEvent::Closed:
-    case AdMob::RewardedVideoEvent::Failed:
     case AdMob::RewardedVideoEvent::LeftApplication:
     case AdMob::RewardedVideoEvent::Rewarded:
     case AdMob::RewardedVideoEvent::Opened:
     case AdMob::RewardedVideoEvent::Started:
+    case AdMob::RewardedVideoEvent::FailedToShow:
         return true;
         break;
+
+    case AdMob::RewardedVideoEvent::FailedToLoad:
+        AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::Inited);
+        return true;
 
     case AdMob::RewardedVideoEvent::Loaded:
         AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::Loaded);
@@ -216,7 +224,7 @@ bool AdMob::Init(AdMob::Format Formats)
     if (AdMobAndroid::Init(Formats))
     {
         inited = true;
-    };
+};
 #endif
 
 #ifdef __APPLE__

@@ -51,7 +51,7 @@ static void sendCallback(const AdMob::AdEvent& CallbackEvent) {
     if(!mAdMobInitializationCompleted) {
         AdMob::AdEvent Ad;
         Ad.AdFormat = AdMob::Format::Interstitial;
-        Ad.EventType = static_cast<decltype(Ad.EventType)>(AdMob::InterstitialEvent::Failed);
+        Ad.EventType = static_cast<decltype(Ad.EventType)>(AdMob::InterstitialEvent::FailedToLoad);
         sendCallback(Ad);
         return;
     }
@@ -69,7 +69,7 @@ static void sendCallback(const AdMob::AdEvent& CallbackEvent) {
               if (error) {
                   logDebug("InterstitialLoad success load");
                   //NSLog(@"Failed to load interstitial ad with error: %@", [error localizedDescription]);
-                  Ad.EventType = static_cast<decltype(Ad.EventType)>(event::Failed);
+                  Ad.EventType = static_cast<decltype(Ad.EventType)>(event::FailedToLoad);
               }
               else {
                   Ad.EventType = static_cast<decltype(Ad.EventType)>(event::Loaded);
@@ -98,7 +98,7 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
     logDebug("Ad did fail to present full screen content.");
     AdMob::AdEvent Ad;
     Ad.AdFormat = AdMob::Format::Interstitial;
-    Ad.EventType = static_cast<decltype(Ad.EventType)>(AdMob::InterstitialEvent::Failed);
+    Ad.EventType = static_cast<decltype(Ad.EventType)>(AdMob::InterstitialEvent::FailedToShow);
     sendCallback(Ad);
 }
 
@@ -158,7 +158,7 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
     if(!mAdMobInitializationCompleted) {
         AdMob::AdEvent Ad;
         Ad.AdFormat = AdMob::Format::RewardedVideo;
-        Ad.EventType = static_cast<decltype(Ad.EventType)>(AdMob::RewardedVideoEvent::Failed);
+        Ad.EventType = static_cast<decltype(Ad.EventType)>(AdMob::RewardedVideoEvent::FailedToLoad);
         sendCallback(Ad);
         return;
     }
@@ -177,7 +177,7 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
                   if (error) {
                       logDebug("Rewarded failed load");
                       //NSLog(@"Rewarded ad failed to load with error: %@", [error localizedDescription]);
-                      Ad.EventType = static_cast<decltype(Ad.EventType)>(event::Failed);
+                      Ad.EventType = static_cast<decltype(Ad.EventType)>(event::FailedToLoad);
                   }
                   else {
                       logDebug("Rewarded success load");
@@ -213,7 +213,7 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
     logDebug("Ad did fail to present full screen content.");
     AdMob::AdEvent Ad;
     Ad.AdFormat = AdMob::Format::RewardedVideo;
-    Ad.EventType = static_cast<decltype(Ad.EventType)>(AdMob::RewardedVideoEvent::Failed);
+    Ad.EventType = static_cast<decltype(Ad.EventType)>(AdMob::RewardedVideoEvent::FailedToShow);
     sendCallback(Ad);
 }
 
