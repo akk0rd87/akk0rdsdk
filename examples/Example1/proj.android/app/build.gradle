@@ -6,7 +6,7 @@ def proGuardParamsDir      = System.getenv('AKKORD_SDK_HOME') + "/framework/core
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     defaultConfig {
-        minSdkVersion    = 14
+        minSdkVersion    = 16
         targetSdkVersion = 29
 
         versionName '1.0.4'

@@ -20,7 +20,7 @@ android {
     }
     compileSdkVersion rootProject.ext.compileSdkVersion
     defaultConfig {
-        minSdkVersion    = 14
+        minSdkVersion    = 16
         targetSdkVersion = 29
 
         versionName '1.0.28'
@@ -128,6 +128,6 @@ android.applicationVariants.all { variant ->
 
 dependencies {
     implementation 'com.getkeepsafe.relinker:relinker:1.4.1'
-    implementation 'com.google.android.gms:play-services-ads:15.0.1'
+    implementation 'com.google.android.gms:play-services-ads:20.0.0'
     implementation 'com.android.billingclient:billing:1.1'
 }

@@ -17,7 +17,6 @@ public:
     enum struct RewardedVideoEvent : int { Loaded = 101, Opened = 102, Closed = 103, FailedToLoad = 104, LeftApplication = 105, Started = 106, Completed = 107, Rewarded = 108, FailedToShow = 109 }; // Совпадает с Java-кодами
     enum struct RewardedVideoStatus : int { NotInited, Inited, TryingToLoad, Loaded };
 
-    static bool                        Init(const char* AdMobAppID, AdMob::Format Formats) { return AdMob::Init(Formats); }; // Deprecated Method
     static bool                        Init(AdMob::Format Formats);
     static bool                        InterstitialSetUnitId(const char* UnitId);
     static AdMob::InterstitialStatus   InterstitialGetStatus();
