@@ -1,8 +1,10 @@
+
 #include "ios_admob.h"
 #include "admob.h"
 #import <GoogleMobileAds/GoogleMobileAds.h>
 
-AdMob::AdEventCallback *admobCallback = nullptr;
+static bool mAdMobInitializationCompleted = false;
+static AdMob::AdEventCallback *admobCallback = nullptr;
 static void sendCallback(const AdMob::AdEvent& CallbackEvent) {
     if(admobCallback) {
         admobCallback(&CallbackEvent);
@@ -46,6 +48,14 @@ static void sendCallback(const AdMob::AdEvent& CallbackEvent) {
 };
 
 - (void)Load {
+    if(!mAdMobInitializationCompleted) {
+        AdMob::AdEvent Ad;
+        Ad.AdFormat = AdMob::Format::Interstitial;
+        Ad.EventType = static_cast<decltype(Ad.EventType)>(AdMob::InterstitialEvent::Failed);
+        sendCallback(Ad);
+        return;
+    }
+
     GADRequest *request = [GADRequest request];
     if(request) {
         @autoreleasepool {
@@ -54,7 +64,7 @@ static void sendCallback(const AdMob::AdEvent& CallbackEvent) {
                                         request:request
                               completionHandler:^(GADInterstitialAd *ad, NSError *error) {
                 AdMob::AdEvent Ad;
-                Ad.AdFormat = static_cast<decltype(Ad.AdFormat)>(AdMob::Format::Interstitial);
+                Ad.AdFormat = AdMob::Format::Interstitial;
                 using event = AdMob::InterstitialEvent;
               if (error) {
                   logDebug("InterstitialLoad success load");
@@ -87,7 +97,7 @@ static void sendCallback(const AdMob::AdEvent& CallbackEvent) {
 didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
     logDebug("Ad did fail to present full screen content.");
     AdMob::AdEvent Ad;
-    Ad.AdFormat = static_cast<decltype(Ad.AdFormat)>(AdMob::Format::Interstitial);
+    Ad.AdFormat = AdMob::Format::Interstitial;
     Ad.EventType = static_cast<decltype(Ad.EventType)>(AdMob::InterstitialEvent::Failed);
     sendCallback(Ad);
 }
@@ -101,7 +111,7 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
 - (void)adDidDismissFullScreenContent:(nonnull id<GADFullScreenPresentingAd>)ad {
     logDebug("Ad did dismiss full screen content.");
     AdMob::AdEvent Ad;
-    Ad.AdFormat = static_cast<decltype(Ad.AdFormat)>(AdMob::Format::Interstitial);
+    Ad.AdFormat = AdMob::Format::Interstitial;
     Ad.EventType = static_cast<decltype(Ad.EventType)>(AdMob::InterstitialEvent::Closed);
     sendCallback(Ad);
 }
@@ -145,6 +155,14 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
 };
 
 - (void)Load {
+    if(!mAdMobInitializationCompleted) {
+        AdMob::AdEvent Ad;
+        Ad.AdFormat = AdMob::Format::RewardedVideo;
+        Ad.EventType = static_cast<decltype(Ad.EventType)>(AdMob::RewardedVideoEvent::Failed);
+        sendCallback(Ad);
+        return;
+    }
+
     GADRequest *request = [GADRequest request];
     if(request) {
         @autoreleasepool {
@@ -154,7 +172,7 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
                           request:request
                 completionHandler:^(GADRewardedAd *ad, NSError *error) {
                   AdMob::AdEvent Ad;
-                  Ad.AdFormat = static_cast<decltype(Ad.AdFormat)>(AdMob::Format::RewardedVideo);
+                  Ad.AdFormat = AdMob::Format::RewardedVideo;
                   using event = AdMob::RewardedVideoEvent;
                   if (error) {
                       logDebug("Rewarded failed load");
@@ -181,7 +199,7 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
                                   userDidEarnRewardHandler:^ {
                 logDebug("Rewarded");
                 AdMob::AdEvent Ad;
-                Ad.AdFormat = static_cast<decltype(Ad.AdFormat)>(AdMob::Format::RewardedVideo);
+                Ad.AdFormat = AdMob::Format::RewardedVideo;
                 Ad.EventType = static_cast<decltype(Ad.EventType)>(AdMob::RewardedVideoEvent::Rewarded);
                 sendCallback(Ad);
             }];
@@ -194,7 +212,7 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
 didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
     logDebug("Ad did fail to present full screen content.");
     AdMob::AdEvent Ad;
-    Ad.AdFormat = static_cast<decltype(Ad.AdFormat)>(AdMob::Format::RewardedVideo);
+    Ad.AdFormat = AdMob::Format::RewardedVideo;
     Ad.EventType = static_cast<decltype(Ad.EventType)>(AdMob::RewardedVideoEvent::Failed);
     sendCallback(Ad);
 }
@@ -208,7 +226,7 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
 - (void)adDidDismissFullScreenContent:(nonnull id<GADFullScreenPresentingAd>)ad {
     logDebug("Ad did dismiss full screen content.");
     AdMob::AdEvent Ad;
-    Ad.AdFormat = static_cast<decltype(Ad.AdFormat)>(AdMob::Format::RewardedVideo);
+    Ad.AdFormat = AdMob::Format::RewardedVideo;
     Ad.EventType = static_cast<decltype(Ad.EventType)>(AdMob::RewardedVideoEvent::Closed);
     sendCallback(Ad);
 }
@@ -221,8 +239,10 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
 //
 // INTERFACE METHODS
 //
-bool AdMobiOS::Init(AdMob::Format Formats) {
-    [[GADMobileAds sharedInstance] startWithCompletionHandler:nil];
+bool AdMobiOS::Init(AdMob::Format Formats){
+    [[GADMobileAds sharedInstance] startWithCompletionHandler:^(GADInitializationStatus *_Nonnull) {
+        mAdMobInitializationCompleted = true;
+    }];
     return true;
 }
 
