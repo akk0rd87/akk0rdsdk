@@ -54,75 +54,110 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
     private static class MyInterstitialCallback extends InterstitialAdLoadCallback {
         @Override
         public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
-            // The mInterstitialAd reference will be null until
-            // an ad is loaded.
-            if(null != interstitialAd) {
-                mInterstitialAd = interstitialAd;
-                AdCallback_Local(AD_INTERSTITIAL, EVENT_INTERSTITIAL_LOADED, 0);
-                //Log.i(TAG, "onAdLoaded");
+            try {
+                // The mInterstitialAd reference will be null until
+                // an ad is loaded.
+                if(null != interstitialAd) {
+                    mInterstitialAd = interstitialAd;
+                    AdCallback_Local(AD_INTERSTITIAL, EVENT_INTERSTITIAL_LOADED, 0);
+                    //Log.i(TAG, "onAdLoaded");
+                }
+                else {
+                    mInterstitialAd = null;
+                    AdCallback_Local(AD_INTERSTITIAL, EVENT_INTERSTITIAL_FAILED, 0);
+                }
             }
-            else {
-                mInterstitialAd = null;
-                AdCallback_Local(AD_INTERSTITIAL, EVENT_INTERSTITIAL_FAILED, 0);
+            catch(Exception e) {
+                Log.e(TAG, e.getMessage());
             }
         }
 
         @Override
         public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-            // Handle the error
-            //Log.d(TAG, loadAdError.getMessage());
-            mInterstitialAd = null;
-            AdCallback_Local(AD_INTERSTITIAL, EVENT_INTERSTITIAL_FAILED, 0);
+            try {
+                // Handle the error
+                //Log.d(TAG, loadAdError.getMessage());
+                mInterstitialAd = null;
+                AdCallback_Local(AD_INTERSTITIAL, EVENT_INTERSTITIAL_FAILED, 0);
+            }
+            catch(Exception e) {
+                Log.e(TAG, e.getMessage());
+            }
         }
     };
 
     private static class MyInterstitialContentCallback extends FullScreenContentCallback {
         @Override
         public void onAdDismissedFullScreenContent() {
-          // Called when fullscreen content is dismissed.
-          mInterstitialAd = null;
-          Log.d("TAG", "The ad was dismissed.");
-          AdCallback_Local(AD_INTERSTITIAL, EVENT_INTERSTITIAL_CLOSED, 0);
+            try {
+                // Called when fullscreen content is dismissed.
+                mInterstitialAd = null;
+                Log.d("TAG", "The ad was dismissed.");
+                AdCallback_Local(AD_INTERSTITIAL, EVENT_INTERSTITIAL_CLOSED, 0);
+            }
+            catch(Exception e) {
+                Log.e(TAG, e.getMessage());
+            }
         }
 
         @Override
         public void onAdFailedToShowFullScreenContent(AdError adError) {
-          // Called when fullscreen content failed to show.
-          mInterstitialAd = null;
-          Log.d("TAG", "The ad failed to show.");
-          AdCallback_Local(AD_INTERSTITIAL, EVENT_INTERSTITIAL_FAILED, 0);
+            try {
+                // Called when fullscreen content failed to show.
+                mInterstitialAd = null;
+                Log.d("TAG", "The ad failed to show.");
+                AdCallback_Local(AD_INTERSTITIAL, EVENT_INTERSTITIAL_FAILED, 0);
+            }
+            catch(Exception e) {
+                Log.e(TAG, e.getMessage());
+            }
         }
 
         @Override
         public void onAdShowedFullScreenContent() {
-          // Called when fullscreen content is shown.
-          // Make sure to set your reference to null so you don't
-          // show it a second time.
-          mInterstitialAd = null;
-          // тут вызываем Closed, так как обнулили ссылку и можно запращивать новую рекламу
-          AdCallback_Local(AD_INTERSTITIAL, EVENT_INTERSTITIAL_CLOSED, 0);
-          Log.d("TAG", "The ad was shown.");
+            try {
+                // Called when fullscreen content is shown.
+                // Make sure to set your reference to null so you don't
+                // show it a second time.
+                mInterstitialAd = null;
+                // тут вызываем Closed, так как обнулили ссылку и можно запращивать новую рекламу
+                AdCallback_Local(AD_INTERSTITIAL, EVENT_INTERSTITIAL_CLOSED, 0);
+                Log.d("TAG", "The ad was shown.");
+            }
+            catch(Exception e) {
+                Log.e(TAG, e.getMessage());
+            }
         }
     };
     private static class MyRewardedCallback extends RewardedAdLoadCallback implements OnUserEarnedRewardListener {
         @Override
         public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-          // Handle the error.
-          Log.d(TAG, loadAdError.getMessage());
-          mRewardedAd = null;
-          AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_FAILED, 0);
+            try {
+                // Handle the error.
+                Log.d(TAG, loadAdError.getMessage());
+                mRewardedAd = null;
+                AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_FAILED, 0);
+            }
+            catch(Exception e) {
+                Log.e(TAG, e.getMessage());
+            }
         }
 
         @Override
         public void onAdLoaded(@NonNull RewardedAd rewardedAd) {
-            if(null != rewardedAd) {
-                mRewardedAd = rewardedAd;
-                //Log.d(TAG, "onAdFailedToLoad");
-                AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_LOADED, 0);
+            try {
+                if(null != rewardedAd) {
+                    mRewardedAd = rewardedAd;
+                    //Log.d(TAG, "onAdFailedToLoad");
+                    AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_LOADED, 0);
+                }
+                else {
+                    mRewardedAd = null;
+                    AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_FAILED, 0);
+                }
             }
-            else {
-                mRewardedAd = null;
-                AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_FAILED, 0);
+            catch(Exception e) {
+                Log.e(TAG, e.getMessage());
             }
         }
 
@@ -131,40 +166,60 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
         //
         @Override
         public void onUserEarnedReward(@NonNull RewardItem rewardItem) {
-          // Handle the reward.
-           Log.d("TAG", "The user earned the reward.");
-           //int rewardAmount = rewardItem.getAmount();
-           //String rewardType = rewardItem.getType();
-           AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_REWARDED, 0);
-           mRewardedAd = null;
+            try {
+                // Handle the reward.
+                Log.d("TAG", "The user earned the reward.");
+                //int rewardAmount = rewardItem.getAmount();
+                //String rewardType = rewardItem.getType();
+                AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_REWARDED, 0);
+                mRewardedAd = null;
+            }
+            catch(Exception e) {
+                Log.e(TAG, e.getMessage());
+            }
         }
     };
 
     private static class MyRewardedContentCallback extends FullScreenContentCallback {
         @Override
         public void onAdShowedFullScreenContent() {
-          // Called when ad is shown.
-          Log.d(TAG, "Ad was shown.");
-          mRewardedAd = null;
-          AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_STARTED, 0);
+            try {
+                // Called when ad is shown.
+                Log.d(TAG, "Ad was shown.");
+                mRewardedAd = null;
+                AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_STARTED, 0);
+            }
+            catch(Exception e) {
+                Log.e(TAG, e.getMessage());
+            }
         }
 
         @Override
         public void onAdFailedToShowFullScreenContent(AdError adError) {
-          // Called when ad fails to show.
-          Log.d(TAG, "Ad failed to show.");
-          mRewardedAd = null;
-          AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_FAILED, 0);
+            try {
+                // Called when ad fails to show.
+                Log.d(TAG, "Ad failed to show.");
+                mRewardedAd = null;
+                AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_FAILED, 0);
+            }
+            catch(Exception e) {
+                Log.e(TAG, e.getMessage());
+            }
         }
 
         @Override
         public void onAdDismissedFullScreenContent() {
-          // Called when ad is dismissed.
-          // Don't forget to set the ad reference to null so you
-          // don't show the ad a second time.
-          mRewardedAd = null;
-          Log.d(TAG, "Ad was dismissed.");
-          AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_CLOSED, 0);
+            try {
+                // Called when ad is dismissed.
+                // Don't forget to set the ad reference to null so you
+                // don't show the ad a second time.
+                mRewardedAd = null;
+                Log.d(TAG, "Ad was dismissed.");
+                AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_CLOSED, 0);
+            }
+            catch(Exception e) {
+                Log.e(TAG, e.getMessage());
+            }
         };
     };
 
