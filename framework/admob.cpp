@@ -56,7 +56,7 @@ public:
 static AdContextClass AdContext;
 
 // Разбор Interstitial Event-а
-bool AdMob_ProcessInterstitialAdEvent(const AdMob::AdEvent* Event)
+static bool AdMob_ProcessInterstitialAdEvent(const AdMob::AdEvent* Event)
 {
     auto EventType = (AdMob::InterstitialEvent)Event->EventType;
     switch (EventType)
@@ -84,7 +84,7 @@ bool AdMob_ProcessInterstitialAdEvent(const AdMob::AdEvent* Event)
 }
 
 // Разбор Interstitial Event-а
-bool AdMob_ProcessRewardedVideoAdEvent(const AdMob::AdEvent* Event)
+static bool AdMob_ProcessRewardedVideoAdEvent(const AdMob::AdEvent* Event)
 {
     auto EventType = (AdMob::RewardedVideoEvent)Event->EventType;
 
@@ -114,7 +114,7 @@ bool AdMob_ProcessRewardedVideoAdEvent(const AdMob::AdEvent* Event)
 }
 
 // Разбор Общего Event-а
-bool AdMob_ProcessAdEvent(const AdMob::AdEvent* Event)
+static bool AdMob_ProcessAdEvent(const AdMob::AdEvent* Event)
 {
     //logDebug("AdMob_ProcessAdEvent");
     switch (Event->AdFormat)
@@ -145,10 +145,9 @@ bool AdMob_ProcessAdEvent(const AdMob::AdEvent* Event)
     return false;
 }
 
-int AdMob::GetEventAdFormat(const SDL_Event& Event)
+AdMob::Format AdMob::GetEventAdFormat(const SDL_Event& Event)
 {
-    int fmt = (int)Event.user.code;
-    return fmt;
+    return static_cast<AdMob::Format>(Event.user.code);
 }
 
 void AdMob::RewarededDecodeEvent(const SDL_Event& Event, AdMob::RewardedVideoEvent& EventType, int& Result)
@@ -182,9 +181,9 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_AdMobAdapter_AdCallback(JNIEnv*, jcla
 {
     //int AdFormat = (int)AdType;
     AdMob::AdEvent Event;
-    Event.AdFormat = (int)AdType;
-    Event.EventType = (int)EventType;
-    Event.Code = (int)Code;
+    Event.AdFormat = static_cast<decltype(Event.AdFormat)>(AdType);
+    Event.EventType = static_cast<decltype(Event.EventType)>(EventType);
+    Event.Code = static_cast<decltype(Event.Code)>(Code);
     //logDebug("Add callback event %d %d %d", Event.AdFormat, Event.EventType, Event.Code);
     AdMob_ProcessAdEvent(&Event);
 }
@@ -199,7 +198,7 @@ Uint32 AdMob::GetEventCode()
     return AdContext.GetAdMobEventCode();
 }
 
-bool AdMob::Init(int Formats)
+bool AdMob::Init(AdMob::Format Formats)
 {
     AdContext.SetAdMobEventCode();
     bool inited = false;
@@ -221,7 +220,7 @@ bool AdMob::Init(int Formats)
 #endif
 
 #ifdef __APPLE__
-    if (AdMobiOS::Init())
+    if (AdMobiOS::Init(Formats))
     {
         // нужно проставить Callback для отлова событий
         AdMobiOS::SetAdEventCallback(&AdMob_ProcessAdEvent);
@@ -229,12 +228,11 @@ bool AdMob::Init(int Formats)
     };
 #endif
 
-    if (inited)
-    {
-        if (Formats & AdMob::Format::Interstitial)
+    if (inited) {
+        if (!(!(Formats & AdMob::Format::Interstitial)))
             AdContext.InterstitialSetStatus(AdMob::InterstitialStatus::Inited);
 
-        if (Formats & AdMob::Format::RewardedVideo)
+        if (!(!(Formats & AdMob::Format::RewardedVideo)))
             AdContext.RewardedVideoSetStatus(AdMob::RewardedVideoStatus::Inited);
     }
 

@@ -22,7 +22,7 @@ class AdMobAndroid
 private:
 
 public:
-    static bool Init(int Formats);
+    static bool Init(AdMob::Format Formats);
 
     static bool InterstitialSetUnitId(const char* UnitId);
     static bool InterstitialLoad();
@@ -34,7 +34,7 @@ public:
 };
 
 
-bool AdMobAndroid::Init(int Formats)
+bool AdMobAndroid::Init(AdMob::Format Formats)
 {
     bool Result = true;
     JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
@@ -58,7 +58,7 @@ bool AdMobAndroid::Init(int Formats)
 
     env->CallStaticVoidMethod(AdMobClass, AdmobInit);
 
-    if(Formats & AdMob::Format::Interstitial)
+    if(!(!(Formats & AdMob::Format::Interstitial)))
     {
         // InterstitialInit method
         AdmobInit = env->GetStaticMethodID(AdMobClass, "InterstitialInit", "()V");
@@ -70,7 +70,7 @@ bool AdMobAndroid::Init(int Formats)
         env->CallStaticVoidMethod(AdMobClass, AdmobInit);
     }
 
-    if(Formats & AdMob::Format::RewardedVideo)
+    if(!(!(Formats & AdMob::Format::RewardedVideo)))
     {
         // RewardedVideoInit method
         AdmobInit = env->GetStaticMethodID(AdMobClass, "RewardedVideoInit", "()V");
