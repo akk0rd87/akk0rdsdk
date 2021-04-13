@@ -9,7 +9,6 @@ class AndroidWrapper
 private:
 public:
     typedef void (onActivityResultCallback)(JNIEnv *env, jobject thiz, jobject activity, jint request_code, jint result_code, jobject data);
-    static char*             GetAsset2Buffer      (const char* FileName, unsigned& Size);
 
     static bool              AndroidShowToast(const char* Message, BWrapper::AndroidToastDuration Duration, int Gravity, int xOffset, int yOffset);
     static int               AndroidGetApiLevel();

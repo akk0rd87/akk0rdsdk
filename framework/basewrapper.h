@@ -183,7 +183,6 @@ public:
     static int                 GetDisplayDPI(int DisplayIndex, float* Ddpi, float* Hdpi, float* Vdpi);
 
     // Working with files
-    static char* File2Buffer(const char* FileName, BWrapper::FileSearchPriority SearchPriority, unsigned& BufferSize);
     static FILE* FileOpen(const char* FileName, BWrapper::FileSearchPriority SearchPriority, BWrapper::FileOpenMode OpenMode);
     static bool                FileWrite(FILE* File, const void* Buffer, size_t Size, size_t Count);
     static bool                FilePutS(FILE* File, const char* String);
@@ -192,7 +191,6 @@ public:
     static bool                FileDelete(const char* FileName);
     static bool                FileRename(const char* OldName, const char* NewName);
     static void                FileClose(FILE*& File);
-    static void                CloseBuffer(char*& buffer);
 
     // Working with directories
     static bool                DirCreate(const char* Dir);
@@ -348,13 +346,7 @@ public:
 class FileReader
 {
 private:
-
-#ifdef __ANDROID__ // На андроиде с assets придется работать особым способом
-    char* buffer = nullptr;
-    membuf* sbuf = nullptr;
-#endif
-    std::filebuf fb;
-    std::istream* in = nullptr;
+    std::unique_ptr<std::istream> in = nullptr;
     bool opened = false;
 public:
     bool Open(const char* Fname, BWrapper::FileSearchPriority SearchPriority);

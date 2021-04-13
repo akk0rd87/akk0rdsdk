@@ -28,13 +28,6 @@ bool VALUE_BETWEEN(T Val, T Begin, T End) {
 typedef SDL_Window   AkkordWindow;
 typedef SDL_Renderer AkkordRenderer;
 
-struct membuf : std::streambuf
-{
-    membuf(char* begin, char* end) {
-        this->setg(begin, begin, end);
-    }
-};
-
 struct DirContentElement
 {
     std::string Name;

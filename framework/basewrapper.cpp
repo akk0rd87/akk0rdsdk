@@ -116,28 +116,6 @@ FILE* FileOpen_private(const char* Filename, BWrapper::FileSearchPriority Search
     return fopen(Filename, mode);
 }
 
-char* File2Buffer_private(FILE* File, unsigned& Size)
-{
-    Size = 0;
-    if (File)
-    {
-        fseek(File, 0, SEEK_END);
-        Size = ftell(File);
-        rewind(File); // set pointer to beginning
-        char* buffer = new char[Size];
-        auto readed = fread(buffer, Size, 1, File);
-        if (readed != 1)
-        {
-            BWrapper::CloseBuffer(buffer);
-            logError("File2Buffer_private: File read into buffer error. Readed %ld", readed);
-            return nullptr;
-        }
-        return buffer;
-    }
-    logError("File2Buffer_private: Empty file handle");
-    return nullptr;
-}
-
 FILE* BWrapper::FileOpen(const char* FileName, FileSearchPriority SearchPriority, FileOpenMode OpenMode)
 {
     // Assets not accesable by this method yet
@@ -155,82 +133,25 @@ FILE* BWrapper::FileOpen(const char* FileName, FileSearchPriority SearchPriority
     return File;
 }
 
-char* BWrapper::File2Buffer(const char* FileName, FileSearchPriority SearchPriority, unsigned& BufferSize)
-{
-    char* buffer = nullptr;
-    BufferSize = 0;
-
-    std::string Fname(FileName);
-
-    if (FileSearchPriority::Assets == SearchPriority)
-    {
-#ifdef __ANDROID__ // На андроиде assets читаются особым образом
-        buffer = AndroidWrapper::GetAsset2Buffer(Fname.c_str(), BufferSize);
-
-        if (nullptr == buffer)
-            logError("FileSearchPriority::Assets: File %s [%s] open error", FileName, Fname.c_str());
-
-        return buffer;
-#else
-        //Во всех остальных случаях читаем из папки assets
-        Fname = PlatformWrapper::GetInstance().GetInternalAssetsDir() + std::string(FileName);
-#endif
-    }
-
-    std::unique_ptr<FILE, int(*)(FILE*)> File(FileOpen_private(Fname.c_str(), SearchPriority, BWrapper::FileOpenMode::ReadBinary), fclose);
-
-    if (nullptr == File)
-    {
-        logError("BWrapper::File2Buffer: File %s open error", FileName, Fname.c_str());
-    }
-
-    buffer = File2Buffer_private(File.get(), BufferSize);
-    if (nullptr == buffer)
-    {
-        logError("BWrapper::File2Buffer: File %s read to buffer error", FileName, Fname.c_str());
-    }
-    return buffer;
-}
-
 bool BWrapper::FileExists(const char* FileName, BWrapper::FileSearchPriority SearchPriority)
 {
-#ifdef __ANDROID__ // На андроиде assets читаются особым образом
-    if (BWrapper::FileSearchPriority::Assets == SearchPriority)
-    {
-        unsigned BufferSize;
-        auto buffer = AndroidWrapper::GetAsset2Buffer(FileName, BufferSize);
-        if (buffer != nullptr)
-        {
-            CloseBuffer(buffer);
-            return true;
-        }
-        return false;
+    // На андроиде assets читаются особым образом
+    if (BWrapper::GetDeviceOS() == BWrapper::OS::AndroidOS && BWrapper::FileSearchPriority::Assets == SearchPriority) {
+        return (PlatformWrapper::GetInstance().GetFileBuf(FileName, SearchPriority) ? true : false);
     }
-#endif
 
     auto File = FileOpen_private(FileName, SearchPriority, BWrapper::FileOpenMode::ReadBinary);
 
-    if (File != nullptr)
-    {
+    if (File) {
         FileClose(File);
         return true;
     }
     return false;
 }
 
-void BWrapper::CloseBuffer(char*& buffer)
-{
-    if (buffer != nullptr)
-    {
-        delete[] buffer;
-    }
-    buffer = nullptr;
-}
-
 void BWrapper::FileClose(FILE*& File)
 {
-    if (File != nullptr)
-    {
+    if (File) {
         fclose(File);
     }
     File = nullptr;
@@ -459,30 +380,23 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
 
 bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const BWrapper::FileSearchPriority SearchPriority, float Scale)
 {
-    if (tex != nullptr)
-    {
+    if (tex) {
         this->Destroy();
     }
 
-    bool result = false;
-    unsigned Size;
-    auto buffer = BWrapper::File2Buffer(FileName, SearchPriority, Size);
+    auto fb = PlatformWrapper::GetInstance().GetFileBuf(FileName, SearchPriority);
 
-    if (nullptr == buffer)
-    {
-        logError("Error load file image = %s, error=%s", FileName, SDL_GetError());
-        return result;
+    if (!fb) {
+        logError("Error load file image = %s", FileName);
+        return false;
     }
 
-    result = this->LoadFromMemory(buffer, Size, Type, Scale);
-    BWrapper::CloseBuffer(buffer);
-
-    if (!result)
-    {
+    if (!this->LoadFromMemory(fb->Begin(), fb->End() - fb->Begin(), Type, Scale)) {
         logError("Error load file %s", FileName);
+        return false;
     }
 
-    return result;
+    return true;
 };
 
 bool AkkordTexture::SetColorMod(Uint8 R, Uint8 G, Uint8 B)
@@ -1065,49 +979,20 @@ void BWrapper::SharePNG(const char* Title, const char* File) {
 bool FileReader::Open(const char* Fname, BWrapper::FileSearchPriority SearchPriority)
 {
     Close();
-    std::string Path;
-#ifdef __ANDROID__
-    if (BWrapper::FileSearchPriority::Assets == SearchPriority)
-    {
-        unsigned Size;
-        buffer = BWrapper::File2Buffer(Fname, SearchPriority, Size);
-
-        if (buffer)
-        {
-            sbuf = new membuf(buffer, buffer + Size);
-            in = new std::istream(sbuf);
-            opened = true;
-        }
-        return opened;
+    if (BWrapper::FileSearchPriority::Assets == SearchPriority) {
+        in = PlatformWrapper::GetInstance().GetAssetStream(Fname);
     }
-#else
-    if (BWrapper::FileSearchPriority::Assets == SearchPriority)
-        Path = PlatformWrapper::GetInstance().GetInternalAssetsDir() + "/";
-#endif
-
-    Path = Path + Fname;
-    if (fb.open(Path.c_str(), std::ios::binary | std::ios::in) != nullptr)
-    {
-        in = new std::istream(&fb);
-        opened = true;
+    else {
+        in = std::make_unique<std::ifstream>(Fname, std::ios::binary | std::ios::in);
     }
+    opened = (in ? true : false);
     return opened;
 };
 
 void FileReader::Close()
 {
     opened = false;
-    fb.close();
-    if (in) delete in;
-    in = nullptr;
-
-#ifdef __ANDROID__
-    BWrapper::CloseBuffer(buffer);
-    buffer = nullptr;
-
-    if (sbuf) delete sbuf;
-    sbuf = nullptr;
-#endif
+    in.reset();
 };
 
 bool FileReader::ReadLine(std::string& Line)
@@ -1118,8 +1003,8 @@ bool FileReader::ReadLine(std::string& Line)
         return false;
     }
     if (std::getline(*in, Line)) {
-        while (Line.back() == '\r' || Line.back() == '\n') {
-            Line.pop_back();
+        if (!Line.empty()) {
+            Line.erase(Line.find_last_not_of("\r\n") + 1);
         }
         return true;
     }
@@ -1191,24 +1076,19 @@ bool WAVPlayer::LoadFromMemory(const char* Buffer, int Size)
 bool WAVPlayer::LoadFromFile(const char* FileName, const BWrapper::FileSearchPriority SearchPriority)
 {
     this->Clear();
-    unsigned Size;
-    auto buffer = BWrapper::File2Buffer(FileName, BWrapper::FileSearchPriority::Assets, Size);
+    auto fb = PlatformWrapper::GetInstance().GetFileBuf(FileName, SearchPriority);
 
-    if (nullptr == buffer)
-    {
+    if (!fb) {
         logError("Error load file = %s, error=%s", FileName, SDL_GetError());
         return false;
     }
 
-    bool result = this->LoadFromMemory(buffer, Size);
-    BWrapper::CloseBuffer(buffer);
-
-    if (!result)
-    {
-        logError("Error load wav file = %s, error=%s", FileName, SDL_GetError());
+    if (!this->LoadFromMemory(fb->Begin(), fb->End() - fb->Begin())) {
+        logError("Error load wav file = %s", FileName);
+        return false;
     }
 
-    return result;
+    return true;
 };
 
 bool WAVPlayer::Play()

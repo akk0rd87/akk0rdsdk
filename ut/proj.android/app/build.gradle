@@ -44,12 +44,10 @@ android {
             manifest.srcFile '../AndroidManifest.xml'
             java.srcDir "${akkord_sdk_path}/libraries/SDL/SDL/android-project/app/src/main/java/org/libsdl/app/"
             java.srcDir "${akkord_sdk_path}/framework/core/platformwrapper/android/wrapper/"
-            java.srcDir "${akkord_sdk_path}/framework/core/platformwrapper/android/admob/"
-            java.srcDir "${akkord_sdk_path}/framework/core/platformwrapper/android/billing/"
             java.srcDir '../java'
             res.srcDirs = ['../res']
             assets.srcDir '../../assets'
-            assets.srcDir "${akkord_sdk_path}/resources/adimages/"
+            //assets.srcDir "${akkord_sdk_path}/resources/adimages/"
         }
     }
     buildTypes {
@@ -116,7 +114,6 @@ android.applicationVariants.all { variant ->
     // However, because we want universal APKs to have the lowest version code,
     // this outcome is desirable.
     if (baseAbiVersionCode != null) {
-
       // Assigns the new version code to versionCodeOverride, which changes the version code
       // for only the output APK, not for the variant itself. Skipping this step simply
       // causes Gradle to use the value of variant.versionCode for the APK.
@@ -128,6 +125,5 @@ android.applicationVariants.all { variant ->
 
 dependencies {
     implementation 'com.getkeepsafe.relinker:relinker:1.4.1'
-    implementation 'com.google.android.gms:play-services-ads:20.0.0'
-    implementation 'com.android.billingclient:billing:1.1'
+    implementation 'com.google.android.play:core:1.10.0'
 }

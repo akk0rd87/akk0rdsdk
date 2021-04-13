@@ -8,6 +8,14 @@
 class PlatformWrapper
 {
 public:
+    class FileBuffer {
+    public:
+        virtual char* Begin() = 0;
+        virtual char* End() = 0;
+        FileBuffer() {};
+        virtual ~FileBuffer() {};
+    };
+
     static                   PlatformWrapper& GetInstance() { return vGetInstance(); }
 
     bool                     Init() { return vInit(); }
@@ -17,12 +25,6 @@ public:
     //std::string              GetInternalDir() { return vGetInternalDir(); };
     std::string              GetInternalWriteDir() {
         auto dir = vGetInternalWriteDir();
-        FormatDir(dir);
-        return dir;
-    }
-
-    std::string              GetInternalAssetsDir() {
-        auto dir = vGetInternalAssetsDir();
         FormatDir(dir);
         return dir;
     }
@@ -42,6 +44,9 @@ public:
     void                     ShareText(const char* Title, const char* Message) { vShareText(Title, Message); }; // mobile platforms only
     void                     SharePNG(const char* Title, const char* File) { vSharePNG(Title, File); }; // mobile platforms only
 
+    std::unique_ptr<std::istream>   GetAssetStream(const char* FileName) { return vGetAssetStream(FileName); };
+    std::unique_ptr<FileBuffer>     GetFileBuf(const char* FileName, BWrapper::FileSearchPriority SearchPriority) { return vGetFileBuf(FileName, SearchPriority); }
+
     int                      GetAudioOutputRate() { return vGetAudioOutputRate(); };       // only for Android
     int                      GetAudioOutputBufferSize() { return vGetAudioOutputBufferSize(); }; // only for Android
     bool                     LaunchAppReviewIfAvailable() { return vLaunchAppReviewIfAvailable(); }
@@ -51,6 +56,12 @@ public:
 
 private:
     static                           PlatformWrapper& vGetInstance();
+
+    std::string GetInternalAssetsDir() {
+        auto dir = vGetInternalAssetsDir();
+        FormatDir(dir);
+        return dir;
+    }
 
     virtual bool                     vInit() = 0;
     virtual Locale::Lang             vGetDeviceLanguage() = 0;
@@ -84,6 +95,42 @@ private:
         if (Dir.back() != '/' && Dir.back() != '\\') {
             Dir += '/';
         }
+    }
+
+    virtual std::unique_ptr<std::istream> vGetAssetStream(const char* FileName) {
+        return std::make_unique<std::ifstream>(GetInternalAssetsDir() + FileName, std::ifstream::binary | std::ifstream::in);
+    }
+
+    virtual std::unique_ptr<FileBuffer> vGetFileBuf(const char* FileName, BWrapper::FileSearchPriority SearchPriority) {
+        if (BWrapper::FileSearchPriority::Assets == SearchPriority) {
+            return GetFileBuf((GetInternalAssetsDir() + FileName).c_str());
+        }
+        else {
+            return GetFileBuf(FileName);
+        }
+    }
+
+protected:
+    std::unique_ptr<FileBuffer> GetFileBuf(const char* FileName) { // невиртуальная функция
+        class localBuffer : public FileBuffer {
+            std::vector<char> buffer;
+        public:
+            localBuffer(const char* Fname) {
+                std::ifstream ifs(Fname, std::ifstream::binary);
+                if (ifs) {
+                    buffer.insert(std::begin(buffer), std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
+                    ifs.close();
+                }
+                else {
+                    logError("Error load file %s", Fname);
+                }
+                //logDebug("%s size=%u", Fname, buffer.size());
+            }
+            virtual char* Begin() override { return &buffer.front(); };
+            virtual char* End() override { return &buffer.back() + 1; };
+        };
+
+        return std::make_unique<localBuffer>(FileName);
     }
 };
 

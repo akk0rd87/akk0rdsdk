@@ -167,7 +167,9 @@ class AndroidPlatformWrapper : public PlatformWrapper {
         //}
 
         jint value = env->CallStaticIntMethod(AndroidWrapperState.UtilsClass, GetApiLevel);
-        AndroidWrapperState.sApiLevel = (int)value;
+        AndroidWrapperState.sApiLevel = static_cast<int>(value);
+
+        InitAssetsManager();
 
         return Result;
     };
@@ -403,23 +405,83 @@ public:
         return true;
     }
 
-    char* GetAsset2Buffer(const char* FileName, unsigned& Size)
-    {
-        Size = 0;
-        InitAssetsManager();
-
-        if(AndroidWrapperState.AssetMgr)  {
-            auto asset = AAssetManager_open(AndroidWrapperState.AssetMgr, FileName, AASSET_MODE_UNKNOWN);
-            if(asset) {
-                Size         = AAsset_getLength(asset);
-                char* buffer = new char[Size];
-
-                AAsset_read(asset, buffer, Size);
-                AAsset_close(asset);
-                return buffer;
+    AAsset* openAsset(const char* FileName) {
+        if(AndroidWrapperState.AssetMgr) {
+            auto asset = AAssetManager_open(AndroidWrapperState.AssetMgr, FileName, AASSET_MODE_BUFFER);
+            if(!asset) {
+                logError("Asset not found %s", FileName);
             }
+            return asset;
+        }
+        else {
+            logError("AndroidWrapperState.AssetMgr not initialized");
         }
         return nullptr;
+    }
+
+    std::unique_ptr<FileBuffer> GetAssetBuf(const char* FileName) {
+        class localBuffer : public FileBuffer {
+            public:
+                localBuffer(AAsset * the_asset)
+                    : the_asset_(the_asset) {
+                        begin = (char *)AAsset_getBuffer(the_asset);
+                        end = begin + AAsset_getLength64(the_asset);
+                    }
+                ~localBuffer() {
+                    AAsset_close(the_asset_);
+                }
+            virtual char* Begin() override { return begin; };
+            virtual char* End() override { return end; };
+            private:
+                AAsset * the_asset_;
+                char *begin;
+                char *end;
+        };
+
+        auto asset = openAsset(FileName);
+        if(asset) {
+            return std::make_unique<localBuffer>(asset);
+        }
+        return nullptr;
+    }
+
+    std::unique_ptr<std::istream> vGetAssetStream (const char* FileName) override {
+        class asset_streambuf : public std::streambuf {
+            public:
+                asset_streambuf(AAsset * the_asset)
+                    : the_asset_(the_asset) {
+                        char * begin = (char *)AAsset_getBuffer(the_asset);
+                        char * end = begin + AAsset_getLength64(the_asset);
+                        setg(begin, begin, end);
+                    }
+                ~asset_streambuf() {
+                    AAsset_close(the_asset_);
+                }
+            private:
+                AAsset * the_asset_;
+        };
+
+        class asset_stream : public std::istream {
+            public:
+                asset_stream(std::unique_ptr<std::streambuf>&& SB) : std::istream(SB.get()), sb(std::move(SB))  {}
+            private:
+                std::unique_ptr<std::streambuf> sb;
+        };
+
+        auto asset = openAsset(FileName);
+        if(asset) {
+            return std::make_unique<asset_stream>(std::make_unique<asset_streambuf>(asset));
+        }
+        return nullptr;
+    };
+
+    std::unique_ptr<FileBuffer> vGetFileBuf(const char* FileName, BWrapper::FileSearchPriority SearchPriority) override {
+        if(BWrapper::FileSearchPriority::Assets == SearchPriority) {
+            return GetAssetBuf(FileName);
+        }
+        else {
+            return GetFileBuf(FileName);
+        }
     }
 };
 
@@ -427,10 +489,6 @@ static AndroidPlatformWrapper androidPlatformWrapper;
 PlatformWrapper& PlatformWrapper::vGetInstance() {
     return androidPlatformWrapper;
 };
-
-char* AndroidWrapper::GetAsset2Buffer(const char* FileName, unsigned& Size) {
-    return androidPlatformWrapper.GetAsset2Buffer(FileName, Size);
-}
 
 bool AndroidWrapper::AndroidShowToast(const char* Message, BWrapper::AndroidToastDuration Duration, int Gravity, int xOffset, int yOffset) {
     return androidPlatformWrapper.ShowToast(Message, Duration, Gravity, xOffset, yOffset);
