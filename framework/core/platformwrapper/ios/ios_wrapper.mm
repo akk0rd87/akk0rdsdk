@@ -302,6 +302,24 @@ class iOSPlatformWrapper : public PlatformWrapper {
         [SKStoreReviewController requestReview];
         return true;
     }
+
+    std::string vGetAppVersionName() override {
+        // https://stackoverflow.com/questions/3015796/how-to-programmatically-display-version-build-number-of-target-in-ios-app
+        NSString * appString = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"];
+        if(appString) {
+            return std::string([appString UTF8String]);
+        }
+        return "unknown";
+    }
+
+    std::string vGetAppVersionCode() override {
+        // https://stackoverflow.com/questions/3015796/how-to-programmatically-display-version-build-number-of-target-in-ios-app
+        NSString * appString = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
+        if(appString) {
+            return std::string([appString UTF8String]);
+        }
+        return "unknown";
+    }
 };
 
 static iOSPlatformWrapper iosPlatformWrapper;
