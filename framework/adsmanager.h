@@ -50,7 +50,7 @@ public:
     void Clear() { AdMobUnits.clear(); };
     void SetIntersitialShowDelay(timeMS DelaySeconds) { this->ShowDelay = DelaySeconds; };
     void SetIntersitialLoadDelay(timeMS DelaySeconds) { this->LoadDelay = DelaySeconds; };
-    void AddAdMobUnit(const std::string& Id, timeMS TimePriority) { AdMobUnits.emplace_back(AdMobUnit(Id, TimePriority)); };
+    void AddAdMobUnit(const std::string& Id, timeMS TimePriority) { AdMobUnits.emplace_back(Id, TimePriority); };
     bool InterstitialLoad();
     bool InterstitialShow();
     void ShowAdUnits();
