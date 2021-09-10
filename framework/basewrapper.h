@@ -356,6 +356,7 @@ public:
     bool IsOpen() const { return opened; };
     bool ReadLine(std::string& Line);
     bool Read(char* Buffer, unsigned MaxSize, unsigned& Readed);
+    std::istream& GetInputStream() { return *(in.get()); }
 
     FileReader(const FileReader& rhs) = delete; // Копирующий: конструктор
     FileReader(FileReader&& rhs) = delete; // Перемещающий: конструктор
