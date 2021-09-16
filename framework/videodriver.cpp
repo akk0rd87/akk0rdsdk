@@ -79,8 +79,7 @@ void SDFTexture::Clear() {
     }
 }
 
-bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
-{
+bool SDFTexture::Draw(const AkkordFRect& DestRect, const AkkordRect* SourceRect) {
     const auto ScreenSize = BWrapper::GetScreenSize();
     // если целевое размещение не попадает на экран, не рисуем его
     if (DestRect.x > ScreenSize.x || DestRect.x + DestRect.w < 0 || DestRect.y > ScreenSize.y || DestRect.y + DestRect.h < 0) {
@@ -94,20 +93,15 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
     }
 
     // не забыть посчитать Scale и выполнить AutoFlush
-    VideoFloatRect destRect, srcRect;
+    VideoFloatRect srcRect;
 
     VideoBufferAppendParams appendParams;
-    appendParams.DestRect = &destRect;
+    appendParams.DestRect = &DestRect;
     appendParams.SrcRect = &srcRect;
     appendParams.TextureW = atlasW;
     appendParams.TextureH = atlasH;
     appendParams.ScrenW = static_cast<decltype(appendParams.ScrenW)>(ScreenSize.x);
     appendParams.ScrenH = static_cast<decltype(appendParams.ScrenH)>(ScreenSize.y);
-
-    destRect.x = static_cast<decltype(destRect.x)>(DestRect.x);
-    destRect.y = static_cast<decltype(destRect.y)>(DestRect.y);
-    destRect.w = static_cast<decltype(destRect.w)>(DestRect.w);
-    destRect.h = static_cast<decltype(destRect.h)>(DestRect.h);
 
     if (SourceRect) {
         srcRect.x = static_cast<decltype(srcRect.x)>(SourceRect->x);
@@ -122,7 +116,7 @@ bool SDFTexture::Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect)
         srcRect.h = atlasH;
     }
     videoBuffer->Append(appendParams);
-    this->Scale = std::max(destRect.w / srcRect.w, destRect.h / srcRect.h);
+    this->Scale = std::max(DestRect.w / srcRect.w, DestRect.h / srcRect.h);
 
     if (this->AutoFlush) {
         Flush();

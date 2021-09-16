@@ -80,7 +80,8 @@ public:
     void SetOutlineColor(const AkkordColor& OutlineColor) { this->OutlineColor = OutlineColor; };
     void SetOutlineColor(Uint8 R, Uint8 G, Uint8 B) { this->OutlineColor = AkkordColor(R, G, B); };
     void SetOutlineColor(Uint8 R, Uint8 G, Uint8 B, Uint8 A) { this->OutlineColor = AkkordColor(R, G, B, A); };
-    bool Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect = nullptr);
+    bool Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect = nullptr) { return Draw(AkkordFRect(DestRect.x, DestRect.y, DestRect.w, DestRect.h), SourceRect); };
+    bool Draw(const AkkordFRect& DestRect, const AkkordRect* SourceRect = nullptr);
     bool Flush();
     void Clear();
     void SetAutoFlush(bool AutoFlush) { this->AutoFlush = AutoFlush; };

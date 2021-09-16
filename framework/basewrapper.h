@@ -51,6 +51,33 @@ public:
     bool operator!= (const AkkordRect& Rect) const { return !(Rect == *this); };
 };
 
+class AkkordFRect : public SDL_FRect
+{
+public:
+    constexpr AkkordFRect() : SDL_FRect() { x = y = w = h = 0.0F; };
+    constexpr AkkordFRect(const AkkordFRect& Rect) : SDL_FRect() { x = Rect.x;  y = Rect.y; w = Rect.w; h = Rect.h; };
+    constexpr AkkordFRect(float X, float Y, float W, float H) : SDL_FRect() { x = X; y = Y; w = W; h = H; };
+    // constexpr AkkordFRect(const AkkordPoint& Point1, const AkkordPoint& Point2) : SDL_FRect() { x = Point1.x; y = Point1.y;  w = Point2.x; h = Point2.y; };
+
+    AkkordFRect& SetW(float W) { w = W; return *this; };
+    AkkordFRect& SetH(float H) { h = H; return *this; };
+    AkkordFRect& SetX(float X) { x = X; return *this; };
+    AkkordFRect& SetY(float Y) { y = Y; return *this; };
+
+    float GetW() const { return w; };
+    float GetH() const { return h; };
+    float GetX() const { return x; };
+    float GetY() const { return y; };
+
+    //AkkordRect& SetPosition(const AkkordPoint& Position) { x = Position.GetX(); y = Position.GetY(); return *this; };
+    //AkkordRect& SetPosition(float X, float Y) { x = X; y = Y; return *this; };
+    //AkkordRect& SetSize(const AkkordPoint& Size) { w = Size.GetX(); h = Size.GetY(); return *this; };
+    //AkkordRect& SetSize(float W, float H) { w = W; h = H; return *this; };
+
+    //AkkordPoint GetPosition() const { return AkkordPoint(x, y); }
+    //AkkordPoint GetSize() const { return AkkordPoint(w, h); }
+};
+
 class AkkordColor
 {
 private:
@@ -174,9 +201,13 @@ public:
     static bool                SetCurrentColor(Uint8 R, Uint8 G, Uint8 B) { return SetCurrentColor(AkkordColor(R, G, B)); };
     static bool                SetCurrentColor(Uint8 R, Uint8 G, Uint8 B, Uint8 A) { return SetCurrentColor(AkkordColor(R, G, B, A)); };
     static bool                DrawRect(const AkkordRect& Rect);
-    static bool                DrawRect(int X, int Y, int W, int H);
+    static bool                DrawRect(int X, int Y, int W, int H) { return DrawRect(AkkordRect(X, Y, W, H)); };
     static bool                FillRect(const AkkordRect& Rect);
-    static bool                FillRect(int X, int Y, int W, int H);
+    static bool                FillRect(int X, int Y, int W, int H) { return FillRect(AkkordRect(X, Y, W, H)); };
+    static bool                DrawRect(const AkkordFRect& Rect);
+    static bool                DrawRect(float X, float Y, float W, float H) { return DrawRect(AkkordFRect(X, Y, W, H)); };
+    static bool                FillRect(const AkkordFRect& Rect);
+    static bool                FillRect(float X, float Y, float W, float H) { return FillRect(AkkordFRect(X, Y, W, H)); };
     static bool                DrawLine(const AkkordPoint& Point1, const AkkordPoint& Point2);
     static bool                DrawLine(int P1X, int P1Y, int P2X, int P2Y);
     static bool                IsPointInRect(const AkkordPoint& Point, const AkkordRect& Rect) { return (Rect.x <= Point.x && Point.x <= Rect.x + Rect.w) && (Rect.y <= Point.y && Point.y <= Rect.y + Rect.h); };

@@ -4,7 +4,7 @@
 #include "basewrapper.h"
 #include "SDL.h"
 
-struct VideoFloatRect { float x, y, w, h; };
+using VideoFloatRect = AkkordFRect;
 struct VideoBufferAppendParams {
     const VideoFloatRect* DestRect;
     const VideoFloatRect* SrcRect;

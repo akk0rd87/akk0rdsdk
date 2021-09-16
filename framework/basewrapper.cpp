@@ -475,11 +475,6 @@ bool BWrapper::DrawRect(const AkkordRect& Rect)
     return false;
 };
 
-bool BWrapper::DrawRect(int X, int Y, int W, int H)
-{
-    return DrawRect(AkkordRect(X, Y, W, H));
-}
-
 bool BWrapper::FillRect(const AkkordRect& Rect)
 {
     if (SDL_RenderFillRect(CurrentContext.CurrentRenderer, &Rect) == 0) return true;
@@ -487,10 +482,17 @@ bool BWrapper::FillRect(const AkkordRect& Rect)
     return false;
 };
 
-bool BWrapper::FillRect(int X, int Y, int W, int H)
-{
-    return BWrapper::FillRect(AkkordRect(X, Y, W, H));
-}
+bool BWrapper::DrawRect(const AkkordFRect& Rect) {
+    if (SDL_RenderDrawRectF(CurrentContext.CurrentRenderer, &Rect) == 0) return true;
+    logError("Draw error %s", SDL_GetError());
+    return false;
+};
+
+bool BWrapper::FillRect(const AkkordFRect& Rect) {
+    if (SDL_RenderFillRectF(CurrentContext.CurrentRenderer, &Rect) == 0) return true;
+    logError("Draw error %s", SDL_GetError());
+    return false;
+};
 
 bool BWrapper::DrawLine(const AkkordPoint& Point1, const AkkordPoint& Point2)
 {
