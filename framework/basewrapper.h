@@ -21,6 +21,20 @@ public:
     int GetY() const { return y; }
 };
 
+class AkkordFPoint : public SDL_FPoint
+{
+public:
+    constexpr AkkordFPoint() : SDL_FPoint() { x = y = 0.0F; };
+    constexpr AkkordFPoint(float X, float Y) : SDL_FPoint() { x = X;  y = Y; };
+    constexpr AkkordFPoint(const AkkordFPoint& Point) : SDL_FPoint() { x = Point.x; y = Point.y; };
+
+    AkkordFPoint& SetX(float X) { x = X; return *this; }
+    AkkordFPoint& SetY(float Y) { y = Y; return *this; }
+
+    float GetX() const { return x; }
+    float GetY() const { return y; }
+};
+
 class AkkordRect : public SDL_Rect
 {
 public:
