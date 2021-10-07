@@ -198,7 +198,7 @@ void AdRandomizer::OpenURL(BWrapper::OS OSCode, Apps AppId)
         switch (OSCode)
         {
         case BWrapper::OS::iOS:
-            //BWrapper::OpenURL("https://itunes.apple.com/app/id1482437026");
+            BWrapper::OpenURL("https://itunes.apple.com/app/id1587839728");
             break;
 
         case BWrapper::OS::AndroidOS:
