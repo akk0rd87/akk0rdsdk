@@ -80,7 +80,7 @@ public:
     void SetOutlineColor(const AkkordColor& OutlineColor) { this->OutlineColor = OutlineColor; };
     void SetOutlineColor(Uint8 R, Uint8 G, Uint8 B) { this->OutlineColor = AkkordColor(R, G, B); };
     void SetOutlineColor(Uint8 R, Uint8 G, Uint8 B, Uint8 A) { this->OutlineColor = AkkordColor(R, G, B, A); };
-    bool Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect = nullptr) { return Draw(AkkordFRect(DestRect.x, DestRect.y, DestRect.w, DestRect.h), SourceRect); };
+    bool Draw(const AkkordRect& DestRect, const AkkordRect* SourceRect = nullptr) { return Draw(AkkordFRect(static_cast<float>(DestRect.x), static_cast<float>(DestRect.y), static_cast<float>(DestRect.w), static_cast<float>(DestRect.h)), SourceRect); };
     bool Draw(const AkkordFRect& DestRect, const AkkordRect* SourceRect = nullptr);
     bool Flush();
     void Clear();
@@ -218,11 +218,13 @@ public:
     AkkordPoint GetTextSize(const std::string& Text) const { return  GetTextSize(Text.c_str()); };
     void        WrapText(const char* Text, float ScaleMutiplier, std::string& ResultString, float& UsedScale, AkkordPoint& Size);
     void        WrapText(const std::string& Text, float ScaleMutiplier, std::string& ResultString, float& UsedScale, AkkordPoint& Size) { WrapText(Text.c_str(), ScaleMutiplier, ResultString, UsedScale, Size); };
-    AkkordPoint DrawText(int X, int Y, const char* Text);
-    AkkordPoint DrawText(const AkkordPoint& Position, const char* Text) { return DrawText(Position.x, Position.y, Text); };
+    AkkordPoint DrawText(float X, float Y, const char* Text);
+    AkkordPoint DrawText(const AkkordPoint& Position, const char* Text) { return DrawText(static_cast<float>(Position.x), static_cast<float>(Position.y), Text); };
+    AkkordPoint DrawText(const AkkordFPoint& Position, const char* Text) { return DrawText(Position.x, Position.y, Text); };
 
-    AkkordPoint DrawText(int X, int Y, const std::string& Text) { return DrawText(X, Y, Text.c_str()); };
-    AkkordPoint DrawText(const AkkordPoint& Position, const std::string& Text) { return DrawText(Position.x, Position.y, Text); };
+    AkkordPoint DrawText(float X, float Y, const std::string& Text) { return DrawText(X, Y, Text.c_str()); };
+    AkkordPoint DrawText(const AkkordPoint& Position, const std::string& Text) { return DrawText(static_cast<float>(Position.x), static_cast<float>(Position.y), Text); };
+    AkkordPoint DrawText(const AkkordFPoint& Position, const std::string& Text) { return DrawText(Position.x, Position.y, Text); };
 
     float GetTextScale(int W, int H, const char* Text) const {
         const float localScale = 1.0F;

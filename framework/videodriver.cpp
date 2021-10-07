@@ -356,7 +356,7 @@ std::pair<float, float> SDFFontBuffer::GetTextSizeByLine(const char* Text, float
     return pt;
 }
 
-AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text) {
+AkkordPoint SDFFontBuffer::DrawText(float X, float Y, const char* Text) {
     AkkordPoint pt(0, 0);
     if (!videoBuffer) {
         if (!InitVideoBuffer(videoBuffer)) {
@@ -379,7 +379,7 @@ AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text) {
 
         SharedPool.floatVector.clear();
         const auto size = GetTextSizeByLine(Text, scaleX, scaleY, &SharedPool.floatVector);
-        float x_start, x_current, y_current{ static_cast<float>(Y) };
+        float x_start, x_current, y_current{ Y };
         unsigned i{ 0 }, line{ 0 };
 
         SDFFont::SDFCharInfo charParams;
@@ -398,7 +398,7 @@ AkkordPoint SDFFontBuffer::DrawText(int X, int Y, const char* Text) {
 
     check_h_align:
         // Выбираем начальную точку в зависимости от выравнивания
-        x_start = static_cast<decltype(x_start)>(X);
+        x_start = X;
         switch (alignH)
         {
         case SDFFont::AlignH::Center:
