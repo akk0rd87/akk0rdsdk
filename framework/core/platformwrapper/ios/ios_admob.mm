@@ -67,13 +67,15 @@ static void sendCallback(const AdMob::AdEvent& CallbackEvent) {
                 Ad.AdFormat = AdMob::Format::Interstitial;
                 using event = AdMob::InterstitialEvent;
               if (error) {
-                  logDebug("InterstitialLoad success load");
-                  //NSLog(@"Failed to load interstitial ad with error: %@", [error localizedDescription]);
+                  logDebug("InterstitialLoad load error");
+                  if (!BWrapper::IsReleaseBuild()) {
+                      NSLog(@"Failed to load interstitial ad with error: %@", [error localizedDescription]);
+                  }
                   Ad.EventType = static_cast<decltype(Ad.EventType)>(event::FailedToLoad);
               }
               else {
                   Ad.EventType = static_cast<decltype(Ad.EventType)>(event::Loaded);
-                  logDebug("InterstitialLoad success load");
+                  logDebug("InterstitialLoad load success");
                   self.interstitial = ad;
                   self.interstitial.fullScreenContentDelegate = self;
               }
