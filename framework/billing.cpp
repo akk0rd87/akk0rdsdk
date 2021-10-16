@@ -5,7 +5,7 @@ struct BillingContextStruct
     int BillingStatus = -1;
     decltype(SDL_RegisterEvents(1)) BillingEventCode;
 
-#ifdef __ANDROID__
+#if (__ANDROID__) || (__WINDOWS__)
     BillingCallbackObserver* callbackObserver = nullptr;
 #endif
 };
@@ -97,6 +97,7 @@ bool BillingManager::Init(BillingCallbackObserver* Observer)
 #endif
 
 #ifdef __WINDOWS__
+    BillingContext.callbackObserver = Observer;
     return true; // будем считать, что на винде все прошло норм
 #endif
 
@@ -136,6 +137,12 @@ bool BillingManager::PurchaseProdItem(const char* ProductCode)
 #ifdef __APPLE__
     return iOSBillingManager::PurchaseProdItem(ProductCode);
 #endif
+
+    // на винде на десктопе в дебаг режиме всега подтверждаем покупку Callback-ом
+    if (!BWrapper::IsReleaseBuild() && BWrapper::OS::Windows == BWrapper::GetDeviceOS()) {
+        BillingContext.callbackObserver->PurchaseUpdatedCallback("testPurchaseToken", ProductCode, BillingManager::OperAction::Bought);
+        return true;
+    }
 
     return false;
 }
