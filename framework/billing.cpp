@@ -138,11 +138,13 @@ bool BillingManager::PurchaseProdItem(const char* ProductCode)
     return iOSBillingManager::PurchaseProdItem(ProductCode);
 #endif
 
+#ifdef __WINDOWS__
     // на винде на десктопе в дебаг режиме всега подтверждаем покупку Callback-ом
-    if (!BWrapper::IsReleaseBuild() && BWrapper::OS::Windows == BWrapper::GetDeviceOS()) {
+    if (!BWrapper::IsReleaseBuild()) {
         BillingContext.callbackObserver->PurchaseUpdatedCallback("testPurchaseToken", ProductCode, BillingManager::OperAction::Bought);
         return true;
     }
+#endif
 
     return false;
 }
