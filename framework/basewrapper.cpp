@@ -475,12 +475,25 @@ bool BWrapper::DrawRect(const AkkordRect& Rect)
     return false;
 };
 
+bool BWrapper::DrawFRect(const AkkordFRect& Rect)
+{
+    if (SDL_RenderDrawRectF(CurrentContext.CurrentRenderer, &Rect) == 0) return true;
+    logError("Draw error %s", SDL_GetError());
+    return false;
+};
+
 bool BWrapper::FillRect(const AkkordRect& Rect)
 {
     if (SDL_RenderFillRect(CurrentContext.CurrentRenderer, &Rect) == 0) return true;
     logError("Draw error %s", SDL_GetError());
     return false;
 };
+
+bool BWrapper::FillFRect(const AkkordFRect& Rect) {
+    if (SDL_RenderFillRectF(CurrentContext.CurrentRenderer, &Rect) == 0) return true;
+    logError("Draw error %s", SDL_GetError());
+    return false;
+}
 
 bool BWrapper::DrawRect(const AkkordFRect& Rect) {
     if (SDL_RenderDrawRectF(CurrentContext.CurrentRenderer, &Rect) == 0) return true;

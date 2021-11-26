@@ -216,8 +216,12 @@ public:
     static bool                SetCurrentColor(Uint8 R, Uint8 G, Uint8 B, Uint8 A) { return SetCurrentColor(AkkordColor(R, G, B, A)); };
     static bool                DrawRect(const AkkordRect& Rect);
     static bool                DrawRect(int X, int Y, int W, int H) { return DrawRect(AkkordRect(X, Y, W, H)); };
+    static bool                DrawFRect(const AkkordFRect& Rect);
+    static bool                DrawFRect(float X, float Y, float W, float H) { return DrawFRect(AkkordFRect(X, Y, W, H)); };
     static bool                FillRect(const AkkordRect& Rect);
     static bool                FillRect(int X, int Y, int W, int H) { return FillRect(AkkordRect(X, Y, W, H)); };
+    static bool                FillFRect(const AkkordFRect& Rect);
+    static bool                FillFRect(float X, float Y, float W, float H) { return FillFRect(AkkordFRect(X, Y, W, H)); };
     static bool                DrawRect(const AkkordFRect& Rect);
     static bool                DrawRect(float X, float Y, float W, float H) { return DrawRect(AkkordFRect(X, Y, W, H)); };
     static bool                FillRect(const AkkordFRect& Rect);
