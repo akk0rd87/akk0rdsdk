@@ -227,7 +227,9 @@ public:
     static bool                FillRect(const AkkordFRect& Rect);
     static bool                FillRect(float X, float Y, float W, float H) { return FillRect(AkkordFRect(X, Y, W, H)); };
     static bool                DrawLine(const AkkordPoint& Point1, const AkkordPoint& Point2);
-    static bool                DrawLine(int P1X, int P1Y, int P2X, int P2Y);
+    static bool                DrawLine(int P1X, int P1Y, int P2X, int P2Y) { return DrawLine(AkkordPoint(P1X, P1Y), AkkordPoint(P2X, P2Y)); }
+    static bool                DrawFLine(const AkkordFPoint& Point1, const AkkordFPoint& Point2);
+    static bool                DrawFLine(float P1X, float P1Y, float P2X, float P2Y) { return DrawFLine(AkkordFPoint(P1X, P1Y), AkkordFPoint(P2X, P2Y)); };
     static bool                IsPointInRect(const AkkordPoint& Point, const AkkordRect& Rect) { return (Rect.x <= Point.x && Point.x <= Rect.x + Rect.w) && (Rect.y <= Point.y && Point.y <= Rect.y + Rect.h); };
     static int                 GetDisplayDPI(int DisplayIndex, float* Ddpi, float* Hdpi, float* Vdpi);
 

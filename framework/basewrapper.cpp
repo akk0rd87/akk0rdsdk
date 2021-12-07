@@ -514,9 +514,11 @@ bool BWrapper::DrawLine(const AkkordPoint& Point1, const AkkordPoint& Point2)
     return false;
 };
 
-bool BWrapper::DrawLine(int P1X, int P1Y, int P2X, int P2Y)
+bool BWrapper::DrawFLine(const AkkordFPoint& Point1, const AkkordFPoint& Point2)
 {
-    return DrawLine(AkkordPoint(P1X, P1Y), AkkordPoint(P2X, P2Y));
+    if (SDL_RenderDrawLineF(CurrentContext.CurrentRenderer, Point1.GetX(), Point1.GetY(), Point2.GetX(), Point2.GetY()) == 0) return true;
+    logError("Draw error %s", SDL_GetError());
+    return false;
 };
 
 std::string BWrapper::Int2Str(int Num)
