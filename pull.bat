@@ -1,0 +1,1 @@
+FOR /F %%x IN ('git remote') DO call git pull %%x master
