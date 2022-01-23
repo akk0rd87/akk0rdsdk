@@ -92,7 +92,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
             try {
                 // Called when fullscreen content is dismissed.
                 mInterstitialAd = null;
-                Log.d("TAG", "The ad was dismissed.");
+                Log.d(TAG, "The ad was dismissed.");
                 AdCallback_Local(AD_INTERSTITIAL, EVENT_INTERSTITIAL_CLOSED, 0);
             }
             catch(Exception e) {
@@ -105,7 +105,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
             try {
                 // Called when fullscreen content failed to show.
                 mInterstitialAd = null;
-                Log.d("TAG", "The ad failed to show.");
+                Log.d(TAG, "The ad failed to show.");
                 AdCallback_Local(AD_INTERSTITIAL, EVENT_INTERSTITIAL_FAILED_TO_SHOW, 0);
             }
             catch(Exception e) {
@@ -122,7 +122,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                 mInterstitialAd = null;
                 // тут вызываем Closed, так как обнулили ссылку и можно запращивать новую рекламу
                 AdCallback_Local(AD_INTERSTITIAL, EVENT_INTERSTITIAL_CLOSED, 0);
-                Log.d("TAG", "The ad was shown.");
+                Log.d(TAG, "The ad was shown.");
             }
             catch(Exception e) {
                 Log.e(TAG, e.getMessage());
@@ -168,7 +168,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
         public void onUserEarnedReward(@NonNull RewardItem rewardItem) {
             try {
                 // Handle the reward.
-                Log.d("TAG", "The user earned the reward.");
+                Log.d(TAG, "The user earned the reward.");
                 //int rewardAmount = rewardItem.getAmount();
                 //String rewardType = rewardItem.getType();
                 AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_REWARDED, 0);
