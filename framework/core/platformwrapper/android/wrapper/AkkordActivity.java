@@ -96,7 +96,7 @@ public class AkkordActivity extends SDLActivity {
         }
     }
 
-    private void checkUpdate() {
+    protected void checkUpdate() {
         try {
             mAppUpdateManager = AppUpdateManagerFactory.create(this);
 
