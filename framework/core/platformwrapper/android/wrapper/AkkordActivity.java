@@ -35,7 +35,7 @@ public class AkkordActivity extends SDLActivity {
         catch (final Throwable e) {
             // Fall back
             try {
-                Log.e("SDL", "Relinker ERROR!!! " + e.getMessage());
+                Log.e("SDL", "Relinker load error :" + libraryName + ". " + e.getMessage());
                 System.loadLibrary(libraryName);
             }
             catch (final UnsatisfiedLinkError ule) {
