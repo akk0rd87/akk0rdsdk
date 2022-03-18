@@ -1,6 +1,6 @@
 /*
   showanim:  A test application for the SDL image loading library.
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -56,6 +56,7 @@ int main(int argc, char *argv[])
     SDL_Texture **textures;
     Uint32 flags;
     int i, j, w, h, done;
+    int once = 0;
     int current_frame, delay;
     SDL_Event event;
 
@@ -85,6 +86,11 @@ int main(int argc, char *argv[])
 
     for ( i=1; argv[i]; ++i ) {
         if ( SDL_strcmp(argv[i], "-fullscreen") == 0 ) {
+            continue;
+        }
+
+        if ( SDL_strcmp(argv[i], "-once") == 0 ) {
+            once = 1;
             continue;
         }
 
@@ -168,6 +174,10 @@ int main(int argc, char *argv[])
             SDL_Delay(delay);
 
             current_frame = (current_frame + 1) % anim->count;
+
+            if (once && current_frame == 0) {
+                break;
+            }
         }
 
         for (j = 0; j < anim->count; ++j) {

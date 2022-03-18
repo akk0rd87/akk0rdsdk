@@ -1,6 +1,6 @@
 /*
   SDL_image:  An example image loading library for use with SDL
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -51,6 +51,7 @@ static struct {
     { "XPM", IMG_isXPM, IMG_LoadXPM_RW },
     { "XV",  IMG_isXV,  IMG_LoadXV_RW  },
     { "WEBP", IMG_isWEBP, IMG_LoadWEBP_RW },
+    { "QOI", IMG_isQOI, IMG_LoadQOI_RW },
 };
 
 /* Table of animation detection and loading functions */
@@ -86,11 +87,6 @@ int IMG_Init(int flags)
 {
     int result = 0;
 
-    /* Passing 0 returns the currently initialized loaders */
-    if (!flags) {
-        return initialized;
-    }
-
     if (flags & IMG_INIT_JPG) {
         if ((initialized & IMG_INIT_JPG) || IMG_InitJPG() == 0) {
             result |= IMG_INIT_JPG;
@@ -113,7 +109,7 @@ int IMG_Init(int flags)
     }
     initialized |= result;
 
-    return result;
+    return initialized;
 }
 
 void IMG_Quit()

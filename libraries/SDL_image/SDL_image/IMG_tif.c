@@ -1,6 +1,6 @@
 /*
   SDL_image:  An example image loading library for use with SDL
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -35,7 +35,7 @@ static struct {
     TIFF* (*TIFFClientOpen)(const char*, const char*, thandle_t, TIFFReadWriteProc, TIFFReadWriteProc, TIFFSeekProc, TIFFCloseProc, TIFFSizeProc, TIFFMapFileProc, TIFFUnmapFileProc);
     void (*TIFFClose)(TIFF*);
     int (*TIFFGetField)(TIFF*, ttag_t, ...);
-    int (*TIFFReadRGBAImageOriented)(TIFF*, uint32, uint32, uint32*, int, int);
+    int (*TIFFReadRGBAImageOriented)(TIFF*, Uint32, Uint32, Uint32*, int, int);
     TIFFErrorHandler (*TIFFSetErrorHandler)(TIFFErrorHandler);
 } lib;
 
@@ -60,7 +60,7 @@ int IMG_InitTIF()
         FUNCTION_LOADER(TIFFClientOpen, TIFF * (*)(const char*, const char*, thandle_t, TIFFReadWriteProc, TIFFReadWriteProc, TIFFSeekProc, TIFFCloseProc, TIFFSizeProc, TIFFMapFileProc, TIFFUnmapFileProc))
         FUNCTION_LOADER(TIFFClose, void (*)(TIFF*))
         FUNCTION_LOADER(TIFFGetField, int (*)(TIFF*, ttag_t, ...))
-        FUNCTION_LOADER(TIFFReadRGBAImageOriented, int (*)(TIFF*, uint32, uint32, uint32*, int, int))
+        FUNCTION_LOADER(TIFFReadRGBAImageOriented, int (*)(TIFF*, Uint32, Uint32, Uint32*, int, int))
         FUNCTION_LOADER(TIFFSetErrorHandler, TIFFErrorHandler (*)(TIFFErrorHandler))
     }
     ++lib.loaded;
@@ -194,7 +194,7 @@ SDL_Surface* IMG_LoadTIF_RW(SDL_RWops* src)
     if(!surface)
         goto error;
 
-    if(!lib.TIFFReadRGBAImageOriented(tiff, img_width, img_height, (uint32 *)surface->pixels, ORIENTATION_TOPLEFT, 0))
+    if(!lib.TIFFReadRGBAImageOriented(tiff, img_width, img_height, (Uint32 *)surface->pixels, ORIENTATION_TOPLEFT, 0))
         goto error;
 
     lib.TIFFClose(tiff);

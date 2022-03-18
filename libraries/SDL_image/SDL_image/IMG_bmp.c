@@ -1,6 +1,6 @@
 /*
   SDL_image:  An example image loading library for use with SDL
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -120,7 +120,7 @@ LoadICOCUR_RW(SDL_RWops * src, int type, int freesrc)
     SDL_bool was_error;
     Sint64 fp_offset = 0;
     int bmpPitch;
-    int i, pad;
+    int i,j, pad;
     SDL_Surface *surface;
     Uint32 Rmask;
     Uint32 Gmask;
@@ -248,6 +248,9 @@ LoadICOCUR_RW(SDL_RWops * src, int type, int freesrc)
         case 8:
             ExpandBMP = 8;
             break;
+        case 24:
+            ExpandBMP = 24;
+            break;
         case 32:
             Rmask = 0x00FF0000;
             Gmask = 0x0000FF00;
@@ -316,6 +319,10 @@ LoadICOCUR_RW(SDL_RWops * src, int type, int freesrc)
         bmpPitch = biWidth;
         pad = (((bmpPitch) % 4) ? (4 - ((bmpPitch) % 4)) : 0);
         break;
+    case 24:
+        bmpPitch = biWidth * 3;
+        pad = (((bmpPitch) % 4) ? (4 - ((bmpPitch) % 4)) : 0);
+        break;
     default:
         bmpPitch = biWidth * 4;
         pad = 0;
@@ -340,6 +347,25 @@ LoadICOCUR_RW(SDL_RWops * src, int type, int freesrc)
                     }
                     *((Uint32 *) bits + i) = (palette[pixel >> shift]);
                     pixel <<= ExpandBMP;
+                }
+            }
+            break;
+        case 24:
+            {
+                Uint32 pixel;
+                Uint8 channel;
+                for (i = 0; i < surface->w; ++i) {
+                    pixel = 0;
+                    for (j = 0; j < 3; ++j) {
+                        //Load each color channel into pixel
+                        if (!SDL_RWread(src, &channel, 1, 1)) {
+                            IMG_SetError("Error reading from ICO");
+                            was_error = SDL_TRUE;
+                            goto done;
+                        }
+                        pixel |= (channel << (j * 8));
+                    }
+                    *((Uint32 *) bits + i) = pixel;
                 }
             }
             break;

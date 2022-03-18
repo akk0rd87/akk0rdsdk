@@ -1,6 +1,6 @@
 /*
   showimage:  A test application for the SDL image loading library.
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -54,7 +54,8 @@ int main(int argc, char *argv[])
     SDL_Renderer *renderer;
     SDL_Texture *texture;
     Uint32 flags;
-    int i, w, h, done;
+    int i, w, h;
+    int done = 0;
     SDL_Event event;
     const char *saveFile = NULL;
 
@@ -84,6 +85,11 @@ int main(int argc, char *argv[])
 
     for ( i=1; argv[i]; ++i ) {
         if ( SDL_strcmp(argv[i], "-fullscreen") == 0 ) {
+            continue;
+        }
+
+        if ( SDL_strcmp(argv[i], "-quit") == 0 ) {
+            done = 1;
             continue;
         }
 
@@ -127,7 +133,6 @@ int main(int argc, char *argv[])
         SDL_SetWindowSize(window, w, h);
         SDL_ShowWindow(window);
 
-        done = 0;
         while ( ! done ) {
             while ( SDL_PollEvent(&event) ) {
                 switch (event.type) {

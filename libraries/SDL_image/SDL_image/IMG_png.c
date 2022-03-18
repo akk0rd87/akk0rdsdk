@@ -1,6 +1,6 @@
 /*
   SDL_image:  An example image loading library for use with SDL
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,8 +23,9 @@
 
 #include "SDL_image.h"
 
-/* We'll always have PNG save support */
-#define SAVE_PNG
+#if !defined(SDL_IMAGE_SAVE_PNG)
+#  define SDL_IMAGE_SAVE_PNG 1
+#endif
 
 #if !(defined(__APPLE__) || defined(SDL_IMAGE_USE_WIC_BACKEND)) || defined(SDL_IMAGE_USE_COMMON_BACKEND)
 
@@ -47,6 +48,7 @@
 #define LIBPNG_VERSION_12
 typedef png_bytep png_const_bytep;
 typedef png_color *png_const_colorp;
+typedef png_color_16 *png_const_color_16p;
 #endif
 #if (PNG_LIBPNG_VER_MINOR < 4)
 typedef png_structp png_const_structp;
@@ -100,7 +102,7 @@ static struct {
     jmp_buf* (*png_set_longjmp_fn) (png_structrp, png_longjmp_ptr, size_t);
 #endif
 #endif
-#ifdef SAVE_PNG
+#if SDL_IMAGE_SAVE_PNG
     png_structp (*png_create_write_struct) (png_const_charp user_png_ver, png_voidp error_ptr, png_error_ptr error_fn, png_error_ptr warn_fn);
     void (*png_destroy_write_struct) (png_structpp png_ptr_ptr, png_infopp info_ptr_ptr);
     void (*png_set_write_fn) (png_structrp png_ptr, png_voidp io_ptr, png_rw_ptr write_data_fn, png_flush_ptr output_flush_fn);
@@ -109,6 +111,7 @@ static struct {
     void (*png_set_rows) (png_noconst15_structrp png_ptr, png_inforp info_ptr, png_bytepp row_pointers);
     void (*png_write_png) (png_structrp png_ptr, png_inforp info_ptr, int transforms, png_voidp params);
     void (*png_set_PLTE) (png_structrp png_ptr, png_inforp info_ptr, png_const_colorp palette, int num_palette);
+    void (*png_set_tRNS) (png_structrp png_ptr, png_inforp info_ptr, png_const_bytep trans_alpha, int num_trans, png_const_color_16p trans_color);
 #endif
 } lib;
 
@@ -154,7 +157,7 @@ int IMG_InitPNG()
         FUNCTION_LOADER(png_set_longjmp_fn, jmp_buf* (*) (png_structrp, png_longjmp_ptr, size_t))
 #endif
 #endif
-#ifdef SAVE_PNG
+#if SDL_IMAGE_SAVE_PNG
         FUNCTION_LOADER(png_create_write_struct, png_structp (*) (png_const_charp user_png_ver, png_voidp error_ptr, png_error_ptr error_fn, png_error_ptr warn_fn))
         FUNCTION_LOADER(png_destroy_write_struct, void (*) (png_structpp png_ptr_ptr, png_infopp info_ptr_ptr))
         FUNCTION_LOADER(png_set_write_fn, void (*) (png_structrp png_ptr, png_voidp io_ptr, png_rw_ptr write_data_fn, png_flush_ptr output_flush_fn))
@@ -163,6 +166,7 @@ int IMG_InitPNG()
         FUNCTION_LOADER(png_set_rows, void (*) (png_noconst15_structrp png_ptr, png_inforp info_ptr, png_bytepp row_pointers))
         FUNCTION_LOADER(png_write_png, void (*) (png_structrp png_ptr, png_inforp info_ptr, int transforms, png_voidp params))
         FUNCTION_LOADER(png_set_PLTE, void (*) (png_structrp png_ptr, png_inforp info_ptr, png_const_colorp palette, int num_palette))
+        FUNCTION_LOADER(png_set_tRNS, void (*) (png_structrp png_ptr, png_inforp info_ptr, png_const_bytep trans_alpha, int num_trans, png_const_color_16p trans_color))
 #endif
     }
     ++lib.loaded;
@@ -476,7 +480,7 @@ SDL_Surface *IMG_LoadPNG_RW(SDL_RWops *src)
 
 #endif /* !defined(__APPLE__) || defined(SDL_IMAGE_USE_COMMON_BACKEND) */
 
-#ifdef SAVE_PNG
+#if SDL_IMAGE_SAVE_PNG
 
 int IMG_SavePNG(SDL_Surface *surface, const char *file)
 {
@@ -513,6 +517,7 @@ static int IMG_SavePNG_RW_libpng(SDL_Surface *surface, SDL_RWops *dst, int freed
         png_structp png_ptr;
         png_infop info_ptr;
         png_colorp color_ptr = NULL;
+        Uint8 transparent_table[256];
         SDL_Surface *source = surface;
         SDL_Palette *palette;
         int png_color_type = PNG_COLOR_TYPE_RGB_ALPHA;
@@ -546,6 +551,7 @@ static int IMG_SavePNG_RW_libpng(SDL_Surface *surface, SDL_RWops *dst, int freed
         if (palette) {
             const int ncolors = palette->ncolors;
             int i;
+            int last_transparent = -1;
 
             color_ptr = (png_colorp)SDL_malloc(sizeof(png_colorp) * ncolors);
             if (color_ptr == NULL)
@@ -558,9 +564,22 @@ static int IMG_SavePNG_RW_libpng(SDL_Surface *surface, SDL_RWops *dst, int freed
                 color_ptr[i].red = palette->colors[i].r;
                 color_ptr[i].green = palette->colors[i].g;
                 color_ptr[i].blue = palette->colors[i].b;
+                if (palette->colors[i].a != 255) {
+                    last_transparent = i;
+                }
             }
             lib.png_set_PLTE(png_ptr, info_ptr, color_ptr, ncolors);
             png_color_type = PNG_COLOR_TYPE_PALETTE;
+
+            if (last_transparent >= 0) {
+                for (i = 0; i <= last_transparent; ++i) {
+                    transparent_table[i] = palette->colors[i].a;
+                }
+                lib.png_set_tRNS(png_ptr, info_ptr, transparent_table, last_transparent + 1, NULL);
+            }
+        }
+        else if (surface->format->format == SDL_PIXELFORMAT_RGB24) {
+            png_color_type = PNG_COLOR_TYPE_RGB;
         }
         else if (surface->format->format != png_format) {
             source = SDL_ConvertSurfaceFormat(surface, png_format, 0);
@@ -620,7 +639,11 @@ static int IMG_SavePNG_RW_libpng(SDL_Surface *surface, SDL_RWops *dst, int freed
 #undef memset
 #define memset  SDL_memset
 #define strlen  SDL_strlen
-
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+#define MINIZ_LITTLE_ENDIAN 1
+#else
+#define MINIZ_LITTLE_ENDIAN 0
+#endif
 #include "miniz.h"
 
 static int IMG_SavePNG_RW_miniz(SDL_Surface *surface, SDL_RWops *dst, int freedst)
@@ -673,5 +696,14 @@ int IMG_SavePNG_RW(SDL_Surface *surface, SDL_RWops *dst, int freedst)
 
     return rw_func(surface, dst, freedst);
 }
+#else
+int IMG_SavePNG(SDL_Surface *surface, const char *file)
+{
+    return SDL_Unsupported();
+}
 
-#endif /* SAVE_PNG */
+int IMG_SavePNG_RW(SDL_Surface *surface, SDL_RWops *dst, int freedst)
+{
+    return SDL_Unsupported();
+}
+#endif /* SDL_IMAGE_SAVE_PNG */

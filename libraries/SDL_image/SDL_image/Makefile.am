@@ -1,4 +1,5 @@
 # Makefile.am for the SDL sample image loading library and viewer
+ACLOCAL_AMFLAGS = -I acinclude
 
 lib_LTLIBRARIES = libSDL2_image.la
 
@@ -19,6 +20,7 @@ libSDL2_image_la_SOURCES =	\
 	IMG_pcx.c		\
 	IMG_png.c		\
 	IMG_pnm.c		\
+	IMG_qoi.c		\
 	IMG_svg.c		\
 	IMG_tga.c		\
 	IMG_tif.c		\
@@ -30,24 +32,24 @@ libSDL2_image_la_SOURCES =	\
 	$(IMAGEIO_SOURCE)	\
 	miniz.h			\
 	nanosvg.h		\
-	nanosvgrast.h
+	nanosvgrast.h		\
+	qoi.h
 
-EXTRA_DIST =			\
+EXTRA_DIST = CHANGES.txt LICENSE.txt README.txt README-emscripten.txt \
+	IMG_xxx.c		\
+	IMG_ImageIO.m		\
+	IMG_UIImage.m		\
 	Android.mk		\
-	debian			\
-	external		\
-	version.rc		\
 	Makefile.os2		\
 	VisualC			\
-	VisualC-WinRT	\
+	VisualC-WinRT		\
+	version.rc		\
 	Xcode			\
 	Xcode-iOS		\
-	IMG_xxx.c		\
-	$(srcdir)/*.m		\
+	external		\
 	SDL2_image.spec		\
-	gcc-fat.sh		\
-	autogen.sh		\
-	$(srcdir)/*.txt
+	autogen.sh gcc-fat.sh
+
 
 if USE_VERSION_RC
 libSDL2_image_la_LDFLAGS = 	\
@@ -60,7 +62,7 @@ else
 libSDL2_image_la_LDFLAGS = 	\
 	-no-undefined		\
 	-release $(LT_RELEASE)	\
-	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
+	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) $(LT_EXTRA)
 libSDL2_image_la_LIBADD = $(IMG_LIBS)
 endif
 
