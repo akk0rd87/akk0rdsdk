@@ -246,6 +246,9 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
     private static final int AD_REWARDEDVIDEO      = 2;
     private static final int AD_NATIVEADSADVANCED  = 4;
 
+    private static final int INIT_SUCCESS       = 0;
+    private static final int INIT_ERROR         = 1;
+
     private static InterstitialAd mInterstitialAd = null;
     private static RewardedAd     mRewardedAd     = null;
 
@@ -255,6 +258,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
     private static boolean mAdMobInitializationCompleted = false;
 
     private static native void AdCallback(int AdType, int EventType, int Code);
+    private static native void InitCallback(int Code);
 
     private static void AdCallback_Local(int AdType, int EventType, int Code) {
         try {
@@ -272,6 +276,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
             MobileAds.initialize(Utils.GetContext(), adMobAdapter);
         }
         catch(Exception e) {
+            InitCallback(INIT_ERROR);
             Log.e(TAG, e.getMessage());
         }
     }
@@ -469,12 +474,15 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
 
                     if(AdapterStatus.State.READY == entry.getValue().getInitializationState()) {
                         mAdMobInitializationCompleted = true;
+                        InitCallback(INIT_SUCCESS);
                         return;
                     }
                 }
             }
+            InitCallback(INIT_ERROR);
         }
         catch(Exception e) {
+            InitCallback(INIT_ERROR);
             System.err.println(e.getMessage());
             Log.v(TAG, e.getMessage());
         }
