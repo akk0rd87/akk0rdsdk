@@ -76,7 +76,7 @@ namespace ads {
             }
 
             void onAdEvent(int adType, int eventType, int code) {
-                eventCallback(eventType);
+                eventCallback(static_cast<ads::Event>(eventType));
             }
 
             static void setStaticProvider(std::shared_ptr<AndroidProvider>& provider) {

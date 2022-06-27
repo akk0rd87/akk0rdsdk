@@ -11,7 +11,7 @@ namespace ads {
 
             static void onAdEvent(ads::Event event) {
                 if (auto cbk = staticProvider.lock()) {
-                    cbk->eventCallback(static_cast<int>(event));
+                    cbk->eventCallback(event);
                 }
             }
 

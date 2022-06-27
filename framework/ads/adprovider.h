@@ -76,8 +76,8 @@ namespace ads {
         virtual void v_showInterstitial() {}
         virtual void v_showRewardedVideo() {}
 
-        void eventCallback(int Event) {
-            switch (static_cast<ads::Event>(Event)) {
+        void eventCallback(ads::Event Event) {
+            switch (Event) {
             case ads::Event::InterstitialClosed:
             case ads::Event::InterstitialFailedToLoad:
             case ads::Event::InterstitialFailedToShow:

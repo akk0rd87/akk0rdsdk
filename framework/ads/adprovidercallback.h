@@ -9,7 +9,7 @@ namespace ads {
 
     class ProviderCallback {
     public:
-        virtual void eventCallback(int Event) const = 0;
+        virtual void eventCallback(ads::Event Event) const = 0;
         virtual ~ProviderCallback() = default;
     protected:
         timeMS GetSeconds() const {

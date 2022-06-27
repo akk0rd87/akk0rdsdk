@@ -113,10 +113,10 @@ namespace ads {
             return GetSeconds() >= GetInterstitialNextShowTime();
         }
 
-        virtual void eventCallback(int Event/*, Provider From*/) const {
+        virtual void eventCallback(ads::Event Event/*, Provider From*/) const {
             SDL_Event sdl_Event;
             sdl_Event.user.type = SDLeventCode;
-            sdl_Event.user.data1 = (void*)(uintptr_t)Event;
+            sdl_Event.user.data1 = (void*)(uintptr_t)static_cast<int>(Event);
             SDL_PushEvent(&sdl_Event);
         };
 
