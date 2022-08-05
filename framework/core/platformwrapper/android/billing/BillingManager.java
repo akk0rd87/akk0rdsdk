@@ -38,7 +38,7 @@ import java.util.Set;
 import java.util.Arrays;
 import java.util.HashMap;
 
-class BillingManager implements PurchaseHistoryResponseListener, PurchasesUpdatedListener, SkuDetailsResponseListener, BillingClientStateListener {
+public class BillingManager implements PurchaseHistoryResponseListener, PurchasesUpdatedListener, SkuDetailsResponseListener, BillingClientStateListener {
     private static BillingManager billingManager = new BillingManager();
     private static BlockingQueue<Runnable> runnableQueue = new ArrayBlockingQueue<Runnable>(50, true);
 

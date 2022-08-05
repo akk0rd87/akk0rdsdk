@@ -32,13 +32,15 @@ namespace ads {
             const auto nextTime = GetInterstitialNextShowTime();
             bool needToLoad = true;
             for (auto& v : providers) {
-                v->preCheckInterstitialLoadStatus(currentTime);
-                if (needToLoad) {
-                    if (v->isReadyShowInterstitial()) { // если какой-то провайдер готов показать рекламу, остальные не опрашиваем
-                        needToLoad = false;
-                        continue;
+                if (v) {
+                    v->preCheckInterstitialLoadStatus(currentTime); // опциональная проверка/восстановление статусов
+                    if (needToLoad) {
+                        if (v->isInterstitialLoaded()) { // если какой-то провайдер готов показать рекламу, остальные не опрашиваем
+                            needToLoad = false;
+                            continue;
+                        }
+                        v->tryLoadInterstitial(currentTime, nextTime);
                     }
-                    v->tryLoadInterstitial(currentTime, nextTime);
                 }
             }
         }
@@ -47,21 +49,30 @@ namespace ads {
             const auto currentTime = GetSeconds();
             bool needToLoad = true;
             for (auto& v : providers) {
-                v->preCheckRewardedVideoLoadStatus(currentTime);
-                if (needToLoad) {
-                    if (v->isReadyShowRewardedVideo()) { // если какой-то провайдер готов показать рекламу, остальные не опрашиваем
-                        needToLoad = false;
-                        continue;
+                if (v) {
+                    v->preCheckRewardedVideoLoadStatus(currentTime); // опциональная проверка/восстановление статусов
+                    if (needToLoad) {
+                        if (v->isRewardedVideoLoaded()) { // если какой-то провайдер готов показать рекламу, остальные не опрашиваем
+                            needToLoad = false;
+                            continue;
+                        }
+                        v->tryLoadRewardedVideo(currentTime);
                     }
-                    v->tryLoadRewardedVideo(currentTime);
                 }
             }
         }
 
+        // функция проверяет 2 факта:
+        // - допустим ли показ по времени
+        // - загружена ли реклама
         bool isReadyShowInterstitial() const {
-            if (isInterstitialShowPossible()) {
-                for (auto& v : providers) {
-                    if (v->isReadyShowInterstitial()) {
+            return isInterstitialShowPossible() && isInterstitialLoaded();
+        }
+
+        bool isInterstitialLoaded() const {
+            for (const auto& v : providers) {
+                if (v) {
+                    if (v->isInterstitialLoaded()) {
                         return true;
                     }
                 }
@@ -69,22 +80,26 @@ namespace ads {
             return false;
         }
 
-        bool isReadyShowRewardedVideo() const {
-            for (auto& v : providers) {
-                if (v->isReadyShowRewardedVideo()) {
-                    return true;
+        bool isRewardedVideoLoaded() const {
+            for (const auto& v : providers) {
+                if (v) {
+                    if (v->isRewardedVideoLoaded()) {
+                        return true;
+                    }
                 }
             }
             return false;
         }
 
         bool showInterstitialIfAvailable() {
-            if (isInterstitialShowPossible()) {
+            if (isInterstitialShowPossible()) { // проверка на допустимость показа по времени
                 for (auto& v : providers) {
-                    if (v->isReadyShowInterstitial()) {
-                        lastShowed = GetSeconds();
-                        v->showInterstitial();
-                        return true;
+                    if (v) {
+                        if (v->isInterstitialLoaded()) {
+                            lastShowed = GetSeconds();
+                            v->showInterstitial();
+                            return true;
+                        }
                     }
                 }
             }
@@ -93,22 +108,30 @@ namespace ads {
 
         bool showRewardedVideoIfAvailable() {
             for (auto& v : providers) {
-                if (v->isReadyShowRewardedVideo()) {
-                    v->showRewardedVideo();
-                    return true;
+                if (v) {
+                    if (v->isRewardedVideoLoaded()) {
+                        v->showRewardedVideo();
+                        return true;
+                    }
                 }
             }
             return false;
         }
 
         void reserveProviders(std::size_t count) { providers.reserve(count); }
-        void addProvider(const std::shared_ptr<Provider>& provider) { providers.emplace_back(provider); }
+
+        void addProvider(const std::shared_ptr<Provider>& provider) {
+            if (provider) {
+                providers.emplace_back(provider);
+            }
+        }
 
         ads::Event decodeEvent(const SDL_Event& Event) const {
             return static_cast<ads::Event>(static_cast<int>((size_t)(Event.user.data1)));
         }
 
     private:
+        // функция определяет только допустимость показа в соответствии со временем
         bool isInterstitialShowPossible() const {
             return GetSeconds() >= GetInterstitialNextShowTime();
         }

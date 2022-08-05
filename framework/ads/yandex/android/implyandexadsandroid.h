@@ -2,15 +2,15 @@
 #define __AKK0RD_SDK_ADS_ADMOB_ANDROIDPROVIDER_H__
 
 #include <jni.h>
-#include "admobprovider.h"
+#include "../yandexadsprovider.h"
 
 namespace ads {
-    namespace AdMob {
+    namespace Yandex {
         class AndroidProvider : public Provider {
         public:
             AndroidProvider(std::weak_ptr<ads::ProviderCallback> callback, ads::Format format) :
             Provider                  (callback),
-            AdMobClass                (nullptr),
+            YandexAdsClass            (nullptr),
             midInterstitialSetUnitId  (nullptr),
             midInterstitialLoad       (nullptr),
             midInterstitialShow       (nullptr),
@@ -20,52 +20,42 @@ namespace ads {
             {
                 wasInited = false;
                 JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-                jclass localClass = env->FindClass("org/akkord/lib/AdMobAdapter");
+                jclass localClass = env->FindClass("org/akkord/lib/YandexAdsAdapter");
 
                 if(!localClass) {
-                    logError("Could not find AdMobAdapter class");
+                    logError("Could not find YandexAdsAdapter class");
                     return;
                 }
 
-                AdMobClass = reinterpret_cast<jclass>(env->NewGlobalRef(localClass));
+                YandexAdsClass = reinterpret_cast<jclass>(env->NewGlobalRef(localClass));
                 env->DeleteLocalRef(localClass);
 
-                jmethodID AdmobInit = env->GetStaticMethodID(AdMobClass, "Initialize", "()V");
-                if(!AdmobInit) {
+                jmethodID YandexInit = env->GetStaticMethodID(YandexAdsClass, "Initialize", "(II)V");
+                if(!YandexInit) {
                     logError("Initialize Java method not Found");
                     return;
                 }
 
-                env->CallStaticVoidMethod(AdMobClass, AdmobInit);
+                {
+                    const auto interstitialInit  = (!(!(format & ads::Format::Interstitial)))  ? 1 : 0;
+                    const auto rewardedvideoInit = (!(!(format & ads::Format::RewardedVideo))) ? 1 : 0;
+                    env->CallStaticVoidMethod(YandexAdsClass, YandexInit, interstitialInit, rewardedvideoInit);
 
-                if(!(!(format & ads::Format::Interstitial))) {
-                    // InterstitialInit method
-                    AdmobInit = env->GetStaticMethodID(AdMobClass, "InterstitialInit", "()V");
-                    if(!AdmobInit) {
-                        logError("InterstitialInit Java method not Found");
-                        return;
+                    if(interstitialInit) {
+                        interstitialStatus = ads::Provider::InterstitialStatus::ReadyToLoad;
                     }
-                    env->CallStaticVoidMethod(AdMobClass, AdmobInit);
-                    interstitialStatus = ads::Provider::InterstitialStatus::ReadyToLoad;
+
+                    if(rewardedvideoInit) {
+                        rewardedVideoStatus = ads::Provider::RewardedVideoStatus::ReadyToLoad;
+                    }
                 }
 
-                if(!(!(format & ads::Format::RewardedVideo))) {
-                    // RewardedVideoInit method
-                    AdmobInit = env->GetStaticMethodID(AdMobClass, "RewardedVideoInit", "()V");
-                    if(!AdmobInit) {
-                        logError("RewardedVideoInit Java method not Found");
-                        return;
-                    }
-                    env->CallStaticVoidMethod(AdMobClass, AdmobInit);
-                    rewardedVideoStatus = ads::Provider::RewardedVideoStatus::ReadyToLoad;
-                }
-
-                midInterstitialSetUnitId   = env->GetStaticMethodID(AdMobClass, "InterstitialSetUnitId", "(Ljava/lang/String;)V");
-                midInterstitialLoad        = env->GetStaticMethodID(AdMobClass, "InterstitialLoad", "()V");
-                midInterstitialShow        = env->GetStaticMethodID(AdMobClass, "InterstitialShow", "()I");
-                midRewardedVideoSetUnitId  = env->GetStaticMethodID(AdMobClass, "RewardedVideoSetUnitId", "(Ljava/lang/String;)V");
-                midRewardedVideoLoad       = env->GetStaticMethodID(AdMobClass, "RewardedVideoLoad", "()V");
-                midRewardedVideoShow       = env->GetStaticMethodID(AdMobClass, "RewardedVideoShow", "()I");
+                midInterstitialSetUnitId   = env->GetStaticMethodID(YandexAdsClass, "InterstitialSetUnitId", "(Ljava/lang/String;)V");
+                midInterstitialLoad        = env->GetStaticMethodID(YandexAdsClass, "InterstitialLoad", "()V");
+                midInterstitialShow        = env->GetStaticMethodID(YandexAdsClass, "InterstitialShow", "()I");
+                midRewardedVideoSetUnitId  = env->GetStaticMethodID(YandexAdsClass, "RewardedVideoSetUnitId", "(Ljava/lang/String;)V");
+                midRewardedVideoLoad       = env->GetStaticMethodID(YandexAdsClass, "RewardedVideoLoad", "()V");
+                midRewardedVideoShow       = env->GetStaticMethodID(YandexAdsClass, "RewardedVideoShow", "()I");
 
                 if(!midInterstitialSetUnitId ) { logError("midInterstitialSetUnitId  Java method not found"); }
                 if(!midInterstitialLoad      ) { logError("midInterstitialLoad       Java method not found"); }
@@ -75,7 +65,7 @@ namespace ads {
                 if(!midRewardedVideoShow     ) { logError("midRewardedVideoShow      Java method not found"); }
             }
 
-            void onAdEvent(int adType, int eventType, int code) {
+            void onAdEvent(int eventType) {
                 eventCallback(static_cast<ads::Event>(eventType));
             }
 
@@ -94,7 +84,7 @@ namespace ads {
                     return;
                 }
                 jstring url_jstring = (jstring)env->NewStringUTF(unitId.c_str());
-                env->CallStaticVoidMethod(AdMobClass, midInterstitialSetUnitId, url_jstring);
+                env->CallStaticVoidMethod(YandexAdsClass, midInterstitialSetUnitId, url_jstring);
                 env->DeleteLocalRef(url_jstring);
             }
 
@@ -106,7 +96,7 @@ namespace ads {
                     return;
                 }
                 jstring url_jstring = (jstring)env->NewStringUTF(unit);
-                env->CallStaticVoidMethod(AdMobClass, midRewardedVideoSetUnitId, url_jstring);
+                env->CallStaticVoidMethod(YandexAdsClass, midRewardedVideoSetUnitId, url_jstring);
                 env->DeleteLocalRef(url_jstring);
                 return;
             }
@@ -117,7 +107,7 @@ namespace ads {
                     logError("InterstitialLoad Java method not Found");
                     return;
                 }
-                env->CallStaticVoidMethod(AdMobClass, midInterstitialLoad);
+                env->CallStaticVoidMethod(YandexAdsClass, midInterstitialLoad);
             }
 
             virtual void v_tryLoadRewardedVideo() override {
@@ -126,7 +116,7 @@ namespace ads {
                     logError("RewardedVideoLoad Java method not Found");
                     return;
                 }
-                env->CallStaticVoidMethod(AdMobClass, midRewardedVideoLoad);
+                env->CallStaticVoidMethod(YandexAdsClass, midRewardedVideoLoad);
             }
 
             virtual void v_showInterstitial() override {
@@ -135,7 +125,7 @@ namespace ads {
                     logError("InterstitialShow Java method not Found");
                     return;
                 }
-                env->CallStaticIntMethod(AdMobClass, midInterstitialShow);
+                env->CallStaticIntMethod(YandexAdsClass, midInterstitialShow);
             }
 
             virtual void v_showRewardedVideo() override {
@@ -144,12 +134,12 @@ namespace ads {
                     logError("RewardedVideoShow Java method not Found");
                     return;
                 }
-                env->CallStaticIntMethod(AdMobClass, midRewardedVideoShow);
+                env->CallStaticIntMethod(YandexAdsClass, midRewardedVideoShow);
             }
 
             virtual bool isInited() const override { return wasInited; }
 
-            jclass AdMobClass;
+            jclass YandexAdsClass;
             jmethodID midInterstitialSetUnitId;
             jmethodID midInterstitialLoad;
             jmethodID midInterstitialShow;
@@ -160,21 +150,21 @@ namespace ads {
     };
 };
 
-bool                                       ads::AdMob::AndroidProvider::wasInited = false;
-std::weak_ptr<ads::AdMob::AndroidProvider> ads::AdMob::AndroidProvider::staticProvider;
+bool                                        ads::Yandex::AndroidProvider::wasInited = false;
+std::weak_ptr<ads::Yandex::AndroidProvider> ads::Yandex::AndroidProvider::staticProvider;
 
 extern "C" {
-    JNIEXPORT void JNICALL Java_org_akkord_lib_AdMobAdapter_AdCallback(JNIEnv*, jclass, jint, jint, jint);
-    JNIEXPORT void JNICALL Java_org_akkord_lib_AdMobAdapter_InitCallback(JNIEnv*, jclass, jint);
+    JNIEXPORT void JNICALL Java_org_akkord_lib_YandexAdsAdapter_AdCallback(JNIEnv*, jclass, jint);
+    JNIEXPORT void JNICALL Java_org_akkord_lib_YandexAdsAdapter_InitCallback(JNIEnv*, jclass, jint);
 }
-JNIEXPORT void JNICALL Java_org_akkord_lib_AdMobAdapter_AdCallback(JNIEnv*, jclass, jint AdType, jint EventType, jint Code) {
-    if(auto cbk = ads::AdMob::AndroidProvider::staticProvider.lock()) {
-        cbk->onAdEvent(static_cast<int>(AdType), static_cast<int>(EventType), static_cast<int>(Code));
+JNIEXPORT void JNICALL Java_org_akkord_lib_YandexAdsAdapter_AdCallback(JNIEnv*, jclass, jint EventType) {
+    if(auto cbk = ads::Yandex::AndroidProvider::staticProvider.lock()) {
+        cbk->onAdEvent(static_cast<int>(EventType));
     }
 }
 
-JNIEXPORT void JNICALL Java_org_akkord_lib_AdMobAdapter_InitCallback(JNIEnv*, jclass, jint code) {
+JNIEXPORT void JNICALL Java_org_akkord_lib_YandexAdsAdapter_InitCallback(JNIEnv*, jclass, jint code) {
     // if zero code means success
-    ads::AdMob::AndroidProvider::wasInited = (static_cast<int>(code) ? false : true);
+    ads::Yandex::AndroidProvider::wasInited = (static_cast<int>(code) ? false : true);
 }
 #endif

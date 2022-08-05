@@ -8,11 +8,11 @@ bool                                   ads::AdMob::iOSProvider::wasInited = fals
 /*
     INTERSTITIAL CALLBACKS
 */
-@interface iInterstitial : NSObject
-+(iInterstitial*) defaultInterstitial;
+@interface iAdMobInterstitial : NSObject
++(iAdMobInterstitial*) defaultInterstitial;
 @end
 
-@interface iInterstitial() <GADFullScreenContentDelegate>
+@interface iAdMobInterstitial() <GADFullScreenContentDelegate>
 @property(nonatomic, strong) GADInterstitialAd *interstitial;
 @property(nonatomic)         std::string        UnitID;
 -(void)SetUintId:(const char* )ID;
@@ -20,15 +20,15 @@ bool                                   ads::AdMob::iOSProvider::wasInited = fals
 -(void)Show;
 @end
 
-@implementation iInterstitial
+@implementation iAdMobInterstitial
 
-+ (iInterstitial *) defaultInterstitial
++ (iAdMobInterstitial *) defaultInterstitial
 {
-    static iInterstitial* adMob;
+    static iAdMobInterstitial* adMob;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         if (!adMob) {
-            adMob = [[iInterstitial alloc] init];
+            adMob = [[iAdMobInterstitial alloc] init];
         }
     });
     return adMob;
@@ -109,11 +109,11 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
 /*
     REWARDED CALLBACKS
 */
-@interface iRewardedVideo : NSObject
-+(iRewardedVideo*) defaultRewardedVideo;
+@interface iAdMobRewardedVideo : NSObject
++(iAdMobRewardedVideo*) defaultRewardedVideo;
 @end
 
-@interface iRewardedVideo() <GADFullScreenContentDelegate>
+@interface iAdMobRewardedVideo() <GADFullScreenContentDelegate>
 @property(nonatomic, strong) GADRewardedAd *rewardedAd;
 @property(nonatomic)         std::string        UnitID;
 -(void)SetUintId:(const char* )ID;
@@ -121,15 +121,15 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
 -(void)Show;
 @end
 
-@implementation iRewardedVideo
+@implementation iAdMobRewardedVideo
 
-+ (iRewardedVideo *) defaultRewardedVideo
++ (iAdMobRewardedVideo *) defaultRewardedVideo
 {
-    static iRewardedVideo* adMob;
+    static iAdMobRewardedVideo* adMob;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         if (!adMob) {
-            adMob = [[iRewardedVideo alloc] init];
+            adMob = [[iAdMobRewardedVideo alloc] init];
         }
     });
     return adMob;
@@ -220,25 +220,25 @@ ads::AdMob::Provider (cbk) {
 };
 
 void ads::AdMob::iOSProvider::InterstitialSetUnitId(const std::string& unitId) {
-    [[iInterstitial defaultInterstitial] SetUintId: unitId.c_str()];
+    [[iAdMobInterstitial defaultInterstitial] SetUintId: unitId.c_str()];
 }
 
 void ads::AdMob::iOSProvider::setRewardedVideoUnit(const char* unitId) {
-    [[iRewardedVideo defaultRewardedVideo] SetUintId: unitId];
+    [[iAdMobRewardedVideo defaultRewardedVideo] SetUintId: unitId];
 }
 
-void ads::AdMob::iOSProvider::admob_tryLoadInterstitial() {
-    [[iInterstitial defaultInterstitial] Load];
+void ads::AdMob::iOSProvider::v_tryLoadInterstitial() {
+    [[iAdMobInterstitial defaultInterstitial] Load];
 }
 
-void ads::AdMob::iOSProvider::admob_tryLoadRewardedVideo() {
-    [[iRewardedVideo defaultRewardedVideo] Load];
+void ads::AdMob::iOSProvider::v_tryLoadRewardedVideo() {
+    [[iAdMobRewardedVideo defaultRewardedVideo] Load];
 }
 
 void ads::AdMob::iOSProvider::v_showInterstitial() {
-    [[iInterstitial defaultInterstitial] Show];
+    [[iAdMobInterstitial defaultInterstitial] Show];
 }
 
 void ads::AdMob::iOSProvider::v_showRewardedVideo() {
-    [[iRewardedVideo defaultRewardedVideo] Show];
+    [[iAdMobRewardedVideo defaultRewardedVideo] Show];
 }

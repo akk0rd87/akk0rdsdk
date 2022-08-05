@@ -16,7 +16,7 @@ using ProviderImpl = ads::AdMob::AndroidProvider;
 using ProviderImpl = ads::AdMob::iOSProvider;
 #endif
 
-std::shared_ptr<ads::AdMob::Provider> ads::AdMob::createAdmobProvider(std::weak_ptr<ads::ProviderCallback> callback, ads::Format format) {
+std::shared_ptr<ads::AdMob::Provider> ads::AdMob::createProvider(std::weak_ptr<ads::ProviderCallback> callback, ads::Format format) {
     auto provider = std::make_shared<ProviderImpl>(callback, format);
     ProviderImpl::setStaticProvider(provider);
     return provider;

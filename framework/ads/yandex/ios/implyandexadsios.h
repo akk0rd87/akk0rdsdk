@@ -1,10 +1,10 @@
 #ifndef __AKK0RD_SDK_ADS_ADMOB_IOSPROVIDER_H__
 #define __AKK0RD_SDK_ADS_ADMOB_IOSPROVIDER_H__
 
-#include "admobprovider.h"
+#include "../yandexadsprovider.h"
 
 namespace ads {
-    namespace AdMob {
+    namespace Yandex {
         class iOSProvider : public Provider {
         public:
             iOSProvider(std::weak_ptr<ads::ProviderCallback> cbk, ads::Format format);

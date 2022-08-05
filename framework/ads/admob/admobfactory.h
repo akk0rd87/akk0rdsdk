@@ -6,7 +6,7 @@
 
 namespace ads {
     namespace AdMob {
-        std::shared_ptr<ads::AdMob::Provider> createAdmobProvider(std::weak_ptr<ads::ProviderCallback> callback, ads::Format format);
+        std::shared_ptr<ads::AdMob::Provider> createProvider(std::weak_ptr<ads::ProviderCallback> callback, ads::Format format);
     };
 };
 
