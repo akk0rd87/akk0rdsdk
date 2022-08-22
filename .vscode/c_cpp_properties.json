@@ -1,0 +1,21 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/src/**",
+                "${AKKORD_SDK_HOME}/framework",
+                "${AKKORD_SDK_HOME}/libraries/SDL/SDL/include"
+            ],
+            "defines": [
+                "_DEBUG",
+                "__WIN32__"
+            ],
+            "windowsSdkVersion": "10.0.19041.0",
+            "cStandard": "c11",
+            "cppStandard": "c++14",
+            "intelliSenseMode": "windows-msvc-x64"
+        }
+    ],
+    "version": 4
+}
