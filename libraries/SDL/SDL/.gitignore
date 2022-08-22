@@ -1,14 +1,3 @@
-android-project/.gradle
-android-project/.project
-android-project/.settings
-VisualC/tests/controllermap/axis.bmp
-VisualC/tests/controllermap/button.bmp
-VisualC/tests/controllermap/controllermap.bmp
-VisualC/tests/controllermap/controllermap_back.bmp
-VisualC/tests/testgamecontroller/controllermap_back.bmp
-VisualC/tests/testyuv/testyuv.bmp
-VisualC/.vs
-obj/**/*.d
 aclocal.m4
 autom4te*
 config.cache
@@ -19,11 +8,36 @@ Makefile
 Makefile.rules
 sdl2-config
 sdl2-config.cmake
+sdl2-config-version.cmake
 sdl2.pc
 SDL2.spec
 build
 gen
 Build
+buildbot
+
+*.so
+*.so.*
+*.dll
+*.exe
+*.o
+*.obj
+*.res
+*.lib
+*.a
+*.la
+*.dSYM
+*,e1f
+*,ff8
+*.lnk
+*.err
+*.exp
+*.map
+*.orig
+*~
+*.swp
+*.tmp
+*.rej
 
 # for CMake
 CMakeFiles/
@@ -31,10 +45,6 @@ CMakeCache.txt
 cmake_install.cmake
 cmake_uninstall.cmake
 SDL2ConfigVersion.cmake
-*.a
-*.la
-*.so
-*.so.*
 .ninja_*
 *.ninja
 
@@ -43,12 +53,6 @@ SDL2ConfigVersion.cmake
 cmake-build-*
 
 # for Xcode
-*.orig
-*.swp
-*.tmp
-*.rej
-*~
-*.o
 *.mode1*
 *.perspective*
 *.pbxuser
@@ -65,18 +69,24 @@ Release
 *.ncb
 *.suo
 *.sdf
+VisualC/tests/controllermap/axis.bmp
+VisualC/tests/controllermap/button.bmp
+VisualC/tests/controllermap/controllermap.bmp
+VisualC/tests/controllermap/controllermap_back.bmp
 VisualC/tests/loopwave/sample.wav
 VisualC/tests/testautomation/CompareSurfaces0001_Reference.bmp
 VisualC/tests/testautomation/CompareSurfaces0001_TestOutput.bmp
 VisualC/tests/testgamecontroller/axis.bmp
 VisualC/tests/testgamecontroller/button.bmp
 VisualC/tests/testgamecontroller/controllermap.bmp
+VisualC/tests/testgamecontroller/controllermap_back.bmp
 VisualC/tests/testoverlay2/moose.dat
 VisualC/tests/testrendertarget/icon.bmp
 VisualC/tests/testrendertarget/sample.bmp
 VisualC/tests/testscale/icon.bmp
 VisualC/tests/testscale/sample.bmp
 VisualC/tests/testsprite2/icon.bmp
+VisualC/tests/testyuv/testyuv.bmp
 VisualC/visualtest/icon.bmp
 VisualC/visualtest/testquit.actions
 VisualC/visualtest/testquit.config
@@ -86,18 +96,13 @@ VisualC/visualtest/testsprite2.exe
 VisualC/visualtest/testsprite2_sample.actions
 VisualC/visualtest/testsprite2_sample.config
 VisualC/visualtest/testsprite2_sample.parameters
+VisualC-GDK/**/Layout
 
 # for Android
 android-project/local.properties
 
-test/aclocal.m4
-test/autom4te*
-test/config.cache
-test/config.log
-test/config.status
-test/Makefile
-test/SDL2.dll
 test/checkkeys
+test/checkkeysthreads
 test/controllermap
 test/loopwave
 test/loopwavequeue
@@ -113,9 +118,11 @@ test/testdraw2
 test/testdrawchessboard
 test/testdropfile
 test/testerror
+test/testevdev
 test/testfile
 test/testfilesystem
 test/testgamecontroller
+test/testgeometry
 test/testgesture
 test/testgl2
 test/testgles
@@ -129,8 +136,10 @@ test/testintersections
 test/testjoystick
 test/testkeys
 test/testloadso
+test/testlocale
 test/testlock
 test/testmessage
+test/testmouse
 test/testmultiaudio
 test/testnative
 test/testoverlay2
@@ -150,17 +159,22 @@ test/testshape
 test/testsprite2
 test/testspriteminimal
 test/teststreaming
+test/testsurround
 test/testthread
 test/testtimer
+test/testurl
 test/testver
 test/testviewport
 test/testvulkan
 test/testwm2
 test/testyuv
 test/torturethread
-test/*.exe
-test/*,e1f
-test/*,ff8
-test/*.dSYM
-buildbot
-test/buildbot
+
+builddir/
+debian/*.debhelper.log
+debian/*.substvars
+debian/*.tar.gz
+debian/.debhelper/
+debian/files
+debian/libsdl*/
+debian/tmp/

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,15 +28,17 @@
 
 static const char *video_usage[] = {
     "[--video driver]", "[--renderer driver]", "[--gldebug]",
-    "[--info all|video|modes|render|event]",
+    "[--info all|video|modes|render|event|event_motion]",
     "[--log all|error|system|audio|video|render|input]", "[--display N]",
     "[--metal-window | --opengl-window | --vulkan-window]",
     "[--fullscreen | --fullscreen-desktop | --windows N]", "[--title title]",
     "[--icon icon.bmp]", "[--center | --position X,Y]", "[--geometry WxH]",
     "[--min-geometry WxH]", "[--max-geometry WxH]", "[--logical WxH]",
     "[--scale N]", "[--depth N]", "[--refresh R]", "[--vsync]", "[--noframe]",
-    "[--resize]", "[--minimize]", "[--maximize]", "[--grab]", "[--keyboard-grab]",
-    "[--allow-highdpi]", "[--usable-bounds]"
+    "[--resizable]", "[--minimize]", "[--maximize]", "[--grab]", "[--keyboard-grab]",
+    "[--shown]", "[--hidden]", "[--input-focus]", "[--mouse-focus]",
+    "[--flash-on-focus-loss]", "[--allow-highdpi]", "[--confine-cursor X,Y,W,H]",
+    "[--usable-bounds]"
 };
 
 static const char *audio_usage[] = {
@@ -166,6 +168,10 @@ SDLTest_CommonArg(SDLTest_CommonState * state, int index)
             state->verbose |= VERBOSE_EVENT;
             return 2;
         }
+        if (SDL_strcasecmp(argv[index], "event_motion") == 0) {
+            state->verbose |= (VERBOSE_EVENT | VERBOSE_MOTION);
+            return 2;
+        }
         return -1;
     }
     if (SDL_strcasecmp(argv[index], "--log") == 0) {
@@ -247,7 +253,7 @@ SDLTest_CommonArg(SDLTest_CommonState * state, int index)
     }
     if (SDL_strcasecmp(argv[index], "--windows") == 0) {
         ++index;
-        if (!argv[index] || !SDL_isdigit(*argv[index])) {
+        if (!argv[index] || !SDL_isdigit((unsigned char) *argv[index])) {
             return -1;
         }
         if (!(state->window_flags & SDL_WINDOW_FULLSCREEN)) {
@@ -293,6 +299,34 @@ SDLTest_CommonArg(SDLTest_CommonState * state, int index)
         *y++ = '\0';
         state->window_x = SDL_atoi(x);
         state->window_y = SDL_atoi(y);
+        return 2;
+    }
+    if (SDL_strcasecmp(argv[index], "--confine-cursor") == 0) {
+        char *x, *y, *w, *h;
+        ++index;
+        if (!argv[index]) {
+            return -1;
+        }
+        x = argv[index];
+        y = argv[index];
+        #define SEARCHARG(dim) \
+            while (*dim && *dim != ',') { \
+                ++dim; \
+            } \
+            if (!*dim) { \
+                return -1; \
+            } \
+            *dim++ = '\0';
+        SEARCHARG(y)
+        w = y;
+        SEARCHARG(w)
+        h = w;
+        SEARCHARG(h)
+        #undef SEARCHARG
+        state->confine.x = SDL_atoi(x);
+        state->confine.y = SDL_atoi(y);
+        state->confine.w = SDL_atoi(w);
+        state->confine.h = SDL_atoi(h);
         return 2;
     }
     if (SDL_strcasecmp(argv[index], "--usable-bounds") == 0) {
@@ -412,7 +446,7 @@ SDLTest_CommonArg(SDLTest_CommonState * state, int index)
         state->window_flags |= SDL_WINDOW_BORDERLESS;
         return 1;
     }
-    if (SDL_strcasecmp(argv[index], "--resize") == 0) {
+    if (SDL_strcasecmp(argv[index], "--resizable") == 0) {
         state->window_flags |= SDL_WINDOW_RESIZABLE;
         return 1;
     }
@@ -422,6 +456,26 @@ SDLTest_CommonArg(SDLTest_CommonState * state, int index)
     }
     if (SDL_strcasecmp(argv[index], "--maximize") == 0) {
         state->window_flags |= SDL_WINDOW_MAXIMIZED;
+        return 1;
+    }
+    if (SDL_strcasecmp(argv[index], "--shown") == 0) {
+        state->window_flags |= SDL_WINDOW_SHOWN;
+        return 1;
+    }
+    if (SDL_strcasecmp(argv[index], "--hidden") == 0) {
+        state->window_flags |= SDL_WINDOW_HIDDEN;
+        return 1;
+    }
+    if (SDL_strcasecmp(argv[index], "--input-focus") == 0) {
+        state->window_flags |= SDL_WINDOW_INPUT_FOCUS;
+        return 1;
+    }
+    if (SDL_strcasecmp(argv[index], "--mouse-focus") == 0) {
+        state->window_flags |= SDL_WINDOW_MOUSE_FOCUS;
+        return 1;
+    }
+    if (SDL_strcasecmp(argv[index], "--flash-on-focus-loss") == 0) {
+        state->flash_on_focus_loss = SDL_TRUE;
         return 1;
     }
     if (SDL_strcasecmp(argv[index], "--grab") == 0) {
@@ -610,6 +664,170 @@ SDLTest_CommonDefaultArgs(SDLTest_CommonState *state, const int argc, char **arg
         i += consumed;
     }
     return SDL_TRUE;
+}
+
+static void
+SDLTest_PrintDisplayOrientation(char* text, size_t maxlen, SDL_DisplayOrientation orientation)
+{
+    switch (orientation) {
+    case SDL_ORIENTATION_UNKNOWN:
+        SDL_snprintfcat(text, maxlen, "UNKNOWN");
+        break;
+    case SDL_ORIENTATION_LANDSCAPE:
+        SDL_snprintfcat(text, maxlen, "LANDSCAPE");
+        break;
+    case SDL_ORIENTATION_LANDSCAPE_FLIPPED:
+        SDL_snprintfcat(text, maxlen, "LANDSCAPE_FLIPPED");
+        break;
+    case SDL_ORIENTATION_PORTRAIT:
+        SDL_snprintfcat(text, maxlen, "PORTRAIT");
+        break;
+    case SDL_ORIENTATION_PORTRAIT_FLIPPED:
+        SDL_snprintfcat(text, maxlen, "PORTRAIT_FLIPPED");
+        break;
+    default:
+        SDL_snprintfcat(text, maxlen, "0x%8.8x", orientation);
+        break;
+    }
+}
+
+static void
+SDLTest_PrintWindowFlag(char* text, size_t maxlen, Uint32 flag)
+{
+    switch (flag) {
+    case SDL_WINDOW_FULLSCREEN:
+        SDL_snprintfcat(text, maxlen, "FULLSCREEN");
+        break;
+    case SDL_WINDOW_OPENGL:
+        SDL_snprintfcat(text, maxlen, "OPENGL");
+        break;
+    case SDL_WINDOW_SHOWN:
+        SDL_snprintfcat(text, maxlen, "SHOWN");
+        break;
+    case SDL_WINDOW_HIDDEN:
+        SDL_snprintfcat(text, maxlen, "HIDDEN");
+        break;
+    case SDL_WINDOW_BORDERLESS:
+        SDL_snprintfcat(text, maxlen, "BORDERLESS");
+        break;
+    case SDL_WINDOW_RESIZABLE:
+        SDL_snprintfcat(text, maxlen, "RESIZABLE");
+        break;
+    case SDL_WINDOW_MINIMIZED:
+        SDL_snprintfcat(text, maxlen, "MINIMIZED");
+        break;
+    case SDL_WINDOW_MAXIMIZED:
+        SDL_snprintfcat(text, maxlen, "MAXIMIZED");
+        break;
+    case SDL_WINDOW_MOUSE_GRABBED:
+        SDL_snprintfcat(text, maxlen, "MOUSE_GRABBED");
+        break;
+    case SDL_WINDOW_INPUT_FOCUS:
+        SDL_snprintfcat(text, maxlen, "INPUT_FOCUS");
+        break;
+    case SDL_WINDOW_MOUSE_FOCUS:
+        SDL_snprintfcat(text, maxlen, "MOUSE_FOCUS");
+        break;
+    case SDL_WINDOW_FULLSCREEN_DESKTOP:
+        SDL_snprintfcat(text, maxlen, "FULLSCREEN_DESKTOP");
+        break;
+    case SDL_WINDOW_FOREIGN:
+        SDL_snprintfcat(text, maxlen, "FOREIGN");
+        break;
+    case SDL_WINDOW_ALLOW_HIGHDPI:
+        SDL_snprintfcat(text, maxlen, "ALLOW_HIGHDPI");
+        break;
+    case SDL_WINDOW_MOUSE_CAPTURE:
+        SDL_snprintfcat(text, maxlen, "MOUSE_CAPTURE");
+        break;
+    case SDL_WINDOW_ALWAYS_ON_TOP:
+        SDL_snprintfcat(text, maxlen, "ALWAYS_ON_TOP");
+        break;
+    case SDL_WINDOW_SKIP_TASKBAR:
+        SDL_snprintfcat(text, maxlen, "SKIP_TASKBAR");
+        break;
+    case SDL_WINDOW_UTILITY:
+        SDL_snprintfcat(text, maxlen, "UTILITY");
+        break;
+    case SDL_WINDOW_TOOLTIP:
+        SDL_snprintfcat(text, maxlen, "TOOLTIP");
+        break;
+    case SDL_WINDOW_POPUP_MENU:
+        SDL_snprintfcat(text, maxlen, "POPUP_MENU");
+        break;
+    case SDL_WINDOW_KEYBOARD_GRABBED:
+        SDL_snprintfcat(text, maxlen, "KEYBOARD_GRABBED");
+        break;
+    case SDL_WINDOW_VULKAN:
+        SDL_snprintfcat(text, maxlen, "VULKAN");
+        break;
+    case SDL_WINDOW_METAL:
+        SDL_snprintfcat(text, maxlen, "METAL");
+        break;
+    default:
+        SDL_snprintfcat(text, maxlen, "0x%8.8x", flag);
+        break;
+    }
+}
+
+static void
+SDLTest_PrintWindowFlags(char* text, size_t maxlen, Uint32 flags)
+{
+    const Uint32 window_flags[] = {
+        SDL_WINDOW_FULLSCREEN,
+        SDL_WINDOW_OPENGL,
+        SDL_WINDOW_SHOWN,
+        SDL_WINDOW_HIDDEN,
+        SDL_WINDOW_BORDERLESS,
+        SDL_WINDOW_RESIZABLE,
+        SDL_WINDOW_MINIMIZED,
+        SDL_WINDOW_MAXIMIZED,
+        SDL_WINDOW_MOUSE_GRABBED,
+        SDL_WINDOW_INPUT_FOCUS,
+        SDL_WINDOW_MOUSE_FOCUS,
+        SDL_WINDOW_FULLSCREEN_DESKTOP,
+        SDL_WINDOW_FOREIGN,
+        SDL_WINDOW_ALLOW_HIGHDPI,
+        SDL_WINDOW_MOUSE_CAPTURE,
+        SDL_WINDOW_ALWAYS_ON_TOP,
+        SDL_WINDOW_SKIP_TASKBAR,
+        SDL_WINDOW_UTILITY,
+        SDL_WINDOW_TOOLTIP,
+        SDL_WINDOW_POPUP_MENU,
+        SDL_WINDOW_KEYBOARD_GRABBED,
+        SDL_WINDOW_VULKAN,
+        SDL_WINDOW_METAL
+    };
+
+    int i;
+    int count = 0;
+    for (i = 0; i < (sizeof(window_flags) / sizeof(window_flags[0])); ++i) {
+        const Uint32 flag = window_flags[i];
+        if ((flags & flag) == flag) {
+            if (count > 0) {
+                SDL_snprintfcat(text, maxlen, " | ");
+            }
+            SDLTest_PrintWindowFlag(text, maxlen, flag);
+            ++count;
+        }
+    }
+}
+
+static void
+SDLTest_PrintButtonMask(char* text, size_t maxlen, Uint32 flags)
+{
+    int i;
+    int count = 0;
+    for (i = 1; i <= 32; ++i) {
+        const Uint32 flag = SDL_BUTTON(i);
+        if ((flags & flag) == flag) {
+            if (count > 0) {
+                SDL_snprintfcat(text, maxlen, " | ");
+            }
+            SDL_snprintfcat(text, maxlen, "SDL_BUTTON(%d)", i);
+            ++count;
+        }
+    }
 }
 
 static void
@@ -982,7 +1200,7 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
                     }
                 }
 
-#if SDL_VIDEO_DRIVER_WINDOWS
+#if SDL_VIDEO_DRIVER_WINDOWS && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
                 /* Print the D3D9 adapter index */
                 adapterIndex = SDL_Direct3D9GetAdapterIndex( i );
                 SDL_Log("D3D9 Adapter Index: %d", adapterIndex);
@@ -1078,7 +1296,7 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
             SDL_GetWindowSize(state->windows[i], &w, &h);
             if (!(state->window_flags & SDL_WINDOW_RESIZABLE) &&
                 (w != state->window_w || h != state->window_h)) {
-                printf("Window requested size %dx%d, got %dx%d\n", state->window_w, state->window_h, w, h);
+                SDL_Log("Window requested size %dx%d, got %dx%d\n", state->window_w, state->window_h, w, h);
                 state->window_w = w;
                 state->window_h = h;
             }
@@ -1104,17 +1322,20 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
 
             SDL_ShowWindow(state->windows[i]);
 
+            if (!SDL_RectEmpty(&state->confine)) {
+                SDL_SetWindowMouseRect(state->windows[i], &state->confine);
+            }
+
             if (!state->skip_renderer
                 && (state->renderdriver
-                    || !(state->window_flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_VULKAN)))) {
+                    || !(state->window_flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_VULKAN | SDL_WINDOW_METAL)))) {
                 m = -1;
                 if (state->renderdriver) {
                     SDL_RendererInfo info;
                     n = SDL_GetNumRenderDrivers();
                     for (j = 0; j < n; ++j) {
                         SDL_GetRenderDriverInfo(j, &info);
-                        if (SDL_strcasecmp(info.name, state->renderdriver) ==
-                            0) {
+                        if (SDL_strcasecmp(info.name, state->renderdriver) == 0) {
                             m = j;
                             break;
                         }
@@ -1247,17 +1468,20 @@ default: return "???";
 static void
 SDLTest_PrintEvent(SDL_Event * event)
 {
-    if ((event->type == SDL_MOUSEMOTION) || (event->type == SDL_FINGERMOTION)) {
-        /* Mouse and finger motion are really spammy */
-        return;
-    }
-
     switch (event->type) {
     case SDL_DISPLAYEVENT:
         switch (event->display.event) {
+        case SDL_DISPLAYEVENT_CONNECTED:
+            SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " connected",
+                    event->display.display);
+            break;
         case SDL_DISPLAYEVENT_ORIENTATION:
             SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed orientation to %s",
                     event->display.display, DisplayOrientationName(event->display.data1));
+            break;
+        case SDL_DISPLAYEVENT_DISCONNECTED:
+            SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " disconnected",
+                    event->display.display);
             break;
         default:
             SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " got unknown event 0x%4.4x",
@@ -1584,12 +1808,12 @@ FullscreenTo(int index, int windowId)
 
     flags = SDL_GetWindowFlags(window);
     if (flags & SDL_WINDOW_FULLSCREEN) {
-        SDL_SetWindowFullscreen( window, SDL_FALSE );
+        SDL_SetWindowFullscreen( window, 0);
         SDL_Delay( 15 );
     }
 
     SDL_SetWindowPosition( window, rect.x, rect.y );
-    SDL_SetWindowFullscreen( window, SDL_TRUE );
+    SDL_SetWindowFullscreen( window, SDL_WINDOW_FULLSCREEN );
 }
 
 void
@@ -1599,7 +1823,11 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
     static SDL_MouseMotionEvent lastEvent;
 
     if (state->verbose & VERBOSE_EVENT) {
-        SDLTest_PrintEvent(event);
+        if (((event->type != SDL_MOUSEMOTION) &&
+             (event->type != SDL_FINGERMOTION)) ||
+            ((state->verbose & VERBOSE_MOTION) != 0)) {
+            SDLTest_PrintEvent(event);
+        }
     }
 
     switch (event->type) {
@@ -1626,6 +1854,16 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
                     }
                 }
             }
+            break;
+        case SDL_WINDOWEVENT_FOCUS_LOST:
+            if (state->flash_on_focus_loss) {
+                SDL_Window *window = SDL_GetWindowFromID(event->window.windowID);
+                if (window) {
+                    SDL_FlashWindow(window, SDL_FLASH_UNTIL_FOCUSED);
+                }
+            }
+            break;
+        default:
             break;
         }
         break;
@@ -1701,7 +1939,7 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
                     const int delta = 100;
                     int x, y;
                     SDL_GetWindowPosition(window, &x, &y);
-                    
+
                     if (event->key.keysym.sym == SDLK_UP)    y -= delta;
                     if (event->key.keysym.sym == SDLK_DOWN)  y += delta;
                     if (event->key.keysym.sym == SDLK_LEFT)  x -= delta;
@@ -1734,7 +1972,7 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
             if (withControl) {
                 /* Ctrl-C copy awesome text! */
                 SDL_SetClipboardText("SDL rocks!\nYou know it!");
-                printf("Copied text to clipboard\n");
+                SDL_Log("Copied text to clipboard\n");
             }
             if (withAlt) {
                 /* Alt-C toggle a render clip rectangle */
@@ -1770,11 +2008,20 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
                 /* Ctrl-V paste awesome text! */
                 char *text = SDL_GetClipboardText();
                 if (*text) {
-                    printf("Clipboard: %s\n", text);
+                    SDL_Log("Clipboard: %s\n", text);
                 } else {
-                    printf("Clipboard is empty\n");
+                    SDL_Log("Clipboard is empty\n");
                 }
                 SDL_free(text);
+            }
+            break;
+        case SDLK_f:
+            if (withControl) {
+                /* Ctrl-F flash the window */
+                SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
+                if (window) {
+                    SDL_FlashWindow(window, SDL_FLASH_BRIEFLY);
+                }
             }
             break;
         case SDLK_g:
@@ -1813,6 +2060,20 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
             if (withControl) {
                 /* Ctrl-R toggle mouse relative mode */
                 SDL_SetRelativeMouseMode(!SDL_GetRelativeMouseMode() ? SDL_TRUE : SDL_FALSE);
+            }
+            break;
+        case SDLK_t:
+            if (withControl) {
+                /* Ctrl-T toggle topmost mode */
+                SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
+                if (window) {
+                    Uint32 flags = SDL_GetWindowFlags(window);
+                    if (flags & SDL_WINDOW_ALWAYS_ON_TOP) {
+                        SDL_SetWindowAlwaysOnTop(window, SDL_FALSE);
+                    } else {
+                        SDL_SetWindowAlwaysOnTop(window, SDL_TRUE);
+                    }
+                }
             }
             break;
         case SDLK_z:
@@ -1971,6 +2232,174 @@ SDLTest_CommonQuit(SDLTest_CommonState * state)
     SDL_free(state);
     SDL_Quit();
     SDLTest_LogAllocations();
+}
+
+void
+SDLTest_CommonDrawWindowInfo(SDL_Renderer * renderer, SDL_Window * window, int * usedHeight)
+{
+    char text[1024];
+    int textY = 0;
+    const int lineHeight = 10;
+    int x, y, w, h;
+    SDL_Rect rect;
+    SDL_DisplayMode mode;
+    float ddpi, hdpi, vdpi;
+    float scaleX, scaleY;
+    Uint32 flags;
+    const int windowDisplayIndex = SDL_GetWindowDisplayIndex(window);
+    SDL_RendererInfo info;
+
+    /* Video */
+
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDLTest_DrawString(renderer, 0, textY, "-- Video --");
+    textY += lineHeight;
+
+    SDL_SetRenderDrawColor(renderer, 170, 170, 170, 255);
+
+    SDL_snprintf(text, sizeof(text), "SDL_GetCurrentVideoDriver: %s", SDL_GetCurrentVideoDriver());
+    SDLTest_DrawString(renderer, 0, textY, text);
+    textY += lineHeight;
+
+    /* Renderer */
+
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDLTest_DrawString(renderer, 0, textY, "-- Renderer --");
+    textY += lineHeight;
+
+    SDL_SetRenderDrawColor(renderer, 170, 170, 170, 255);
+
+    if (0 == SDL_GetRendererInfo(renderer, &info)) {
+        SDL_snprintf(text, sizeof(text), "SDL_GetRendererInfo: name: %s", info.name);
+        SDLTest_DrawString(renderer, 0, textY, text);
+        textY += lineHeight;
+    }
+
+    if (0 == SDL_GetRendererOutputSize(renderer, &w, &h)) {
+        SDL_snprintf(text, sizeof(text), "SDL_GetRendererOutputSize: %dx%d", w, h);
+        SDLTest_DrawString(renderer, 0, textY, text);
+        textY += lineHeight;
+    }
+
+    SDL_RenderGetViewport(renderer, &rect);
+    SDL_snprintf(text, sizeof(text), "SDL_RenderGetViewport: %d,%d, %dx%d",
+                 rect.x, rect.y, rect.w, rect.h);
+    SDLTest_DrawString(renderer, 0, textY, text);
+    textY += lineHeight;
+
+    SDL_RenderGetScale(renderer, &scaleX, &scaleY);
+    SDL_snprintf(text, sizeof(text), "SDL_RenderGetScale: %f,%f",
+                 scaleX, scaleY);
+    SDLTest_DrawString(renderer, 0, textY, text);
+    textY += lineHeight;
+
+    SDL_RenderGetLogicalSize(renderer, &w, &h);
+    SDL_snprintf(text, sizeof(text), "SDL_RenderGetLogicalSize: %dx%d", w, h);
+    SDLTest_DrawString(renderer, 0, textY, text);
+    textY += lineHeight;
+
+    /* Window */
+
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDLTest_DrawString(renderer, 0, textY, "-- Window --");
+    textY += lineHeight;
+
+    SDL_SetRenderDrawColor(renderer, 170, 170, 170, 255);
+
+    SDL_GetWindowPosition(window, &x, &y);
+    SDL_snprintf(text, sizeof(text), "SDL_GetWindowPosition: %d,%d", x, y);
+    SDLTest_DrawString(renderer, 0, textY, text);
+    textY += lineHeight;
+
+    SDL_GetWindowSize(window, &w, &h);
+    SDL_snprintf(text, sizeof(text), "SDL_GetWindowSize: %dx%d", w, h);
+    SDLTest_DrawString(renderer, 0, textY, text);
+    textY += lineHeight;
+
+    SDL_snprintf(text, sizeof(text), "SDL_GetWindowFlags: ");
+    SDLTest_PrintWindowFlags(text, sizeof(text), SDL_GetWindowFlags(window));
+    SDLTest_DrawString(renderer, 0, textY, text);
+    textY += lineHeight;
+
+    if (0 == SDL_GetWindowDisplayMode(window, &mode)) {
+        SDL_snprintf(text, sizeof(text), "SDL_GetWindowDisplayMode: %dx%d@%dHz (%s)",
+            mode.w, mode.h, mode.refresh_rate, SDL_GetPixelFormatName(mode.format));
+        SDLTest_DrawString(renderer, 0, textY, text);
+        textY += lineHeight;
+    }
+
+    /* Display */
+
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDLTest_DrawString(renderer, 0, textY, "-- Display --");
+    textY += lineHeight;
+
+    SDL_SetRenderDrawColor(renderer, 170, 170, 170, 255);
+
+    SDL_snprintf(text, sizeof(text), "SDL_GetWindowDisplayIndex: %d", windowDisplayIndex);
+    SDLTest_DrawString(renderer, 0, textY, text);
+    textY += lineHeight;
+
+    SDL_snprintf(text, sizeof(text), "SDL_GetDisplayName: %s", SDL_GetDisplayName(windowDisplayIndex));
+    SDLTest_DrawString(renderer, 0, textY, text);
+    textY += lineHeight;
+
+    if (0 == SDL_GetDisplayBounds(windowDisplayIndex, &rect)) {
+        SDL_snprintf(text, sizeof(text), "SDL_GetDisplayBounds: %d,%d, %dx%d",
+                     rect.x, rect.y, rect.w, rect.h);
+        SDLTest_DrawString(renderer, 0, textY, text);
+        textY += lineHeight;
+    }
+
+    if (0 == SDL_GetCurrentDisplayMode(windowDisplayIndex, &mode)) {
+        SDL_snprintf(text, sizeof(text), "SDL_GetCurrentDisplayMode: %dx%d@%d",
+                     mode.w, mode.h, mode.refresh_rate);
+        SDLTest_DrawString(renderer, 0, textY, text);
+        textY += lineHeight;
+    }
+
+    if (0 == SDL_GetDesktopDisplayMode(windowDisplayIndex, &mode)) {
+        SDL_snprintf(text, sizeof(text), "SDL_GetDesktopDisplayMode: %dx%d@%d",
+                     mode.w, mode.h, mode.refresh_rate);
+        SDLTest_DrawString(renderer, 0, textY, text);
+        textY += lineHeight;
+    }
+
+    if (0 == SDL_GetDisplayDPI(windowDisplayIndex, &ddpi, &hdpi, &vdpi)) {
+        SDL_snprintf(text, sizeof(text), "SDL_GetDisplayDPI: ddpi: %f, hdpi: %f, vdpi: %f",
+                     ddpi, hdpi, vdpi);
+        SDLTest_DrawString(renderer, 0, textY, text);
+        textY += lineHeight;
+    }
+
+    SDL_snprintf(text, sizeof(text), "SDL_GetDisplayOrientation: ");
+    SDLTest_PrintDisplayOrientation(text, sizeof(text), SDL_GetDisplayOrientation(windowDisplayIndex));
+    SDLTest_DrawString(renderer, 0, textY, text);
+    textY += lineHeight;
+
+    /* Mouse */
+
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDLTest_DrawString(renderer, 0, textY, "-- Mouse --");
+    textY += lineHeight;
+
+    SDL_SetRenderDrawColor(renderer, 170, 170, 170, 255);
+
+    flags = SDL_GetMouseState(&x, &y);
+    SDL_snprintf(text, sizeof(text), "SDL_GetMouseState: %d,%d ", x, y);
+    SDLTest_PrintButtonMask(text, sizeof(text), flags);
+    SDLTest_DrawString(renderer, 0, textY, text);
+    textY += lineHeight;
+
+    flags = SDL_GetGlobalMouseState(&x, &y);
+    SDL_snprintf(text, sizeof(text), "SDL_GetGlobalMouseState: %d,%d ", x, y);
+    SDLTest_PrintButtonMask(text, sizeof(text), flags);
+    SDLTest_DrawString(renderer, 0, textY, text);
+    textY += lineHeight;
+
+    if (usedHeight) {
+        *usedHeight = textY;
+    }
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

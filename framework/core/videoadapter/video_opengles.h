@@ -46,9 +46,6 @@ public:
         DeleteProgram(&SDFPlainProgram);
         DeleteProgram(&SDFOutlineProgram);
         DeleteProgram(&LinearGradientProgram);
-
-        glDeleteBuffers(VBO.constBufferSize, &VBO.ArrayBufferID.front()); CheckGLESError();
-        glDeleteBuffers(VBO.constBufferSize, &VBO.ElementBufferID.front()); CheckGLESError();
     }
 
     virtual void PreInit() override {
@@ -59,7 +56,6 @@ public:
 #undef SDL_PROC
 #endif
             ;
-        InitVBO();
         SDFOutlineProgram.programId = SDFPlainProgram.programId = LinearGradientProgram.programId = 0;
     };
 
@@ -214,7 +210,7 @@ gl_FragColor = result_color; \
 #endif
         struct Attributes {
         enum : GLuint {
-            SDF_ATTRIB_POSITION = 0, // Начинаем не с нуля, чтобы индексы не пересеклись с другими программами
+            SDF_ATTRIB_POSITION = 0,
             SDF_ATTRIB_UV = 1
             //SDF_NUM_ATTRIBUTES = 7,
             //ATTRIB_COLOR = 8
@@ -253,7 +249,7 @@ gl_FragColor = result_color; \
             // тут именно вызов функции напрямую, а не через макрос, чтбоы не терять информацию о месте возникнования события
             BWrapper::Log(BWrapper::LogPriority::Error, File, Function, Line, "glGetError() = %u, Msg = %s", glErr, ErrorMsg.c_str());
             return true;
-}
+        }
 #endif
         return false;
     }
@@ -304,34 +300,11 @@ gl_FragColor = result_color; \
         }
 #endif
     }
-
-    struct VBOBufferStruct {
-        static constexpr GLsizei constBufferSize = 8;
-
-        std::array<GLuint, constBufferSize> ArrayBufferID;
-        std::array<GLuint, constBufferSize> ElementBufferID;
-
-        std::array<GLsizeiptr, constBufferSize> ArrayBufferSize;
-        std::array<GLsizeiptr, constBufferSize> ElementBufferSize;
-
-        GLsizei CurrentBuffer;
-    } VBO;
-
     struct OpenGLState {
-        GLint attr_0_enabled, attr_1_enabled, attr_2_enabled, attr_3_enabled;
+        GLint attr_0_enabled, attr_1_enabled, attr_2_enabled;
         GLint ProgramId;
-        OpenGLState() : attr_0_enabled(GL_FALSE), attr_1_enabled(GL_FALSE), attr_2_enabled(GL_FALSE), attr_3_enabled(GL_FALSE), ProgramId(0) {}
+        OpenGLState() : attr_0_enabled(GL_FALSE), attr_1_enabled(GL_FALSE), attr_2_enabled(GL_FALSE), ProgramId(0) {}
     };
-
-    void InitVBO() {
-        VBO.CurrentBuffer = 0;
-        std::fill(VBO.ArrayBufferID.begin(), VBO.ArrayBufferID.end(), 0);
-        std::fill(VBO.ElementBufferID.begin(), VBO.ElementBufferID.end(), 0);
-        std::fill(VBO.ArrayBufferSize.begin(), VBO.ArrayBufferSize.end(), 0);
-        std::fill(VBO.ElementBufferSize.begin(), VBO.ElementBufferSize.end(), 0);
-        glGenBuffers(VBO.constBufferSize, &VBO.ArrayBufferID.front()); CheckGLESError();
-        glGenBuffers(VBO.constBufferSize, &VBO.ElementBufferID.front()); CheckGLESError();
-    }
 
     OpenGLState BackupOpenGLState() {
         OpenGLState p;
@@ -339,7 +312,6 @@ gl_FragColor = result_color; \
         glGetVertexAttribiv(static_cast<GLuint>(0), static_cast<GLenum>(GL_VERTEX_ATTRIB_ARRAY_ENABLED), &p.attr_0_enabled); CheckGLESError();
         glGetVertexAttribiv(static_cast<GLuint>(1), static_cast<GLenum>(GL_VERTEX_ATTRIB_ARRAY_ENABLED), &p.attr_1_enabled); CheckGLESError();
         glGetVertexAttribiv(static_cast<GLuint>(2), static_cast<GLenum>(GL_VERTEX_ATTRIB_ARRAY_ENABLED), &p.attr_2_enabled); CheckGLESError();
-        glGetVertexAttribiv(static_cast<GLuint>(3), static_cast<GLenum>(GL_VERTEX_ATTRIB_ARRAY_ENABLED), &p.attr_3_enabled); CheckGLESError();
         return p;
     }
 
@@ -393,38 +365,9 @@ gl_FragColor = result_color; \
 
     template <class UVBuffer, class squareVerticesBuffer, class IndicesBuffer>
     void DrawElements(const UVBuffer& UV, const squareVerticesBuffer& squareVertices, const IndicesBuffer& Indices, GLint UVElementLogicalSize) {
-        const auto uvSize = static_cast<GLsizeiptr>(UV.size() * sizeof(UV.front()));
-        const auto svSize = static_cast<GLsizeiptr>(squareVertices.size() * sizeof(squareVertices.front()));
-        const auto bufSize = uvSize + svSize;
-        const auto indSize = static_cast<GLsizeiptr>(Indices.size() * sizeof(decltype(Indices.front())));
-
-        // работаем c GL_ARRAY_BUFFER
-        glBindBuffer(GL_ARRAY_BUFFER, VBO.ArrayBufferID[VBO.CurrentBuffer]); CheckGLESError();
-        if (VBO.ArrayBufferSize[VBO.CurrentBuffer] < bufSize) { // размера недостаточно и нужно выделить память
-            glBufferData(GL_ARRAY_BUFFER, bufSize, nullptr, GL_STREAM_DRAW); CheckGLESError();
-            VBO.ArrayBufferSize[VBO.CurrentBuffer] = bufSize;
-        }
-        glBufferSubData(GL_ARRAY_BUFFER, 0, uvSize, &UV.front()); CheckGLESError();
-        glBufferSubData(GL_ARRAY_BUFFER, uvSize, svSize, &squareVertices.front()); CheckGLESError();
-
-        // работаем c GL_ELEMENT_ARRAY_BUFFER
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, VBO.ElementBufferID[VBO.CurrentBuffer]); CheckGLESError();
-        if (VBO.ElementBufferSize[VBO.CurrentBuffer] < indSize) { // размера недостаточно и нужно выделить память
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indSize, &Indices.front(), GL_STREAM_DRAW); CheckGLESError();
-            VBO.ElementBufferSize[VBO.CurrentBuffer] = indSize;
-        }
-        else { // если размера хватает, заполняем текущее подмножество
-            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indSize, &Indices.front()); CheckGLESError();
-        }
-
-        glVertexAttribPointer(Attributes::SDF_ATTRIB_POSITION, static_cast<GLint>(2), static_cast<GLenum>(GL_FLOAT), static_cast<GLboolean>(GL_FALSE), static_cast<GLsizei>(0), (const GLvoid*)static_cast<GLsizeiptr>(UV.size() * sizeof(UV.front()))); CheckGLESError();
-        glVertexAttribPointer(Attributes::SDF_ATTRIB_UV, UVElementLogicalSize, static_cast<GLenum>(GL_FLOAT), static_cast<GLboolean>(GL_FALSE), static_cast<GLsizei>(0), nullptr); CheckGLESError();
-        glDrawElements(static_cast<GLenum>(GL_TRIANGLES), static_cast<GLsizei>(Indices.size()), static_cast<GLenum>(GL_UNSIGNED_SHORT), nullptr); CheckGLESError();
-
-        // переходим к следующему буфферу, который будет использоваться при следующем обращении
-        if (++VBO.CurrentBuffer >= VBO.constBufferSize) {
-            VBO.CurrentBuffer = 0;
-        }
+        glVertexAttribPointer(Attributes::SDF_ATTRIB_POSITION, static_cast<GLint>(2), static_cast<GLenum>(GL_FLOAT), static_cast<GLboolean>(GL_FALSE), static_cast<GLsizei>(0), &squareVertices.front()); CheckGLESError();
+        glVertexAttribPointer(Attributes::SDF_ATTRIB_UV, UVElementLogicalSize, static_cast<GLenum>(GL_FLOAT), static_cast<GLboolean>(GL_FALSE), static_cast<GLsizei>(0), &UV.front()); CheckGLESError();
+        glDrawElements(static_cast<GLenum>(GL_TRIANGLES), static_cast<GLsizei>(Indices.size()), static_cast<GLenum>(GL_UNSIGNED_SHORT), &Indices.front()); CheckGLESError();
     }
 
     void DrawLinearGradientRect(const AkkordRect& Rect, const AkkordColor& X0Y0, const AkkordColor& X1Y0, const AkkordColor& X1Y1, const AkkordColor& X0Y1) override {
@@ -465,7 +408,6 @@ gl_FragColor = result_color; \
 
             // эти атрибуты выключаем всегда, если они включены
             if (openGLState.attr_2_enabled != GL_FALSE) { glDisableVertexAttribArray(static_cast<GLuint>(2)); CheckGLESError(); }
-            if (openGLState.attr_3_enabled != GL_FALSE) { glDisableVertexAttribArray(static_cast<GLuint>(3)); CheckGLESError(); }
         }
 
         if (openGLState.ProgramId != LinearGradientProgram.programId) {
@@ -484,7 +426,6 @@ gl_FragColor = result_color; \
             if (openGLState.attr_1_enabled == GL_FALSE) { glDisableVertexAttribArray(static_cast<GLuint>(1)); CheckGLESError(); }
 
             if (openGLState.attr_2_enabled != GL_FALSE) { glEnableVertexAttribArray(static_cast<GLuint>(2)); CheckGLESError(); }
-            if (openGLState.attr_3_enabled != GL_FALSE) { glEnableVertexAttribArray(static_cast<GLuint>(3)); CheckGLESError(); }
         }
     }
 
@@ -611,7 +552,6 @@ void VideoAdapter_OPENGLES::DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, co
 
         // эти атрибуты выключаем всегда, если они включены
         if (openGLState.attr_2_enabled != GL_FALSE) { glDisableVertexAttribArray(static_cast<GLuint>(2)); CheckGLESError(); }
-        if (openGLState.attr_3_enabled != GL_FALSE) { glDisableVertexAttribArray(static_cast<GLuint>(3)); CheckGLESError(); }
     }
 
     if (openGLState.ProgramId != shaderProgram->programId) {
@@ -652,7 +592,6 @@ void VideoAdapter_OPENGLES::DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, co
         if (openGLState.attr_1_enabled == GL_FALSE) { glDisableVertexAttribArray(static_cast<GLuint>(1)); CheckGLESError(); }
 
         if (openGLState.attr_2_enabled != GL_FALSE) { glEnableVertexAttribArray(static_cast<GLuint>(2)); CheckGLESError(); }
-        if (openGLState.attr_3_enabled != GL_FALSE) { glEnableVertexAttribArray(static_cast<GLuint>(3)); CheckGLESError(); }
     }
 };
 

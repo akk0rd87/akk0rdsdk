@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,8 +30,6 @@
 
 #include "SDL_system.h"
 #include "SDL_android.h"
-
-#include "keyinfotable.h"
 
 #include "../../events/SDL_events_c.h"
 #include "../../video/android/SDL_androidkeyboard.h"
@@ -79,7 +77,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeDropFile)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetScreenResolution)(
         JNIEnv *env, jclass jcls,
         jint surfaceWidth, jint surfaceHeight,
-        jint deviceWidth, jint deviceHeight, jint format, jfloat rate);
+        jint deviceWidth, jint deviceHeight, jfloat rate);
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeResize)(
         JNIEnv *env, jclass cls);
@@ -148,6 +146,10 @@ JNIEXPORT jstring JNICALL SDL_JAVA_INTERFACE(nativeGetHint)(
         JNIEnv *env, jclass cls,
         jstring name);
 
+JNIEXPORT jboolean JNICALL SDL_JAVA_INTERFACE(nativeGetHintBoolean)(
+        JNIEnv *env, jclass cls,
+        jstring name, jboolean default_value);
+
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetenv)(
         JNIEnv *env, jclass cls,
         jstring name, jstring value);
@@ -168,7 +170,7 @@ static JNINativeMethod SDLActivity_tab[] = {
     { "nativeSetupJNI",             "()I", SDL_JAVA_INTERFACE(nativeSetupJNI) },
     { "nativeRunMain",              "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)I", SDL_JAVA_INTERFACE(nativeRunMain) },
     { "onNativeDropFile",           "(Ljava/lang/String;)V", SDL_JAVA_INTERFACE(onNativeDropFile) },
-    { "nativeSetScreenResolution",  "(IIIIIF)V", SDL_JAVA_INTERFACE(nativeSetScreenResolution) },
+    { "nativeSetScreenResolution",  "(IIIIF)V", SDL_JAVA_INTERFACE(nativeSetScreenResolution) },
     { "onNativeResize",             "()V", SDL_JAVA_INTERFACE(onNativeResize) },
     { "onNativeSurfaceCreated",     "()V", SDL_JAVA_INTERFACE(onNativeSurfaceCreated) },
     { "onNativeSurfaceChanged",     "()V", SDL_JAVA_INTERFACE(onNativeSurfaceChanged) },
@@ -189,6 +191,7 @@ static JNINativeMethod SDLActivity_tab[] = {
     { "nativeResume",               "()V", SDL_JAVA_INTERFACE(nativeResume) },
     { "nativeFocusChanged",         "(Z)V", SDL_JAVA_INTERFACE(nativeFocusChanged) },
     { "nativeGetHint",              "(Ljava/lang/String;)Ljava/lang/String;", SDL_JAVA_INTERFACE(nativeGetHint) },
+    { "nativeGetHintBoolean",       "(Ljava/lang/String;Z)Z", SDL_JAVA_INTERFACE(nativeGetHintBoolean) },
     { "nativeSetenv",               "(Ljava/lang/String;Ljava/lang/String;)V", SDL_JAVA_INTERFACE(nativeSetenv) },
     { "onNativeOrientationChanged", "(I)V", SDL_JAVA_INTERFACE(onNativeOrientationChanged) },
     { "nativeAddTouch",             "(ILjava/lang/String;)V", SDL_JAVA_INTERFACE(nativeAddTouch) },
@@ -298,6 +301,7 @@ static jmethodID midClipboardGetText;
 static jmethodID midClipboardHasText;
 static jmethodID midClipboardSetText;
 static jmethodID midCreateCustomCursor;
+static jmethodID midDestroyCustomCursor;
 static jmethodID midGetContext;
 static jmethodID midGetDisplayDPI;
 static jmethodID midGetManifestEnvironmentVariables;
@@ -312,12 +316,12 @@ static jmethodID midManualBackButton;
 static jmethodID midMinimizeWindow;
 static jmethodID midOpenURL;
 static jmethodID midRequestPermission;
+static jmethodID midShowToast;
 static jmethodID midSendMessage;
 static jmethodID midSetActivityTitle;
 static jmethodID midSetCustomCursor;
 static jmethodID midSetOrientation;
 static jmethodID midSetRelativeMouseEnabled;
-static jmethodID midSetSurfaceViewFormat;
 static jmethodID midSetSystemCursor;
 static jmethodID midSetWindowStyle;
 static jmethodID midShouldMinimizeOnFocusLoss;
@@ -505,8 +509,9 @@ register_methods(JNIEnv *env, const char *classname, JNINativeMethod *methods, i
 /* Library init */
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
 {
-    mJavaVM = vm;
     JNIEnv *env = NULL;
+
+    mJavaVM = vm;
 
     if ((*mJavaVM)->GetEnv(mJavaVM, (void **)&env, JNI_VERSION_1_4) != JNI_OK) {
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed to get JNI Env");
@@ -577,6 +582,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
     midClipboardHasText = (*env)->GetStaticMethodID(env, mActivityClass, "clipboardHasText", "()Z");
     midClipboardSetText = (*env)->GetStaticMethodID(env, mActivityClass, "clipboardSetText", "(Ljava/lang/String;)V");
     midCreateCustomCursor = (*env)->GetStaticMethodID(env, mActivityClass, "createCustomCursor", "([IIIII)I");
+    midDestroyCustomCursor = (*env)->GetStaticMethodID(env, mActivityClass, "destroyCustomCursor", "(I)V");
     midGetContext = (*env)->GetStaticMethodID(env, mActivityClass, "getContext","()Landroid/content/Context;");
     midGetDisplayDPI = (*env)->GetStaticMethodID(env, mActivityClass, "getDisplayDPI", "()Landroid/util/DisplayMetrics;");
     midGetManifestEnvironmentVariables = (*env)->GetStaticMethodID(env, mActivityClass, "getManifestEnvironmentVariables", "()Z");
@@ -591,12 +597,12 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
     midMinimizeWindow = (*env)->GetStaticMethodID(env, mActivityClass, "minimizeWindow","()V");
     midOpenURL = (*env)->GetStaticMethodID(env, mActivityClass, "openURL", "(Ljava/lang/String;)I");
     midRequestPermission = (*env)->GetStaticMethodID(env, mActivityClass, "requestPermission", "(Ljava/lang/String;I)V");
+    midShowToast = (*env)->GetStaticMethodID(env, mActivityClass, "showToast", "(Ljava/lang/String;IIII)I");
     midSendMessage = (*env)->GetStaticMethodID(env, mActivityClass, "sendMessage", "(II)Z");
     midSetActivityTitle = (*env)->GetStaticMethodID(env, mActivityClass, "setActivityTitle","(Ljava/lang/String;)Z");
     midSetCustomCursor = (*env)->GetStaticMethodID(env, mActivityClass, "setCustomCursor", "(I)Z");
     midSetOrientation = (*env)->GetStaticMethodID(env, mActivityClass, "setOrientation","(IIZLjava/lang/String;)V");
     midSetRelativeMouseEnabled = (*env)->GetStaticMethodID(env, mActivityClass, "setRelativeMouseEnabled", "(Z)Z");
-    midSetSurfaceViewFormat = (*env)->GetStaticMethodID(env, mActivityClass, "setSurfaceViewFormat","(I)V");
     midSetSystemCursor = (*env)->GetStaticMethodID(env, mActivityClass, "setSystemCursor", "(I)Z");
     midSetWindowStyle = (*env)->GetStaticMethodID(env, mActivityClass, "setWindowStyle","(Z)V");
     midShouldMinimizeOnFocusLoss = (*env)->GetStaticMethodID(env, mActivityClass, "shouldMinimizeOnFocusLoss","()Z");
@@ -607,6 +613,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
         !midClipboardHasText ||
         !midClipboardSetText ||
         !midCreateCustomCursor ||
+        !midDestroyCustomCursor ||
         !midGetContext ||
         !midGetDisplayDPI ||
         !midGetManifestEnvironmentVariables ||
@@ -621,12 +628,12 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
         !midMinimizeWindow ||
         !midOpenURL ||
         !midRequestPermission ||
+        !midShowToast ||
         !midSendMessage ||
         !midSetActivityTitle ||
         !midSetCustomCursor ||
         !midSetOrientation ||
         !midSetRelativeMouseEnabled ||
-        !midSetSurfaceViewFormat ||
         !midSetSystemCursor ||
         !midSetWindowStyle ||
         !midShouldMinimizeOnFocusLoss ||
@@ -842,11 +849,11 @@ retry:
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetScreenResolution)(
                                     JNIEnv *env, jclass jcls,
                                     jint surfaceWidth, jint surfaceHeight,
-                                    jint deviceWidth, jint deviceHeight, jint format, jfloat rate)
+                                    jint deviceWidth, jint deviceHeight, jfloat rate)
 {
     SDL_LockMutex(Android_ActivityMutex);
 
-    Android_SetScreenResolution(surfaceWidth, surfaceHeight, deviceWidth, deviceHeight, format, rate);
+    Android_SetScreenResolution(surfaceWidth, surfaceHeight, deviceWidth, deviceHeight, rate);
 
     SDL_UnlockMutex(Android_ActivityMutex);
 }
@@ -1001,6 +1008,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(JNIEnv *env, j
 {
     SDL_LockMutex(Android_ActivityMutex);
 
+#if SDL_VIDEO_OPENGL_EGL
     if (Android_Window)
     {
         SDL_VideoDevice *_this = SDL_GetVideoDevice();
@@ -1013,6 +1021,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(JNIEnv *env, j
 
         /* GL Context handling is done in the event loop because this function is run from the Java thread */
     }
+#endif
 
     SDL_UnlockMutex(Android_ActivityMutex);
 }
@@ -1043,10 +1052,12 @@ retry:
             }
         }
 
+#if SDL_VIDEO_OPENGL_EGL
         if (data->egl_surface != EGL_NO_SURFACE) {
             SDL_EGL_DestroySurface(_this, data->egl_surface);
             data->egl_surface = EGL_NO_SURFACE;
         }
+#endif
 
         if (data->native_window) {
             ANativeWindow_release(data->native_window);
@@ -1257,29 +1268,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeGenerateScancod
                                     JNIEnv *env, jclass cls,
                                     jchar chUnicode)
 {
-    SDL_Scancode code = SDL_SCANCODE_UNKNOWN;
-    uint16_t mod = 0;
-
-    /* We do not care about bigger than 127. */
-    if (chUnicode < 127) {
-        AndroidKeyInfo info = unicharToAndroidKeyInfoTable[chUnicode];
-        code = info.code;
-        mod = info.mod;
-    }
-
-    if (mod & KMOD_SHIFT) {
-        /* If character uses shift, press shift down */
-        SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_LSHIFT);
-    }
-
-    /* send a keydown and keyup even for the character */
-    SDL_SendKeyboardKey(SDL_PRESSED, code);
-    SDL_SendKeyboardKey(SDL_RELEASED, code);
-
-    if (mod & KMOD_SHIFT) {
-        /* If character uses shift, press shift back up */
-        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LSHIFT);
-    }
+    SDL_SendKeyboardUnicodeKey(chUnicode);
 }
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeSetComposingText)(
@@ -1301,6 +1290,19 @@ JNIEXPORT jstring JNICALL SDL_JAVA_INTERFACE(nativeGetHint)(
     const char *hint = SDL_GetHint(utfname);
 
     jstring result = (*env)->NewStringUTF(env, hint);
+    (*env)->ReleaseStringUTFChars(env, name, utfname);
+
+    return result;
+}
+
+JNIEXPORT jboolean JNICALL SDL_JAVA_INTERFACE(nativeGetHintBoolean)(
+                                    JNIEnv *env, jclass cls,
+                                    jstring name, jboolean default_value)
+{
+    jboolean result;
+
+    const char *utfname = (*env)->GetStringUTFChars(env, name, NULL);
+    result = SDL_GetHintBoolean(utfname, default_value);
     (*env)->ReleaseStringUTFChars(env, name, utfname);
 
     return result;
@@ -1379,26 +1381,6 @@ ANativeWindow* Android_JNI_GetNativeWindow(void)
     }
 
     return anw;
-}
-
-void Android_JNI_SetSurfaceViewFormat(int format)
-{
-    JNIEnv *env = Android_JNI_GetEnv();
-    int new_format = 0;
-
-    /* Format from android/native_window.h,
-     * convert to temporary arbitrary values,
-     * then to java PixelFormat */
-    if (format == WINDOW_FORMAT_RGBA_8888) {
-        new_format = 1;
-    } else if (format == WINDOW_FORMAT_RGBX_8888) {
-        new_format = 2;
-    } else if (format == WINDOW_FORMAT_RGB_565) {
-        /* Default */
-        new_format = 0;
-    }
-
-    (*env)->CallStaticVoidMethod(env, mActivityClass, midSetSurfaceViewFormat, new_format);
 }
 
 void Android_JNI_SetActivityTitle(const char *title)
@@ -2125,6 +2107,15 @@ void Android_JNI_HapticStop(int device_id)
 /* See SDLActivity.java for constants. */
 #define COMMAND_SET_KEEP_SCREEN_ON    5
 
+
+int SDL_AndroidSendMessage(Uint32 command, int param)
+{
+    if (command >= 0x8000) {
+        return Android_JNI_SendMessage(command, param);
+    }
+    return -1;
+}
+
 /* sends message to be handled on the UI event dispatch thread */
 int Android_JNI_SendMessage(int command, int param)
 {
@@ -2468,6 +2459,11 @@ SDL_bool SDL_AndroidRequestPermission(const char *permission)
     return Android_JNI_RequestPermission(permission);
 }
 
+int SDL_AndroidShowToast(const char* message, int duration, int gravity, int xOffset, int yOffset)
+{
+    return Android_JNI_ShowToast(message, duration, gravity, xOffset, yOffset);
+}
+
 void Android_JNI_GetManifestEnvironmentVariables(void)
 {
     if (!mActivityClass || !midGetManifestEnvironmentVariables) {
@@ -2500,6 +2496,12 @@ int Android_JNI_CreateCustomCursor(SDL_Surface *surface, int hot_x, int hot_y)
     return custom_cursor;
 }
 
+void Android_JNI_DestroyCustomCursor(int cursorID)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    (*env)->CallStaticVoidMethod(env, mActivityClass, midDestroyCustomCursor, cursorID);
+    return;
+}
 
 SDL_bool Android_JNI_SetCustomCursor(int cursorID)
 {
@@ -2528,23 +2530,35 @@ SDL_bool Android_JNI_SetRelativeMouseEnabled(SDL_bool enabled)
 SDL_bool Android_JNI_RequestPermission(const char *permission)
 {
     JNIEnv *env = Android_JNI_GetEnv();
-	const int requestCode = 1;
+    jstring jpermission;
+    const int requestCode = 1;
 
-	/* Wait for any pending request on another thread */
-	while (SDL_AtomicGet(&bPermissionRequestPending) == SDL_TRUE) {
-		SDL_Delay(10);
-	}
-	SDL_AtomicSet(&bPermissionRequestPending, SDL_TRUE);
+    /* Wait for any pending request on another thread */
+    while (SDL_AtomicGet(&bPermissionRequestPending) == SDL_TRUE) {
+        SDL_Delay(10);
+    }
+    SDL_AtomicSet(&bPermissionRequestPending, SDL_TRUE);
 
-    jstring jpermission = (*env)->NewStringUTF(env, permission);
+    jpermission = (*env)->NewStringUTF(env, permission);
     (*env)->CallStaticVoidMethod(env, mActivityClass, midRequestPermission, jpermission, requestCode);
     (*env)->DeleteLocalRef(env, jpermission);
 
-	/* Wait for the request to complete */
-	while (SDL_AtomicGet(&bPermissionRequestPending) == SDL_TRUE) {
-		SDL_Delay(10);
-	}
-	return bPermissionRequestResult;
+    /* Wait for the request to complete */
+    while (SDL_AtomicGet(&bPermissionRequestPending) == SDL_TRUE) {
+        SDL_Delay(10);
+    }
+    return bPermissionRequestResult;
+}
+
+/* Show toast notification */
+int Android_JNI_ShowToast(const char* message, int duration, int gravity, int xOffset, int yOffset)
+{
+    int result = 0;
+    JNIEnv *env = Android_JNI_GetEnv();
+    jstring jmessage = (*env)->NewStringUTF(env, message);
+    result = (*env)->CallStaticIntMethod(env, mActivityClass, midShowToast, jmessage, duration, gravity, xOffset, yOffset);
+    (*env)->DeleteLocalRef(env, jmessage);
+    return result;
 }
 
 int Android_JNI_GetLocale(char *buf, size_t buflen)
