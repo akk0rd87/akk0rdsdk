@@ -1,5 +1,13 @@
 {
     "diffEditor.ignoreTrimWhitespace": false,
     "files.trimTrailingWhitespace": true,
-    "editor.formatOnSave": true
+    "[cpp]": {
+        "editor.formatOnSave": true
+    },
+    "files.associations": {
+        "*.c": "cpp",
+        "*.h": "cpp",
+        "*.cpp": "cpp",
+        "*.hpp": "cpp"
+    }
 }

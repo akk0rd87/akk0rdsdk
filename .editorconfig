@@ -1,4 +1,4 @@
-[*]
+[*.{cpp,h,hpp,c,java,m,mm}]
 cpp_indent_braces=false
 cpp_indent_multi_line_relative_to=innermost_parenthesis
 cpp_indent_within_parentheses=indent
@@ -57,3 +57,10 @@ cpp_space_around_assignment_operator=insert
 cpp_space_pointer_reference_alignment=left
 cpp_space_around_ternary_operator=insert
 cpp_wrap_preserve_blocks=one_liners
+
+[*.{gitignore,cpp,h,hpp,c,java,json,m,mm,AndroidManifest.xml,gradle,mk,batt}]
+trim_trailing_whitespace=true
+end_of_line = lf
+
+[*.{cpp,h,hpp,c,java,m,mm}]
+charset = utf-8
