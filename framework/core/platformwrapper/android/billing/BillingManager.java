@@ -7,14 +7,17 @@ import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.BillingClient.BillingResponseCode;
 import com.android.billingclient.api.BillingClient.FeatureType;
-import com.android.billingclient.api.BillingClient.SkuType;
+import com.android.billingclient.api.BillingClient.ProductType;
 import com.android.billingclient.api.BillingClientStateListener;
+import com.android.billingclient.api.PurchasesResponseListener;
+import com.android.billingclient.api.ProductDetailsResponseListener;
+import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.ConsumeResponseListener;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.Purchase.PurchaseState;
-import com.android.billingclient.api.Purchase.PurchasesResult;
 import com.android.billingclient.api.PurchasesUpdatedListener;
+import com.android.billingclient.api.QueryProductDetailsParams;
 import com.android.billingclient.api.SkuDetails;
 import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
@@ -38,7 +41,7 @@ import java.util.Set;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class BillingManager implements PurchaseHistoryResponseListener, PurchasesUpdatedListener, SkuDetailsResponseListener, BillingClientStateListener {
+public class BillingManager implements PurchaseHistoryResponseListener, PurchasesUpdatedListener, BillingClientStateListener, PurchasesResponseListener, ProductDetailsResponseListener {
     private static BillingManager billingManager = new BillingManager();
     private static BlockingQueue<Runnable> runnableQueue = new ArrayBlockingQueue<Runnable>(50, true);
 
@@ -57,7 +60,7 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
     private static native void PurchaseQueried(String PurchaseToken, String ProductSKU, int Type);
     private static native void PurchaseConsumed(String PurchaseToken, String ProductSKU);
 
-    private static HashMap<String, SkuDetails> CachedSKUMap = new HashMap<>(); // кешированный список товаров
+    private static HashMap<String, ProductDetails> CachedSKUMap = new HashMap<>(); // кешированный список товаров
 
     private static String DecodeBillingResponse(int billingResponseCode)
     {
@@ -111,20 +114,20 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
         }
     }
 
-
-    public static void QueryProductDetails(final String[] ProdList)
-    {
+    private static void QueryProductDetails_deprecated(final String[] ProdList) {
+        /*
+        // this method uses deprecated API
         try {
             // https://stackoverflow.com/questions/19591873/get-an-array-of-strings-from-java-to-c-jni
             final List<String> skuList = Arrays.asList(ProdList);
-            Log.v(TAG, "QueryProductDetails before");
+            Log.v(TAG, "QueryProductDetails_deprecated before");
 
             executeServiceRequest(new Runnable() {
                 public void run() {
                     try {
                         // Query the purchase async
                         SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
-                        params.setSkusList(skuList).setType(SkuType.INAPP);
+                        params.setSkusList(skuList).setType(BillingClient.ProductType.INAPP);
                         mBillingClient.querySkuDetailsAsync(params.build(), billingManager);
                     }
                     catch(Exception e) {
@@ -132,6 +135,50 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
                     }
                 }
             });
+        }
+        catch(Exception e)
+        {
+            Log.e(TAG, e.getMessage());
+        }
+        */
+    }
+
+    private static void QueryProductDetails_v5(final String[] ProdList) {
+        // this method uses deprecated API
+        try {
+            Log.v(TAG, "QueryProductDetails_v5 before");
+            final List<String> skuList = Arrays.asList(ProdList);
+            executeServiceRequest(new Runnable() {
+                public void run() {
+                    try {
+                        // Query the purchase async
+                        // Product id must be provided.
+                        final List<QueryProductDetailsParams.Product> productList = List.of(QueryProductDetailsParams.Product.newBuilder()
+                                                                    .setProductType(ProductType.INAPP)
+                                                                    .build());
+
+                        QueryProductDetailsParams params = QueryProductDetailsParams.newBuilder()
+                            .setProductList(productList)
+                            .build();
+
+                        mBillingClient.queryProductDetailsAsync(params, billingManager);
+                    }
+                    catch(Exception e) {
+                        Log.v(TAG, e.getMessage());
+                    }
+                }
+            });
+        }
+        catch(Exception e)
+        {
+            Log.e(TAG, e.getMessage());
+        }
+    }
+
+    public static void QueryProductDetails(final String[] ProdList)
+    {
+        try {
+            //QueryProductDetails_v5();
         }
         catch(Exception e)
         {
@@ -147,37 +194,7 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
                 public void run() {
                     try {
                         Log.v(TAG, "QueryPurchases get purchasesResult before");
-                        PurchasesResult purchasesResult = mBillingClient.queryPurchases(SkuType.INAPP);
-                        Log.v(TAG, "QueryPurchases Response = " + DecodeBillingResponse(purchasesResult.getResponseCode()));
-
-                        //https://developer.android.com/reference/com/android/billingclient/api/Purchase.html
-
-                        if (BillingResponseCode.OK == purchasesResult.getResponseCode()) {
-                            List<Purchase> purchases = purchasesResult.getPurchasesList();
-                            for (Purchase purchase : purchases) {
-                                switch(purchase.getPurchaseState()) {
-                                    case Purchase.PurchaseState.PURCHASED: // https://developer.android.com/reference/com/android/billingclient/api/Purchase.PurchaseState.html
-                                        if(purchase.isAcknowledged()) {
-                                            Log.v(TAG, "Purchase was restored = " + purchase.getSku() + " " + purchase.getPurchaseToken()  + " Order:" + purchase.getOrderId());
-                                            PurchaseQueried(purchase.getPurchaseToken(), purchase.getSku(), PURCHASE_RESTORED);
-                                        }
-                                        else { // пробуем вызвать явно
-                                            AcknowledgePurchase(purchase.getPurchaseToken(), purchase.getSku());
-                                        }
-                                        break;
-
-                                    case Purchase.PurchaseState.PENDING:
-                                        Log.v(TAG, "Purchase pending = " + purchase.getSku() + " " + purchase.getPurchaseToken() + " Order:" + purchase.getOrderId());
-                                        break;
-
-                                    case Purchase.PurchaseState.UNSPECIFIED_STATE:
-                                        Log.v(TAG, "Purchase unspecified_state = " + purchase.getSku() + " " + purchase.getPurchaseToken() + " Order:" + purchase.getOrderId());
-                                        break;
-                                }
-                            }
-                        } else {
-                            Log.v(TAG, "QueryPurchases error, response = " + DecodeBillingResponse(purchasesResult.getResponseCode()));
-                        }
+                        mBillingClient.queryPurchasesAsync(ProductType.INAPP, billingManager);
                     }
                     catch(Exception e)  {
                         Log.e(TAG, e.getMessage());
@@ -193,7 +210,9 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
 
     public static void PurchaseProdItem(final String ProductSKU)
     {
-        try {
+        // this method uses deprecated API and doesn't use CachedSKUMap yet
+        // because I do not know how to launh new billing flow in google play library v5
+        try { /*
             if(CachedSKUMap != null) {
                 if(CachedSKUMap.size() > 0) {
                     if(CachedSKUMap.containsKey(ProductSKU)) {
@@ -223,6 +242,7 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
             else {
                 Log.d(TAG, "CachedSKUMap didn't initialized!");
             }
+            */
 
             // делаем динамический запрос
             final List<String> skuList = Arrays.asList(new String[]{ProductSKU});
@@ -232,7 +252,7 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
                         // Query the skuList async
                         Log.d(TAG, "Query the skuList async: " + ProductSKU);
                         SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
-                        params.setSkusList(skuList).setType(SkuType.INAPP);
+                        params.setSkusList(skuList).setType(ProductType.INAPP);
                         mBillingClient.querySkuDetailsAsync(params.build(),
                             new SkuDetailsResponseListener() {
                                 @Override
@@ -307,19 +327,35 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
         }
     }
 
-    private static void AcknowledgePurchase(final String PurchaseToken, final String SKU) {
+    private static void PurchaseSKUListQueried(final Purchase purchase, int BoughtOrRestored) {
+        if(purchase != null) {
+            if(purchase.getProducts() != null) {
+                final String purchToken = purchase.getPurchaseToken();
+                for(String product : purchase.getProducts()) {
+                    if(product != null) {
+                        if(!product.isEmpty()) {
+                            Log.v(TAG, "sku:" + product);
+                            PurchaseQueried(purchToken, product, BoughtOrRestored);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static void AcknowledgePurchase(final Purchase purchase) {
         try {
             executeServiceRequest(new Runnable() {
                 public void run() {
                     try {
-                        mBillingClient.acknowledgePurchase(AcknowledgePurchaseParams.newBuilder().setPurchaseToken(PurchaseToken).build(),
+                        mBillingClient.acknowledgePurchase(AcknowledgePurchaseParams.newBuilder().setPurchaseToken(purchase.getPurchaseToken()).build(),
                             new AcknowledgePurchaseResponseListener() {
                                 @Override
                                 public void onAcknowledgePurchaseResponse(BillingResult billingResult) {
                                     try {
                                         if (BillingResponseCode.OK == billingResult.getResponseCode()) {
                                             Log.v(TAG, "onAcknowledgePurchaseResponse Result: " + DecodeBillingResponse(billingResult.getResponseCode()) + "; " + billingResult.getDebugMessage());
-                                            PurchaseQueried(PurchaseToken, SKU, PURCHASE_BOUGHT);
+                                            PurchaseSKUListQueried(purchase, PURCHASE_BOUGHT);
                                         }
                                     }
                                     catch(Exception e) {
@@ -346,7 +382,7 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
             executeServiceRequest(new Runnable() {
                 public void run() {
                     try {
-                        mBillingClient.queryPurchaseHistoryAsync(SkuType.INAPP, billingManager);
+                        mBillingClient.queryPurchaseHistoryAsync(ProductType.INAPP, billingManager);
                     }
                     catch(Exception e) {
                         Log.e(TAG, e.getMessage());
@@ -408,37 +444,35 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
         }
     }
 
-    /////////////////////////////////////
-    // PurchasesUpdatedListener Callbacks
-    /////////////////////////////////////
-    @Override
-    public void onPurchasesUpdated(BillingResult billingResult, final List<Purchase> purchases) {
+    private void checkPurchases(BillingResult billingResult, final List<Purchase> purchases) {
         try {
             if (BillingResponseCode.OK == billingResult.getResponseCode()) {
                 if (purchases != null)
                     for (Purchase purchase : purchases) {
-                        switch(purchase.getPurchaseState()) {
-                            case Purchase.PurchaseState.PURCHASED:
-                                if(purchase.isAcknowledged()) {
-                                    Log.v(TAG, "Purchase was Bought = " + purchase.getSku() + " " + purchase.getPurchaseToken()  + " Order:" + purchase.getOrderId());
-                                    PurchaseQueried(purchase.getPurchaseToken(), purchase.getSku(), PURCHASE_BOUGHT);
-                                }
-                                else { // пробуем вызвать явно
-                                    AcknowledgePurchase(purchase.getPurchaseToken(), purchase.getSku());
-                                }
-                                break;
+                        if(purchase != null) {
+                            switch(purchase.getPurchaseState()) {
+                                case Purchase.PurchaseState.PURCHASED:
+                                    if(purchase.isAcknowledged()) {
+                                        Log.v(TAG, "Purchase was Bought: " + purchase.getPurchaseToken()  + " Order:" + purchase.getOrderId());
+                                        PurchaseSKUListQueried(purchase, PURCHASE_RESTORED);
+                                    }
+                                    else { // пробуем вызвать явно
+                                        AcknowledgePurchase(purchase);
+                                    }
+                                    break;
 
-                            case Purchase.PurchaseState.PENDING:
-                                Log.v(TAG, "Purchase pending = " + purchase.getSku() + " " + purchase.getPurchaseToken() + " Order:" + purchase.getOrderId());
-                                break;
+                                case Purchase.PurchaseState.PENDING:
+                                    Log.v(TAG, "Purchase pending: " + purchase.getPurchaseToken() + " Order:" + purchase.getOrderId());
+                                    break;
 
-                            case Purchase.PurchaseState.UNSPECIFIED_STATE:
-                                Log.v(TAG, "Purchase unspecified_state = " + purchase.getSku() + " " + purchase.getPurchaseToken() + " Order:" + purchase.getOrderId());
-                                break;
+                                case Purchase.PurchaseState.UNSPECIFIED_STATE:
+                                    Log.v(TAG, "Purchase unspecified_state:" + purchase.getPurchaseToken() + " Order:" + purchase.getOrderId());
+                                    break;
+                            }
                         }
                     }
             } else {
-                Log.v(TAG, "QueryPurchases error, response = " + DecodeBillingResponse(billingResult.getResponseCode()));
+                Log.v(TAG, "checkPurchases error, response = " + DecodeBillingResponse(billingResult.getResponseCode()));
             }
         }
         catch(Exception e) {
@@ -447,22 +481,78 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
         }
     }
 
+    /////////////////////////////////////
+    // PurchasesResponseListener Callbacks
+    /////////////////////////////////////
+    @Override
+    public void onQueryPurchasesResponse(BillingResult billingResult, List<Purchase> purchases) {
+        try {
+            checkPurchases(billingResult, purchases);
+        }
+        catch(Exception e) {
+            Log.e(TAG, e.getMessage());
+            e.printStackTrace();
+        }
+    }
 
+    /////////////////////////////////////
+    // PurchasesUpdatedListener Callbacks
+    /////////////////////////////////////
+    @Override
+    public void onPurchasesUpdated(BillingResult billingResult, final List<Purchase> purchases) {
+        try {
+            checkPurchases(billingResult, purchases);
+        }
+        catch(Exception e) {
+            Log.e(TAG, e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+/*
     ///////////////////////////////////////
     // SkuDetailsResponseListener Callbacks
     ///////////////////////////////////////
-    @Override
+    @Override // deprecated API
     public void onSkuDetailsResponse(BillingResult billingResult, final List<SkuDetails> skuDetailsList) {
         try {
-            Log.v(TAG, "onSkuDetailsResponse Response = " + DecodeBillingResponse(billingResult.getResponseCode()));
+            //Log.v(TAG, "onSkuDetailsResponse Response = " + DecodeBillingResponse(billingResult.getResponseCode()));
+            //if (BillingResponseCode.OK == billingResult.getResponseCode()) {
+            //    if (skuDetailsList != null)
+            //        for (SkuDetails skuDetails : skuDetailsList) { // кешируем список товаров
+            //            CachedSKUMap.put(skuDetails.getSku(), skuDetails);
+            //        }
+            //
+            //    if(true) { // logging
+            //        for(HashMap.Entry<String, SkuDetails> entry : CachedSKUMap.entrySet())
+            //            Log.v(TAG, "cache SKU ID: " + entry.getKey());
+            //    }
+            //}
+        }
+        catch(Exception e) {
+            Log.v(TAG, e.getMessage());
+        }
+    }
+*/
+
+    ///////////////////////////////////////
+    // ProductDetailsResponseListener Callbacks
+    ///////////////////////////////////////
+    @Override
+    public void onProductDetailsResponse(BillingResult billingResult, List<ProductDetails> productDetailsList) {
+        try {
+            Log.v(TAG, "onProductDetailsResponse Response = " + DecodeBillingResponse(billingResult.getResponseCode()));
             if (BillingResponseCode.OK == billingResult.getResponseCode()) {
-                if (skuDetailsList != null)
-                    for (SkuDetails skuDetails : skuDetailsList) { // кешируем список товаров
-                        CachedSKUMap.put(skuDetails.getSku(), skuDetails);
+                if (productDetailsList != null)
+                    for (ProductDetails productDetails : productDetailsList) { // кешируем список товаров
+                        if(productDetails != null) {
+                            Log.v(TAG, "product details: sku=" + productDetails.getProductId());
+                            CachedSKUMap.put(productDetails.getProductId(), productDetails);
+                        }
                     }
 
                 if(true) { // logging
-                    for(HashMap.Entry<String, SkuDetails> entry : CachedSKUMap.entrySet())
+                    for(HashMap.Entry<String, ProductDetails> entry : CachedSKUMap.entrySet())
                         Log.v(TAG, "cache SKU ID: " + entry.getKey());
                 }
             }
