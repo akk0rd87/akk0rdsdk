@@ -351,6 +351,7 @@ public:
     SDL_Texture* GetTexture() { return tex.get(); };
 
     AkkordTexture() : tex(nullptr, nullptr) {};
+    AkkordTexture(std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)>&& texTure) : tex(std::move(texTure)) { };
 
     AkkordTexture(const AkkordTexture& rhs) = delete; // Копирующий: конструктор
     AkkordTexture& operator= (const AkkordTexture& rhs) = delete; // Оператор копирующего присваивания
