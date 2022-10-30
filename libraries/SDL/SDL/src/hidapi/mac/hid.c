@@ -568,8 +568,8 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 		dev_pid = get_product_id(dev);
 		
 		/* Check the VID/PID against the arguments */
-		if ((vendor_id == 0x0 && product_id == 0x0) ||
-		    (vendor_id == dev_vid && product_id == dev_pid)) {
+		if ((vendor_id == 0x0 || dev_vid == vendor_id) &&
+		    (product_id == 0x0 || dev_pid == product_id)) {
 			struct hid_device_info *tmp;
 
 			/* VID/PID match. Create the record. */
@@ -811,6 +811,8 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 	process_pending_events();
 	
 	device_set = IOHIDManagerCopyDevices(hid_mgr);
+	if (!device_set)
+		return NULL;
 	
 	num_devices = CFSetGetCount(device_set);
 	device_array = (IOHIDDeviceRef *)calloc(num_devices, sizeof(IOHIDDeviceRef));

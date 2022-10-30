@@ -34,6 +34,7 @@
 
 #include "SDL_windowsvideo.h"
 #include "SDL_windowswindow.h"
+#include "SDL_windowsshape.h"
 #include "SDL_hints.h"
 #include "SDL_timer.h"
 
@@ -774,6 +775,22 @@ WIN_GetWindowBordersSize(_THIS, SDL_Window * window, int *top, int *left, int *b
 }
 
 void
+WIN_GetWindowSizeInPixels(_THIS, SDL_Window * window, int *w, int *h)
+{
+    const SDL_WindowData *data = ((SDL_WindowData *)window->driverdata);
+    HWND hwnd = data->hwnd;
+    RECT rect;
+
+    if (GetClientRect(hwnd, &rect)) {
+        *w = rect.right;
+        *h = rect.bottom;
+    } else {
+        *w = 0;
+        *h = 0;
+    }
+}
+
+void
 WIN_ShowWindow(_THIS, SDL_Window * window)
 {
     DWORD style;
@@ -1152,6 +1169,18 @@ WIN_SetWindowKeyboardGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 void
 WIN_DestroyWindow(_THIS, SDL_Window * window)
 {
+    if (window->shaper) {
+        SDL_ShapeData *shapedata = (SDL_ShapeData *) window->shaper->driverdata;
+        if (shapedata) {
+            if (shapedata->mask_tree) {
+                SDL_FreeShapeTree(&shapedata->mask_tree);
+            }
+            SDL_free(shapedata);
+        }
+        SDL_free(window->shaper);
+        window->shaper = NULL;
+    }
+
     CleanupWindowData(_this, window);
 }
 
@@ -1293,9 +1322,9 @@ WIN_UpdateClipCursor(SDL_Window *window)
                 cy = (rect.top + rect.bottom) / 2;
 
                 /* Make an absurdly small clip rect */
-                rect.left = cx - 1;
+                rect.left = cx;
                 rect.right = cx + 1;
-                rect.top = cy - 1;
+                rect.top = cy;
                 rect.bottom = cy + 1;
 
                 if (SDL_memcmp(&rect, &clipped_rect, sizeof(rect)) != 0) {
@@ -1400,25 +1429,6 @@ WIN_SetWindowOpacity(_THIS, SDL_Window * window, float opacity)
 
     return 0;
 #endif /*!defined(__XBOXONE__) && !defined(__XBOXSERIES__)*/
-}
-
-/**
- * Returns the drawable size in pixels (GetClientRect).
- */
-void
-WIN_GetDrawableSize(const SDL_Window *window, int *w, int *h)
-{
-    const SDL_WindowData *data = ((SDL_WindowData *)window->driverdata);
-    HWND hwnd = data->hwnd;
-    RECT rect;
-
-    if (GetClientRect(hwnd, &rect)) {
-        *w = rect.right;
-        *h = rect.bottom;
-    } else {
-        *w = 0;
-        *h = 0;
-    }
 }
 
 /**

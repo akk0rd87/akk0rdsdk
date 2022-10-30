@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     container: ps2dev/ps2dev:latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Setup dependencies
       run: |
         apk update 
@@ -24,8 +24,9 @@ jobs:
 
     - name: Configure (CMake)
       run: |
-        cmake -S . -B build -G Ninja\
+        cmake -S . -B build -G Ninja \
           -DCMAKE_TOOLCHAIN_FILE=$PS2DEV/ps2sdk/ps2dev.cmake \
+          -DSDL_WERROR=ON \
           -DSDL_TESTS=ON \
           -DCMAKE_INSTALL_PREFIX=cmake_prefix \
           -DCMAKE_BUILD_TYPE=Release

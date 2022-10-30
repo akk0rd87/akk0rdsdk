@@ -505,6 +505,8 @@ SDL_Quit(void)
      */
     SDL_memset( SDL_SubsystemRefCount, 0x0, sizeof(SDL_SubsystemRefCount) );
 
+    SDL_TLSCleanup();
+
     SDL_bInMainQuit = SDL_FALSE;
 }
 
@@ -512,7 +514,17 @@ SDL_Quit(void)
 void
 SDL_GetVersion(SDL_version * ver)
 {
+    if (!ver) {
+        return;
+    }
+
     SDL_VERSION(ver);
+
+    if (SDL_GetHintBoolean("SDL_LEGACY_VERSION", SDL_FALSE)) {
+        /* Prior to SDL 2.24.0, the patch version was incremented with every release */
+        ver->patch = ver->minor;
+        ver->minor = 0;
+    }
 }
 
 /* Get the library source revision */
@@ -584,7 +596,7 @@ SDL_GetPlatform(void)
 #elif __XBOXONE__
     return "Xbox One";
 #elif __XBOXSERIES__
-    return "Xbox Series";
+    return "Xbox Series X|S";
 #elif __TVOS__
     return "tvOS";
 #elif __IPHONEOS__
@@ -597,6 +609,8 @@ SDL_GetPlatform(void)
     return "PlayStation Vita";
 #elif __NGAGE__
     return "Nokia N-Gage";
+#elif __3DS__
+    return "Nintendo 3DS";
 #else
     return "Unknown (see SDL_platform.h)";
 #endif

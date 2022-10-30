@@ -15,6 +15,7 @@ build
 gen
 Build
 buildbot
+/VERSION
 
 *.so
 *.so.*
@@ -100,6 +101,7 @@ VisualC-GDK/**/Layout
 
 # for Android
 android-project/local.properties
+android-project/.gradle/
 
 test/checkkeys
 test/checkkeysthreads

@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.0)
 project(SDL2_test)
 
+include(CheckCCompilerFlag)
+include(CMakePushCheckState)
+
 if(NOT TARGET SDL2::SDL2-static)
     find_package(SDL2 2.0.23 REQUIRED COMPONENTS SDL2-static SDL2test)
 endif()
@@ -9,6 +12,10 @@ enable_testing()
 
 if(SDL_INSTALL_TESTS)
     include(GNUInstallDirs)
+endif()
+
+if(N3DS)
+    link_libraries(SDL2::SDL2main)
 endif()
 
 if(PSP)
@@ -47,6 +54,11 @@ if(WINDOWS)
         link_libraries(mingw32)
     endif()
 
+    # CET support was added in VS 16.7
+    if(MSVC_VERSION GREATER 1926 AND CMAKE_GENERATOR_PLATFORM MATCHES "Win32|x64")
+        link_libraries(-CETCOMPAT)
+    endif()
+
     # FIXME: Parent directory CMakeLists.txt only sets these for mingw/cygwin,
     # but we need them for VS as well.
     link_libraries(SDL2main)
@@ -74,7 +86,6 @@ add_executable(testaudioinfo testaudioinfo.c)
 
 file(GLOB TESTAUTOMATION_SOURCE_FILES testautomation*.c)
 add_executable(testautomation ${TESTAUTOMATION_SOURCE_FILES})
-
 add_executable(testmultiaudio testmultiaudio.c testutils.c)
 add_executable(testaudiohotplug testaudiohotplug.c testutils.c)
 add_executable(testaudiocapture testaudiocapture.c)
@@ -116,6 +127,13 @@ if(APPLE)
                               testnativecocoa.m
                               testnativex11.c
                               testutils.c)
+
+    cmake_push_check_state(RESET)
+    check_c_compiler_flag(-Wno-error=deprecated-declarations HAVE_WNO_ERROR_DEPRECATED_DECLARATIONS)
+    cmake_pop_check_state()
+    if(HAVE_WNO_ERROR_DEPRECATED_DECLARATIONS)
+        set_property(SOURCE "testnativecocoa.m" APPEND_STRING PROPERTY COMPILE_FLAGS " -Wno-error=deprecated-declarations")
+    endif()
 elseif(WINDOWS)
     add_executable(testnative testnative.c testnativew32.c testutils.c)
 elseif(HAVE_X11)
@@ -152,6 +170,25 @@ add_executable(testcustomcursor testcustomcursor.c)
 add_executable(controllermap controllermap.c testutils.c)
 add_executable(testvulkan testvulkan.c)
 add_executable(testoffscreen testoffscreen.c)
+
+cmake_push_check_state(RESET)
+
+check_c_compiler_flag(-Wformat-overflow HAVE_WFORMAT_OVERFLOW)
+if(HAVE_WFORMAT_OVERFLOW)
+    target_compile_definitions(testautomation PRIVATE HAVE_WFORMAT_OVERFLOW)
+endif()
+
+check_c_compiler_flag(-Wformat HAVE_WFORMAT)
+if(HAVE_WFORMAT)
+    target_compile_definitions(testautomation PRIVATE HAVE_WFORMAT)
+endif()
+
+check_c_compiler_flag(-Wformat-extra-args HAVE_WFORMAT_EXTRA_ARGS)
+if(HAVE_WFORMAT_EXTRA_ARGS)
+    target_compile_definitions(testautomation PRIVATE HAVE_WFORMAT_EXTRA_ARGS)
+endif()
+
+cmake_pop_check_state()
 
 SET(ALL_TESTS
     checkkeys
@@ -393,6 +430,27 @@ if(PSP)
             TARGET ${APP} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E remove
             $<TARGET_FILE_DIR:${ARG_TARGET}>/PARAM.SFO
+        )
+    endforeach()
+endif()
+
+if(N3DS)
+    set(ROMFS_DIR "${CMAKE_CURRENT_BINARY_DIR}/romfs")
+    file(COPY ${RESOURCE_FILES} DESTINATION "${ROMFS_DIR}")
+
+    foreach(APP IN LISTS ALL_TESTS)
+        get_target_property(TARGET_BINARY_DIR ${APP} BINARY_DIR)
+        set(SMDH_FILE "${TARGET_BINARY_DIR}/${APP}.smdh")
+        ctr_generate_smdh("${SMDH_FILE}" 
+            NAME "SDL-${APP}"
+            DESCRIPTION "SDL2 Test suite"
+            AUTHOR "SDL2 Contributors"
+            ICON "${CMAKE_CURRENT_SOURCE_DIR}/n3ds/logo48x48.png"
+        )
+        ctr_create_3dsx(
+            ${APP}
+            ROMFS "${ROMFS_DIR}"
+            SMDH "${SMDH_FILE}"
         )
     endforeach()
 endif()

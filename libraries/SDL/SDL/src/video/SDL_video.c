@@ -56,6 +56,13 @@
 #include <emscripten.h>
 #endif
 
+#ifdef __LINUX__
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#endif
+
+
 /* Available video drivers */
 static VideoBootStrap *bootstrap[] = {
 #if SDL_VIDEO_DRIVER_COCOA
@@ -99,6 +106,9 @@ static VideoBootStrap *bootstrap[] = {
 #endif
 #if SDL_VIDEO_DRIVER_VITA
     &VITA_bootstrap,
+#endif
+#if SDL_VIDEO_DRIVER_N3DS
+    &N3DS_bootstrap,
 #endif
 #if SDL_VIDEO_DRIVER_KMSDRM
     &KMSDRM_bootstrap,
@@ -160,7 +170,7 @@ static VideoBootStrap *bootstrap[] = {
 
 #define FULLSCREEN_MASK (SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN)
 
-#ifdef __MACOSX__
+#if defined(__MACOSX__) && defined(SDL_VIDEO_DRIVER_COCOA)
 /* Support for Mac OS X fullscreen spaces */
 extern SDL_bool Cocoa_IsWindowInFullscreenSpace(SDL_Window * window);
 extern SDL_bool Cocoa_SetWindowFullscreenSpace(SDL_Window * window, SDL_bool state);
@@ -413,7 +423,7 @@ SDL_VideoInit(const char *driver_name)
     SDL_bool init_keyboard = SDL_FALSE;
     SDL_bool init_mouse = SDL_FALSE;
     SDL_bool init_touch = SDL_FALSE;
-    int i;
+    int i = 0;
 
     /* Check to make sure we don't overwrite '_this' */
     if (_this != NULL) {
@@ -1030,6 +1040,11 @@ SDL_SetDisplayModeForDisplay(SDL_VideoDisplay * display, const SDL_DisplayMode *
     SDL_DisplayMode current_mode;
     int result;
 
+    /* Mode switching disabled via driver quirk flag, nothing to do and cannot fail. */
+    if (DisableDisplayModeSwitching(_this)) {
+        return 0;
+    }
+
     if (mode) {
         display_mode = *mode;
 
@@ -1234,7 +1249,7 @@ SDL_SetWindowDisplayMode(SDL_Window * window, const SDL_DisplayMode * mode)
         SDL_DisplayMode fullscreen_mode;
         if (SDL_GetWindowDisplayMode(window, &fullscreen_mode) == 0) {
             if (SDL_SetDisplayModeForDisplay(SDL_GetDisplayForWindow(window), &fullscreen_mode) == 0) {
-#ifndef ANDROID
+#ifndef __ANDROID__
                 /* Android may not resize the window to exactly what our fullscreen mode is, especially on
                  * windowed Android environments like the Chromebook or Samsung DeX.  Given this, we shouldn't
                  * use fullscreen_mode.w and fullscreen_mode.h, but rather get our current native size.  As such,
@@ -1335,7 +1350,7 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
         return 0;
     }
 
-#ifdef __MACOSX__
+#if defined(__MACOSX__) && defined(SDL_VIDEO_DRIVER_COCOA)
     /* if the window is going away and no resolution change is necessary,
        do nothing, or else we may trigger an ugly double-transition
      */
@@ -1430,17 +1445,14 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
                     resized = SDL_FALSE;
                 }
 
-                /* Don't try to change the display mode if the driver doesn't want it. */
-                if (DisableDisplayModeSwitching(_this) == SDL_FALSE) {
-                    /* only do the mode change if we want exclusive fullscreen */
-                    if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP) {
-                        if (SDL_SetDisplayModeForDisplay(display, &fullscreen_mode) < 0) {
-                            return -1;
-                        }
-                    } else {
-                        if (SDL_SetDisplayModeForDisplay(display, NULL) < 0) {
-                            return -1;
-                        }
+                /* only do the mode change if we want exclusive fullscreen */
+                if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP) {
+                    if (SDL_SetDisplayModeForDisplay(display, &fullscreen_mode) < 0) {
+                        return -1;
+                    }
+                } else {
+                    if (SDL_SetDisplayModeForDisplay(display, NULL) < 0) {
+                        return -1;
                     }
                 }
 
@@ -1451,7 +1463,7 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
 
                 /* Generate a mode change event here */
                 if (resized) {
-#if !defined(ANDROID) && !defined(WIN32)
+#if !defined(__ANDROID__) && !defined(__WIN32__)
                     /* Android may not resize the window to exactly what our fullscreen mode is, especially on
                      * windowed Android environments like the Chromebook or Samsung DeX.  Given this, we shouldn't
                      * use fullscreen_mode.w and fullscreen_mode.h, but rather get our current native size.  As such,
@@ -2367,6 +2379,28 @@ SDL_GetWindowBordersSize(SDL_Window * window, int *top, int *left, int *bottom, 
 }
 
 void
+SDL_GetWindowSizeInPixels(SDL_Window *window, int *w, int *h)
+{
+    int filter;
+
+    CHECK_WINDOW_MAGIC(window,);
+
+    if (w == NULL) {
+        w = &filter;
+    }
+
+    if (h == NULL) {
+        h = &filter;
+    }
+
+    if (_this->GetWindowSizeInPixels) {
+        _this->GetWindowSizeInPixels(_this, window, w, h);
+    } else {
+        SDL_GetWindowSize(window, w, h);
+    }
+}
+
+void
 SDL_SetWindowMinimumSize(SDL_Window * window, int min_w, int min_h)
 {
     CHECK_WINDOW_MAGIC(window,);
@@ -2604,7 +2638,7 @@ SDL_CreateWindowFramebuffer(SDL_Window * window)
         /* See if the user or application wants to specifically disable the framebuffer */
         const char *hint = SDL_GetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION);
         if (hint) {
-            if (*hint == '0' || SDL_strcasecmp(hint, "false") == 0) {
+            if ((*hint == '0') || (SDL_strcasecmp(hint, "false") == 0) || (SDL_strcasecmp(hint, "software") == 0)) {
                 attempt_texture_framebuffer = SDL_FALSE;
             }
         }
@@ -2613,16 +2647,25 @@ SDL_CreateWindowFramebuffer(SDL_Window * window)
             attempt_texture_framebuffer = SDL_FALSE;
         }
 
-        #if defined(__WIN32__) || defined(__WINGDK__) /* GDI BitBlt() is way faster than Direct3D dynamic textures right now. (!!! FIXME: is this still true?) */
+#if defined(__LINUX__)
+        /* On WSL, direct X11 is faster than using OpenGL for window framebuffers, so try to detect WSL and avoid texture framebuffer. */
+        else if ((_this->CreateWindowFramebuffer != NULL) && (SDL_strcmp(_this->name, "x11") == 0)) {
+            struct stat sb;
+            if ((stat("/proc/sys/fs/binfmt_misc/WSLInterop", &sb) == 0) || (stat("/run/WSL", &sb) == 0)) { /* if either of these exist, we're on WSL. */
+                attempt_texture_framebuffer = SDL_FALSE;
+            }
+        }
+#endif
+#if defined(__WIN32__) || defined(__WINGDK__) /* GDI BitBlt() is way faster than Direct3D dynamic textures right now. (!!! FIXME: is this still true?) */
         else if ((_this->CreateWindowFramebuffer != NULL) && (SDL_strcmp(_this->name, "windows") == 0)) {
             attempt_texture_framebuffer = SDL_FALSE;
         }
-        #endif
-        #if defined(__EMSCRIPTEN__)
+#endif
+#if defined(__EMSCRIPTEN__)
         else {
             attempt_texture_framebuffer = SDL_FALSE;
         }
-        #endif
+#endif
 
         if (attempt_texture_framebuffer) {
             if (SDL_CreateWindowTexture(_this, window, &format, &pixels, &pitch) == -1) {
@@ -3148,7 +3191,7 @@ ShouldMinimizeOnFocusLoss(SDL_Window * window)
         return SDL_FALSE;
     }
 
-#ifdef __MACOSX__
+#if defined(__MACOSX__) && defined(SDL_VIDEO_DRIVER_COCOA)
     if (SDL_strcmp(_this->name, "cocoa") == 0) {  /* don't do this for X11, etc */
         if (Cocoa_IsWindowInFullscreenSpace(window)) {
             return SDL_FALSE;
@@ -4096,7 +4139,7 @@ void SDL_GL_GetDrawableSize(SDL_Window * window, int *w, int *h)
     if (_this->GL_GetDrawableSize) {
         _this->GL_GetDrawableSize(_this, window, w, h);
     } else {
-        SDL_GetWindowSize(window, w, h);
+        SDL_GetWindowSizeInPixels(window, w, h);
     }
 }
 
@@ -4128,22 +4171,26 @@ SDL_GL_GetSwapInterval(void)
     }
 }
 
-void
-SDL_GL_SwapWindow(SDL_Window * window)
+int
+SDL_GL_SwapWindowWithResult(SDL_Window * window)
 {
-    CHECK_WINDOW_MAGIC(window,);
+    CHECK_WINDOW_MAGIC(window, -1);
 
     if (!(window->flags & SDL_WINDOW_OPENGL)) {
-        SDL_SetError("The specified window isn't an OpenGL window");
-        return;
+        return SDL_SetError("The specified window isn't an OpenGL window");
     }
 
     if (SDL_GL_GetCurrentWindow() != window) {
-        SDL_SetError("The specified window has not been made current");
-        return;
+        return SDL_SetError("The specified window has not been made current");
     }
 
-    _this->GL_SwapWindow(_this, window);
+    return _this->GL_SwapWindow(_this, window);
+}
+
+void
+SDL_GL_SwapWindow(SDL_Window * window)
+{
+    SDL_GL_SwapWindowWithResult(window);
 }
 
 void
@@ -4791,7 +4838,7 @@ void SDL_Vulkan_GetDrawableSize(SDL_Window * window, int *w, int *h)
     if (_this->Vulkan_GetDrawableSize) {
         _this->Vulkan_GetDrawableSize(_this, window, w, h);
     } else {
-        SDL_GetWindowSize(window, w, h);
+        SDL_GetWindowSizeInPixels(window, w, h);
     }
 }
 
@@ -4844,7 +4891,7 @@ void SDL_Metal_GetDrawableSize(SDL_Window * window, int *w, int *h)
     if (_this->Metal_GetDrawableSize) {
         _this->Metal_GetDrawableSize(_this, window, w, h);
     } else {
-        SDL_GetWindowSize(window, w, h);
+        SDL_GetWindowSizeInPixels(window, w, h);
     }
 }
 

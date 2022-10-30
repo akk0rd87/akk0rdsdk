@@ -267,6 +267,8 @@ ScheduleContextUpdates(SDL_WindowData *data)
     }
 
     /* We still support OpenGL as long as Apple offers it, deprecated or not, so disable deprecation warnings about it. */
+    #if SDL_VIDEO_OPENGL
+
     #ifdef __clang__
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -287,6 +289,8 @@ ScheduleContextUpdates(SDL_WindowData *data)
     #ifdef __clang__
     #pragma clang diagnostic pop
     #endif
+
+    #endif /* SDL_VIDEO_OPENGL */
 }
 
 /* !!! FIXME: this should use a hint callback. */
@@ -299,6 +303,9 @@ GetHintCtrlClickEmulateRightClick()
 static NSUInteger
 GetWindowWindowedStyle(SDL_Window * window)
 {
+    /* IF YOU CHANGE ANY FLAGS IN HERE, PLEASE READ
+       the NSWindowStyleMaskBorderless comments in SetupWindowData()! */
+
     /* always allow miniaturization, otherwise you can't programatically
        minimize the window, whether there's a title bar or not */
     NSUInteger style = NSWindowStyleMaskMiniaturizable;
@@ -781,6 +788,11 @@ Cocoa_UpdateClipCursor(SDL_Window * window)
     if (inFullscreenTransition) {
         /* We'll take care of this at the end of the transition */
         return;
+    }
+
+    if (focusClickPending) {
+        focusClickPending = 0;
+        [self onMovingOrFocusClickPendingStateCleared];
     }
 
     window = _data.window;
@@ -1641,7 +1653,7 @@ SetupWindowData(_THIS, SDL_Window * window, NSWindow *nswindow, NSView *nsview, 
         /* NSWindowStyleMaskBorderless is zero, and it's possible to be
             Resizeable _and_ borderless, so we can't do a simple bitwise AND
             of NSWindowStyleMaskBorderless here. */
-        if ((style & ~NSWindowStyleMaskResizable) == NSWindowStyleMaskBorderless) {
+        if ((style & ~(NSWindowStyleMaskResizable|NSWindowStyleMaskMiniaturizable)) == NSWindowStyleMaskBorderless) {
             window->flags |= SDL_WINDOW_BORDERLESS;
         } else {
             window->flags &= ~SDL_WINDOW_BORDERLESS;
@@ -1730,6 +1742,8 @@ Cocoa_CreateWindow(_THIS, SDL_Window * window)
     @catch (NSException *e) {
         return SDL_SetError("%s", [[e reason] UTF8String]);
     }
+
+    [nswindow setColorSpace:[NSColorSpace sRGBColorSpace]];
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 101200 /* Added in the 10.12.0 SDK. */
     /* By default, don't allow users to make our window tabbed in 10.12 or later */
@@ -1940,6 +1954,24 @@ Cocoa_SetWindowMaximumSize(_THIS, SDL_Window * window)
 
     [windata.nswindow setContentMaxSize:maxSize];
 }}
+
+void
+Cocoa_GetWindowSizeInPixels(_THIS, SDL_Window * window, int *w, int *h)
+{ @autoreleasepool
+{
+    SDL_WindowData *windata = (__bridge SDL_WindowData *) window->driverdata;
+    NSView *contentView = windata.sdlContentView;
+    NSRect viewport = [contentView bounds];
+
+    if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+        /* This gives us the correct viewport for a Retina-enabled view. */
+        viewport = [contentView convertRectToBacking:viewport];
+    }
+
+    *w = viewport.size.width;
+    *h = viewport.size.height;
+}}
+
 
 void
 Cocoa_ShowWindow(_THIS, SDL_Window * window)
@@ -2329,10 +2361,20 @@ Cocoa_DestroyWindow(_THIS, SDL_Window * window)
             [data.nswindow close];
         }
 
+        #if SDL_VIDEO_OPENGL
+
         contexts = [data.nscontexts copy];
         for (SDLOpenGLContext *context in contexts) {
             /* Calling setWindow:NULL causes the context to remove itself from the context list. */            
             [context setWindow:NULL];
+        }
+
+        #endif /* SDL_VIDEO_OPENGL */
+
+        if (window->shaper) {
+            CFBridgingRelease(window->shaper->driverdata);
+            SDL_free(window->shaper);
+            window->shaper = NULL;
         }
     }
     window->driverdata = NULL;

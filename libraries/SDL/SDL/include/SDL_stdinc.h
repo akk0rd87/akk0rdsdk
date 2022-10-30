@@ -80,9 +80,9 @@
 # include <ctype.h>
 #endif
 #ifdef HAVE_MATH_H
-# if defined(__WINRT__)
+# if defined(_MSC_VER)
 /* Defining _USE_MATH_DEFINES is required to get M_PI to be defined on
-   WinRT.  See http://msdn.microsoft.com/en-us/library/4hwaceh6.aspx
+   Visual Studio.  See http://msdn.microsoft.com/en-us/library/4hwaceh6.aspx
    for more information.
 */
 #  define _USE_MATH_DEFINES
@@ -373,14 +373,22 @@ typedef uint64_t Uint64;
 #endif
 #endif /* SDL_DISABLE_ANALYZE_MACROS */
 
-#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
-#define SDL_COMPILE_TIME_ASSERT(name, x) _Static_assert(x, #x)
-#elif defined(__cplusplus) && (__cplusplus >= 201103L)
+#ifndef SDL_COMPILE_TIME_ASSERT
+#if defined(__cplusplus)
+#if (__cplusplus >= 201103L)
 #define SDL_COMPILE_TIME_ASSERT(name, x)  static_assert(x, #x)
-#else /* universal, but may trigger -Wunused-local-typedefs */
+#endif
+#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
+#define SDL_COMPILE_TIME_ASSERT(name, x) _Static_assert(x, #x)
+#endif
+#endif /* !SDL_COMPILE_TIME_ASSERT */
+
+#ifndef SDL_COMPILE_TIME_ASSERT
+/* universal, but may trigger -Wunused-local-typedefs */
 #define SDL_COMPILE_TIME_ASSERT(name, x)               \
        typedef int SDL_compile_time_assert_ ## name[(x) * 2 - 1]
 #endif
+
 /** \cond */
 #ifndef DOXYGEN_SHOULD_IGNORE_THIS
 SDL_COMPILE_TIME_ASSERT(uint8, sizeof(Uint8) == 1);
@@ -402,7 +410,7 @@ SDL_COMPILE_TIME_ASSERT(sint64, sizeof(Sint64) == 8);
 
 /** \cond */
 #ifndef DOXYGEN_SHOULD_IGNORE_THIS
-#if !defined(__ANDROID__) && !defined(__VITA__)
+#if !defined(__ANDROID__) && !defined(__VITA__) && !defined(__3DS__)
    /* TODO: include/SDL_stdinc.h:174: error: size of array 'SDL_dummy_enum' is negative */
 typedef enum
 {

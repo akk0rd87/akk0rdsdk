@@ -6,13 +6,14 @@ jobs:
   emscripten:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: mymindstorm/setup-emsdk@v10
         with:
-          version: 2.0.27
+          version: 2.0.32
       - name: Configure CMake
         run: |
           emcmake cmake -S . -B build \
+            -DSDL_WERROR=ON \
             -DSDL_TESTS=ON \
             -DSDL_INSTALL_TESTS=ON \
             -DCMAKE_BUILD_TYPE=Release \
@@ -32,6 +33,7 @@ jobs:
         run: |
           emcmake cmake -S cmake/test -B cmake_config_build \
             -DCMAKE_BUILD_TYPE=Release \
+            -DSDL_VENDOR_INFO="Github Workflow" \
             -DTEST_SHARED=FALSE \
             -DCMAKE_PREFIX_PATH=${{ env.SDL2_DIR }}
           cmake --build cmake_config_build --verbose

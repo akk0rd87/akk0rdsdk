@@ -315,7 +315,21 @@ WarpMouseInternal(Window xwindow, const int x, const int y)
 {
     SDL_VideoData *videodata = (SDL_VideoData *) SDL_GetVideoDevice()->driverdata;
     Display *display = videodata->display;
-    X11_XWarpPointer(display, None, xwindow, 0, 0, 0, 0, x, y);
+#if SDL_VIDEO_DRIVER_X11_XINPUT2
+    int deviceid = 0;
+    /* It seems XIWarpPointer() doesn't work correctly on multi-head setups:
+     * https://developer.blender.org/rB165caafb99c6846e53d11c4e966990aaffc06cea
+     */
+    if (ScreenCount(display) == 1) {
+        X11_XIGetClientPointer(display, None, &deviceid);
+    }
+    if (deviceid != 0) {
+        X11_XIWarpPointer(display, deviceid, None, xwindow, 0.0, 0.0, 0, 0, (double)x, (double)y);
+    } else
+#endif
+    {
+        X11_XWarpPointer(display, None, xwindow, 0, 0, 0, 0, x, y);
+    }
     X11_XSync(display, False);
     videodata->global_mouse_changed = SDL_TRUE;
 }
@@ -358,16 +372,20 @@ static int
 X11_CaptureMouse(SDL_Window *window)
 {
     Display *display = GetDisplay();
+    SDL_Window *mouse_focus = SDL_GetMouseFocus();
 
     if (window) {
         SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
         const unsigned int mask = ButtonPressMask | ButtonReleaseMask | PointerMotionMask | FocusChangeMask;
+        Window confined = (data->mouse_grabbed ? data->xwindow : None);
         const int rc = X11_XGrabPointer(display, data->xwindow, False,
                                         mask, GrabModeAsync, GrabModeAsync,
-                                        None, None, CurrentTime);
+                                        confined, None, CurrentTime);
         if (rc != GrabSuccess) {
             return SDL_SetError("X server refused mouse capture");
         }
+    } else if (mouse_focus) {
+        SDL_UpdateWindowGrab(mouse_focus);
     } else {
         X11_XUngrabPointer(display, CurrentTime);
     }

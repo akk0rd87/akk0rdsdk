@@ -672,9 +672,6 @@
     <ClInclude Include="..\..\src\video\windows\SDL_windowsopengles.h">
       <Filter>video\windows</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\video\windows\SDL_windowstaskdialog.h">
-      <Filter>video\windows</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\timer\SDL_timer_c.h">
       <Filter>timer</Filter>
     </ClInclude>
@@ -1063,6 +1060,9 @@
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_luna.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_ps3.c">
+      <Filter>joystick\hidapi</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_ps4.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
@@ -1079,6 +1079,9 @@
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_switch.c">
+      <Filter>joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_wii.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xbox360.c">

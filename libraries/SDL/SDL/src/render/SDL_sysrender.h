@@ -188,7 +188,7 @@ struct SDL_Renderer
     int (*SetRenderTarget) (SDL_Renderer * renderer, SDL_Texture * texture);
     int (*RenderReadPixels) (SDL_Renderer * renderer, const SDL_Rect * rect,
                              Uint32 format, void * pixels, int pitch);
-    void (*RenderPresent) (SDL_Renderer * renderer);
+    int (*RenderPresent) (SDL_Renderer * renderer);
     void (*DestroyTexture) (SDL_Renderer * renderer, SDL_Texture * texture);
 
     void (*DestroyRenderer) (SDL_Renderer * renderer);
@@ -207,6 +207,12 @@ struct SDL_Renderer
     /* The window associated with the renderer */
     SDL_Window *window;
     SDL_bool hidden;
+
+    /* Whether we should simulate vsync */
+    SDL_bool wanted_vsync;
+    SDL_bool simulate_vsync;
+    Uint32 simulate_vsync_interval;
+    Uint32 last_present;
 
     /* The logical resolution for rendering */
     int logical_w;
@@ -241,6 +247,9 @@ struct SDL_Renderer
 
     /* The method of drawing lines */
     SDL_RenderLineMethod line_method;
+
+    /* List of triangle indices to draw rects */
+    int rect_index_order[6];
 
     /* Remainder from scaled relative motion */
     float xrel;

@@ -15,7 +15,7 @@ jobs:
           - { name: CMake, cmake: 1, android_abi: "arm64-v8a", android_platform: 23, arch: "aarch64" }
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: nttld/setup-ndk@v1
         id: setup_ndk
         with:
@@ -34,9 +34,11 @@ jobs:
         run: |
           cmake -B build \
             -DCMAKE_TOOLCHAIN_FILE=${{ steps.setup_ndk.outputs.ndk-path }}/build/cmake/android.toolchain.cmake \
+            -DSDL_WERROR=ON \
             -DANDROID_PLATFORM=${{ matrix.platform.android_platform }} \
             -DANDROID_ABI=${{ matrix.platform.android_abi }} \
             -DSDL_STATIC_PIC=ON \
+            -DSDL_VENDOR_INFO="Github Workflow" \
             -DCMAKE_INSTALL_PREFIX=prefix \
             -DCMAKE_BUILD_TYPE=Release \
             -GNinja
