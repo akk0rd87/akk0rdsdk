@@ -990,6 +990,10 @@ void BWrapper::SharePNG(const char* Title, const char* File) {
     PlatformWrapper::GetInstance().SharePNG(Title, File);
 };
 
+void BWrapper::SharePDF(const char* Title, const char* File) {
+    PlatformWrapper::GetInstance().SharePDF(Title, File);
+};
+
 //////////////////////////
 /////// FileReader
 //////////////////////////

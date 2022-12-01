@@ -43,6 +43,7 @@ public:
     void                     MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS) { return vMessageBoxShow(Code, Title, Message, Button1, Button2, Button3, TimeOutMS); };
     void                     ShareText(const char* Title, const char* Message) { vShareText(Title, Message); }; // mobile platforms only
     void                     SharePNG(const char* Title, const char* File) { vSharePNG(Title, File); }; // mobile platforms only
+    void                     SharePDF(const char* Title, const char* File) { vSharePDF(Title, File); }; // mobile platforms only
 
     std::unique_ptr<std::istream>   GetAssetStream(const char* FileName) { return vGetAssetStream(FileName); };
     std::unique_ptr<FileBuffer>     GetFileBuf(const char* FileName, BWrapper::FileSearchPriority SearchPriority) { return vGetFileBuf(FileName, SearchPriority); }
@@ -84,6 +85,7 @@ private:
     virtual void                     vMessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS) = 0;
     virtual void                     vShareText(const char* Title, const char* Message) {};
     virtual void                     vSharePNG(const char* Title, const char* File) {};
+    virtual void                     vSharePDF(const char* Title, const char* File) {};
 
     // Android-specific functions
     virtual int                      vGetAudioOutputRate() { return -1; };       // only for Android
