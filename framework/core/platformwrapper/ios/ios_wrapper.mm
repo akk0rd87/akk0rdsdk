@@ -97,7 +97,7 @@ class iOSPlatformWrapper : public PlatformWrapper {
         return false;
     }
 
-    bool vDirCreate(const char* Dir) override {
+    virtual bool vDirCreate(const char* Dir) override {
         if (vDirExists(Dir))
             return true;
 
@@ -116,7 +116,7 @@ class iOSPlatformWrapper : public PlatformWrapper {
         return res;
     }
 
-    bool vGetDirContent(const char* Dir, DirContentElementArray& ArrayList) override {
+    virtual bool vGetDirContent(const char* Dir, DirContentElementArray& ArrayList) override {
         NSURL *DirURL = [NSURL URLWithString:@(Dir)];
 
         NSError *error;
@@ -144,7 +144,7 @@ class iOSPlatformWrapper : public PlatformWrapper {
         return true;
     }
 
-    bool vDirRemoveRecursive(const char* Dir)  override {
+    virtual bool vDirRemoveRecursive(const char* Dir)  override {
         if(vDirExists(Dir))
         {
             NSError *error;
@@ -161,11 +161,11 @@ class iOSPlatformWrapper : public PlatformWrapper {
         return true;
     }
 
-    bool vDirRemove(const char* Dir)  override {
+    virtual bool vDirRemove(const char* Dir) override {
         return vDirRemoveRecursive(Dir);
     }
 
-    Locale::Lang vGetDeviceLanguage() override  {
+    virtual Locale::Lang vGetDeviceLanguage() override  {
         NSString * language = [[NSLocale preferredLanguages] firstObject];
         NSDictionary *languageDic = [NSLocale componentsFromLocaleIdentifier:language];
         NSString *languageCode = [languageDic objectForKey:@"kCFLocaleLanguageCodeKey"];
@@ -173,7 +173,7 @@ class iOSPlatformWrapper : public PlatformWrapper {
         return Locale::DecodeLang_ISO639_Code(std::string([languageCode UTF8String]).c_str());
     }
 
-    void vShareText(const char* Title, const char* Message) override {
+    virtual void vShareText(const char* Title, const char* Message) override {
     //NSString *textToShare = @"Look at this awesome website for aspiring iOS Developers!";
     //    NSString *sTitle = [[NSString alloc] initWithUTF8String:Title];
         NSString *sMessage = [[NSString alloc] initWithUTF8String:Message];
@@ -200,7 +200,7 @@ class iOSPlatformWrapper : public PlatformWrapper {
         [sMessage release];
     };
 
-    void vMessageBoxShow (int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS) override {
+    virtual void vMessageBoxShow (int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS) override {
         NSString *sTitle = [[NSString alloc] initWithUTF8String:Title];
         NSString *sMessage = [[NSString alloc] initWithUTF8String:Message];
 
@@ -270,7 +270,7 @@ class iOSPlatformWrapper : public PlatformWrapper {
         [appDelegate.window.rootViewController presentViewController:alert animated:YES completion:nil];
     };
 
-    void vSharePNG(const char* Title, const char* File) override {
+    virtual void vSharePNG(const char* Title, const char* File) override {
         NSString *path = [[NSString alloc] initWithUTF8String:File];
         NSURL* URL = [NSURL fileURLWithPath:path];
         NSData * imageData = [[NSData alloc] initWithContentsOfURL:URL];
@@ -297,13 +297,26 @@ class iOSPlatformWrapper : public PlatformWrapper {
         [imgShare release];
         [imageData release];
     };
+    
+    virtual void vSharePDF(const char* Title, const char* File) override {
+        NSString *path = [[NSString alloc] initWithUTF8String:File];
+        NSData *pdfData = [NSData dataWithContentsOfFile:path];
 
-    bool vLaunchAppReviewIfAvailable() override {
+        UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:@[@"PDF", pdfData] applicationActivities:nil];
+
+        auto appDelegate = [[UIApplication sharedApplication] delegate];
+        activityVC.popoverPresentationController.sourceView = appDelegate.window.rootViewController.view;
+        [appDelegate.window.rootViewController presentViewController:activityVC animated:YES completion:nil];
+        
+        [path release];
+    }
+
+    virtual bool vLaunchAppReviewIfAvailable() override {
         [SKStoreReviewController requestReview];
         return true;
     }
 
-    std::string vGetAppVersionName() override {
+    virtual std::string vGetAppVersionName() override {
         // https://stackoverflow.com/questions/3015796/how-to-programmatically-display-version-build-number-of-target-in-ios-app
         NSString * appString = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"];
         if(appString) {
@@ -312,7 +325,7 @@ class iOSPlatformWrapper : public PlatformWrapper {
         return "unknown";
     }
 
-    std::string vGetAppVersionCode() override {
+    virtual std::string vGetAppVersionCode() override {
         // https://stackoverflow.com/questions/3015796/how-to-programmatically-display-version-build-number-of-target-in-ios-app
         NSString * appString = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
         if(appString) {
