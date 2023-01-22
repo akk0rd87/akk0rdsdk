@@ -10,4 +10,4 @@ Showcase:
 | Philippine Puzzles | [FCross](https://play.google.com/store/apps/details?id=org.popapp.fcross) | [FCross](https://apps.apple.com/app/id1091290034) |
 | Japanese Mosaic | [JDraw](https://play.google.com/store/apps/details?id=org.popapp.jdraw) | [JDraw](https://apps.apple.com/app/id1113501306) |
 | Sudoku | [Sudoku](https://play.google.com/store/apps/details?id=org.popapp.sudoku) | [Sudoku](https://apps.apple.com/app/id1446860030) |
-| Составь слова | [Составь слова](https://play.google.com/store/apps/details?id=com.popapp.WordsRu) | [Составь слова](https://apps.apple.com/app/id1587839728) |
+| Составь слова | [Составь слова](https://play.google.com/store/apps/details?id=com.popapp.WordsRu) | [Составь слова](https://apps.apple.com/app/id960409308) |
