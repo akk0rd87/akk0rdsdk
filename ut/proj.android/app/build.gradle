@@ -4,10 +4,13 @@ def akkord_sdk_path        = System.getenv('AKKORD_SDK_HOME')
 def proGuardParamsDir      = System.getenv('AKKORD_SDK_HOME') + "/framework/core/platformwrapper/android/proguard/"
 def keystoreFile           = System.getenv('ANDROID_KEYSTORE_HOME') + "/keystore.keystore"
 def keystoreParamsFile     = System.getenv('ANDROID_KEYSTORE_HOME') + "/keystore.params"
-
+def gradleConfig           = System.getenv('AKKORD_SDK_HOME') + "/tools/android/gradle.config"
 
 def keystoreProperties     = new Properties()
 keystoreProperties.load(new FileInputStream(keystoreParamsFile))
+
+def gradleProperties       = new Properties()
+gradleProperties.load(new FileInputStream(gradleConfig))
 
 android {
     signingConfigs {
@@ -124,6 +127,14 @@ android.applicationVariants.all { variant ->
 }
 
 dependencies {
-    implementation 'com.getkeepsafe.relinker:relinker:1.4.1'
-    implementation 'com.google.android.play:core:1.10.0'
+    implementation gradleProperties['app_relinker']
+    implementation gradleProperties['app_admobads']
+    implementation gradleProperties['app_firebase-core']
+    implementation gradleProperties['app_play-billing']
+    implementation gradleProperties['app_play-services-games']
+    implementation gradleProperties['app_play-services-auth']
+    implementation gradleProperties['app_play-review']
+    implementation gradleProperties['app_app-update']
+    implementation gradleProperties['app_play-appset']
+    implementation gradleProperties['app_yandexads']
 }
