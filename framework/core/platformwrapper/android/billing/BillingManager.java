@@ -78,6 +78,7 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
             case BillingResponseCode.SERVICE_DISCONNECTED: StringCode = "SERVICE_DISCONNECTED"; break;
             case BillingResponseCode.SERVICE_UNAVAILABLE: StringCode = "SERVICE_UNAVAILABLE"; break;
             case BillingResponseCode.USER_CANCELED: StringCode = "USER_CANCELED"; break;
+            case BillingResponseCode.NETWORK_ERROR: StringCode = "NETWORK_ERROR"; break;
         }
 
         return StringCode;
@@ -112,35 +113,6 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
         {
             Log.e(TAG, e.getMessage());
         }
-    }
-
-    private static void QueryProductDetails_deprecated(final String[] ProdList) {
-        /*
-        // this method uses deprecated API
-        try {
-            // https://stackoverflow.com/questions/19591873/get-an-array-of-strings-from-java-to-c-jni
-            final List<String> skuList = Arrays.asList(ProdList);
-            Log.v(TAG, "QueryProductDetails_deprecated before");
-
-            executeServiceRequest(new Runnable() {
-                public void run() {
-                    try {
-                        // Query the purchase async
-                        SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
-                        params.setSkusList(skuList).setType(BillingClient.ProductType.INAPP);
-                        mBillingClient.querySkuDetailsAsync(params.build(), billingManager);
-                    }
-                    catch(Exception e) {
-                        Log.v(TAG, e.getMessage());
-                    }
-                }
-            });
-        }
-        catch(Exception e)
-        {
-            Log.e(TAG, e.getMessage());
-        }
-        */
     }
 
     private static void QueryProductDetails_v5(final String[] ProdList) {
@@ -210,40 +182,44 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
 
     public static void PurchaseProdItem(final String ProductSKU)
     {
-        // this method uses deprecated API and doesn't use CachedSKUMap yet
-        // because I do not know how to launh new billing flow in google play library v5
-        try { /*
-            if(CachedSKUMap != null) {
-                if(CachedSKUMap.size() > 0) {
-                    if(CachedSKUMap.containsKey(ProductSKU)) {
-                        executeServiceRequest(new Runnable() {
-                            public void run() {
-                                try {
-                                    mBillingClient.launchBillingFlow(
-                                        Utils.GetContext(),
-                                        BillingFlowParams.newBuilder().setSkuDetails(CachedSKUMap.get(ProductSKU)).build()
-                                    );
-                                }
-                                catch(Exception e) {
-                                    Log.e(TAG, e.getMessage());
-                                }
-                            }
-                        });
-                        return; // выходим из обработки
-                    }
-                    else {
-                        Log.d(TAG, "CachedSKUMap does not contain key " + ProductSKU);
-                    }
-                }
-                else {
-                    Log.d(TAG, "CachedSKUMap is empty");
-                }
-            }
-            else {
-                Log.d(TAG, "CachedSKUMap didn't initialized!");
-            }
-            */
+        try {
+            final List<QueryProductDetailsParams.Product> productList = List.of(QueryProductDetailsParams.Product.newBuilder()
+                                                        .setProductType(ProductType.INAPP)
+                                                        .setProductId(ProductSKU)
+                                                        .build());
 
+            QueryProductDetailsParams params = QueryProductDetailsParams.newBuilder()
+                .setProductList(productList)
+                .build();
+
+            mBillingClient.queryProductDetailsAsync(params,
+                new ProductDetailsResponseListener() {
+                    public void onProductDetailsResponse(BillingResult billingResult, final List<ProductDetails> productDetailsList) {
+                        if( BillingResponseCode.OK == billingResult.getResponseCode() && productDetailsList != null && !productDetailsList.isEmpty() ) {
+
+                            List productDetailsParamsList =
+                                List.of(
+                                    BillingFlowParams.ProductDetailsParams.newBuilder()
+                                        .setProductDetails(productDetailsList.get(0))
+                                        // to get an offer token, call ProductDetails.getSubscriptionOfferDetails()
+                                        // for a list of offers that are available to the user
+                                        //.setOfferToken(selectedOfferToken)
+                                        .build()
+                                );
+
+                            BillingFlowParams billingFlowParams = BillingFlowParams.newBuilder()
+                                .setProductDetailsParamsList(productDetailsParamsList)
+                                .build();
+
+                            // Launch the billing flow
+                            BillingResult billingFlowResult = mBillingClient.launchBillingFlow(Utils.GetContext(), billingFlowParams);
+                        }
+                    }
+                }
+            );
+
+
+/*
             // делаем динамический запрос
             final List<String> skuList = Arrays.asList(new String[]{ProductSKU});
             executeServiceRequest(new Runnable() {
@@ -283,6 +259,7 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
                     }
                 }
             });
+*/
 
         }
         catch(Exception e)
@@ -462,7 +439,7 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
                                     break;
 
                                 case Purchase.PurchaseState.PENDING:
-                                    Log.v(TAG, "Purchase pending: " + purchase.getPurchaseToken() + " Order:" + purchase.getOrderId());
+                                    Log.v(TAG, "Purchase pending: " + purchase.getPurchaseToken());
                                     break;
 
                                 case Purchase.PurchaseState.UNSPECIFIED_STATE:
