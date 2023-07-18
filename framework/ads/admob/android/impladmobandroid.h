@@ -1,8 +1,9 @@
 #ifndef __AKK0RD_SDK_ADS_ADMOB_ANDROIDPROVIDER_H__
 #define __AKK0RD_SDK_ADS_ADMOB_ANDROIDPROVIDER_H__
 
+#include "basewrapper.h"
 #include <jni.h>
-#include "admobprovider.h"
+#include "../admobprovider.h"
 
 namespace ads {
     namespace AdMob {

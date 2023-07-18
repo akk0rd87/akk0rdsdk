@@ -3,6 +3,7 @@
 
 #include "adprovidercallback.h"
 #include "adformat.h"
+#include <string>
 
 namespace ads {
     using timeMS = decltype(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count());

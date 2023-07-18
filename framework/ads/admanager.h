@@ -3,21 +3,18 @@
 
 #include <vector>
 #include <memory>
-#include "basewrapper.h"
 #include "adprovider.h"
-#include "adevent.h"
+#include "adeventlistener.h"
 
 namespace ads {
     class Manager : public ProviderCallback {
     public:
-        Manager() :
-            SDLeventCode(SDL_RegisterEvents(1)),
+        Manager(EventListener* EventListener = nullptr) :
             inited(GetSeconds()),
             lastShowed(0),
-            showDelay(3 * 60) // 3 минуты в секундах
+            showDelay(3 * 60),// 3 минуты в секундах
+            eventListener(EventListener)
         { }
-
-        decltype(SDL_RegisterEvents(1)) getEventCode() const { return SDLeventCode; }
 
         virtual timeMS GetInterstitialNextShowTime() const {
             return (lastShowed == static_cast<decltype(lastShowed)>(0) ? inited + showDelay / static_cast <decltype(showDelay)>(2) : lastShowed + showDelay);
@@ -126,10 +123,6 @@ namespace ads {
             }
         }
 
-        ads::Event decodeEvent(const SDL_Event& Event) const {
-            return static_cast<ads::Event>(static_cast<int>((size_t)(Event.user.data1)));
-        }
-
     private:
         // функция определяет только допустимость показа в соответствии со временем
         bool isInterstitialShowPossible() const {
@@ -137,15 +130,14 @@ namespace ads {
         }
 
         virtual void eventCallback(ads::Event Event/*, Provider From*/) const {
-            SDL_Event sdl_Event;
-            sdl_Event.user.type = SDLeventCode;
-            sdl_Event.user.data1 = (void*)(uintptr_t)static_cast<int>(Event);
-            SDL_PushEvent(&sdl_Event);
+            if (eventListener) {
+                eventListener->onAdEvent(Event);
+            }
         };
 
-        const decltype(SDL_RegisterEvents(1)) SDLeventCode;
         timeMS inited, lastShowed, showDelay;
         std::vector<std::shared_ptr<Provider>> providers;
+        EventListener* const eventListener;
     };
 };
 #endif

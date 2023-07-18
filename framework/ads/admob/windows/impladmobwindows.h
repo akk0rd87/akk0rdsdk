@@ -1,7 +1,7 @@
 #ifndef __AKK0RD_SDK_ADS_ADMOB_WINPROVIDER_H__
 #define __AKK0RD_SDK_ADS_ADMOB_WINPROVIDER_H__
 
-#include "admobprovider.h"
+#include "../admobprovider.h"
 
 namespace ads {
     namespace AdMob {
