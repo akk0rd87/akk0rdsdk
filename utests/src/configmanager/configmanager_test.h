@@ -26,6 +26,7 @@ TEST(TestSDK, ConfigManager) {
     }
 
     EXPECT_FALSE(std::filesystem::exists(baseDir));
+    EXPECT_FALSE(std::filesystem::exists(fileName));
 
     auto checkValues = [&](ConfigManager& cfg){
         EXPECT_EQ(std::string(str1Val), cfg.GetStrValue(str1Key, "empty1"));
@@ -46,7 +47,11 @@ TEST(TestSDK, ConfigManager) {
         configManager.SetIntValue(int2Key, int2Val);
 
         checkValues(configManager);
+        EXPECT_FALSE(std::filesystem::exists(baseDir));
+        EXPECT_FALSE(std::filesystem::exists(fileName));
         configManager.Save();
+        EXPECT_TRUE(std::filesystem::exists(baseDir));
+        EXPECT_TRUE(std::filesystem::exists(fileName));
         checkValues(configManager);
         configManager.Load();
         checkValues(configManager);
