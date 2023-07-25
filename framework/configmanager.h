@@ -1,9 +1,8 @@
-#pragma once
 #ifndef __AKK0RD_SDK_CONFIG_MANAGER_H__
 #define __AKK0RD_SDK_CONFIG_MANAGER_H__
 
+#include <string>
 #include <unordered_map>
-#include "basewrapper.h"
 
 // Класс управления настройками в виде списка Key-Value
 class ConfigManager
@@ -13,7 +12,7 @@ public:
     bool         Save();
     void         Clear() { ConfigList.clear(); };
 
-    void         SetFile(const std::string& FileName, BWrapper::FileSearchPriority SearchPriority) { this->FileName = FileName; this->FSearchPriority = SearchPriority; };
+    void         SetFile(const std::string& FileName) { this->FileName = FileName; };
 
     bool         SetIntValue(const char* Key, int         Value) { SetValue(Key, std::to_string(Value).c_str()); return true; };
     bool         SetStrValue(const char* Key, const char* Value) { SetValue(Key, Value); return true; };
@@ -30,7 +29,6 @@ private:
     std::unordered_map<std::string, std::string> ConfigList;
     void SetValue(const char* Key, const char* Value);
 
-    BWrapper::FileSearchPriority FSearchPriority = BWrapper::FileSearchPriority::FileSystem;
     std::string FileName;
 
     ConfigManager(const ConfigManager& rhs) = delete; // Копирующий: конструктор

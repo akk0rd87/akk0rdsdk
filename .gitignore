@@ -68,6 +68,9 @@ ut/**/Debug/*
 ut/**/data-ram/*
 ut/src/.vscode
 
+utests/out/
+utests/build/
+
 tools/**/*.ilk
 tools/**/*.exe
 tools/**/*.idb

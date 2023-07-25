@@ -1,5 +1,5 @@
+#include <filesystem>
 #include <fstream>
-#include <algorithm>
 #include "configmanager.h"
 
 void ConfigManager::SetValue(const char* Key, const char* Value)
@@ -15,40 +15,25 @@ void ConfigManager::SetValue(const char* Key, const char* Value)
 
 bool ConfigManager::Load() {
     this->Clear();
-    FileReader fr;
-    if (fr.Open(FileName.c_str(), FSearchPriority)) {
+    std::ifstream ifs(FileName, std::ios::binary | std::ios::in);
+    if (ifs) {
         std::string line;
         decltype(line.find('=')) pos = 0;
-        while (fr.ReadLine(line)) {
+        while (std::getline(ifs, line)) {
             if (!line.empty()) {
                 pos = line.find('=');
                 if (pos != std::string::npos) {
-                    ConfigList.emplace(std::string(line, 0, pos).c_str(), std::string(line, pos + 1).c_str());
+                    ConfigList.emplace(std::string(line, 0, pos), std::string(line, pos + 1));
                 }
             }
         }
-        fr.Close();
-        return true;
     }
-    else {
-        if (BWrapper::FileSearchPriority::Assets == FSearchPriority) {
-            logError("ConfigManager::Load(): Asset config file not found %s", this->FileName.c_str());
-        }
-    }
-    fr.Close();
-
-    // ругаться, если это assets
-    return false;
+    return true;
 }
 
 bool ConfigManager::Save()
 {
-    if (BWrapper::FileSearchPriority::Assets == FSearchPriority) {
-        logError("Asset config file save is not allowed %s", this->FileName.c_str());
-        return false;
-    }
-
-    BWrapper::DirCreate(this->FileName.substr(0, this->FileName.find_last_of("\\/")).c_str());
+    std::filesystem::create_directories(this->FileName.substr(0, this->FileName.find_last_of("\\/")));
 
     std::ofstream ofs(this->FileName.c_str(), std::ofstream::binary | std::ofstream::out);
     for (const auto& v : ConfigList) {
@@ -60,6 +45,6 @@ bool ConfigManager::Save()
 }
 
 void ConfigManager::PrintConfig() {
-    logInfo("=== ConfigManager::PrintConfig() %s ===", this->FileName.c_str());
-    std::for_each(ConfigList.cbegin(), ConfigList.cend(), [](const auto& v) { logDebug("%s=%s", v.first.c_str(), v.second.c_str()); });
+    //logInfo("=== ConfigManager::PrintConfig() %s ===", this->FileName.c_str());
+    //std::for_each(ConfigList.cbegin(), ConfigList.cend(), [](const auto& v) { logDebug("%s=%s", v.first.c_str(), v.second.c_str()); });
 }

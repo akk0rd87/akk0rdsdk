@@ -38,7 +38,7 @@ LOCAL_SHARED_LIBRARIES += SDL2_image
 TARGET_PLATFORM := android-14
 
 LOCAL_CFLAGS += -DGL_GLEXT_PROTOTYPES -funsigned-char
-LOCAL_CPPFLAGS  = -Wall -std=c++14
+LOCAL_CPPFLAGS  = -Wall -std=c++17
 #LOCAL_CPP_FEATURES += -std=c++11
 #APP_CPPFLAGS += -std=c++11
 #APP_CFLAGS += -std=c++11
