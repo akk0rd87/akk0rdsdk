@@ -41,6 +41,7 @@ TEST(TestSDK, ConfigManager) {
     {
         ConfigManager configManager;
         configManager.SetFile(fileName);
+        EXPECT_TRUE(configManager.Load());
         configManager.SetStrValue(str1Key, str1Val);
         configManager.SetStrValue(str2Key, str2Val);
         configManager.SetIntValue(int1Key, int1Val);
@@ -53,16 +54,16 @@ TEST(TestSDK, ConfigManager) {
         EXPECT_TRUE(std::filesystem::exists(baseDir));
         EXPECT_TRUE(std::filesystem::exists(fileName));
         checkValues(configManager);
-        configManager.Load();
+        EXPECT_TRUE(configManager.Load());
         checkValues(configManager);
     }
 
     {
         ConfigManager configManager;
         configManager.SetFile(fileName);
-        configManager.Load();
+        EXPECT_TRUE(configManager.Load());
         checkValues(configManager);
-        configManager.Save();
+        EXPECT_TRUE(configManager.Save());
         checkValues(configManager);
     }
 }

@@ -36,14 +36,15 @@ bool ConfigManager::Load() {
 bool ConfigManager::Save()
 {
     std::filesystem::create_directories(this->FileName.substr(0, this->FileName.find_last_of("\\/")));
-
     std::ofstream ofs(this->FileName.c_str(), std::ofstream::binary | std::ofstream::out);
-    for (const auto& v : ConfigList) {
-        ofs << v.first << '=' << v.second << '\n';
+    if (ofs) {
+        for (const auto& v : ConfigList) {
+            ofs << v.first << '=' << v.second << '\n';
+        }
+        ofs.close();
+        return true;
     }
-
-    ofs.close();
-    return true;
+    return false;
 }
 
 void ConfigManager::PrintConfig() {
