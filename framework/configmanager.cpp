@@ -15,15 +15,17 @@ void ConfigManager::SetValue(const char* Key, const char* Value)
 
 bool ConfigManager::Load() {
     this->Clear();
-    std::ifstream ifs(FileName, std::ios::binary | std::ios::in);
-    if (ifs) {
-        std::string line;
-        decltype(line.find('=')) pos = 0;
-        while (std::getline(ifs, line)) {
-            if (!line.empty()) {
-                pos = line.find('=');
-                if (pos != std::string::npos) {
-                    ConfigList.emplace(std::string(line, 0, pos), std::string(line, pos + 1));
+    if (std::filesystem::exists(FileName)) {
+        std::ifstream ifs(FileName, std::ios::binary | std::ios::in);
+        if (ifs) {
+            std::string line;
+            decltype(line.find('=')) pos = 0;
+            while (std::getline(ifs, line)) {
+                if (!line.empty()) {
+                    pos = line.find('=');
+                    if (pos != std::string::npos) {
+                        ConfigList.emplace(std::string(line, 0, pos), std::string(line, pos + 1));
+                    }
                 }
             }
         }
