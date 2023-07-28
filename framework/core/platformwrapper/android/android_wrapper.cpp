@@ -447,30 +447,35 @@ public:
 
     std::unique_ptr<std::istream> vGetAssetStream (const char* FileName) override {
         class asset_streambuf : public std::streambuf {
-            public:
-                asset_streambuf(AAsset * the_asset)
-                    : the_asset_(the_asset) {
-                        char * begin = (char *)AAsset_getBuffer(the_asset);
-                        char * end = begin + AAsset_getLength64(the_asset);
-                        setg(begin, begin, end);
-                    }
-                ~asset_streambuf() {
-                    AAsset_close(the_asset_);
-                }
-            private:
-                AAsset * the_asset_;
+        public:
+            asset_streambuf(AAsset* the_asset)
+                : the_asset_(the_asset) {
+                char* begin = (char*)AAsset_getBuffer(the_asset);
+                char* end = begin + AAsset_getLength64(the_asset);
+                setg(begin, begin, end);
+            }
+            ~asset_streambuf() {
+                AAsset_close(the_asset_);
+            }
+
+            asset_streambuf(const asset_streambuf& rhs) = delete; // Копирующий: конструктор
+            asset_streambuf& operator= (const asset_streambuf& rhs) = delete; // Оператор копирующего присваивания
+            asset_streambuf& operator= (FileReader&& rhs) = delete; // Оператор перемещающего присваивания
+            asset_streambuf(asset_streambuf&& rhs) = delete; // Перемещающий: конструктор
+        private:
+            AAsset* the_asset_;
         };
 
         class asset_stream : public std::istream {
-            public:
-                asset_stream(std::unique_ptr<std::streambuf>&& SB) : std::istream(SB.get()), sb(std::move(SB))  {}
-            private:
-                std::unique_ptr<std::streambuf> sb;
+        public:
+            asset_stream(AAsset* the_asset) : std::istream(&sb), sb(the_asset) {}
+        private:
+            asset_streambuf sb;
         };
 
         auto asset = openAsset(FileName);
-        if(asset) {
-            return std::make_unique<asset_stream>(std::make_unique<asset_streambuf>(asset));
+        if (asset) {
+            return std::make_unique<asset_stream>(asset);
         }
         return nullptr;
     };

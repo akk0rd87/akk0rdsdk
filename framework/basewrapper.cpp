@@ -983,6 +983,10 @@ void BWrapper::SharePDF(const char* Title, const char* File) {
     PlatformWrapper::GetInstance().SharePDF(Title, File);
 };
 
+
+std::unique_ptr<std::istream> BWrapper::GetAssetStream(const char* Fname) {
+    return PlatformWrapper::GetInstance().GetAssetStream(Fname);
+}
 //////////////////////////
 /////// FileReader
 //////////////////////////
