@@ -242,6 +242,7 @@ public:
     static bool                FileDelete(const char* FileName);
     static bool                FileRename(const char* OldName, const char* NewName);
     static void                FileClose(FILE*& File);
+    static std::unique_ptr<std::istream> GetAssetStream(const char* Fname);
 
     // Working with directories
     static bool                DirCreate(const char* Dir);
