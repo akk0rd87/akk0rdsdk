@@ -202,7 +202,7 @@ void AdRandomizer::OpenURL(BWrapper::OS OSCode, Apps AppId)
             break;
 
         case BWrapper::OS::AndroidOS:
-            BWrapper::OpenURL("https://play.google.com/store/apps/details?id=org.popapp.nonograms");
+            BWrapper::OpenURL("https://play.google.com/store/apps/details?id=org.popapp.colornonograms");
             break;
 
         default:
