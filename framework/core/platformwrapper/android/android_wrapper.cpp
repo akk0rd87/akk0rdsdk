@@ -460,7 +460,7 @@ public:
 
             asset_streambuf(const asset_streambuf& rhs) = delete; // Копирующий: конструктор
             asset_streambuf& operator= (const asset_streambuf& rhs) = delete; // Оператор копирующего присваивания
-            asset_streambuf& operator= (FileReader&& rhs) = delete; // Оператор перемещающего присваивания
+            asset_streambuf& operator= (asset_streambuf&& rhs) = delete; // Оператор перемещающего присваивания
             asset_streambuf(asset_streambuf&& rhs) = delete; // Перемещающий: конструктор
         private:
             AAsset* the_asset_;
