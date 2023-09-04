@@ -3,6 +3,7 @@
 
 #include "adprovidercallback.h"
 #include "adformat.h"
+#include "adunitstatus.h"
 #include <string>
 
 namespace ads {
@@ -129,9 +130,6 @@ namespace ads {
         }
 
     protected:
-        enum struct InterstitialStatus : uint8_t { NotInited, ReadyToLoad, Loading, LoadError, Loaded, Showing };
-        enum struct RewardedVideoStatus : uint8_t { NotInited, ReadyToLoad, Loading, LoadError, Loaded, Showing };
-
         InterstitialStatus interstitialStatus;
         RewardedVideoStatus rewardedVideoStatus;
         const ads::timeMS interstitialLoadDelay; // секунды интервала между запросами загрузки рекламы

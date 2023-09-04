@@ -31,7 +31,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
     private static MyRewardedCallback            mRewardedCallback             = null;
     private static MyRewardedContentCallback     mRewardedContentCallback      = null;
 
-    public static void InterstitialInit() {
+    private static void InterstitialInit() {
         try {
             mInterstitialCallbackListener = new MyInterstitialCallback();
             mInterstitialContentCallback  = new MyInterstitialContentCallback();
@@ -41,7 +41,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
         }
     };
 
-    public static void RewardedVideoInit() {
+    private static void RewardedVideoInit() {
         try {
             mRewardedCallback        = new MyRewardedCallback();
             mRewardedContentCallback = new MyRewardedContentCallback();
@@ -59,12 +59,12 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                 // an ad is loaded.
                 if(null != interstitialAd) {
                     mInterstitialAd = interstitialAd;
-                    AdCallback_Local(AD_INTERSTITIAL, EVENT_INTERSTITIAL_LOADED, 0);
+                    AdCallback_Local(EVENT_INTERSTITIAL_LOADED);
                     //Log.i(TAG, "onAdLoaded");
                 }
                 else {
                     mInterstitialAd = null;
-                    AdCallback_Local(AD_INTERSTITIAL, EVENT_INTERSTITIAL_FAILED_TO_LOAD, 0);
+                    AdCallback_Local(EVENT_INTERSTITIAL_FAILED_TO_LOAD);
                 }
             }
             catch(Exception e) {
@@ -78,7 +78,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                 // Handle the error
                 //Log.d(TAG, loadAdError.getMessage());
                 mInterstitialAd = null;
-                AdCallback_Local(AD_INTERSTITIAL, EVENT_INTERSTITIAL_FAILED_TO_LOAD, 0);
+                AdCallback_Local(EVENT_INTERSTITIAL_FAILED_TO_LOAD);
             }
             catch(Exception e) {
                 Log.e(TAG, e.getMessage());
@@ -93,7 +93,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                 // Called when fullscreen content is dismissed.
                 mInterstitialAd = null;
                 Log.d(TAG, "The ad was dismissed.");
-                AdCallback_Local(AD_INTERSTITIAL, EVENT_INTERSTITIAL_CLOSED, 0);
+                AdCallback_Local(EVENT_INTERSTITIAL_CLOSED);
             }
             catch(Exception e) {
                 Log.e(TAG, e.getMessage());
@@ -106,7 +106,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                 // Called when fullscreen content failed to show.
                 mInterstitialAd = null;
                 Log.d(TAG, "The ad failed to show.");
-                AdCallback_Local(AD_INTERSTITIAL, EVENT_INTERSTITIAL_FAILED_TO_SHOW, 0);
+                AdCallback_Local(EVENT_INTERSTITIAL_FAILED_TO_SHOW);
             }
             catch(Exception e) {
                 Log.e(TAG, e.getMessage());
@@ -121,7 +121,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                 // show it a second time.
                 mInterstitialAd = null;
                 // тут вызываем Closed, так как обнулили ссылку и можно запращивать новую рекламу
-                AdCallback_Local(AD_INTERSTITIAL, EVENT_INTERSTITIAL_CLOSED, 0);
+                AdCallback_Local(EVENT_INTERSTITIAL_CLOSED);
                 Log.d(TAG, "The ad was shown.");
             }
             catch(Exception e) {
@@ -136,7 +136,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                 // Handle the error.
                 Log.d(TAG, loadAdError.getMessage());
                 mRewardedAd = null;
-                AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_FAILED_TO_LOAD, 0);
+                AdCallback_Local(EVENT_REWARDEDVIDEO_FAILED_TO_LOAD);
             }
             catch(Exception e) {
                 Log.e(TAG, e.getMessage());
@@ -149,11 +149,11 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                 if(null != rewardedAd) {
                     mRewardedAd = rewardedAd;
                     //Log.d(TAG, "onAdFailedToLoad");
-                    AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_LOADED, 0);
+                    AdCallback_Local(EVENT_REWARDEDVIDEO_LOADED);
                 }
                 else {
                     mRewardedAd = null;
-                    AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_FAILED_TO_LOAD, 0);
+                    AdCallback_Local(EVENT_REWARDEDVIDEO_FAILED_TO_LOAD);
                 }
             }
             catch(Exception e) {
@@ -171,7 +171,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                 Log.d(TAG, "The user earned the reward.");
                 //int rewardAmount = rewardItem.getAmount();
                 //String rewardType = rewardItem.getType();
-                AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_REWARDED, 0);
+                AdCallback_Local(EVENT_REWARDEDVIDEO_REWARDED);
                 mRewardedAd = null;
             }
             catch(Exception e) {
@@ -187,7 +187,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                 // Called when ad is shown.
                 Log.d(TAG, "Ad was shown.");
                 mRewardedAd = null;
-                AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_STARTED, 0);
+                AdCallback_Local(EVENT_REWARDEDVIDEO_STARTED);
             }
             catch(Exception e) {
                 Log.e(TAG, e.getMessage());
@@ -200,7 +200,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                 // Called when ad fails to show.
                 Log.d(TAG, "Ad failed to show.");
                 mRewardedAd = null;
-                AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_FAILED_TO_SHOW, 0);
+                AdCallback_Local(EVENT_REWARDEDVIDEO_FAILED_TO_SHOW);
             }
             catch(Exception e) {
                 Log.e(TAG, e.getMessage());
@@ -215,7 +215,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                 // don't show the ad a second time.
                 mRewardedAd = null;
                 Log.d(TAG, "Ad was dismissed.");
-                AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_CLOSED, 0);
+                AdCallback_Local(EVENT_REWARDEDVIDEO_CLOSED);
             }
             catch(Exception e) {
                 Log.e(TAG, e.getMessage());
@@ -257,22 +257,31 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
 
     private static boolean mAdMobInitializationCompleted = false;
 
-    private static native void AdCallback(int AdType, int EventType, int Code);
+    private static native void AdCallback(int EventType);
     private static native void InitCallback(int Code);
 
-    private static void AdCallback_Local(int AdType, int EventType, int Code) {
+    private static void AdCallback_Local(int EventType) {
         try {
-            AdCallback(AdType, EventType, Code);
+            AdCallback(EventType);
         }
         catch(Exception e) {
             Log.e(TAG, e.getMessage());
         }
     };
 
-    public static void Initialize()
+    public static void Initialize(int interstitial, int rewardedvideo)
     {
         try {
             mAdMobInitializationCompleted = false;
+
+            if(interstitial != 0) {
+                InterstitialInit();
+            }
+
+            if(rewardedvideo != 0) {
+                RewardedVideoInit();
+            }
+
             MobileAds.initialize(Utils.GetContext(), adMobAdapter);
         }
         catch(Exception e) {
@@ -356,7 +365,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
             }
             else {
                 // если SDK не проинициализировано, имитурем, как будто загрузка прошла неуспешно
-                AdCallback_Local(AD_INTERSTITIAL, EVENT_INTERSTITIAL_FAILED_TO_LOAD, 0);
+                AdCallback_Local(EVENT_INTERSTITIAL_FAILED_TO_LOAD);
             }
         }
         catch(Exception e)
@@ -391,7 +400,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
             }
             else {
                 // если SDK не проинициализировано, имитурем, как будто загрузка прошла неуспешно
-                AdCallback_Local(AD_REWARDEDVIDEO, EVENT_REWARDEDVIDEO_FAILED_TO_LOAD, 0);
+                AdCallback_Local(EVENT_REWARDEDVIDEO_FAILED_TO_LOAD);
             }
         }
         catch(Exception e)
