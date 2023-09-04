@@ -21,6 +21,7 @@ public class YandexAdsAdapter implements InitializationListener {
     private static YandexAdsAdapter       yandexAdsAdapter = null;
     private static MyInterstitialManager  intManager = null;
     private static MyRewardedVideoManager rvManager = null;
+    private static Activity               myActivity = null;
 
     private static native void AdCallback(int EventType);
     private static native void InitCallback(int Code);
@@ -28,8 +29,9 @@ public class YandexAdsAdapter implements InitializationListener {
     private static final int INIT_SUCCESS       = 0;
     private static final int INIT_ERROR         = 1;
 
-    public static void Initialize(int interstitial, int rewardedvideo) {
+    public static void Initialize(Activity activity, int interstitial, int rewardedvideo) {
         try {
+            myActivity = activity;
             yandexAdsAdapter = new YandexAdsAdapter();
 
             if(interstitial != 0) {
@@ -39,7 +41,7 @@ public class YandexAdsAdapter implements InitializationListener {
             if(rewardedvideo != 0) {
                 rvManager        = new MyRewardedVideoManager();
             }
-            MobileAds.initialize(Utils.GetContext(), yandexAdsAdapter);
+            MobileAds.initialize(myActivity, yandexAdsAdapter);
         }
         catch(Exception e) {
             InitCallback(INIT_ERROR);
@@ -129,7 +131,7 @@ public class YandexAdsAdapter implements InitializationListener {
             Destroy();
 
             // Creating an InterstitialAd instance.
-            mInterstitialAd = new InterstitialAd(Utils.GetContext());
+            mInterstitialAd = new InterstitialAd(myActivity);
             mInterstitialAd.setAdUnitId(InterstitialUnitID);
 
             // Registering a listener to track events in the ad.
@@ -229,7 +231,7 @@ public class YandexAdsAdapter implements InitializationListener {
             Destroy();
 
             // Creating a RewardedAd instance.
-            mRewardedAd = new RewardedAd(Utils.GetContext());
+            mRewardedAd = new RewardedAd(myActivity);
             mRewardedAd.setAdUnitId(RewardedVideoUnitID);
 
             // Registering a listener to track events in the ad.

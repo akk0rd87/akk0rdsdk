@@ -30,6 +30,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
     private static MyInterstitialContentCallback mInterstitialContentCallback  = null;
     private static MyRewardedCallback            mRewardedCallback             = null;
     private static MyRewardedContentCallback     mRewardedContentCallback      = null;
+    private static Activity                      myActivity = null;
 
     private static void InterstitialInit() {
         try {
@@ -269,9 +270,10 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
         }
     };
 
-    public static void Initialize(int interstitial, int rewardedvideo)
+    public static void Initialize(Activity activity, int interstitial, int rewardedvideo)
     {
         try {
+            myActivity = activity;
             mAdMobInitializationCompleted = false;
 
             if(interstitial != 0) {
@@ -282,7 +284,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                 RewardedVideoInit();
             }
 
-            MobileAds.initialize(Utils.GetContext(), adMobAdapter);
+            MobileAds.initialize(myActivity, adMobAdapter);
         }
         catch(Exception e) {
             InitCallback(INIT_ERROR);
@@ -352,10 +354,10 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                 return;
             }
             if(mAdMobInitializationCompleted) {
-                Utils.GetContext().runOnUiThread(new Runnable() {
+                myActivity.runOnUiThread(new Runnable() {
                     public void run() {
                         try {
-                            InterstitialAd.load(Utils.GetContext(), InterstitialUnitID, new AdRequest.Builder().build(), mInterstitialCallbackListener);
+                            InterstitialAd.load(myActivity, InterstitialUnitID, new AdRequest.Builder().build(), mInterstitialCallbackListener);
                         }
                         catch(Exception e) {
                             Log.e(TAG, e.getMessage());
@@ -387,10 +389,10 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
             }
 
             if(mAdMobInitializationCompleted) {
-                Utils.GetContext().runOnUiThread(new Runnable() {
+                myActivity.runOnUiThread(new Runnable() {
                     public void run() {
                         try {
-                            RewardedAd.load(Utils.GetContext(), RewardedVideoUnitID, new AdRequest.Builder().build(), mRewardedCallback);
+                            RewardedAd.load(myActivity, RewardedVideoUnitID, new AdRequest.Builder().build(), mRewardedCallback);
                         }
                         catch(Exception e) {
                             Log.e(TAG, e.getMessage());
@@ -413,13 +415,12 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
     {
         try
         {
-            Activity ctx = Utils.GetContext();
-            ctx.runOnUiThread(new Runnable() {
+            myActivity.runOnUiThread(new Runnable() {
                 public void run() {
                     try {
                         if (null != mInterstitialAd) {
                             mInterstitialAd.setFullScreenContentCallback(mInterstitialContentCallback);
-                            mInterstitialAd.show(Utils.GetContext());
+                            mInterstitialAd.show(myActivity);
                         }
                     }
                     catch(Exception e) {
@@ -441,13 +442,12 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
     {
         try
         {
-            Activity ctx = Utils.GetContext();
-            ctx.runOnUiThread(new Runnable() {
+            myActivity.runOnUiThread(new Runnable() {
                 public void run() {
                     try {
                         if (null != mRewardedAd ) {
                             mRewardedAd.setFullScreenContentCallback(mRewardedContentCallback);
-                            mRewardedAd.show(Utils.GetContext(), mRewardedCallback);
+                            mRewardedAd.show(myActivity, mRewardedCallback);
                         }
                     }
                     catch(Exception e) {
