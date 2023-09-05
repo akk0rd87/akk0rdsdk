@@ -16,7 +16,7 @@ namespace ads {
             RewardedVideoStatus& rewardedVideoStatus
         ) :
             jniEnv(jnienv),
-            adsClass(nullptr),
+            adsGlobalRef(nullptr),
             midInterstitialSetUnitId(nullptr),
             midInterstitialLoad(nullptr),
             midInterstitialShow(nullptr),
@@ -25,14 +25,17 @@ namespace ads {
             midRewardedVideoShow(nullptr)
         {
             JNIEnv* env = getJNIEnv();
-            adsClass = env->FindClass(javaClass);
+            {
+                jclass adsClass = env->FindClass(javaClass);
+                adsGlobalRef = (jclass)env->NewGlobalRef(adsClass);
+            }
 
-            if (!adsClass) {
+            if (!adsGlobalRef) {
                 logError("Could not find class");
                 return;
             }
 
-            jmethodID initMethod = env->GetStaticMethodID(adsClass, "Initialize", "(Landroid/app/Activity;II)V");
+            jmethodID initMethod = env->GetStaticMethodID(adsGlobalRef, "Initialize", "(Landroid/app/Activity;II)V");
             if (!initMethod) {
                 logError("Initialize Java method not Found");
                 return;
@@ -41,7 +44,7 @@ namespace ads {
             {
                 const auto interstitialInit = (!(!(format & ads::Format::Interstitial))) ? 1 : 0;
                 const auto rewardedvideoInit = (!(!(format & ads::Format::RewardedVideo))) ? 1 : 0;
-                env->CallStaticVoidMethod(adsClass, initMethod, activity, interstitialInit, rewardedvideoInit);
+                env->CallStaticVoidMethod(adsGlobalRef, initMethod, activity, interstitialInit, rewardedvideoInit);
 
                 if (interstitialInit) {
                     interstitialStatus = ads::InterstitialStatus::ReadyToLoad;
@@ -52,12 +55,12 @@ namespace ads {
                 }
             }
 
-            midInterstitialSetUnitId = env->GetStaticMethodID(adsClass, "InterstitialSetUnitId", "(Ljava/lang/String;)V");
-            midInterstitialLoad = env->GetStaticMethodID(adsClass, "InterstitialLoad", "()V");
-            midInterstitialShow = env->GetStaticMethodID(adsClass, "InterstitialShow", "()I");
-            midRewardedVideoSetUnitId = env->GetStaticMethodID(adsClass, "RewardedVideoSetUnitId", "(Ljava/lang/String;)V");
-            midRewardedVideoLoad = env->GetStaticMethodID(adsClass, "RewardedVideoLoad", "()V");
-            midRewardedVideoShow = env->GetStaticMethodID(adsClass, "RewardedVideoShow", "()I");
+            midInterstitialSetUnitId = env->GetStaticMethodID(adsGlobalRef, "InterstitialSetUnitId", "(Ljava/lang/String;)V");
+            midInterstitialLoad = env->GetStaticMethodID(adsGlobalRef, "InterstitialLoad", "()V");
+            midInterstitialShow = env->GetStaticMethodID(adsGlobalRef, "InterstitialShow", "()I");
+            midRewardedVideoSetUnitId = env->GetStaticMethodID(adsGlobalRef, "RewardedVideoSetUnitId", "(Ljava/lang/String;)V");
+            midRewardedVideoLoad = env->GetStaticMethodID(adsGlobalRef, "RewardedVideoLoad", "()V");
+            midRewardedVideoShow = env->GetStaticMethodID(adsGlobalRef, "RewardedVideoShow", "()I");
 
             if (!midInterstitialSetUnitId) { logError("midInterstitialSetUnitId Java method not found"); }
             if (!midInterstitialLoad) { logError("midInterstitialLoad Java method not found"); }
@@ -74,7 +77,7 @@ namespace ads {
                 return;
             }
             jstring url_jstring = (jstring)env->NewStringUTF(unitId.c_str());
-            env->CallStaticVoidMethod(adsClass, midInterstitialSetUnitId, url_jstring);
+            env->CallStaticVoidMethod(adsGlobalRef, midInterstitialSetUnitId, url_jstring);
             env->DeleteLocalRef(url_jstring);
         }
 
@@ -86,7 +89,7 @@ namespace ads {
                 return;
             }
             jstring url_jstring = (jstring)env->NewStringUTF(unit);
-            env->CallStaticVoidMethod(adsClass, midRewardedVideoSetUnitId, url_jstring);
+            env->CallStaticVoidMethod(adsGlobalRef, midRewardedVideoSetUnitId, url_jstring);
             env->DeleteLocalRef(url_jstring);
             return;
         }
@@ -97,7 +100,7 @@ namespace ads {
                 logError("InterstitialLoad Java method not Found");
                 return;
             }
-            env->CallStaticVoidMethod(adsClass, midInterstitialLoad);
+            env->CallStaticVoidMethod(adsGlobalRef, midInterstitialLoad);
         }
 
         void v_tryLoadRewardedVideo() {
@@ -106,7 +109,7 @@ namespace ads {
                 logError("RewardedVideoLoad Java method not Found");
                 return;
             }
-            env->CallStaticVoidMethod(adsClass, midRewardedVideoLoad);
+            env->CallStaticVoidMethod(adsGlobalRef, midRewardedVideoLoad);
         }
 
         void v_showInterstitial() {
@@ -115,7 +118,7 @@ namespace ads {
                 logError("InterstitialShow Java method not Found");
                 return;
             }
-            env->CallStaticIntMethod(adsClass, midInterstitialShow);
+            env->CallStaticIntMethod(adsGlobalRef, midInterstitialShow);
         }
 
         void v_showRewardedVideo() {
@@ -124,7 +127,7 @@ namespace ads {
                 logError("RewardedVideoShow Java method not Found");
                 return;
             }
-            env->CallStaticIntMethod(adsClass, midRewardedVideoShow);
+            env->CallStaticIntMethod(adsGlobalRef, midRewardedVideoShow);
         }
 
         JNIEnv* getJNIEnv() {
@@ -132,7 +135,7 @@ namespace ads {
         }
     private:
         JNIEnv* jniEnv;
-        jclass adsClass;
+        jclass adsGlobalRef;
         jmethodID midInterstitialSetUnitId;
         jmethodID midInterstitialLoad;
         jmethodID midInterstitialShow;
