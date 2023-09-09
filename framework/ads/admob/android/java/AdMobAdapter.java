@@ -306,19 +306,6 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
         }
     }
 
-    public static String InterstitialGetUnitId()
-    {
-        try {
-            //Log.v(TAG, "InterstitialGetAdUnitId start");
-            return (null != InterstitialUnitID ? InterstitialUnitID : "");
-        }
-        catch(Exception e)
-        {
-            Log.e(TAG, e.getMessage());
-            return null;
-        }
-    }
-
     public static void RewardedVideoSetUnitId(String ID)
     {
         try {
@@ -327,18 +314,6 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
         catch(Exception e)
         {
             Log.e(TAG, e.getMessage());
-        }
-    }
-
-    public static String RewardedVideoGetUnitId()
-    {
-        try{
-            return (null != RewardedVideoUnitID ? RewardedVideoUnitID : "");
-        }
-        catch(Exception e)
-        {
-            Log.e(TAG, e.getMessage());
-            return null;
         }
     }
 

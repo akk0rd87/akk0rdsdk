@@ -1,20 +1,24 @@
 package org.akkord.lib;
 
 import android.app.Activity;
-import android.content.Intent;
-
 import android.util.Log;
-
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import com.yandex.mobile.ads.common.AdError;
+import com.yandex.mobile.ads.common.AdRequestConfiguration;
 import com.yandex.mobile.ads.common.MobileAds;
 import com.yandex.mobile.ads.common.InitializationListener;
-import com.yandex.mobile.ads.common.AdRequest;
 import com.yandex.mobile.ads.common.AdRequestError;
 import com.yandex.mobile.ads.common.ImpressionData;
+import com.yandex.mobile.ads.interstitial.InterstitialAdLoadListener;
+import com.yandex.mobile.ads.interstitial.InterstitialAdLoader;
 import com.yandex.mobile.ads.rewarded.Reward;
 import com.yandex.mobile.ads.rewarded.RewardedAd;
 import com.yandex.mobile.ads.rewarded.RewardedAdEventListener;
 import com.yandex.mobile.ads.interstitial.InterstitialAd;
 import com.yandex.mobile.ads.interstitial.InterstitialAdEventListener;
+import com.yandex.mobile.ads.rewarded.RewardedAdLoadListener;
+import com.yandex.mobile.ads.rewarded.RewardedAdLoader;
 
 public class YandexAdsAdapter implements InitializationListener {
     private static String TAG = "SDL";
@@ -34,14 +38,17 @@ public class YandexAdsAdapter implements InitializationListener {
             myActivity = activity;
             yandexAdsAdapter = new YandexAdsAdapter();
 
+            MobileAds.initialize(myActivity, yandexAdsAdapter);
+
             if(interstitial != 0) {
                 intManager       = new MyInterstitialManager();
+                intManager.Init(myActivity);
             }
 
             if(rewardedvideo != 0) {
                 rvManager        = new MyRewardedVideoManager();
+                rvManager.Init(myActivity);
             }
-            MobileAds.initialize(myActivity, yandexAdsAdapter);
         }
         catch(Exception e) {
             InitCallback(INIT_ERROR);
@@ -55,26 +62,34 @@ public class YandexAdsAdapter implements InitializationListener {
        InitCallback(INIT_SUCCESS);
     }
 
-    private static class MyInterstitialManager implements InterstitialAdEventListener {
+    private static class MyInterstitialManager implements InterstitialAdLoadListener, InterstitialAdEventListener {
         private static final int EVENT_INTERSTITIAL_LOADED          = 1;
         private static final int EVENT_INTERSTITIAL_OPENED          = 2;
         private static final int EVENT_INTERSTITIAL_CLOSED          = 3;
         private static final int EVENT_INTERSTITIAL_FAILED_TO_LOAD  = 4;
         private static final int EVENT_INTERSTITIAL_LEFTAPPLICATION = 5;
         private static final int EVENT_INTERSTITIAL_FAILED_TO_SHOW  = 6;
-        private String InterstitialUnitID;
         private InterstitialAd mInterstitialAd;
+        private InterstitialAdLoader loader;
+        private AdRequestConfiguration adRequestConfiguration = null;
 
         @Override
-        public void onAdLoaded() {
+        public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
+            mInterstitialAd = interstitialAd;
             AdCallback(EVENT_INTERSTITIAL_LOADED);
             Log.d(TAG, "YandexADS: onAdLoaded");
         }
 
         @Override
-        public void onAdFailedToLoad(AdRequestError adRequestError) {
+        public void onAdFailedToLoad(@NonNull AdRequestError adRequestError) {
             AdCallback(EVENT_INTERSTITIAL_FAILED_TO_LOAD);
             Log.d(TAG, "YandexADS: onAdFailedToLoad");
+        }
+
+        @Override
+        public void onAdFailedToShow(@NonNull AdError adError) {
+            AdCallback(EVENT_INTERSTITIAL_FAILED_TO_SHOW);
+            Log.d(TAG, "YandexADS: onAdFailedToShow");
         }
 
         @Override
@@ -90,18 +105,7 @@ public class YandexAdsAdapter implements InitializationListener {
         }
 
         @Override
-        public void onLeftApplication() {
-            AdCallback(EVENT_INTERSTITIAL_LEFTAPPLICATION);
-            Log.d(TAG, "YandexADS: onLeftApplication");
-        }
-
-        @Override
-        public void onReturnedToApplication() {
-            Log.d(TAG, "YandexADS: onReturnedToApplication");
-        }
-
-        @Override
-        public void onImpression(final ImpressionData id) {
+        public void onAdImpression(@Nullable ImpressionData impressionData) {
             AdCallback(EVENT_INTERSTITIAL_OPENED);
             Log.d(TAG, "YandexADS: onImpression");
         }
@@ -112,13 +116,13 @@ public class YandexAdsAdapter implements InitializationListener {
 
         public void InterstitialSetUnitId(final String ID) {
             Log.d(TAG, "YandexADS: InterstitialSetUnitId");
-            InterstitialUnitID = ID;
+            adRequestConfiguration = new AdRequestConfiguration.Builder(ID).build();
         }
 
         private void Destroy() {
             try {
                 if(null != mInterstitialAd) {
-                    mInterstitialAd.destroy();
+                    mInterstitialAd = null;
                 }
             }
             catch(Exception e) {
@@ -129,34 +133,28 @@ public class YandexAdsAdapter implements InitializationListener {
         public void InterstitialLoad() {
             Log.d(TAG, "YandexADS: InterstitialLoad");
             Destroy();
-
-            // Creating an InterstitialAd instance.
-            mInterstitialAd = new InterstitialAd(myActivity);
-            mInterstitialAd.setAdUnitId(InterstitialUnitID);
-
-            // Registering a listener to track events in the ad.
-            mInterstitialAd.setInterstitialAdEventListener(this);
-
-            // Creating an ad targeting object.
-            final AdRequest adRequest = new AdRequest.Builder().build();
-
-            // Loading ads.
-            mInterstitialAd.loadAd(adRequest);
+            if(null != adRequestConfiguration) {
+                loader.loadAd(adRequestConfiguration);
+            }
         }
 
-        public int InterstitialShow() {
+        public int InterstitialShow(Activity activity) {
             Log.d(TAG, "YandexADS: InterstitialShow");
             if(null != mInterstitialAd) {
-                if(mInterstitialAd.isLoaded()) {
-                    mInterstitialAd.show();
-                }
+                mInterstitialAd.setAdEventListener(this);
+                mInterstitialAd.show(activity);
                 return 0;
             }
             return 1;
         }
+
+        public void Init(Activity activity) {
+            loader = new InterstitialAdLoader(activity);
+            loader.setAdLoadListener(this);
+        }
     }
 
-    private static class MyRewardedVideoManager implements RewardedAdEventListener {
+    private static class MyRewardedVideoManager implements RewardedAdLoadListener, RewardedAdEventListener {
         private static final int EVENT_REWARDEDVIDEO_LOADED          = 101;
         private static final int EVENT_REWARDEDVIDEO_OPENED          = 102;
         private static final int EVENT_REWARDEDVIDEO_CLOSED          = 103;
@@ -166,11 +164,13 @@ public class YandexAdsAdapter implements InitializationListener {
         private static final int EVENT_REWARDEDVIDEO_COMPLETED       = 107;
         private static final int EVENT_REWARDEDVIDEO_REWARDED        = 108;
         private static final int EVENT_REWARDEDVIDEO_FAILED_TO_SHOW  = 109;
-        private String RewardedVideoUnitID;
         private RewardedAd mRewardedAd;
+        private RewardedAdLoader loader;
+        private AdRequestConfiguration adRequestConfiguration = null;
 
         @Override
-        public void onAdLoaded() {
+        public void onAdLoaded(@NonNull RewardedAd rewardedAd) {
+            mRewardedAd = rewardedAd;
             AdCallback(EVENT_REWARDEDVIDEO_LOADED);
         }
 
@@ -180,8 +180,13 @@ public class YandexAdsAdapter implements InitializationListener {
         }
 
         @Override
-        public void onAdFailedToLoad(final AdRequestError adRequestError) {
+        public void onAdFailedToLoad(@NonNull AdRequestError adRequestError) {
             AdCallback(EVENT_REWARDEDVIDEO_FAILED_TO_LOAD);
+        }
+
+        @Override
+        public void onAdFailedToShow(@NonNull AdError adError) {
+            AdCallback(EVENT_REWARDEDVIDEO_FAILED_TO_SHOW);
         }
 
         @Override
@@ -195,16 +200,7 @@ public class YandexAdsAdapter implements InitializationListener {
         }
 
         @Override
-        public void onLeftApplication() {
-             AdCallback(EVENT_REWARDEDVIDEO_LEFTAPPLICATION);
-        }
-
-        @Override
-        public void onReturnedToApplication() {
-        }
-
-        @Override
-        public void onImpression(final ImpressionData id) {
+        public void onAdImpression(@Nullable ImpressionData impressionData) {
             AdCallback(EVENT_REWARDEDVIDEO_OPENED);
         }
 
@@ -213,13 +209,13 @@ public class YandexAdsAdapter implements InitializationListener {
         }
 
         public void RewardedVideoSetUnitId(final String ID) {
-            RewardedVideoUnitID = ID;
+            adRequestConfiguration = new AdRequestConfiguration.Builder(ID).build();
         }
 
         private void Destroy() {
             try {
                 if(null != mRewardedAd) {
-                    mRewardedAd.destroy();
+                    mRewardedAd = null;
                 }
             }
             catch(Exception e) {
@@ -229,29 +225,23 @@ public class YandexAdsAdapter implements InitializationListener {
 
         public void RewardedVideoLoad() {
             Destroy();
-
-            // Creating a RewardedAd instance.
-            mRewardedAd = new RewardedAd(myActivity);
-            mRewardedAd.setAdUnitId(RewardedVideoUnitID);
-
-            // Registering a listener to track events in the ad.
-            mRewardedAd.setRewardedAdEventListener(this);
-
-            // Creating an ad targeting object.
-            final AdRequest adRequest = new AdRequest.Builder().build();
-
-            // Loading ads.
-            mRewardedAd.loadAd(adRequest);
+            if(null != adRequestConfiguration) {
+                loader.loadAd(adRequestConfiguration);
+            }
         }
 
-        public int RewardedVideoShow() {
+        public int RewardedVideoShow(Activity activity) {
             if(null != mRewardedAd) {
-                if(mRewardedAd.isLoaded()) {
-                    mRewardedAd.show();
-                    return 0;
-                }
+                mRewardedAd.setAdEventListener(this);
+                mRewardedAd.show(activity);
+                return 0;
             }
             return 1;
+        }
+
+        public void Init(Activity activity) {
+            loader = new RewardedAdLoader(activity);
+            loader.setAdLoadListener(this);
         }
     }
 
@@ -305,7 +295,7 @@ public class YandexAdsAdapter implements InitializationListener {
     public static int InterstitialShow() {
         try {
             if(null != intManager) {
-                intManager.InterstitialShow();
+                intManager.InterstitialShow(myActivity);
             }
             return 0;
         }
@@ -318,7 +308,7 @@ public class YandexAdsAdapter implements InitializationListener {
     public static int RewardedVideoShow() {
         try {
             if(null != rvManager) {
-                rvManager.RewardedVideoShow();
+                rvManager.RewardedVideoShow(myActivity);
             }
             return 0;
         }
