@@ -3,11 +3,6 @@ package org.akkord.lib;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.Uri;
-import android.provider.Settings;
-import android.os.StatFs;
 import java.io.File;
 import java.util.Locale;
 import android.widget.Toast;
@@ -22,25 +17,15 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.play.core.review.ReviewManager;
 import com.google.android.play.core.review.ReviewInfo;
 import com.google.android.play.core.review.ReviewManagerFactory;
-import com.google.android.play.core.review.ReviewInfo;
-
-import com.google.android.play.core.appupdate.AppUpdateManager;
-import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
-import com.google.android.play.core.install.model.UpdateAvailability;
-import com.google.android.play.core.install.model.AppUpdateType;
-import com.google.android.play.core.appupdate.AppUpdateInfo;
-import com.google.android.play.core.install.InstallStateUpdatedListener;
-import com.google.android.play.core.install.model.InstallStatus;
-//import com.google.android.material.snackbar.Snackbar;
 
 public class Utils {
     private static  final String TAG = "SDL";
-    private static  AkkordActivity _context = null;
+    private static  Activity _context = null;
     private static  AssetManager AssetMgr = null;
 
     public static native void MessageBoxCallback(int Code, int Result);
 
-    public static void Init(AkkordActivity ActivityContext){
+    public static void Init(Activity ActivityContext){
         _context = ActivityContext;
         AssetMgr = _context.getResources().getAssets();
     }
@@ -48,17 +33,6 @@ public class Utils {
     public static Activity GetContext()
     {
         return _context;
-    }
-
-    public static long getTimeUTCMS() {
-        return System.currentTimeMillis();
-    }
-
-    public static long getFreeSpace(String path) {
-        StatFs fs = new StatFs(path);
-        long blocks = fs.getFreeBlocks();
-        long blsize = fs.getBlockSize();
-        return blocks * blsize;
     }
 
     public static int getAudioOutputRate() { // https://developer.android.com/ndk/guides/audio/audio-latency
@@ -110,37 +84,6 @@ public class Utils {
     public static String getPackage() {
         return _context.getPackageName();
     }
-
-    public static String getProperty(String prop) {
-        if (prop == "ANDROID_ID")
-            return Settings.Secure.ANDROID_ID;
-        return "";
-    }
-
-    public static boolean isNetworkAvailable() {
-        if (_context == null)
-            return false;
-        ConnectivityManager connectivityManager = (ConnectivityManager) _context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-        return activeNetworkInfo != null;
-    }
-
-    public static void exit() {
-        System.exit(0);
-    }
-
-    public static void moveTaskToBack() {
-        _context.moveTaskToBack(true);
-    }
-
-//    public static void restartApp() {
-//        Intent mStartActivity = new Intent(_context, OxygineActivity.instance.getClass());
-//        int mPendingIntentId = 123456;
-//        PendingIntent mPendingIntent = PendingIntent.getActivity(_context, mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
-//        AlarmManager mgr = (AlarmManager)_context.getSystemService(Context.ALARM_SERVICE);
-//        mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
-//        System.exit(0);
-//    }
 
     public static void showMessageBox(int Code, String Title, String Message, String Button1, String Button2, String Button3, long TimeOut)
     {
