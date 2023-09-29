@@ -18,10 +18,23 @@ import com.google.android.play.core.review.ReviewManager;
 import com.google.android.play.core.review.ReviewInfo;
 import com.google.android.play.core.review.ReviewManagerFactory;
 
+import com.google.android.play.core.appupdate.AppUpdateInfo;
+import com.google.android.play.core.appupdate.AppUpdateManager;
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
+import com.google.android.play.core.install.InstallState;
+import com.google.android.play.core.install.InstallStateUpdatedListener;
+import com.google.android.play.core.install.model.AppUpdateType;
+import com.google.android.play.core.install.model.InstallStatus;
+import com.google.android.play.core.install.model.UpdateAvailability;
+import com.google.android.gms.tasks.OnSuccessListener;
+
 public class Utils {
     private static  final String TAG = "SDL";
     private static  Activity _context = null;
     private static  AssetManager AssetMgr = null;
+
+    private static AppUpdateManager mAppUpdateManager = null;
+    private static InstallStateUpdatedListener installStateUpdatedListener = null;
 
     public static native void MessageBoxCallback(int Code, int Result);
 
@@ -604,5 +617,72 @@ public class Utils {
         }
     }
 
-    //public static native void runOnGameThread(Runnable task);
+    private static void popupSnackbarForCompleteUpdate() {
+        try {
+            if(mAppUpdateManager != null) {
+                mAppUpdateManager.completeUpdate();
+                Log.d(TAG, "popupSnackbarForCompleteUpdate");
+            }
+        }
+        catch(Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+    }
+
+    public static void checkUpdate() {
+        try {
+            mAppUpdateManager = AppUpdateManagerFactory.create(_context);
+
+            installStateUpdatedListener = new
+            InstallStateUpdatedListener() {
+                @Override
+                public void onStateUpdate(InstallState state) {
+                    if (state.installStatus() == InstallStatus.DOWNLOADED){
+                        //CHECK THIS if AppUpdateType.FLEXIBLE, otherwise you can skip
+                        popupSnackbarForCompleteUpdate();
+                    } else if (state.installStatus() == InstallStatus.INSTALLED){
+                        if (mAppUpdateManager != null && installStateUpdatedListener != null){
+                        mAppUpdateManager.unregisterListener(installStateUpdatedListener);
+                        }
+                    } else {
+                        Log.i(TAG, "InstallStateUpdatedListener: state: " + state.installStatus());
+                    }
+                }
+            };
+
+            mAppUpdateManager.registerListener(installStateUpdatedListener);
+            mAppUpdateManager.getAppUpdateInfo().addOnSuccessListener(appUpdateInfo -> {
+                if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
+                        //&& appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE /*AppUpdateType.IMMEDIATE*/))
+                    try {
+                        mAppUpdateManager.startUpdateFlowForResult(appUpdateInfo, AppUpdateType.FLEXIBLE /*AppUpdateType.IMMEDIATE*/, _context, /*RC_APP_UPDATE*/ 100500);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Log.e(TAG, e.getMessage());
+                    }
+
+                } else if (appUpdateInfo.installStatus() == InstallStatus.DOWNLOADED) {
+                    //CHECK THIS if AppUpdateType.FLEXIBLE, otherwise you can skip
+                    popupSnackbarForCompleteUpdate();
+                } else {
+                    Log.e(TAG, "checkForAppUpdateAvailability: something else");
+                }
+            });
+        }
+        catch(Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+    }
+
+    public static void UnregisterUpdateListener() {
+        try {
+            if (mAppUpdateManager != null && installStateUpdatedListener != null) {
+                mAppUpdateManager.unregisterListener(installStateUpdatedListener);
+            }
+        }
+        catch(Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+    }
 }

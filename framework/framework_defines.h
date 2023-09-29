@@ -1,4 +1,3 @@
-#pragma once
 #ifndef __AKK0RD_SDK_PUBLIC_DEFINES__
 #define __AKK0RD_SDK_PUBLIC_DEFINES__
 

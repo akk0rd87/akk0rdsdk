@@ -3,6 +3,7 @@
 
 #include <jni.h>
 #include "adunitstatus.h"
+#include "core/platformwrapper/android/android_javautf8_string.h"
 
 namespace ads {
     class AndroidJNIProvider {
@@ -76,9 +77,8 @@ namespace ads {
                 logError("InterstitialSetUnitId Java method not Found");
                 return;
             }
-            jstring url_jstring = (jstring)env->NewStringUTF(unitId.c_str());
-            env->CallStaticVoidMethod(adsGlobalRef, midInterstitialSetUnitId, url_jstring);
-            env->DeleteLocalRef(url_jstring);
+            AndroidJavaUTF8String url_jstring(env, unitId.c_str());
+            env->CallStaticVoidMethod(adsGlobalRef, midInterstitialSetUnitId, url_jstring.get());
         }
 
         void setRewardedVideoUnit(const char* unit) {
@@ -88,9 +88,8 @@ namespace ads {
                 logError("RewardedVideoSetUnitId Java method not Found");
                 return;
             }
-            jstring url_jstring = (jstring)env->NewStringUTF(unit);
-            env->CallStaticVoidMethod(adsGlobalRef, midRewardedVideoSetUnitId, url_jstring);
-            env->DeleteLocalRef(url_jstring);
+            AndroidJavaUTF8String url_jstring(env, unit);
+            env->CallStaticVoidMethod(adsGlobalRef, midRewardedVideoSetUnitId, url_jstring.get());
             return;
         }
 

@@ -2,21 +2,18 @@
 #define __AKK0RD_SDK_ANDROID_BASEWRAPPER_H__
 
 #include "basewrapper.h"
-#include <jni.h>
 
 class AndroidWrapper
 {
 private:
 public:
-    typedef void (onActivityResultCallback)(JNIEnv *env, jobject thiz, jobject activity, jint request_code, jint result_code, jobject data);
-
     static bool              AndroidShowToast(const char* Message, BWrapper::AndroidToastDuration Duration, int Gravity, int xOffset, int yOffset);
     static int               AndroidGetApiLevel();
 
     //Запрещаем создавать экземпляр класса AndroidWrapper
     AndroidWrapper() = delete;
     ~AndroidWrapper() = delete;
-    AndroidWrapper(AndroidWrapper& rhs)  = delete; // Копирующий: конструктор
+    AndroidWrapper(AndroidWrapper& rhs) = delete; // Копирующий: конструктор
     AndroidWrapper(AndroidWrapper&& rhs) = delete; // Перемещающий: конструктор
     AndroidWrapper& operator= (AndroidWrapper&& rhs) = delete; // Оператор перемещающего присваивания
 };

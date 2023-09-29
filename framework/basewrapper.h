@@ -1,4 +1,3 @@
-#pragma once
 #ifndef __AKK0RD_SDK_BASE_BASEWRAPPER_H__
 #define __AKK0RD_SDK_BASE_BASEWRAPPER_H__
 

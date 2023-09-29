@@ -1,4 +1,3 @@
-#pragma once
 #ifndef __AKK0RD_SDK_PLATFORMS_H__
 #define __AKK0RD_SDK_PLATFORMS_H__
 
