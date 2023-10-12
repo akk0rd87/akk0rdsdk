@@ -30,7 +30,6 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
     private static MyInterstitialContentCallback mInterstitialContentCallback  = null;
     private static MyRewardedCallback            mRewardedCallback             = null;
     private static MyRewardedContentCallback     mRewardedContentCallback      = null;
-    private static Activity                      myActivity = null;
 
     private static void InterstitialInit() {
         try {
@@ -270,10 +269,9 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
         }
     };
 
-    public static void Initialize(Activity activity, int interstitial, int rewardedvideo)
+    public static void Initialize(int interstitial, int rewardedvideo)
     {
         try {
-            myActivity = activity;
             mAdMobInitializationCompleted = false;
 
             if(interstitial != 0) {
@@ -284,7 +282,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                 RewardedVideoInit();
             }
 
-            MobileAds.initialize(myActivity, adMobAdapter);
+            MobileAds.initialize(org.akkord.lib.Utils.GetContext(), adMobAdapter);
         }
         catch(Exception e) {
             InitCallback(INIT_ERROR);
@@ -329,10 +327,10 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                 return;
             }
             if(mAdMobInitializationCompleted) {
-                myActivity.runOnUiThread(new Runnable() {
+                org.akkord.lib.Utils.GetContext().runOnUiThread(new Runnable() {
                     public void run() {
                         try {
-                            InterstitialAd.load(myActivity, InterstitialUnitID, new AdRequest.Builder().build(), mInterstitialCallbackListener);
+                            InterstitialAd.load(org.akkord.lib.Utils.GetContext(), InterstitialUnitID, new AdRequest.Builder().build(), mInterstitialCallbackListener);
                         }
                         catch(Exception e) {
                             Log.e(TAG, e.getMessage());
@@ -364,10 +362,10 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
             }
 
             if(mAdMobInitializationCompleted) {
-                myActivity.runOnUiThread(new Runnable() {
+                org.akkord.lib.Utils.GetContext().runOnUiThread(new Runnable() {
                     public void run() {
                         try {
-                            RewardedAd.load(myActivity, RewardedVideoUnitID, new AdRequest.Builder().build(), mRewardedCallback);
+                            RewardedAd.load(org.akkord.lib.Utils.GetContext(), RewardedVideoUnitID, new AdRequest.Builder().build(), mRewardedCallback);
                         }
                         catch(Exception e) {
                             Log.e(TAG, e.getMessage());
@@ -390,12 +388,12 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
     {
         try
         {
-            myActivity.runOnUiThread(new Runnable() {
+            org.akkord.lib.Utils.GetContext().runOnUiThread(new Runnable() {
                 public void run() {
                     try {
                         if (null != mInterstitialAd) {
                             mInterstitialAd.setFullScreenContentCallback(mInterstitialContentCallback);
-                            mInterstitialAd.show(myActivity);
+                            mInterstitialAd.show(org.akkord.lib.Utils.GetContext());
                         }
                     }
                     catch(Exception e) {
@@ -417,12 +415,12 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
     {
         try
         {
-            myActivity.runOnUiThread(new Runnable() {
+            org.akkord.lib.Utils.GetContext().runOnUiThread(new Runnable() {
                 public void run() {
                     try {
                         if (null != mRewardedAd ) {
                             mRewardedAd.setFullScreenContentCallback(mRewardedContentCallback);
-                            mRewardedAd.show(myActivity, mRewardedCallback);
+                            mRewardedAd.show(org.akkord.lib.Utils.GetContext(), mRewardedCallback);
                         }
                     }
                     catch(Exception e) {

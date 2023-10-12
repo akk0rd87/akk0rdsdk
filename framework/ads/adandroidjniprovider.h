@@ -11,7 +11,6 @@ namespace ads {
         AndroidJNIProvider(
             const char* javaClass,
             JNIEnv* jnienv,
-            jobject activity,
             ads::Format format,
             InterstitialStatus& interstitialStatus,
             RewardedVideoStatus& rewardedVideoStatus
@@ -36,7 +35,7 @@ namespace ads {
                 return;
             }
 
-            jmethodID initMethod = env->GetStaticMethodID(adsGlobalRef, "Initialize", "(Landroid/app/Activity;II)V");
+            jmethodID initMethod = env->GetStaticMethodID(adsGlobalRef, "Initialize", "(II)V");
             if (!initMethod) {
                 logError("Initialize Java method not Found");
                 return;
@@ -45,7 +44,7 @@ namespace ads {
             {
                 const auto interstitialInit = (!(!(format & ads::Format::Interstitial))) ? 1 : 0;
                 const auto rewardedvideoInit = (!(!(format & ads::Format::RewardedVideo))) ? 1 : 0;
-                env->CallStaticVoidMethod(adsGlobalRef, initMethod, activity, interstitialInit, rewardedvideoInit);
+                env->CallStaticVoidMethod(adsGlobalRef, initMethod, interstitialInit, rewardedvideoInit);
 
                 if (interstitialInit) {
                     interstitialStatus = ads::InterstitialStatus::ReadyToLoad;

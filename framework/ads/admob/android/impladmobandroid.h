@@ -9,9 +9,9 @@ namespace ads {
     namespace AdMob {
         class AndroidProvider : public Provider {
         public:
-            AndroidProvider(JNIEnv* jnienv, jobject activity, std::weak_ptr<ads::ProviderCallback> callback, ads::Format format) :
+            AndroidProvider(JNIEnv* jnienv, std::weak_ptr<ads::ProviderCallback> callback, ads::Format format) :
                 Provider(callback),
-                jniProvider("org/akkord/lib/AdMobAdapter", jnienv, activity, format, interstitialStatus, rewardedVideoStatus) {}
+                jniProvider("org/akkord/lib/AdMobAdapter", jnienv, format, interstitialStatus, rewardedVideoStatus) {}
 
             void onAdEvent(int eventType) {
                 eventCallback(static_cast<ads::Event>(eventType));

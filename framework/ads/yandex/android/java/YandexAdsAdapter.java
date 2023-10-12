@@ -25,7 +25,6 @@ public class YandexAdsAdapter implements InitializationListener {
     private static YandexAdsAdapter       yandexAdsAdapter = null;
     private static MyInterstitialManager  intManager = null;
     private static MyRewardedVideoManager rvManager = null;
-    private static Activity               myActivity = null;
 
     private static native void AdCallback(int EventType);
     private static native void InitCallback(int Code);
@@ -33,21 +32,20 @@ public class YandexAdsAdapter implements InitializationListener {
     private static final int INIT_SUCCESS       = 0;
     private static final int INIT_ERROR         = 1;
 
-    public static void Initialize(Activity activity, int interstitial, int rewardedvideo) {
+    public static void Initialize(int interstitial, int rewardedvideo) {
         try {
-            myActivity = activity;
             yandexAdsAdapter = new YandexAdsAdapter();
 
-            MobileAds.initialize(myActivity, yandexAdsAdapter);
+            MobileAds.initialize(org.akkord.lib.Utils.GetContext(), yandexAdsAdapter);
 
             if(interstitial != 0) {
                 intManager       = new MyInterstitialManager();
-                intManager.Init(myActivity);
+                intManager.Init(org.akkord.lib.Utils.GetContext());
             }
 
             if(rewardedvideo != 0) {
                 rvManager        = new MyRewardedVideoManager();
-                rvManager.Init(myActivity);
+                rvManager.Init(org.akkord.lib.Utils.GetContext());
             }
         }
         catch(Exception e) {
@@ -295,7 +293,7 @@ public class YandexAdsAdapter implements InitializationListener {
     public static int InterstitialShow() {
         try {
             if(null != intManager) {
-                intManager.InterstitialShow(myActivity);
+                intManager.InterstitialShow(org.akkord.lib.Utils.GetContext());
             }
             return 0;
         }
@@ -308,7 +306,7 @@ public class YandexAdsAdapter implements InitializationListener {
     public static int RewardedVideoShow() {
         try {
             if(null != rvManager) {
-                rvManager.RewardedVideoShow(myActivity);
+                rvManager.RewardedVideoShow(org.akkord.lib.Utils.GetContext());
             }
             return 0;
         }
