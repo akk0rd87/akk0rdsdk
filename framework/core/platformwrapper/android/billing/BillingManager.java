@@ -42,6 +42,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 public class BillingManager implements PurchaseHistoryResponseListener, PurchasesUpdatedListener, BillingClientStateListener, PurchasesResponseListener, ProductDetailsResponseListener {
+    private static BillingObserver billingObserver = null;
     private static BillingManager billingManager = new BillingManager();
     private static BlockingQueue<Runnable> runnableQueue = new ArrayBlockingQueue<Runnable>(50, true);
 
@@ -97,6 +98,10 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
         catch(Exception e) {
             Log.v(TAG, e.getMessage());
         }
+    }
+
+    public static void setObserver(BillingObserver observer) {
+        billingObserver = observer;
     }
 
     public static void Initialize()
@@ -283,6 +288,9 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
                                         Log.v(TAG, "onConsumeResponse Result: " + DecodeBillingResponse(billingResult.getResponseCode()) + " Token:" + purchaseToken + "; " + billingResult.getDebugMessage());
                                         if (BillingResponseCode.OK == billingResult.getResponseCode()) {
                                             PurchaseConsumed(purchaseToken, SKU);
+                                            if(billingObserver != null) {
+                                                billingObserver.PurchaseConsumed(purchaseToken, SKU);
+                                            }
                                         }
                                     }
                                     catch(Exception e) {
@@ -313,6 +321,9 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
                         if(!product.isEmpty()) {
                             Log.v(TAG, "sku:" + product);
                             PurchaseQueried(purchToken, product, BoughtOrRestored);
+                            if(billingObserver != null) {
+                                billingObserver.PurchaseQueried(purchToken, product, BoughtOrRestored);
+                            }
                         }
                     }
                 }
@@ -559,9 +570,12 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
     public void onBillingSetupFinished(BillingResult billingResult) {
         try {
             Log.v(TAG, "Setup finished. Response: " + DecodeBillingResponse(billingResult.getResponseCode()));
-            BillingSetupFinished(billingResult.getResponseCode());
             billingClientLocked.set(false);
-
+            int ResponseCode = billingResult.getResponseCode();
+            BillingSetupFinished(ResponseCode);
+            if(billingObserver != null) {
+                billingObserver.BillingSetupFinished(ResponseCode);
+            }
             if(runnableQueue.size() > 0) { // тут нужно отпроцессить очередь
                 processRunnableQueue();
             }
@@ -575,8 +589,11 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
     public void onBillingServiceDisconnected() {
         try {
             Log.v(TAG, "onBillingServiceDisconnected");
-            BillingDisconnected();
             billingClientLocked.set(false);
+            BillingDisconnected();
+            if(billingObserver != null) {
+                billingObserver.BillingDisconnected();
+            }
 
             // если очередь непуста, то делаем рестар connection
             if(runnableQueue.size() > 0) {
