@@ -41,6 +41,7 @@ public class AkkordActivity extends SDLActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         org.akkord.lib.Utils.Init(this);
+        org.akkord.lib.GDPRConsentPolicyManager.Initialize(this);
     }
 
     @Override
