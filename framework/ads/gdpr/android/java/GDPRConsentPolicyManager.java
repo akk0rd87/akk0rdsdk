@@ -16,16 +16,14 @@ import com.google.android.ump.ConsentDebugSettings;
 public class GDPRConsentPolicyManager {
     private static String TAG = "SDL";
     private static ConsentInformation consentInformation = null;
-    private static Activity activity = null;
 
-    static void Initialize(Activity Act) {
+    static void Initialize() {
         Log.d(TAG, "GDPRConsentPolicyManager: Initialize");
-        activity = Act;
 
-//        ConsentDebugSettings debugSettings = new ConsentDebugSettings.Builder(activity)
-//            .setDebugGeography(ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_EEA)
-//            .addTestDeviceHashedId("42C1FEAB41C4B5C89BEA61FD2014F48B")
-//            .build();
+        ConsentDebugSettings debugSettings = new ConsentDebugSettings.Builder(org.akkord.lib.Utils.GetContext())
+            .setDebugGeography(ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_EEA)
+            .addTestDeviceHashedId("42C1FEAB41C4B5C89BEA61FD2014F48B")
+            .build();
 
 
         // Set tag for under age of consent. false means users are not under age
@@ -33,16 +31,16 @@ public class GDPRConsentPolicyManager {
         ConsentRequestParameters params = new ConsentRequestParameters
             .Builder()
             .setTagForUnderAgeOfConsent(false)
-            //.setConsentDebugSettings(debugSettings)
+            .setConsentDebugSettings(debugSettings)
             .build();
 
-        consentInformation = UserMessagingPlatform.getConsentInformation(activity);
+        consentInformation = UserMessagingPlatform.getConsentInformation(org.akkord.lib.Utils.GetContext());
         consentInformation.requestConsentInfoUpdate(
-            activity,
+            org.akkord.lib.Utils.GetContext(),
             params,
             (OnConsentInfoUpdateSuccessListener) () -> {
                 UserMessagingPlatform.loadAndShowConsentFormIfRequired(
-                    activity,
+                    org.akkord.lib.Utils.GetContext(),
                     (OnConsentFormDismissedListener) loadAndShowError -> {
                         if (loadAndShowError != null) {
                             // Consent gathering failed.
@@ -52,7 +50,7 @@ public class GDPRConsentPolicyManager {
                         }
 
                         // Consent has been gathered.
-                        Log.d(TAG, "text line");
+                        Log.d(TAG, "GDPR: Consent has been gathered from callback function");
                     }
                 );
             },
@@ -63,5 +61,10 @@ public class GDPRConsentPolicyManager {
                 requestConsentError.getMessage()));
             });
 
+        if (consentInformation.canRequestAds()) {
+            Log.d(TAG, "GDPR: consentInformation.canRequestAds returned true");
+        } else {
+            Log.d(TAG, "GDPR: consentInformation.canRequestAds returned false");
+        }
     }
 }
