@@ -10,13 +10,20 @@ namespace GDPRConsentPolicy {
             callbackObserver = observer;
         }
     protected:
-        void onConsentGathered() {
+        Manager() {}
+        void onGDPRConsentGathered() {
             if (callbackObserver) {
-                callbackObserver->onConsentGathered();
+                callbackObserver->onGDPRConsentGathered();
             }
         }
     private:
         GDPRConsentPolicy::Observer* callbackObserver{ nullptr };
+
+        Manager(const Manager& rhs) = delete; // Копирующий: конструктор
+        Manager(Manager&& rhs) = delete; // Перемещающий: конструктор
+        Manager& operator= (const Manager& rhs) = delete; // Оператор копирующего присваивания
+        Manager& operator= (Manager&& rhs) = delete; // Оператор перемещающего присваивания
+
     };
 
     Manager& getManagerInstance();

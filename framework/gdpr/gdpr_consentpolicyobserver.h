@@ -4,7 +4,7 @@
 namespace GDPRConsentPolicy {
     class Observer {
     public:
-        virtual void onConsentGathered() = 0;
+        virtual void onGDPRConsentGathered() = 0;
     };
 }
 

@@ -1,18 +1,15 @@
 #include "../gdpr_consentpolicymanager.h"
 
-class AndroidGDPRManager : public GDPRConsentPolicy::Manager {
-public:
-    void onGDPRConsentGatheredFromJava() {
-        onGDPRConsentGathered();
-    }
+class WindowsGDPRManager : public GDPRConsentPolicy::Manager {
 private:
     virtual void initialize(GDPRConsentPolicy::Observer* observer) override {
         GDPRConsentPolicy::Manager::initialize(observer);
+        onGDPRConsentGathered(); // on Windows we imitate consent gather immediate
     }
 };
 
-static AndroidGDPRManager androidGDPRManager;
+static WindowsGDPRManager windowsGDPRManager;
 
 GDPRConsentPolicy::Manager& GDPRConsentPolicy::getManagerInstance() {
-    return androidGDPRManager;
+    return windowsGDPRManager;
 }
