@@ -16,8 +16,9 @@ import com.google.android.ump.ConsentDebugSettings;
 public class GDPRConsentPolicyManager {
     private static String TAG = "SDL";
     private static ConsentInformation consentInformation = null;
+    private static native void GDPRConsentReceived();
 
-    static void Initialize() {
+    public static void Initialize() {
         Log.d(TAG, "GDPRConsentPolicyManager: Initialize");
 
         ConsentDebugSettings debugSettings = new ConsentDebugSettings.Builder(org.akkord.lib.Utils.GetContext())
@@ -51,6 +52,7 @@ public class GDPRConsentPolicyManager {
 
                         // Consent has been gathered.
                         Log.d(TAG, "GDPR: Consent has been gathered from callback function");
+                        GDPRConsentReceived();
                     }
                 );
             },
@@ -62,6 +64,7 @@ public class GDPRConsentPolicyManager {
             });
 
         if (consentInformation.canRequestAds()) {
+            GDPRConsentReceived();
             Log.d(TAG, "GDPR: consentInformation.canRequestAds returned true");
         } else {
             Log.d(TAG, "GDPR: consentInformation.canRequestAds returned false");
