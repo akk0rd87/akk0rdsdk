@@ -31,7 +31,7 @@ public class GDPRConsentPolicyManager {
         ConsentRequestParameters params = new ConsentRequestParameters
             .Builder()
             .setTagForUnderAgeOfConsent(false)
-            .setConsentDebugSettings(debugSettings)
+            //.setConsentDebugSettings(debugSettings)
             .build();
 
         consentInformation = UserMessagingPlatform.getConsentInformation(org.akkord.lib.Utils.GetContext());
