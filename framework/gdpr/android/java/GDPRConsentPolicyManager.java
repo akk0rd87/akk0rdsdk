@@ -14,17 +14,29 @@ import com.google.android.ump.UserMessagingPlatform;
 import com.google.android.ump.ConsentDebugSettings;
 
 public class GDPRConsentPolicyManager {
-    private static String TAG = "SDL";
+    private static final String TAG = "SDL";
+    private static GDPRConsentPolicyObserver gdprConsentPolicyObserver = null;
     private static ConsentInformation consentInformation = null;
     private static native void GDPRConsentReceived();
+
+    private static void private_GDPRConsentReceived() {
+        GDPRConsentReceived();
+        if(null != gdprConsentPolicyObserver) {
+            gdprConsentPolicyObserver.onGDPRConsentGathered();
+        }
+    }
+
+    public static void setObserver(GDPRConsentPolicyObserver observer) {
+        gdprConsentPolicyObserver = observer;
+    }
 
     public static void Initialize() {
         Log.d(TAG, "GDPRConsentPolicyManager: Initialize");
 
-        ConsentDebugSettings debugSettings = new ConsentDebugSettings.Builder(org.akkord.lib.Utils.GetContext())
-            .setDebugGeography(ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_EEA)
-            .addTestDeviceHashedId("42C1FEAB41C4B5C89BEA61FD2014F48B")
-            .build();
+        //ConsentDebugSettings debugSettings = new ConsentDebugSettings.Builder(org.akkord.lib.Utils.GetContext())
+        //    .setDebugGeography(ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_EEA)
+        //    .addTestDeviceHashedId("42C1FEAB41C4B5C89BEA61FD2014F48B")
+        //    .build();
 
 
         // Set tag for under age of consent. false means users are not under age
@@ -52,7 +64,7 @@ public class GDPRConsentPolicyManager {
 
                         // Consent has been gathered.
                         Log.d(TAG, "GDPR: Consent has been gathered from callback function");
-                        GDPRConsentReceived();
+                        private_GDPRConsentReceived();
                     }
                 );
             },
@@ -64,7 +76,7 @@ public class GDPRConsentPolicyManager {
             });
 
         if (consentInformation.canRequestAds()) {
-            GDPRConsentReceived();
+            private_GDPRConsentReceived();
             Log.d(TAG, "GDPR: consentInformation.canRequestAds returned true");
         } else {
             Log.d(TAG, "GDPR: consentInformation.canRequestAds returned false");
