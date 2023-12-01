@@ -2,8 +2,8 @@
 
 class WindowsGDPRManager : public GDPRConsentPolicy::Manager {
 private:
-    virtual void initialize(GDPRConsentPolicy::Observer* observer) override {
-        GDPRConsentPolicy::Manager::initialize(observer);
+    virtual void initialize(std::function<void(void)> callback) override {
+        GDPRConsentPolicy::Manager::initialize(std::move(callback));
         onGDPRConsentGathered(); // on Windows we imitate consent gather immediate
     }
 };

@@ -12,26 +12,33 @@ import com.google.android.ump.FormError;
 import com.google.android.ump.ConsentForm.OnConsentFormDismissedListener;
 import com.google.android.ump.UserMessagingPlatform;
 import com.google.android.ump.ConsentDebugSettings;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class GDPRConsentPolicyManager {
+    private static final AtomicBoolean isMobileAdsInitializeCalled = new AtomicBoolean(false);
     private static final String TAG = "SDL";
-    private static GDPRConsentPolicyObserver gdprConsentPolicyObserver = null;
+    private static org.akkord.lib.GDPRConsentPolicyObserver gdprConsentPolicyObserver = null;
     private static ConsentInformation consentInformation = null;
     private static native void GDPRConsentReceived();
 
     private static void private_GDPRConsentReceived() {
+        if (isMobileAdsInitializeCalled.getAndSet(true)) {
+            return;
+        }
+
         GDPRConsentReceived();
         if(null != gdprConsentPolicyObserver) {
             gdprConsentPolicyObserver.onGDPRConsentGathered();
         }
     }
 
-    public static void setObserver(GDPRConsentPolicyObserver observer) {
+    public static void setObserver(org.akkord.lib.GDPRConsentPolicyObserver observer) {
         gdprConsentPolicyObserver = observer;
     }
 
     public static void Initialize() {
         Log.d(TAG, "GDPRConsentPolicyManager: Initialize");
+        isMobileAdsInitializeCalled.set(false);
 
         //ConsentDebugSettings debugSettings = new ConsentDebugSettings.Builder(org.akkord.lib.Utils.GetContext())
         //    .setDebugGeography(ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_EEA)

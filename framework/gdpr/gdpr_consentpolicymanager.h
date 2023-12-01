@@ -1,29 +1,25 @@
 #ifndef __AKK0RD_SDK_GDPR_POLICYMANAGER_H__
 #define __AKK0RD_SDK_GDPR_POLICYMANAGER_H__
 
-#include "gdpr_consentpolicyobserver.h"
+#include <functional>
 
 namespace GDPRConsentPolicy {
     class Manager {
     public:
-        virtual void initialize(GDPRConsentPolicy::Observer* observer) {
-            callbackObserver = observer;
+        virtual void initialize(std::function<void(void)> callback) {
+            callbackFunc = std::move(callback);
         }
     protected:
         Manager() {}
         void onGDPRConsentGathered() {
-            if (callbackObserver) {
-                callbackObserver->onGDPRConsentGathered();
-            }
+            callbackFunc();
         }
     private:
-        GDPRConsentPolicy::Observer* callbackObserver{ nullptr };
-
+        std::function<void(void)> callbackFunc = {};
         Manager(const Manager& rhs) = delete; // Копирующий: конструктор
         Manager(Manager&& rhs) = delete; // Перемещающий: конструктор
         Manager& operator= (const Manager& rhs) = delete; // Оператор копирующего присваивания
         Manager& operator= (Manager&& rhs) = delete; // Оператор перемещающего присваивания
-
     };
 
     Manager& getManagerInstance();
