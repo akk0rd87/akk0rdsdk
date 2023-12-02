@@ -22,13 +22,18 @@ public class GDPRConsentPolicyManager {
     private static native void GDPRConsentReceived();
 
     private static void private_GDPRConsentReceived() {
-        if (isMobileAdsInitializeCalled.getAndSet(true)) {
-            return;
-        }
+        try {
+            if (isMobileAdsInitializeCalled.getAndSet(true)) {
+                return;
+            }
 
-        GDPRConsentReceived();
-        if(null != gdprConsentPolicyObserver) {
-            gdprConsentPolicyObserver.onGDPRConsentGathered();
+            GDPRConsentReceived();
+            if(null != gdprConsentPolicyObserver) {
+                gdprConsentPolicyObserver.onGDPRConsentGathered();
+            }
+        }
+        catch(Exception e) {
+            Log.e(TAG, e.getMessage());
         }
     }
 
@@ -37,6 +42,15 @@ public class GDPRConsentPolicyManager {
     }
 
     public static void Initialize() {
+        try {
+            private_Initialize();
+        }
+        catch(Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+    }
+
+    private static void private_Initialize() {
         Log.d(TAG, "GDPRConsentPolicyManager: Initialize");
         isMobileAdsInitializeCalled.set(false);
 
