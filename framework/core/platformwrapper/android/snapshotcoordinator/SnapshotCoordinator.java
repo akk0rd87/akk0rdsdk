@@ -215,8 +215,13 @@ public class SnapshotCoordinator {
             .addOnCompleteListener(new OnCompleteListener<Void>() {
               @Override
               public void onComplete(@NonNull Task<Void> task) {
-                Log.d(TAG, "Closed " + snapshot.getMetadata().getUniqueName());
-                setClosed(snapshot.getMetadata().getUniqueName());
+                  try {
+                      Log.d(TAG, "Closed " + snapshot.getMetadata().getUniqueName());
+                      setClosed(snapshot.getMetadata().getUniqueName());
+                  }
+                  catch(Exception e) {
+                      Log.e(TAG, e.getMessage());
+                  }
               }
             });
       }
@@ -228,19 +233,24 @@ public class SnapshotCoordinator {
     return new OnCompleteListener<SnapshotsClient.DataOrConflict<Snapshot>>() {
       @Override
       public void onComplete(@NonNull Task<SnapshotsClient.DataOrConflict<Snapshot>> task) {
-        // if open failed, set the file to closed, otherwise, keep it open.
-        if (!task.isSuccessful()) {
-          Exception e = task.getException();
-          Log.e(TAG, "Open was not a success for filename " + filename, e);
-          setClosed(filename);
-        } else {
-          SnapshotsClient.DataOrConflict<Snapshot> result
-              = task.getResult();
-          if (result.isConflict()) {
-            Log.d(TAG, "Open successful: " + filename + ", but with a conflict");
+        try {
+          // if open failed, set the file to closed, otherwise, keep it open.
+          if (!task.isSuccessful()) {
+            Exception e = task.getException();
+            Log.e(TAG, "Open was not a success for filename " + filename, e);
+            setClosed(filename);
           } else {
-            Log.d(TAG, "Open successful: " + filename);
+            SnapshotsClient.DataOrConflict<Snapshot> result
+                = task.getResult();
+            if (result.isConflict()) {
+              Log.d(TAG, "Open successful: " + filename + ", but with a conflict");
+            } else {
+              Log.d(TAG, "Open successful: " + filename);
+            }
           }
+        }
+        catch(Exception e) {
+            Log.e(TAG, e.getMessage());
         }
       }
     };
@@ -343,10 +353,15 @@ public class SnapshotCoordinator {
             .addOnCompleteListener(new OnCompleteListener<SnapshotMetadata>() {
               @Override
               public void onComplete(@NonNull Task<SnapshotMetadata> task) {
-                // even if commit and close fails, the file is closed.
-                Log.d(TAG, "CommitAndClose complete, closing " +
-                    filename);
-                setClosed(filename);
+                try {
+                  // even if commit and close fails, the file is closed.
+                  Log.d(TAG, "CommitAndClose complete, closing " +
+                      filename);
+                  setClosed(filename);
+                }
+                catch(Exception e) {
+                    Log.e(TAG, e.getMessage());
+                }
               }
             });
       }
@@ -376,7 +391,12 @@ public class SnapshotCoordinator {
               @Override
               public void onComplete(@NonNull Task<String> task) {
                 // deleted files are closed.
-                setClosed(filename);
+                try {
+                  setClosed(filename);
+                }
+                catch(Exception e) {
+                    Log.e(TAG, e.getMessage());
+                }
               }
             });
       }
@@ -395,9 +415,13 @@ public class SnapshotCoordinator {
             .addOnCompleteListener(new OnCompleteListener<SnapshotsClient.DataOrConflict<Snapshot>>() {
               @Override
               public void onComplete(@NonNull Task<SnapshotsClient.DataOrConflict<Snapshot>> task) {
-
-                if (!task.isSuccessful()) {
-                  setClosed(filename);
+                try {
+                  if (!task.isSuccessful()) {
+                    setClosed(filename);
+                  }
+                }
+                catch(Exception e) {
+                    Log.e(TAG, e.getMessage());
                 }
               }
             });
