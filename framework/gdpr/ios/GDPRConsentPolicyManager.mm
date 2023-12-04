@@ -1,17 +1,17 @@
+#include <UserMessagingPlatform/UserMessagingPlatform.h>
 #include "../gdpr_consentpolicymanager.h"
 
 namespace GDPRConsentPolicy {
-    class WindowsGDPRManager : public GDPRConsentPolicy::Manager {
+    class iOSGDPRManager : public GDPRConsentPolicy::Manager {
     private:
         virtual void initialize(std::function<void(void)> callback) override {
             GDPRConsentPolicy::Manager::initialize(std::move(callback));
-            onGDPRConsentGathered(); // on Windows we imitate consent gather immediate
         }
     };
 }
 
-static GDPRConsentPolicy::WindowsGDPRManager windowsGDPRManager;
+static GDPRConsentPolicy::iOSGDPRManager iosGDPRManager;
 
 GDPRConsentPolicy::Manager& GDPRConsentPolicy::getManagerInstance() {
-    return windowsGDPRManager;
+    return iosGDPRManager;
 }
