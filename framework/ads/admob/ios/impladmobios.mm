@@ -214,8 +214,8 @@ ads::AdMob::Provider (cbk) {
     wasInited = false;
     [[GADMobileAds sharedInstance] startWithCompletionHandler:^(GADInitializationStatus *_Nonnull) {
         wasInited = true;
-        interstitialStatus = ads::Provider::InterstitialStatus::ReadyToLoad;
-        rewardedVideoStatus = ads::Provider::RewardedVideoStatus::ReadyToLoad;
+        interstitialStatus = ads::InterstitialStatus::ReadyToLoad;
+        rewardedVideoStatus = ads::RewardedVideoStatus::ReadyToLoad;
     }];
 };
 
