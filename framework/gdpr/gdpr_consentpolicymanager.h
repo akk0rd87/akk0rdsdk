@@ -6,14 +6,17 @@
 namespace GDPRConsentPolicy {
     class Manager {
     public:
-        virtual void initialize(std::function<void(void)> callback) {
+        void initialize(std::function<void(void)> callback) {
             callbackFunc = std::move(callback);
+            requestConsent();
         }
     protected:
         Manager() {}
         void onGDPRConsentGathered() {
             callbackFunc();
         }
+
+        virtual void requestConsent() = 0;
     private:
         std::function<void(void)> callbackFunc = {};
         Manager(const Manager& rhs) = delete; // Копирующий: конструктор

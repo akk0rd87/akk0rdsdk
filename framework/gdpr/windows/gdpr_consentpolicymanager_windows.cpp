@@ -3,8 +3,7 @@
 namespace GDPRConsentPolicy {
     class WindowsGDPRManager : public GDPRConsentPolicy::Manager {
     private:
-        virtual void initialize(std::function<void(void)> callback) override {
-            GDPRConsentPolicy::Manager::initialize(std::move(callback));
+        virtual void requestConsent() override {
             onGDPRConsentGathered(); // on Windows we imitate consent gather immediate
         }
     };

@@ -2,37 +2,37 @@
 #include <jni.h>
 #include "../gdpr_consentpolicymanager.h"
 
-class AndroidGDPRManager : public GDPRConsentPolicy::Manager {
-public:
-    void onGDPRConsentGatheredFromJava() {
-        onGDPRConsentGathered();
-    }
-private:
-    JNIEnv* getJNIEnv() {
-        return (JNIEnv*)SDL_AndroidGetJNIEnv();
-    }
-
-    virtual void initialize(std::function<void(void)> callback) override {
-        GDPRConsentPolicy::Manager::initialize(std::move(callback));
-
-        auto env = getJNIEnv();
-        jclass gdprManager = env->FindClass("org/akkord/lib/GDPRConsentPolicyManager");
-        if (!gdprManager) {
-            logError("gdprManager not Found");
-            return;
+namespace GDPRConsentPolicy {
+    class AndroidGDPRManager : public GDPRConsentPolicy::Manager {
+    public:
+        void onGDPRConsentGatheredFromJava() {
+            onGDPRConsentGathered();
+        }
+    private:
+        JNIEnv* getJNIEnv() {
+            return (JNIEnv*)SDL_AndroidGetJNIEnv();
         }
 
-        jmethodID initMethod = env->GetStaticMethodID(gdprManager, "Initialize", "()V");
-        if (!initMethod) {
-            logError("Initialize Java method not Found");
-            return;
+        virtual void requestConsent() override {
+            auto env = getJNIEnv();
+            jclass gdprManager = env->FindClass("org/akkord/lib/GDPRConsentPolicyManager");
+            if (!gdprManager) {
+                logError("gdprManager not Found");
+                return;
+            }
+
+            jmethodID initMethod = env->GetStaticMethodID(gdprManager, "Initialize", "()V");
+            if (!initMethod) {
+                logError("Initialize Java method not Found");
+                return;
+            }
+
+            env->CallStaticVoidMethod(gdprManager, initMethod);
         }
+    };
+}
 
-        env->CallStaticVoidMethod(gdprManager, initMethod);
-    }
-};
-
-static AndroidGDPRManager androidGDPRManager;
+static GDPRConsentPolicy::AndroidGDPRManager androidGDPRManager;
 
 GDPRConsentPolicy::Manager& GDPRConsentPolicy::getManagerInstance() {
     return androidGDPRManager;
