@@ -1,18 +1,24 @@
+#include <atomic>
 #include <UserMessagingPlatform/UserMessagingPlatform.h>
 #include "../gdpr_consentpolicymanager.h"
 
 namespace GDPRConsentPolicy {
     class iOSGDPRManager : public GDPRConsentPolicy::Manager {
     private:
-        void sendCallback() {
+        std::atomic<bool> callBackSent;
 
+        void sendCallback() {
+            if(!callBackSent.exchange(true)) {
+                onGDPRConsentGathered();
+            }
         }
 
         virtual void requestConsent() override {
+            callBackSent.store(false);
+
             // Create a UMPRequestParameters object.
             UMPRequestParameters *parameters = [[UMPRequestParameters alloc] init];
-            // Set tag for under age of consent. NO means users are not under age
-            // of consent.
+            // Set tag for under age of consent. NO means users are not under age of consent.
             parameters.tagForUnderAgeOfConsent = NO;
 
             auto *rootController = [[[[UIApplication sharedApplication]delegate] window] rootViewController];
