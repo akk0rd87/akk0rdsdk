@@ -214,9 +214,11 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
 
 ads::Yandex::iOSProvider::iOSProvider(std::weak_ptr<ads::ProviderCallback> cbk, ads::Format format) :
 ads::Yandex::Provider (cbk) {
-    wasInited = true;
-    interstitialStatus = ads::InterstitialStatus::ReadyToLoad;
-    rewardedVideoStatus = ads::RewardedVideoStatus::ReadyToLoad;
+    [YMAMobileAds initializeSDKWithCompletionHandler:^{
+        wasInited = true;
+        interstitialStatus = ads::InterstitialStatus::ReadyToLoad;
+        rewardedVideoStatus = ads::RewardedVideoStatus::ReadyToLoad;
+    }];
 };
 
 void ads::Yandex::iOSProvider::InterstitialSetUnitId(const std::string& unitId) {
