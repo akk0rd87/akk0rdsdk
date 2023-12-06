@@ -2,6 +2,16 @@
 #include "implyandexadsios.h"
 #include "basewrapper.h"
 
+/*
+https://yandex.ru/support2/mobile-ads/ru/dev/ios
+https://yandex.ru/support2/mobile-ads/ru/dev/ios/refs
+https://yastatic.net/s3/doc-binary/src/dev/mobile-ads/ru/jazzy/index.html
+https://yandex.ru/support2/mobile-ads/ru/dev/ios/quick-start
+https://yandex.ru/support2/mobile-ads/ru/dev/ios/support-ios14
+https://yandex.ru/support2/mobile-ads/ru/dev/ios/example-ios
+https://github.com/yandexmobile/yandex-ads-sdk-ios/tree/master
+*/
+
 std::weak_ptr<ads::Yandex::iOSProvider> ads::Yandex::iOSProvider::staticProvider;
 bool                                    ads::Yandex::iOSProvider::wasInited = false;
 
