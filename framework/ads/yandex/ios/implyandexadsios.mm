@@ -94,7 +94,8 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
     }
 };
 
-- (void)didLoad:(YMAInterstitialAd *)interstitialAd {
+- (void)interstitialAdLoader:(YMAInterstitialAdLoader *)adLoader
+                     didLoad:(YMAInterstitialAd *)interstitialAd {
     if(interstitialAd) {
         self.interstitial = interstitialAd;
         ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialLoaded);
@@ -103,7 +104,8 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
     ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToLoad);
 }
 
-- (void)didFailToLoadWithError:(YMAAdRequestError *)error {
+- (void)interstitialAdLoader:(YMAInterstitialAdLoader *)adLoader
+      didFailToLoadWithError:(YMAAdRequestError *)error {
     ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToLoad);
 }
 
