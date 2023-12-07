@@ -61,7 +61,7 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
         }
     }
     catch (NSException * ex) {
-        
+        logDebug("Interstitial SetUintId error");
     }
 };
 
@@ -205,7 +205,7 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
         }
     }
     catch (NSException * ex) {
-        
+        logDebug("RewardedVideo SetUintId error");
     }
 };
 
@@ -217,7 +217,6 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
     }
 
     try {
-        logDebug("RewardedVideo Load inside try");
         [self.loader loadAdWithRequestConfiguration: self.cfg];
     }
     catch (NSException * ex) {
@@ -231,7 +230,7 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
         if(ads::Yandex::iOSProvider::wasInited && self.rewardedAd) {
             UIViewController *controller = [UIApplication sharedApplication].keyWindow.rootViewController;
             self.rewardedAd.delegate = self;
-            [self.rewardedAd presentFromViewController : controller];
+            [self.rewardedAd showFromViewController : controller];
             return;
         }
         ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoFailedToShow);
