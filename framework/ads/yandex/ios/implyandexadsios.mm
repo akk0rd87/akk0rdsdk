@@ -67,6 +67,7 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
 };
 
 - (void)Load {
+    logDebug("Load");
     if(!ads::Yandex::iOSProvider::wasInited || !self.cfg) {
         ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToLoad);
         return;
@@ -81,9 +82,11 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
 }
 
 -(void)Show {
+    logDebug("Show");
     try {
         if (ads::Yandex::iOSProvider::wasInited && self.interstitial) {
             UIViewController *controller = [UIApplication sharedApplication].keyWindow.rootViewController;
+            self.interstitial.delegate = self;
             [self.interstitial showFromViewController:controller];
             return;
         }
@@ -96,6 +99,7 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
 
 - (void)interstitialAdLoader:(YMAInterstitialAdLoader *)adLoader
                      didLoad:(YMAInterstitialAd *)interstitialAd {
+    logDebug("interstitialAdLoader:didLoad");
     if(interstitialAd) {
         self.interstitial = interstitialAd;
         ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialLoaded);
@@ -106,6 +110,7 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
 
 - (void)interstitialAdLoader:(YMAInterstitialAdLoader *)adLoader
       didFailToLoadWithError:(YMAAdRequestError *)error {
+    logDebug("interstitialAdLoader:didFailToLoadWithError");
     ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToLoad);
 }
 
@@ -116,6 +121,7 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
  @param error Information about the error (for details, see YMAAdErrorCode).
  */
 - (void)interstitialAd:(YMAInterstitialAd *)interstitialAd didFailToShowWithError:(NSError *)error {
+    logDebug("didFailToShowWithError");
     ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToShow);
 }
 
@@ -124,6 +130,7 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
  @param interstitialAd A reference to an object of the YMAInterstitialAd class that invoked the method.
  */
 - (void)interstitialAdDidShow:(YMAInterstitialAd *)interstitialAd {
+    logDebug("interstitialAdDidShow");
     ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialOpened);
 }
 
@@ -132,6 +139,7 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
  @param interstitialAd A reference to an object of the YMAInterstitialAd class that invoked the method.
  */
 - (void)interstitialAdDidDismiss:(YMAInterstitialAd *)interstitialAd {
+    logDebug("interstitialAdDidDismiss");
     ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialClosed);
 }
 
@@ -140,7 +148,7 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
  @param interstitialAd A reference to an object of the YMAInterstitialAd class that invoked the method.
  */
 - (void)interstitialAdDidClick:(YMAInterstitialAd *)interstitialAd {
-
+    logDebug("interstitialAdDidClick");
 }
 
 /**
@@ -150,7 +158,7 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
  */
 - (void)interstitialAd:(YMAInterstitialAd *)interstitialAd
 didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
-
+    logDebug("didTrackImpressionWithData");
 }
 @end
 
