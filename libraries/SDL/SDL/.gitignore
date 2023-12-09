@@ -15,7 +15,7 @@ build
 gen
 Build
 buildbot
-/VERSION
+/VERSION.txt
 
 *.so
 *.so.*
@@ -61,6 +61,11 @@ cmake-build-*
 .DS_Store
 xcuserdata
 *.xcworkspace
+
+# for QtCreator
+CMakeLists.txt.user
+build*/
+*.pro.user*
 
 # for Visual C++
 .vs
@@ -173,6 +178,7 @@ test/testyuv
 test/torturethread
 
 builddir/
+!build-scripts/
 debian/*.debhelper.log
 debian/*.substvars
 debian/*.tar.gz

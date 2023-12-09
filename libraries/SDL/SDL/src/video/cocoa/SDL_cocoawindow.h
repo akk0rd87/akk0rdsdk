@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -85,6 +85,7 @@ typedef enum
 -(void) windowDidResignKey:(NSNotification *) aNotification;
 -(void) windowDidChangeBackingProperties:(NSNotification *) aNotification;
 -(void) windowDidChangeScreenProfile:(NSNotification *) aNotification;
+-(void) windowDidChangeScreen:(NSNotification *) aNotification;
 -(void) windowWillEnterFullScreen:(NSNotification *) aNotification;
 -(void) windowDidEnterFullScreen:(NSNotification *) aNotification;
 -(void) windowWillExitFullScreen:(NSNotification *) aNotification;
