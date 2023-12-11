@@ -74,7 +74,7 @@ bool                                   ads::AdMob::iOSProvider::wasInited = fals
 
 -(void)Show {
     if (ads::AdMob::iOSProvider::wasInited && self.interstitial) {
-        UIViewController *controller = [UIApplication sharedApplication].keyWindow.rootViewController;
+        UIViewController *controller = [[[[UIApplication sharedApplication]delegate] window] rootViewController];
         if ([self.interstitial canPresentFromRootViewController :controller error:nil]) {
             [self.interstitial presentFromRootViewController:controller];
             return;
@@ -173,7 +173,7 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
 
 -(void)Show {
     if(ads::AdMob::iOSProvider::wasInited && self.rewardedAd) {
-        UIViewController *controller = [UIApplication sharedApplication].keyWindow.rootViewController;
+        UIViewController *controller = [[[[UIApplication sharedApplication]delegate] window] rootViewController];
         if([self.rewardedAd canPresentFromRootViewController:controller error:nil]) {
             [self.rewardedAd presentFromRootViewController:controller
                                   userDidEarnRewardHandler:^ {
@@ -214,8 +214,8 @@ ads::AdMob::Provider (cbk) {
     wasInited = false;
     [[GADMobileAds sharedInstance] startWithCompletionHandler:^(GADInitializationStatus *_Nonnull) {
         wasInited = true;
-        interstitialStatus = ads::Provider::InterstitialStatus::ReadyToLoad;
-        rewardedVideoStatus = ads::Provider::RewardedVideoStatus::ReadyToLoad;
+        interstitialStatus = ads::InterstitialStatus::ReadyToLoad;
+        rewardedVideoStatus = ads::RewardedVideoStatus::ReadyToLoad;
     }];
 };
 

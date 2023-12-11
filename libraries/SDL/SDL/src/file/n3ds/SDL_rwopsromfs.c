@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,39 +22,70 @@
 #include "SDL_rwopsromfs.h"
 #include "SDL_error.h"
 
+/* Checks if the mode is a kind of reading */
+static SDL_bool IsReadMode(const char *mode);
+
+/* Checks if the file starts with the given prefix */
+static SDL_bool HasPrefix(const char *file, const char *prefix);
+
+static FILE *TryOpenFile(const char *file, const char *mode);
+static FILE *TryOpenInRomfs(const char *file, const char *mode);
+
 /* Nintendo 3DS applications may embed resources in the executable. The
   resources are stored in a special read-only partition prefixed with
   'romfs:/'. As such, when opening a file, we should first try the romfs
   unless sdmc is specifically mentionned.
 */
-FILE *
-N3DS_FileOpen(const char *file, const char *mode)
+FILE *N3DS_FileOpen(const char *file, const char *mode)
 {
-    FILE *fp = NULL;
-    char *romfs_path;
-
     /* romfs are read-only */
-    if (SDL_strchr(mode, 'r') == NULL) {
+    if (!IsReadMode(mode)) {
         return fopen(file, mode);
     }
 
     /* If the path has an explicit prefix, we skip the guess work */
-    if (SDL_strncmp("romfs:/", file, 7) == 0 ||
-        SDL_strncmp("sdmc:/", file, 6) == 0) {
+    if (HasPrefix(file, "romfs:/") || HasPrefix(file, "sdmc:/")) {
         return fopen(file, mode);
     }
 
-    if (SDL_asprintf(&romfs_path, "romfs:/%s", file) < 0) {
-        SDL_OutOfMemory();
-        return NULL;
-    }
+    return TryOpenFile(file, mode);
+}
 
-    fp = fopen(romfs_path, mode);
+static SDL_bool IsReadMode(const char *mode)
+{
+    return SDL_strchr(mode, 'r') != NULL;
+}
+
+static SDL_bool HasPrefix(const char *file, const char *prefix)
+{
+    return SDL_strncmp(prefix, file, SDL_strlen(prefix)) == 0;
+}
+
+static FILE *TryOpenFile(const char *file, const char *mode)
+{
+    FILE *fp = NULL;
+
+    fp = TryOpenInRomfs(file, mode);
     if (fp == NULL) {
         fp = fopen(file, mode);
     }
 
-    SDL_free(romfs_path);
+    return fp;
+}
+
+static FILE *TryOpenInRomfs(const char *file, const char *mode)
+{
+    FILE *fp = NULL;
+    char *prefixed_filepath = NULL;
+
+    if (SDL_asprintf(&prefixed_filepath, "romfs:/%s", file) < 0) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
+
+    fp = fopen(prefixed_filepath, mode);
+
+    SDL_free(prefixed_filepath);
     return fp;
 }
 

@@ -2,6 +2,16 @@
 #include "implyandexadsios.h"
 #include "basewrapper.h"
 
+/*
+https://yandex.ru/support2/mobile-ads/ru/dev/ios
+https://yandex.ru/support2/mobile-ads/ru/dev/ios/refs
+https://yastatic.net/s3/doc-binary/src/dev/mobile-ads/ru/jazzy/index.html
+https://yandex.ru/support2/mobile-ads/ru/dev/ios/quick-start
+https://yandex.ru/support2/mobile-ads/ru/dev/ios/support-ios14
+https://yandex.ru/support2/mobile-ads/ru/dev/ios/example-ios
+https://github.com/yandexmobile/yandex-ads-sdk-ios/tree/master
+*/
+
 std::weak_ptr<ads::Yandex::iOSProvider> ads::Yandex::iOSProvider::staticProvider;
 bool                                    ads::Yandex::iOSProvider::wasInited = false;
 
@@ -12,9 +22,11 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
 +(iYandexInterstitial*) defaultInterstitial;
 @end
 
-@interface iYandexInterstitial() <YMAInterstitialAdDelegate>
+@interface iYandexInterstitial() <YMAInterstitialAdLoaderDelegate, YMAInterstitialAdDelegate>
 @property(nonatomic, strong) YMAInterstitialAd *interstitial;
-@property(nonatomic)         std::string        UnitID;
+@property(nonatomic, strong) YMAInterstitialAdLoader *loader;
+@property(nonatomic, strong) YMAAdRequestConfiguration* cfg;
+-(void)Init;
 -(void)SetUintId:(const char* )ID;
 -(void)Load;
 -(void)Show;
@@ -25,80 +37,126 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
 + (iYandexInterstitial *) defaultInterstitial
 {
     static iYandexInterstitial* yandex;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        if (!yandex) {
-            yandex = [[iYandexInterstitial alloc] init];
-        }
-    });
+    if (!yandex) {
+        yandex = [[iYandexInterstitial alloc] init];
+        [yandex Init];
+    }
     return yandex;
 }
 
--(void)SetUintId:(const char* )ID {
-    self.UnitID = ID;
+-(void)Init {
+    self.loader = [[YMAInterstitialAdLoader alloc] init];
+    self.loader.delegate = self;
+};
+
+-(void)SetUintId:(const char* )IDstr {
+    try {
+        if(self.cfg) {
+            [self.cfg release];
+        }
+        NSString *ID = [[NSString alloc] initWithUTF8String:IDstr];
+        if(ID) {
+            self.cfg = [[YMAAdRequestConfiguration alloc] initWithAdUnitID:ID];
+            [ID release];
+        }
+    }
+    catch (NSException * ex) {
+        logDebug("Interstitial SetUintId error");
+    }
 };
 
 - (void)Load {
-    if(!ads::Yandex::iOSProvider::wasInited) {
+    logDebug("Interstitial Load");
+    if(!ads::Yandex::iOSProvider::wasInited || !self.cfg || !self.loader) {
         ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToLoad);
         return;
     }
 
-    @autoreleasepool {
-        try {
-            NSString *ID = [[NSString alloc] initWithUTF8String:self.UnitID.c_str()];
-            // self.interstitial = [[YMAInterstitialAd alloc] initWithAdUnitID:ID]; new version
-            self.interstitial = [[YMAInterstitialAd alloc] initWithBlockID:ID]; // old version
-            if(self.interstitial) {
-                self.interstitial.delegate = self;
-                [self.interstitial load];
-            }
-            else {
-                ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToLoad);
-            }
-        }
-        catch (NSException * ex) {
-            ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToLoad);
-        }
+    try {
+        [self.loader loadAdWithRequestConfiguration: self.cfg];
+    }
+    catch (NSException * ex) {
+        ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToLoad);
     }
 }
 
 -(void)Show {
-    if (ads::Yandex::iOSProvider::wasInited && self.interstitial) {
-        UIViewController *controller = [UIApplication sharedApplication].keyWindow.rootViewController;
-        [self.interstitial presentFromViewController:controller];
-        //[self.interstitial presentFromRootViewController:controller];
-        return;
+    logDebug("Interstitial Show");
+    try {
+        if (ads::Yandex::iOSProvider::wasInited && self.interstitial) {
+            UIViewController *controller = [UIApplication sharedApplication].keyWindow.rootViewController;
+            self.interstitial.delegate = self;
+            [self.interstitial showFromViewController:controller];
+            return;
+        }
+        ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToShow);
     }
-    ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToShow);
+    catch (NSException * ex) {
+        ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToLoad);
+    }
 };
 
-- (void)interstitialAdDidLoad:(nonnull YMAInterstitialAd *)interstitialAd {
-    ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialLoaded);
-}
-
-- (void)interstitialAdDidFailToLoad:(nonnull YMAInterstitialAd *)interstitialAd error:(nonnull NSError *)error {
+- (void)interstitialAdLoader:(YMAInterstitialAdLoader *)adLoader didLoad:(YMAInterstitialAd *)interstitialAd {
+    logDebug("interstitialAdLoader:didLoad");
+    if(interstitialAd) {
+        self.interstitial = interstitialAd;
+        ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialLoaded);
+        return;
+    }
     ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToLoad);
 }
 
-- (void)interstitialAdDidFailToPresent:(nonnull YMAInterstitialAd *)interstitialAd error:(nonnull NSError *)error {
+- (void)interstitialAdLoader:(YMAInterstitialAdLoader *)adLoader didFailToLoadWithError:(YMAAdRequestError *)error {
+    logDebug("interstitialAdLoader:didFailToLoadWithError");
+    ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToLoad);
+}
+
+
+/**
+ Notifies that the ad can't be displayed.
+ @param interstitialAd A reference to an object of the YMAInterstitialAd class that invoked the method.
+ @param error Information about the error (for details, see YMAAdErrorCode).
+ */
+- (void)interstitialAd:(YMAInterstitialAd *)interstitialAd didFailToShowWithError:(NSError *)error {
+    logDebug("didFailToShowWithError");
     ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToShow);
 }
 
-- (void)interstitialAdDidAppear:(nonnull YMAInterstitialAd *)interstitialAd {
+/**
+ Called after the interstitial ad shows.
+ @param interstitialAd A reference to an object of the YMAInterstitialAd class that invoked the method.
+ */
+- (void)interstitialAdDidShow:(YMAInterstitialAd *)interstitialAd {
+    logDebug("interstitialAdDidShow");
     ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialOpened);
 }
 
-- (void)interstitialAdDidDisappear:(nonnull YMAInterstitialAd *)interstitialAd {
+/**
+ Called after dismissing the interstitial ad.
+ @param interstitialAd A reference to an object of the YMAInterstitialAd class that invoked the method.
+ */
+- (void)interstitialAdDidDismiss:(YMAInterstitialAd *)interstitialAd {
+    logDebug("interstitialAdDidDismiss");
     ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialClosed);
 }
 
-- (void)interstitialAdWillLeaveApplication:(nonnull YMAInterstitialAd *)interstitialAd {}
-- (void)interstitialAdWillAppear:(nonnull YMAInterstitialAd *)interstitialAd {}
-- (void)interstitialAdWillDisappear:(nonnull YMAInterstitialAd *)interstitialAd {}
-- (void)interstitialAdDidClick:(nonnull YMAInterstitialAd *)interstitialAd {}
-- (void)interstitialAd:(nonnull YMAInterstitialAd *)interstitialAd willPresentScreen:(nullable UIViewController *)webBrowser {}
-- (void)interstitialAd:(nonnull YMAInterstitialAd *)interstitialAd didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {}
+/**
+ Notifies that the user has clicked on the ad.
+ @param interstitialAd A reference to an object of the YMAInterstitialAd class that invoked the method.
+ */
+- (void)interstitialAdDidClick:(YMAInterstitialAd *)interstitialAd {
+    logDebug("interstitialAdDidClick");
+}
+
+/**
+ Notifies delegate when an impression was tracked.
+ @param interstitialAd A reference to an object of the YMAInterstitialAd class that invoked the method.
+ @param impressionData Ad impression-level revenue data.
+ */
+- (void)interstitialAd:(YMAInterstitialAd *)interstitialAd
+didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
+    logDebug("didTrackImpressionWithData");
+}
 @end
 
 /*
@@ -108,9 +166,10 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
 +(iYandexRewardedVideo*) defaultRewardedVideo;
 @end
 
-@interface iYandexRewardedVideo() <YMARewardedAdDelegate>
+@interface iYandexRewardedVideo() <YMARewardedAdLoaderDelegate, YMARewardedAdDelegate>
 @property(nonatomic, strong) YMARewardedAd *rewardedAd;
-@property(nonatomic)         std::string        UnitID;
+@property(nonatomic, strong) YMARewardedAdLoader *loader;
+@property(nonatomic, strong) YMAAdRequestConfiguration* cfg;
 -(void)SetUintId:(const char* )ID;
 -(void)Load;
 -(void)Show;
@@ -121,92 +180,156 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
 + (iYandexRewardedVideo *) defaultRewardedVideo
 {
     static iYandexRewardedVideo* yandex;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        if (!yandex) {
-            yandex = [[iYandexRewardedVideo alloc] init];
-        }
-    });
+    if (!yandex) {
+        yandex = [[iYandexRewardedVideo alloc] init];
+        [yandex Init];
+    }
     return yandex;
 }
 
--(void)SetUintId:(const char* )ID {
-    self.UnitID = ID;
+-(void)Init {
+    self.loader = [[YMARewardedAdLoader alloc] init];
+    self.loader.delegate = self;
+};
+
+-(void)SetUintId:(const char* )IDstr {
+    try {
+        if(self.cfg) {
+            [self.cfg release];
+        }
+        NSString *ID = [[NSString alloc] initWithUTF8String:IDstr];
+        if(ID) {
+            logDebug("RewardedVideo SetUintId");
+            self.cfg = [[YMAAdRequestConfiguration alloc] initWithAdUnitID:ID];
+            [ID release];
+        }
+    }
+    catch (NSException * ex) {
+        logDebug("RewardedVideo SetUintId error");
+    }
 };
 
 - (void)Load {
-    if(!ads::Yandex::iOSProvider::wasInited) {
+    logDebug("RewardedVideo Load");
+    if(!ads::Yandex::iOSProvider::wasInited || !self.cfg || !self.loader) {
         ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoFailedToLoad);
         return;
     }
 
-    @autoreleasepool {
-        try {
-            NSString *ID = [[NSString alloc] initWithUTF8String:self.UnitID.c_str()];
-            //self.rewardedAd = [[YMARewardedAd alloc] initWithAdUnitID:ID]; new version
-            self.rewardedAd = [[YMARewardedAd alloc] initWithBlockID:ID]; // old version
-            if(self.rewardedAd) {
-                self.rewardedAd.delegate = self;
-                [self.rewardedAd load];
-            }
-            else {
-                ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoFailedToLoad);
-            }
-        }
-        catch (NSException * ex) {
-            ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToLoad);
-        }
+    try {
+        [self.loader loadAdWithRequestConfiguration: self.cfg];
+    }
+    catch (NSException * ex) {
+        ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoFailedToLoad);
     }
 }
 
 -(void)Show {
-    if(ads::Yandex::iOSProvider::wasInited && self.rewardedAd) {
-        UIViewController *controller = [UIApplication sharedApplication].keyWindow.rootViewController;
-        [self.rewardedAd presentFromViewController : controller];
+    logDebug("RewardedVideo Show");
+    try {
+        if(ads::Yandex::iOSProvider::wasInited && self.rewardedAd) {
+            UIViewController *controller = [UIApplication sharedApplication].keyWindow.rootViewController;
+            self.rewardedAd.delegate = self;
+            [self.rewardedAd showFromViewController : controller];
+            return;
+        }
+        ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoFailedToShow);
+    }
+    catch (NSException * ex) {
+        ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoFailedToShow);
+    }
+}
+
+/**
+ Notifies that the ad loaded successfully.
+ @param adLoader A reference to an object of the YMARewardedAdLoader class that invoked the method.
+ @param rewardedAd A reference to an object of the YMARewardedAd class that invoked the method.
+ */
+- (void)rewardedAdLoader:(YMARewardedAdLoader *)adLoader didLoad:(YMARewardedAd *)rewardedAdID {
+    logDebug("RewardedVideoLoaded");
+    if(rewardedAdID) {
+        self.rewardedAd = rewardedAdID;
+        ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoLoaded);
         return;
     }
-    ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoFailedToShow);
+    ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoFailedToLoad);
 }
 
-- (void)rewardedAd:(nonnull YMARewardedAd *)rewardedAd didReward:(nonnull id<YMAReward>)reward {
-    ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoRewarded);
-}
-
-- (void)rewardedAdDidLoad:(nonnull YMARewardedAd *)rewardedAd {
-    logDebug("RewardedVideoLoaded");
-    ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoLoaded);
-}
-
-- (void)rewardedAdDidFailToLoad:(nonnull YMARewardedAd *)rewardedAd error:(nonnull NSError *)error {
+/**
+ Notifies that the ad failed to load.
+ @param adLoader A reference to an object of the YMARewardedAdLoader class that invoked the method.
+ @param error Information about the error (for details, see YMAAdErrorCode).
+ */
+- (void)rewardedAdLoader:(YMARewardedAdLoader *)adLoader didFailToLoadWithError:(YMAAdRequestError *)error {
     logDebug("RewardedVideoFailedToLoad");
     ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoFailedToLoad);
 }
 
-- (void)rewardedAdDidFailToPresent:(nonnull YMARewardedAd *)rewardedAd error:(nonnull NSError *)error {
+/**
+ Notifies that rewarded ad has rewarded the user.
+ @param rewardedAd A reference to an object of the YMARewardedAd class that invoked the method.
+ @param reward Reward given to the user.
+ */
+- (void)rewardedAd:(YMARewardedAd *)rewardedAd didReward:(id<YMAReward>)reward {
+    logDebug("RewardedVideoRewarded");
+    ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoRewarded);
+}
+
+//@optional
+
+/**
+ Notifies that the ad can't be displayed.
+ @param rewardedAd A reference to an object of the YMARewardedAd class that invoked the method.
+ @param error Information about the error (for details, see YMAAdErrorCode).
+ */
+- (void)rewardedAd:(YMARewardedAd *)rewardedAd didFailToShowWithError:(NSError *)error {
+    logDebug("RewardedVideoFailedToShow");
     ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoFailedToShow);
 }
 
-- (void)rewardedAdDidDisappear:(nonnull YMARewardedAd *)rewardedAd {
-    ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoClosed);
-}
-
-- (void)rewardedAdDidAppear:(nonnull YMARewardedAd *)rewardedAd {
+/**
+ Called after the rewarded ad shows.
+ @param rewardedAd A reference to an object of the YMARewardedAd class that invoked the method.
+ */
+- (void)rewardedAdDidShow:(YMARewardedAd *)rewardedAd {
+    logDebug("RewardedVideoOpened");
     ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoOpened);
 }
 
-- (void)rewardedAdWillLeaveApplication:(nonnull YMARewardedAd *)rewardedAd {}
-- (void)rewardedAdWillAppear:(nonnull YMARewardedAd *)rewardedAd {}
-- (void)rewardedAdWillDisappear:(nonnull YMARewardedAd *)rewardedAd {}
-- (void)rewardedAdDidClick:(nonnull YMARewardedAd *)rewardedAd {}
-- (void)rewardedAd:(nonnull YMARewardedAd *)rewardedAd willPresentScreen:(nullable UIViewController *)viewController {}
-- (void)rewardedAd:(nonnull YMARewardedAd *)rewardedAd didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {}
+/**
+ Called after dismissing the rewarded ad.
+ @param rewardedAd A reference to an object of the YMARewardedAd class that invoked the method.
+ */
+- (void)rewardedAdDidDismiss:(YMARewardedAd *)rewardedAd {
+    logDebug("RewardedVideoClosed");
+    ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoClosed);
+}
+
+/**
+ Notifies that the user has clicked on the ad.
+ @param rewardedAd A reference to an object of the YMARewardedAd class that invoked the method.
+ */
+- (void)rewardedAdDidClick:(YMARewardedAd *)rewardedAd {
+    logDebug("rewardedAdDidClick");
+}
+
+/**
+ Notifies delegate when an impression was tracked.
+ @param rewardedAd A reference to an object of the YMARewardedAd class that invoked the method.
+ @param impressionData Ad impression-level revenue data.
+ */
+- (void)rewardedAd:(YMARewardedAd *)rewardedAd didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
+    logDebug("didTrackImpressionWithData");
+}
 @end
 
 ads::Yandex::iOSProvider::iOSProvider(std::weak_ptr<ads::ProviderCallback> cbk, ads::Format format) :
 ads::Yandex::Provider (cbk) {
-    wasInited = true;
-    interstitialStatus = ads::Provider::InterstitialStatus::ReadyToLoad;
-    rewardedVideoStatus = ads::Provider::RewardedVideoStatus::ReadyToLoad;
+    [YMAMobileAds initializeSDKWithCompletionHandler:^{
+        wasInited = true;
+        interstitialStatus = ads::InterstitialStatus::ReadyToLoad;
+        rewardedVideoStatus = ads::RewardedVideoStatus::ReadyToLoad;
+    }];
 };
 
 void ads::Yandex::iOSProvider::InterstitialSetUnitId(const std::string& unitId) {
