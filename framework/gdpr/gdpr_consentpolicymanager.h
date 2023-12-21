@@ -6,19 +6,30 @@
 namespace GDPRConsentPolicy {
     class Manager {
     public:
-        void initialize(std::function<void(void)> callback) {
-            callbackFunc = std::move(callback);
+        void initialize(
+            std::function<void(void)> consentGatheredCallback,
+            std::function<void(void)> privacyOptionsRequiredCallback
+        ) {
+            consentGatheredFunc = std::move(consentGatheredCallback);
+            privacyOptionsRequiredFunc = std::move(privacyOptionsRequiredCallback);
             requestConsent();
         }
+
+        virtual void showPrivacyOptionsForm() = 0;
     protected:
         Manager() {}
         void onGDPRConsentGathered() {
-            callbackFunc();
+            consentGatheredFunc();
+        }
+
+        void setPrivacyOptionsRequired() {
+            privacyOptionsRequiredFunc();
         }
 
         virtual void requestConsent() = 0;
     private:
-        std::function<void(void)> callbackFunc = {};
+        std::function<void(void)> consentGatheredFunc = {};
+        std::function<void(void)> privacyOptionsRequiredFunc = {};
         Manager(const Manager& rhs) = delete; // Копирующий: конструктор
         Manager(Manager&& rhs) = delete; // Перемещающий: конструктор
         Manager& operator= (const Manager& rhs) = delete; // Оператор копирующего присваивания

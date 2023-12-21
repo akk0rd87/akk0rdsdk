@@ -8,26 +8,48 @@ namespace GDPRConsentPolicy {
         void onGDPRConsentGatheredFromJava() {
             onGDPRConsentGathered();
         }
+
+        void setPrivacyOptionsRequiredFromJava() {
+            setPrivacyOptionsRequired();
+        }
     private:
         JNIEnv* getJNIEnv() {
             return (JNIEnv*)SDL_AndroidGetJNIEnv();
         }
 
-        virtual void requestConsent() override {
+        jclass getGDPRManager() {
             auto env = getJNIEnv();
             jclass gdprManager = env->FindClass("org/akkord/lib/GDPRConsentPolicyManager");
             if (!gdprManager) {
                 logError("gdprManager not Found");
-                return;
             }
+            return gdprManager;
+        }
 
-            jmethodID initMethod = env->GetStaticMethodID(gdprManager, "Initialize", "()V");
-            if (!initMethod) {
-                logError("Initialize Java method not Found");
-                return;
+        virtual void requestConsent() override {
+            auto gdprManager = getGDPRManager();
+            if (gdprManager) {
+                auto env = getJNIEnv();
+                jmethodID initMethod = env->GetStaticMethodID(gdprManager, "Initialize", "()V");
+                if (!initMethod) {
+                    logError("Initialize Java method not Found");
+                    return;
+                }
+                env->CallStaticVoidMethod(gdprManager, initMethod);
             }
+        }
 
-            env->CallStaticVoidMethod(gdprManager, initMethod);
+        virtual void showPrivacyOptionsForm() override {
+            auto gdprManager = getGDPRManager();
+            if (gdprManager) {
+                auto env = getJNIEnv();
+                jmethodID showPrivacyOptions = env->GetStaticMethodID(gdprManager, "ShowPrivacyOptionsForm", "()V");
+                if (!showPrivacyOptions) {
+                    logError("ShowPrivacyOptionsForm Java method not Found");
+                    return;
+                }
+                env->CallStaticVoidMethod(gdprManager, showPrivacyOptions);
+            }
         }
     };
 }
@@ -39,7 +61,12 @@ GDPRConsentPolicy::Manager& GDPRConsentPolicy::getManagerInstance() {
 }
 
 extern "C" {
-    JNIEXPORT void JNICALL Java_org_akkord_lib_GDPRConsentPolicyManager_GDPRConsentReceived(JNIEnv*, jclass) {
-        androidGDPRManager.onGDPRConsentGatheredFromJava();
+    JNIEXPORT void JNICALL Java_org_akkord_lib_GDPRConsentPolicyManager_GDPRCallback(JNIEnv*, jclass, jint Code) {
+        switch (Code) {
+        case 0: androidGDPRManager.onGDPRConsentGatheredFromJava(); break;
+        case 1: androidGDPRManager.setPrivacyOptionsRequiredFromJava(); break;
+        default:
+            break;
+        }
     }
 }

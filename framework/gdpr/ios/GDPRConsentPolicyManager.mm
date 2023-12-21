@@ -59,6 +59,10 @@ namespace GDPRConsentPolicy {
                 sendCallback();
             }
         }
+
+        virtual void showPrivacyOptionsForm() override {
+
+        }
     };
 }
 

@@ -6,6 +6,10 @@ namespace GDPRConsentPolicy {
         virtual void requestConsent() override {
             onGDPRConsentGathered(); // on Windows we imitate consent gather immediate
         }
+
+        virtual void showPrivacyOptionsForm() override {
+
+        }
     };
 }
 

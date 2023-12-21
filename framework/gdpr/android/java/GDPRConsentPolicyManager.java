@@ -19,7 +19,10 @@ public class GDPRConsentPolicyManager {
     private static final String TAG = "SDL";
     private static org.akkord.lib.GDPRConsentPolicyObserver gdprConsentPolicyObserver = null;
     private static ConsentInformation consentInformation = null;
-    private static native void GDPRConsentReceived();
+    private static native void GDPRCallback(int Code);
+
+    public static final int GDPR_CONSENT_GATHERED = 0;
+    public static final int PRIVACY_OPTIONS_REQUIRED = 1;
 
     private static void private_GDPRConsentReceived() {
         try {
@@ -27,13 +30,20 @@ public class GDPRConsentPolicyManager {
                 return;
             }
 
-            GDPRConsentReceived();
+            GDPRCallback(GDPR_CONSENT_GATHERED);
             if(null != gdprConsentPolicyObserver) {
                 gdprConsentPolicyObserver.onGDPRConsentGathered();
             }
         }
         catch(Exception e) {
             Log.e(TAG, e.getMessage());
+        }
+    }
+
+    private static void private_SetPrivacyOptionsRequired() {
+        GDPRCallback(PRIVACY_OPTIONS_REQUIRED);
+        if(null != gdprConsentPolicyObserver) {
+            gdprConsentPolicyObserver.setPrivacyOptionsRequired();
         }
     }
 
@@ -44,6 +54,31 @@ public class GDPRConsentPolicyManager {
     public static void Initialize() {
         try {
             private_Initialize();
+        }
+        catch(Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+    }
+
+    public static void ShowPrivacyOptionsForm (){
+        try {
+            org.akkord.lib.Utils.GetContext().runOnUiThread(new Runnable() {
+                public void run() {
+                    try {
+                        UserMessagingPlatform.showPrivacyOptionsForm(
+                            org.akkord.lib.Utils.GetContext(),
+                            formError -> {
+                                if (formError != null) {
+                                    Log.d(TAG, "showPrivacyOptionsForm: error: " + formError.getMessage());
+                                }
+                            }
+                        );
+                    }
+                    catch(Exception e) {
+                        Log.e(TAG, e.getMessage());
+                    }
+                }
+            });
         }
         catch(Exception e) {
             Log.e(TAG, e.getMessage());
@@ -84,8 +119,14 @@ public class GDPRConsentPolicyManager {
                         }
 
                         // Consent has been gathered.
-                        Log.d(TAG, "GDPR: Consent has been gathered from callback function");
-                        private_GDPRConsentReceived();
+                        if (consentInformation.canRequestAds()) {
+                            Log.d(TAG, "GDPR: Consent has been gathered from callback function");
+                            private_GDPRConsentReceived();
+                        }
+
+                        if (isPrivacyOptionsRequired()) {
+                            private_SetPrivacyOptionsRequired();
+                        }
                     }
                 );
             },
@@ -102,5 +143,9 @@ public class GDPRConsentPolicyManager {
         } else {
             Log.d(TAG, "GDPR: consentInformation.canRequestAds returned false");
         }
+    }
+
+    private static boolean isPrivacyOptionsRequired() {
+        return consentInformation.getPrivacyOptionsRequirementStatus() == ConsentInformation.PrivacyOptionsRequirementStatus.REQUIRED;
     }
 }
