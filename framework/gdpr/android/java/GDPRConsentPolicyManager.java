@@ -41,9 +41,14 @@ public class GDPRConsentPolicyManager {
     }
 
     private static void private_SetPrivacyOptionsRequired() {
-        GDPRCallback(PRIVACY_OPTIONS_REQUIRED);
-        if(null != gdprConsentPolicyObserver) {
-            gdprConsentPolicyObserver.setPrivacyOptionsRequired();
+        try {
+            GDPRCallback(PRIVACY_OPTIONS_REQUIRED);
+            if(null != gdprConsentPolicyObserver) {
+                gdprConsentPolicyObserver.setPrivacyOptionsRequired();
+            }
+        }
+        catch(Exception e) {
+            Log.e(TAG, e.getMessage());
         }
     }
 
