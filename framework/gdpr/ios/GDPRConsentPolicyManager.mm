@@ -48,9 +48,12 @@ namespace GDPRConsentPolicy {
                                 }
 
                                 // Consent has been gathered.
-
                                 if (UMPConsentInformation.sharedInstance.canRequestAds) {
                                     sendCallback();
+                                }
+
+                                if(isPrivacyOptionsRequired()) {
+                                    setPrivacyOptionsRequired();
                                 }
                             }];
                     }];
@@ -61,7 +64,19 @@ namespace GDPRConsentPolicy {
         }
 
         virtual void showPrivacyOptionsForm() override {
+            auto *rootController = [[[[UIApplication sharedApplication]delegate] window] rootViewController];
+            [UMPConsentForm presentPrivacyOptionsFormFromViewController:rootController
+                completionHandler:^(NSError *_Nullable formError) {
+                    if (formError) {
+                        // Handle the error.
+                        NSLog(@"Error: %@", formError.localizedDescription);
+                    }
+                }
+            ];
+        }
 
+        bool isPrivacyOptionsRequired() {
+            return UMPPrivacyOptionsRequirementStatusRequired == UMPConsentInformation.sharedInstance.privacyOptionsRequirementStatus;
         }
     };
 }
