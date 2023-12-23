@@ -6,8 +6,19 @@
 
 #import <CoreFoundation/CFBundle.h>
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
 #import <StoreKit/StoreKit.h>
+
+UIViewController* iosWrapper::getRootViewController() {
+    return [UIApplication sharedApplication].keyWindow.rootViewController;
+}
+
+void iosWrapper::showViewOverRootViewController(UIActivityViewController *activityVC) {
+    auto controller = iosWrapper::getRootViewController();
+    if(controller) {
+        activityVC.popoverPresentationController.sourceView = controller.view;
+        [controller presentViewController:activityVC animated:YES completion:nil];
+    }
+}
 
 class iOSPlatformWrapper : public PlatformWrapper {
 
@@ -191,11 +202,7 @@ class iOSPlatformWrapper : public PlatformWrapper {
                                     UIActivityTypePostToFlickr,
                                     UIActivityTypePostToVimeo];
         activityVC.excludedActivityTypes = excludeActivities;
-
-        auto appDelegate = [[UIApplication sharedApplication] delegate];
-        activityVC.popoverPresentationController.sourceView = appDelegate.window.rootViewController.view;
-        [appDelegate.window.rootViewController presentViewController:activityVC animated:YES completion:nil];
-
+        iosWrapper::showViewOverRootViewController(activityVC);
     //    [sTitle release];
         [sMessage release];
     };
@@ -262,12 +269,11 @@ class iOSPlatformWrapper : public PlatformWrapper {
             }
         }
 
-        //UIViewController *controller = [UIApplication sharedApplication].keyWindow.rootViewController;
-        //[controller presentViewController:alert animated:YES completion:nil];
-
-        auto appDelegate = [[UIApplication sharedApplication] delegate];
-        [appDelegate.window.rootViewController dismissViewControllerAnimated:YES completion:nil];
-        [appDelegate.window.rootViewController presentViewController:alert animated:YES completion:nil];
+        auto controller = iosWrapper::getRootViewController();
+        if(controller) {
+            [controller dismissViewControllerAnimated:YES completion:nil];
+            [controller presentViewController:alert animated:YES completion:nil];
+        }
     };
 
     virtual void vSharePNG(const char* Title, const char* File) override {
@@ -288,26 +294,18 @@ class iOSPlatformWrapper : public PlatformWrapper {
                                     UIActivityTypePostToFlickr,
                                     UIActivityTypePostToVimeo];
         activityVC.excludedActivityTypes = excludeActivities;
-
-        auto appDelegate = [[UIApplication sharedApplication] delegate];
-        activityVC.popoverPresentationController.sourceView = appDelegate.window.rootViewController.view;
-        [appDelegate.window.rootViewController presentViewController:activityVC animated:YES completion:nil];
-
+        iosWrapper::showViewOverRootViewController(activityVC);
         [path release];
         [imgShare release];
         [imageData release];
     };
-    
+
     virtual void vSharePDF(const char* Title, const char* File) override {
         NSString *path = [[NSString alloc] initWithUTF8String:File];
         NSData *pdfData = [NSData dataWithContentsOfFile:path];
 
         UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:@[@"PDF", pdfData] applicationActivities:nil];
-
-        auto appDelegate = [[UIApplication sharedApplication] delegate];
-        activityVC.popoverPresentationController.sourceView = appDelegate.window.rootViewController.view;
-        [appDelegate.window.rootViewController presentViewController:activityVC animated:YES completion:nil];
-        
+        iosWrapper::showViewOverRootViewController(activityVC);
         [path release];
     }
 

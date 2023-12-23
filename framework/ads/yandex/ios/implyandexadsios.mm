@@ -1,6 +1,7 @@
 #import <YandexMobileAds/YandexMobileAds.h>
 #include "implyandexadsios.h"
 #include "basewrapper.h"
+#include "core/platformwrapper/ios/ios_wrapper.h"
 
 /*
 https://yandex.ru/support2/mobile-ads/ru/dev/ios
@@ -84,10 +85,12 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
     logDebug("Interstitial Show");
     try {
         if (ads::Yandex::iOSProvider::wasInited && self.interstitial) {
-            UIViewController *controller = [UIApplication sharedApplication].keyWindow.rootViewController;
-            self.interstitial.delegate = self;
-            [self.interstitial showFromViewController:controller];
-            return;
+            auto controller = iosWrapper::getRootViewController();
+            if(controller) {
+                self.interstitial.delegate = self;
+                [self.interstitial showFromViewController:controller];            
+                return;
+            }
         }
         ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToShow);
     }
@@ -228,10 +231,12 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
     logDebug("RewardedVideo Show");
     try {
         if(ads::Yandex::iOSProvider::wasInited && self.rewardedAd) {
-            UIViewController *controller = [UIApplication sharedApplication].keyWindow.rootViewController;
-            self.rewardedAd.delegate = self;
-            [self.rewardedAd showFromViewController : controller];
-            return;
+            auto controller = iosWrapper::getRootViewController();
+            if(controller) {
+                self.rewardedAd.delegate = self;
+                [self.rewardedAd showFromViewController : controller];
+                return;
+            }
         }
         ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoFailedToShow);
     }

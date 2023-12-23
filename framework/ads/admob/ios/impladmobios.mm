@@ -1,6 +1,7 @@
 #import <GoogleMobileAds/GoogleMobileAds.h>
 #include "impladmobios.h"
 #include "basewrapper.h"
+#include "core/platformwrapper/ios/ios_wrapper.h"
 
 std::weak_ptr<ads::AdMob::iOSProvider> ads::AdMob::iOSProvider::staticProvider;
 bool                                   ads::AdMob::iOSProvider::wasInited = false;
@@ -74,10 +75,12 @@ bool                                   ads::AdMob::iOSProvider::wasInited = fals
 
 -(void)Show {
     if (ads::AdMob::iOSProvider::wasInited && self.interstitial) {
-        UIViewController *controller = [[[[UIApplication sharedApplication]delegate] window] rootViewController];
-        if ([self.interstitial canPresentFromRootViewController :controller error:nil]) {
-            [self.interstitial presentFromRootViewController:controller];
-            return;
+        auto controller = iosWrapper::getRootViewController();
+        if(controller) {
+            if ([self.interstitial canPresentFromRootViewController :controller error:nil]) {
+                [self.interstitial presentFromRootViewController:controller];
+                return;
+            }
         }
     }
     ads::AdMob::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToShow);
@@ -173,14 +176,16 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
 
 -(void)Show {
     if(ads::AdMob::iOSProvider::wasInited && self.rewardedAd) {
-        UIViewController *controller = [[[[UIApplication sharedApplication]delegate] window] rootViewController];
-        if([self.rewardedAd canPresentFromRootViewController:controller error:nil]) {
-            [self.rewardedAd presentFromRootViewController:controller
-                                  userDidEarnRewardHandler:^ {
-                logDebug("Rewarded");
-                ads::AdMob::iOSProvider::onAdEvent(ads::Event::RewardedVideoRewarded);
-            }];
-            return;
+        auto controller = iosWrapper::getRootViewController();
+        if(controller) {
+            if([self.rewardedAd canPresentFromRootViewController:controller error:nil]) {
+                [self.rewardedAd presentFromRootViewController:controller
+                                    userDidEarnRewardHandler:^ {
+                    logDebug("Rewarded");
+                    ads::AdMob::iOSProvider::onAdEvent(ads::Event::RewardedVideoRewarded);
+                }];
+                return;
+            }
         }
     }
     ads::AdMob::iOSProvider::onAdEvent(ads::Event::RewardedVideoFailedToShow);
