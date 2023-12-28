@@ -20,11 +20,11 @@ open class AkkordComposeActivity : ComponentActivity() {
         org.akkord.lib.Utils.UnregisterUpdateListener()
     }
 
-    protected fun loadNativeLib(libName : String) {
+    private fun loadNativeLib(libName : String) {
         try {
-            ReLinker.loadLibrary(this, libName);
+            ReLinker.loadLibrary(this, libName)
         } catch (e: Throwable) {
-            System.loadLibrary(libName);
+            System.loadLibrary(libName)
         } finally {
             // optional finally block
         }

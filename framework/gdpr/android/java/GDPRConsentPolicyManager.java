@@ -67,21 +67,19 @@ public class GDPRConsentPolicyManager {
 
     public static void ShowPrivacyOptionsForm (){
         try {
-            org.akkord.lib.Utils.GetContext().runOnUiThread(new Runnable() {
-                public void run() {
-                    try {
-                        UserMessagingPlatform.showPrivacyOptionsForm(
-                            org.akkord.lib.Utils.GetContext(),
-                            formError -> {
-                                if (formError != null) {
-                                    Log.d(TAG, "showPrivacyOptionsForm: error: " + formError.getMessage());
-                                }
+            org.akkord.lib.Utils.GetContext().runOnUiThread(() -> {
+                try {
+                    UserMessagingPlatform.showPrivacyOptionsForm(
+                        org.akkord.lib.Utils.GetContext(),
+                        formError -> {
+                            if (formError != null) {
+                                Log.d(TAG, "showPrivacyOptionsForm: error: " + formError.getMessage());
                             }
-                        );
-                    }
-                    catch(Exception e) {
-                        Log.e(TAG, e.getMessage());
-                    }
+                        }
+                    );
+                }
+                catch(Exception e) {
+                    Log.e(TAG, e.getMessage());
                 }
             });
         }
@@ -112,29 +110,27 @@ public class GDPRConsentPolicyManager {
         consentInformation.requestConsentInfoUpdate(
             org.akkord.lib.Utils.GetContext(),
             params,
-            (OnConsentInfoUpdateSuccessListener) () -> {
-                UserMessagingPlatform.loadAndShowConsentFormIfRequired(
-                    org.akkord.lib.Utils.GetContext(),
-                    (OnConsentFormDismissedListener) loadAndShowError -> {
-                        if (loadAndShowError != null) {
-                            // Consent gathering failed.
-                            Log.w(TAG, String.format("%s: %s",
-                                loadAndShowError.getErrorCode(),
-                                loadAndShowError.getMessage()));
-                        }
-
-                        // Consent has been gathered.
-                        if (consentInformation.canRequestAds()) {
-                            Log.d(TAG, "GDPR: Consent has been gathered from callback function");
-                            private_GDPRConsentReceived();
-                        }
-
-                        if (isPrivacyOptionsRequired()) {
-                            private_SetPrivacyOptionsRequired();
-                        }
+            (OnConsentInfoUpdateSuccessListener) () -> UserMessagingPlatform.loadAndShowConsentFormIfRequired(
+                org.akkord.lib.Utils.GetContext(),
+                (OnConsentFormDismissedListener) loadAndShowError -> {
+                    if (loadAndShowError != null) {
+                        // Consent gathering failed.
+                        Log.w(TAG, String.format("%s: %s",
+                            loadAndShowError.getErrorCode(),
+                            loadAndShowError.getMessage()));
                     }
-                );
-            },
+
+                    // Consent has been gathered.
+                    if (consentInformation.canRequestAds()) {
+                        Log.d(TAG, "GDPR: Consent has been gathered from callback function");
+                        private_GDPRConsentReceived();
+                    }
+
+                    if (isPrivacyOptionsRequired()) {
+                        private_SetPrivacyOptionsRequired();
+                    }
+                }
+            ),
             (OnConsentInfoUpdateFailureListener) requestConsentError -> {
             // Consent gathering failed.
             Log.w(TAG, String.format("%s: %s",

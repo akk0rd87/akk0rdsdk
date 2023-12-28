@@ -208,50 +208,42 @@ public class SnapshotCoordinator {
 
     final String filename = snapshot.getMetadata().getUniqueName();
 
-    return setIsClosingTask(filename).continueWithTask(new Continuation<Void, Task<Void>>() {
-      @Override
-      public Task<Void> then(@NonNull Task<Void> task) throws Exception {
-        return snapshotsClient.discardAndClose(snapshot)
-            .addOnCompleteListener(new OnCompleteListener<Void>() {
-              @Override
-              public void onComplete(@NonNull Task<Void> task) {
-                  try {
-                      Log.d(TAG, "Closed " + snapshot.getMetadata().getUniqueName());
-                      setClosed(snapshot.getMetadata().getUniqueName());
-                  }
-                  catch(Exception e) {
-                      Log.e(TAG, e.getMessage());
-                  }
+    return setIsClosingTask(filename).continueWithTask(task -> snapshotsClient.discardAndClose(snapshot)
+        .addOnCompleteListener(new OnCompleteListener<Void>() {
+          @Override
+          public void onComplete(@NonNull Task<Void> task) {
+              try {
+                  Log.d(TAG, "Closed " + snapshot.getMetadata().getUniqueName());
+                  setClosed(snapshot.getMetadata().getUniqueName());
               }
-            });
-      }
-    });
+              catch(Exception e) {
+                  Log.e(TAG, e.getMessage());
+              }
+          }
+        }));
   }
 
   @NonNull
   private OnCompleteListener<SnapshotsClient.DataOrConflict<Snapshot>> createOpenListener(final String filename) {
-    return new OnCompleteListener<SnapshotsClient.DataOrConflict<Snapshot>>() {
-      @Override
-      public void onComplete(@NonNull Task<SnapshotsClient.DataOrConflict<Snapshot>> task) {
-        try {
-          // if open failed, set the file to closed, otherwise, keep it open.
-          if (!task.isSuccessful()) {
-            Exception e = task.getException();
-            Log.e(TAG, "Open was not a success for filename " + filename, e);
-            setClosed(filename);
+    return task -> {
+      try {
+        // if open failed, set the file to closed, otherwise, keep it open.
+        if (!task.isSuccessful()) {
+          Exception e = task.getException();
+          Log.e(TAG, "Open was not a success for filename " + filename, e);
+          setClosed(filename);
+        } else {
+          SnapshotsClient.DataOrConflict<Snapshot> result
+              = task.getResult();
+          if (result.isConflict()) {
+            Log.d(TAG, "Open successful: " + filename + ", but with a conflict");
           } else {
-            SnapshotsClient.DataOrConflict<Snapshot> result
-                = task.getResult();
-            if (result.isConflict()) {
-              Log.d(TAG, "Open successful: " + filename + ", but with a conflict");
-            } else {
-              Log.d(TAG, "Open successful: " + filename);
-            }
+            Log.d(TAG, "Open successful: " + filename);
           }
         }
-        catch(Exception e) {
-            Log.e(TAG, e.getMessage());
-        }
+      }
+      catch(Exception e) {
+          Log.e(TAG, e.getMessage());
       }
     };
   }
@@ -290,13 +282,8 @@ public class SnapshotCoordinator {
                                                              final String filename,
                                                              final boolean createIfNotFound) {
 
-    return setIsOpeningTask(filename).continueWithTask(new Continuation<Void, Task<SnapshotsClient.DataOrConflict<Snapshot>>>() {
-      @Override
-      public Task<SnapshotsClient.DataOrConflict<Snapshot>> then(@NonNull Task<Void> task) throws Exception {
-        return snapshotsClient.open(filename, createIfNotFound)
-            .addOnCompleteListener(createOpenListener(filename));
-      }
-    });
+    return setIsOpeningTask(filename).continueWithTask(task -> snapshotsClient.open(filename, createIfNotFound)
+        .addOnCompleteListener(createOpenListener(filename)));
   }
 
   public Task<SnapshotsClient.DataOrConflict<Snapshot>> open(final SnapshotsClient snapshotsClient,
@@ -304,26 +291,16 @@ public class SnapshotCoordinator {
                                                              final boolean createIfNotFound,
                                                              final int conflictPolicy) {
 
-    return setIsOpeningTask(filename).continueWithTask(new Continuation<Void, Task<SnapshotsClient.DataOrConflict<Snapshot>>>() {
-      @Override
-      public Task<SnapshotsClient.DataOrConflict<Snapshot>> then(@NonNull Task<Void> task) throws Exception {
-        return snapshotsClient.open(filename, createIfNotFound, conflictPolicy)
-            .addOnCompleteListener(createOpenListener(filename));
-      }
-    });
+    return setIsOpeningTask(filename).continueWithTask(task -> snapshotsClient.open(filename, createIfNotFound, conflictPolicy)
+        .addOnCompleteListener(createOpenListener(filename)));
   }
 
   public Task<SnapshotsClient.DataOrConflict<Snapshot>> open(final SnapshotsClient snapshotsClient,
                                                              final SnapshotMetadata snapshotMetadata) {
     final String filename = snapshotMetadata.getUniqueName();
 
-    return setIsOpeningTask(filename).continueWithTask(new Continuation<Void, Task<SnapshotsClient.DataOrConflict<Snapshot>>>() {
-      @Override
-      public Task<SnapshotsClient.DataOrConflict<Snapshot>> then(@NonNull Task<Void> task) throws Exception {
-        return snapshotsClient.open(snapshotMetadata)
-            .addOnCompleteListener(createOpenListener(filename));
-      }
-    });
+    return setIsOpeningTask(filename).continueWithTask(task -> snapshotsClient.open(snapshotMetadata)
+        .addOnCompleteListener(createOpenListener(filename)));
   }
 
   public Task<SnapshotsClient.DataOrConflict<Snapshot>> open(final SnapshotsClient snapshotsClient,
@@ -331,13 +308,8 @@ public class SnapshotCoordinator {
                                                              final int conflictPolicy) {
     final String filename = snapshotMetadata.getUniqueName();
 
-    return setIsOpeningTask(filename).continueWithTask(new Continuation<Void, Task<SnapshotsClient.DataOrConflict<Snapshot>>>() {
-      @Override
-      public Task<SnapshotsClient.DataOrConflict<Snapshot>> then(@NonNull Task<Void> task) throws Exception {
-        return snapshotsClient.open(snapshotMetadata, conflictPolicy)
-            .addOnCompleteListener(createOpenListener(filename));
-      }
-    });
+    return setIsOpeningTask(filename).continueWithTask(task -> snapshotsClient.open(snapshotMetadata, conflictPolicy)
+        .addOnCompleteListener(createOpenListener(filename)));
   }
 
   public Task<SnapshotMetadata> commitAndClose(final SnapshotsClient snapshotsClient,
@@ -346,26 +318,21 @@ public class SnapshotCoordinator {
 
     final String filename = snapshot.getMetadata().getUniqueName();
 
-    return setIsClosingTask(filename).continueWithTask(new Continuation<Void, Task<SnapshotMetadata>>() {
-      @Override
-      public Task<SnapshotMetadata> then(@NonNull Task<Void> task) throws Exception {
-        return snapshotsClient.commitAndClose(snapshot, snapshotMetadataChange)
-            .addOnCompleteListener(new OnCompleteListener<SnapshotMetadata>() {
-              @Override
-              public void onComplete(@NonNull Task<SnapshotMetadata> task) {
-                try {
-                  // even if commit and close fails, the file is closed.
-                  Log.d(TAG, "CommitAndClose complete, closing " +
-                      filename);
-                  setClosed(filename);
-                }
-                catch(Exception e) {
-                    Log.e(TAG, e.getMessage());
-                }
-              }
-            });
-      }
-    });
+    return setIsClosingTask(filename).continueWithTask(task -> snapshotsClient.commitAndClose(snapshot, snapshotMetadataChange)
+        .addOnCompleteListener(new OnCompleteListener<SnapshotMetadata>() {
+          @Override
+          public void onComplete(@NonNull Task<SnapshotMetadata> task) {
+            try {
+              // even if commit and close fails, the file is closed.
+              Log.d(TAG, "CommitAndClose complete, closing " +
+                  filename);
+              setClosed(filename);
+            }
+            catch(Exception e) {
+                Log.e(TAG, e.getMessage());
+            }
+          }
+        }));
   }
 
   public Task<String> delete(final SnapshotsClient snapshotsClient,
@@ -383,24 +350,19 @@ public class SnapshotCoordinator {
       source.setResult(null);
     }
 
-    return source.getTask().continueWithTask(new Continuation<Void, Task<String>>() {
-      @Override
-      public Task<String> then(@NonNull Task<Void> task) throws Exception {
-        return snapshotsClient.delete(snapshotMetadata)
-            .addOnCompleteListener(new OnCompleteListener<String>() {
-              @Override
-              public void onComplete(@NonNull Task<String> task) {
-                // deleted files are closed.
-                try {
-                  setClosed(filename);
-                }
-                catch(Exception e) {
-                    Log.e(TAG, e.getMessage());
-                }
-              }
-            });
-      }
-    });
+    return source.getTask().continueWithTask(task -> snapshotsClient.delete(snapshotMetadata)
+        .addOnCompleteListener(new OnCompleteListener<String>() {
+          @Override
+          public void onComplete(@NonNull Task<String> task) {
+            // deleted files are closed.
+            try {
+              setClosed(filename);
+            }
+            catch(Exception e) {
+                Log.e(TAG, e.getMessage());
+            }
+          }
+        }));
   }
 
   public Task<SnapshotsClient.DataOrConflict<Snapshot>> resolveConflict(final SnapshotsClient snapshotsClient,
@@ -408,30 +370,25 @@ public class SnapshotCoordinator {
                                                                         final Snapshot snapshot) {
     final String filename = snapshot.getMetadata().getUniqueName();
 
-    return setIsOpeningTask(filename).continueWithTask(new Continuation<Void, Task<SnapshotsClient.DataOrConflict<Snapshot>>>() {
-      @Override
-      public Task<SnapshotsClient.DataOrConflict<Snapshot>> then(@NonNull Task<Void> task) throws Exception {
-        return snapshotsClient.resolveConflict(conflictId, snapshot)
-            .addOnCompleteListener(new OnCompleteListener<SnapshotsClient.DataOrConflict<Snapshot>>() {
-              @Override
-              public void onComplete(@NonNull Task<SnapshotsClient.DataOrConflict<Snapshot>> task) {
-                try {
-                  if (!task.isSuccessful()) {
-                    setClosed(filename);
-                  }
-                }
-                catch(Exception e) {
-                    Log.e(TAG, e.getMessage());
-                }
+    return setIsOpeningTask(filename).continueWithTask(task -> snapshotsClient.resolveConflict(conflictId, snapshot)
+        .addOnCompleteListener(new OnCompleteListener<SnapshotsClient.DataOrConflict<Snapshot>>() {
+          @Override
+          public void onComplete(@NonNull Task<SnapshotsClient.DataOrConflict<Snapshot>> task) {
+            try {
+              if (!task.isSuccessful()) {
+                setClosed(filename);
               }
-            });
-      }
-    });
+            }
+            catch(Exception e) {
+                Log.e(TAG, e.getMessage());
+            }
+          }
+        }));
   }
 
-  private class CountDownTask {
+  private static class CountDownTask {
     private final CountDownLatch latch;
-    private boolean canceled;
+    private final boolean canceled;
 
     private final Status Success = new Status(CommonStatusCodes.SUCCESS);
     private final Status Canceled = new Status(CommonStatusCodes.CANCELED);
@@ -447,20 +404,10 @@ public class SnapshotCoordinator {
         try {
           latch.await();
         } catch (InterruptedException e) {
-          return new Result() {
-            @Override
-            public Status getStatus() {
-              return Canceled;
-            }
-          };
+          return () -> Canceled;
         }
       }
-      return new Result() {
-        @Override
-        public Status getStatus() {
-          return canceled ? Canceled : Success;
-        }
-      };
+      return () -> canceled ? Canceled : Success;
     }
   }
 }

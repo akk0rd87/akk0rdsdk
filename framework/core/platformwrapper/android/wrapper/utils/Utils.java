@@ -101,13 +101,13 @@ public class Utils {
     public static void showMessageBox(int Code, String Title, String Message, String Button1, String Button2, String Button3, long TimeOut)
     {
         class OneShotTask implements Runnable {
-            private int    msgCode;
-            private String msgTitle;
-            private String msgMessage;
-            private String msgButton1;
-            private String msgButton2;
-            private String msgButton3;
-            private long   msgTimeOut;
+            private final int    msgCode;
+            private final String msgTitle;
+            private final String msgMessage;
+            private final String msgButton1;
+            private final String msgButton2;
+            private final String msgButton3;
+            private final long   msgTimeOut;
 
             private AlertDialog mAlertDialog;
 
@@ -123,7 +123,6 @@ public class Utils {
                     }
                 }
             }
-            private Thread mTimeOutRunnable = null;
 
             // https://stackoverflow.com/questions/5853167/runnable-with-a-parameter
             OneShotTask(int Code, String Title, String Message, String Button1, String Button2, String Button3, long TimeOut)
@@ -165,11 +164,9 @@ public class Utils {
                     }
                     builder.setTitle(msgTitle)
                             .setMessage(msgMessage)
-                            .setPositiveButton(msgButton1, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Log.v(TAG, "PositiveButton click");
-                                    MessageBoxCallback(msgCode, 1);
-                                }
+                            .setPositiveButton(msgButton1, (dialog, which) -> {
+                                Log.v(TAG, "PositiveButton click");
+                                MessageBoxCallback(msgCode, 1);
                             });
 
                     //builder.setIcon(android.R.drawable.ic_dialog_alert);
@@ -177,35 +174,26 @@ public class Utils {
 
                     if(msgButton2 != null && !msgButton2.isEmpty()) {
                         if (msgButton3 != null && !msgButton3.isEmpty()) {
-                            builder.setNeutralButton(msgButton2, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Log.v(TAG, "NeutralButton click");
-                                    MessageBoxCallback(msgCode, 2);
-                                }
+                            builder.setNeutralButton(msgButton2, (dialog, which) -> {
+                                Log.v(TAG, "NeutralButton click");
+                                MessageBoxCallback(msgCode, 2);
                             });
 
-                            builder.setNegativeButton(msgButton3, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Log.v(TAG, "NegativeButton click");
-                                    MessageBoxCallback(msgCode, 3);
-                                }
+                            builder.setNegativeButton(msgButton3, (dialog, which) -> {
+                                Log.v(TAG, "NegativeButton click");
+                                MessageBoxCallback(msgCode, 3);
                             });
                         } else {
-                            builder.setNegativeButton(msgButton2, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Log.v(TAG, "NegativeButton click");
-                                    MessageBoxCallback(msgCode, 2);
-                                }
+                            builder.setNegativeButton(msgButton2, (dialog, which) -> {
+                                Log.v(TAG, "NegativeButton click");
+                                MessageBoxCallback(msgCode, 2);
                             });
                         }
                     }
 
-                    builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                        @Override
-                        public void onCancel(DialogInterface dialog) {
-                            Log.v(TAG, "setOnCancelListener: onCancel");
-                            MessageBoxCallback(msgCode, 0);
-                        }
+                    builder.setOnCancelListener(dialog -> {
+                        Log.v(TAG, "setOnCancelListener: onCancel");
+                        MessageBoxCallback(msgCode, 0);
                     });
 
                     /*
@@ -223,7 +211,7 @@ public class Utils {
                     mAlertDialog.show();
                     if(msgTimeOut > 0)
                     {
-                        mTimeOutRunnable = new Thread(new TimeOutRunnable());
+                        Thread mTimeOutRunnable = new Thread(new TimeOutRunnable());
                         mTimeOutRunnable.start();
                     }
                 }
@@ -244,8 +232,8 @@ public class Utils {
             if (android.os.Build.VERSION.SDK_INT >= 14)
             {
                 class OneShotTask implements Runnable {
-                    String shareTitle;
-                    String shareMessage;
+                    private final String shareTitle;
+                    private final String shareMessage;
 
                     OneShotTask(String pTitle, String pMessage)
                     {
@@ -264,7 +252,7 @@ public class Utils {
                             Log.e(TAG, e.getMessage());
                         }
                     }
-                };
+                }
 
                 _context.runOnUiThread(new OneShotTask(Title, Message));
             }
@@ -319,11 +307,11 @@ public class Utils {
         {
             Log.v(TAG, "showToast started");
             class OneShotTask implements Runnable {
-                String toastMsg;
-                int toastDuration;
-                int toastGravity;
-                int toastxOffset;
-                int toastyOffset;
+                private final String toastMsg;
+                private final int toastDuration;
+                private final int toastGravity;
+                private final int toastxOffset;
+                private final int toastyOffset;
 
                 OneShotTask(String Msg, int Duration, int Gravity, int xOffset, int yOffset) {
                     toastMsg = Msg;
@@ -336,8 +324,6 @@ public class Utils {
                 public void run() {
                     try
                     {
-                        Log.v(TAG, "showToast makeTest " +  Integer.toString(toastGravity));
-
                         Toast toast = Toast.makeText(_context, toastMsg, toastDuration);
                         if (toastGravity >= 0) {
                             Log.v(TAG, "showToast set toastGravity");
@@ -633,20 +619,16 @@ public class Utils {
         try {
             mAppUpdateManager = AppUpdateManagerFactory.create(_context);
 
-            installStateUpdatedListener = new
-            InstallStateUpdatedListener() {
-                @Override
-                public void onStateUpdate(InstallState state) {
-                    if (state.installStatus() == InstallStatus.DOWNLOADED){
-                        //CHECK THIS if AppUpdateType.FLEXIBLE, otherwise you can skip
-                        popupSnackbarForCompleteUpdate();
-                    } else if (state.installStatus() == InstallStatus.INSTALLED){
-                        if (mAppUpdateManager != null && installStateUpdatedListener != null){
-                        mAppUpdateManager.unregisterListener(installStateUpdatedListener);
-                        }
-                    } else {
-                        Log.i(TAG, "InstallStateUpdatedListener: state: " + state.installStatus());
+            installStateUpdatedListener = state -> {
+                if (state.installStatus() == InstallStatus.DOWNLOADED){
+                    //CHECK THIS if AppUpdateType.FLEXIBLE, otherwise you can skip
+                    popupSnackbarForCompleteUpdate();
+                } else if (state.installStatus() == InstallStatus.INSTALLED){
+                    if (mAppUpdateManager != null && installStateUpdatedListener != null){
+                    mAppUpdateManager.unregisterListener(installStateUpdatedListener);
                     }
+                } else {
+                    Log.i(TAG, "InstallStateUpdatedListener: state: " + state.installStatus());
                 }
             };
 

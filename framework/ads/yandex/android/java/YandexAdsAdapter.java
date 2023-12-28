@@ -21,7 +21,7 @@ import com.yandex.mobile.ads.rewarded.RewardedAdLoadListener;
 import com.yandex.mobile.ads.rewarded.RewardedAdLoader;
 
 public class YandexAdsAdapter implements InitializationListener {
-    private static String TAG = "SDL";
+    private static final String TAG = "SDL";
     private static YandexAdsAdapter       yandexAdsAdapter = null;
     private static MyInterstitialManager  intManager = null;
     private static MyRewardedVideoManager rvManager = null;
@@ -173,7 +173,7 @@ public class YandexAdsAdapter implements InitializationListener {
         }
 
         @Override
-        public void onRewarded(final Reward reward) {
+        public void onRewarded(@NonNull final Reward reward) {
             AdCallback(EVENT_REWARDEDVIDEO_REWARDED);
         }
 
