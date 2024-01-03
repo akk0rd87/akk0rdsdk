@@ -41,7 +41,7 @@ JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManager_PurchaseQueried(JNIEnv
 {
     const char* PToken = env->GetStringUTFChars(PurchaseToken, 0);
     const char* PCode = env->GetStringUTFChars(ProductCode, 0);
-    int ActionType = (int)Type;
+    int ActionType = Type;
 
     logDebug("PurchaseQueried %s %s %s", PToken, PCode, (ActionType == 0 ? "restored" : "bought"));
 
@@ -140,7 +140,7 @@ bool BillingManager::PurchaseProdItem(const char* ProductCode)
 
 #ifdef __WINDOWS__
     // на винде на десктопе в дебаг режиме всега подтверждаем покупку Callback-ом
-    if (!BWrapper::IsReleaseBuild()) {
+    if (!BWrapper::IsReleaseBuild() && BillingContext.callbackObserver) {
         BillingContext.callbackObserver->PurchaseUpdatedCallback("testPurchaseToken", ProductCode, BillingManager::OperAction::Bought);
         return true;
     }
@@ -178,3 +178,9 @@ void BillingManager::PushEvent(int Code, int Result)
     sdl_Event.user.data1 = (void*)(uintptr_t)Result;
     SDL_PushEvent(&sdl_Event);
 };
+
+void BillingManager::ClearObserver() {
+#if (__ANDROID__) || (__WINDOWS__)
+    BillingContext.callbackObserver = nullptr;
+#endif
+}

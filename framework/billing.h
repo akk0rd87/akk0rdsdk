@@ -23,6 +23,7 @@ public:
 
     static void                             DecodeEvent(const SDL_Event& Event, int& Code, int& Result);
     static void                             PushEvent(int Code, const int Result);
+    static void                             ClearObserver();
 
     //Запрещаем создавать экземпляр класса BillingManager
     BillingManager() = delete;
