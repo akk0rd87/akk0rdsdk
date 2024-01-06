@@ -4,7 +4,7 @@ Showcase:
 | App |  Google Play | App Store |
 | -- | -- | -- |
 | JCross Nonograms | [JCross](https://play.google.com/store/apps/details?id=org.popapp.jc) | [JCross](https://apps.apple.com/app/id1013587052) |
-| Colour Nonograms | [Colour Nonograms](https://play.google.com/store/apps/details?id=org.popapp.nonograms) | [Colour Nonograms](https://apps.apple.com/app/id1587839728) |
+| Colour Nonograms | [Colour Nonograms](https://play.google.com/store/apps/details?id=org.popapp.colornonograms) | [Colour Nonograms](https://apps.apple.com/app/id1587839728) |
 | Pirate Bomb | [Pirate Bomb](https://play.google.com/store/apps/details?id=org.akk0rdsdk.PirateBomb) | [Pirate Bomb](https://apps.apple.com/app/id1482437026) |
 | Link-a-Pix | [Link-a-Pix](https://play.google.com/store/apps/details?id=org.popapp.color_fcross) | [Link-a-Pix](https://apps.apple.com/app/id1147212126) |
 | Philippine Puzzles | [FCross](https://play.google.com/store/apps/details?id=org.popapp.fcross) | [FCross](https://apps.apple.com/app/id1091290034) |
