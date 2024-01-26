@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import java.io.File;
 import java.util.Locale;
+
+import android.net.Uri;
 import android.widget.Toast;
 import android.util.Log;
 import android.app.*;
@@ -247,6 +249,24 @@ public class Utils {
         ShareFile(Title, Fname, "image/png");
     }
     */
+
+    public static void openGooglePlayURL(final String appPackageName) {
+        try {
+            _context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName)));
+        }
+        catch(Exception ex) {
+            Log.e(TAG, ex.getMessage());
+        }
+    }
+
+    public static void openCurrentAppGooglePlayURL() {
+        try {
+            openGooglePlayURL(_context.getPackageName());
+        }
+        catch(Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+    }
 
     public static void showToast(final String Msg, final int Duration, final int Gravity, final int xOffset, final int yOffset){
         try {
