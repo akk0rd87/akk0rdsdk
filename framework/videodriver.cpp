@@ -1,3 +1,4 @@
+#include <cstring>
 #include "videodriver.h"
 #include "core/videoadapter/video_interface.h"
 

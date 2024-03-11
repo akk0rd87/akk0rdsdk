@@ -1,6 +1,7 @@
 #ifndef __AKK0RD_SDK_VIDEOADAPTER_OPENGLES_H__
 #define __AKK0RD_SDK_VIDEOADAPTER_OPENGLES_H__
 
+#include <cstring>
 #include "SDL_opengles2.h"
 #include "video_interface.h"
 #include <array>

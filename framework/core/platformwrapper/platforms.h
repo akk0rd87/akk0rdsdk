@@ -1,8 +1,10 @@
 #ifndef __AKK0RD_SDK_PLATFORMS_H__
 #define __AKK0RD_SDK_PLATFORMS_H__
 
+#include <filesystem>
 #include "locale.h"
 #include "basewrapper.h"
+#include "customevents.h"
 
 class PlatformWrapper
 {
@@ -63,25 +65,110 @@ private:
         return dir;
     }
 
-    virtual bool                     vInit() = 0;
-    virtual Locale::Lang             vGetDeviceLanguage() = 0;
+    virtual bool                     vInit() { return true; };
+    virtual Locale::Lang             vGetDeviceLanguage() { return Locale::Lang::Russian; };
     virtual std::string              vGetEnvVariable(const char* Variable) { return ""; }; // Only for windows
 
     //virtual std::string              vGetInternalDir() = 0;
-    virtual std::string              vGetInternalWriteDir() = 0;
+    virtual std::string              vGetInternalWriteDir() { return "data-ram/"; };
     virtual std::string              vGetInternalAssetsDir() { return "assets/"; };
     virtual std::string              vGetAppVersionCode() { return ""; }
     virtual std::string              vGetAppVersionName() { return ""; }
 
-    virtual bool                     vDirCreate(const char* Dir) = 0;
-    virtual bool                     vDirExists(const char* Dir) = 0;
-    virtual bool                     vDirRemove(const char* Dir) = 0;
-    virtual bool                     vDirRemoveRecursive(const char* Dir) = 0;
+    virtual bool                     vDirCreate(const char* Dir) {
+        std::filesystem::create_directories(Dir);
+        return std::filesystem::is_directory(Dir);
+    }
+
+    virtual bool                     vDirExists(const char* Dir) {
+        return std::filesystem::is_directory(Dir);
+    };
+
+    virtual bool                     vDirRemove(const char* Dir) {
+        std::filesystem::remove_all(Dir);
+        return !std::filesystem::is_directory(Dir);
+    }
+
+    virtual bool                     vDirRemoveRecursive(const char* Dir) {
+        std::filesystem::remove_all(Dir);
+        return !std::filesystem::is_directory(Dir);;
+    };
+
     virtual bool                     vGetDirContent(const char* Dir, DirContentElementArray& ArrayList) = 0;
 
     // Activity functions
     virtual bool                     vOpenURL(const char* url) { return 0 == SDL_OpenURL(url); };
-    virtual void                     vMessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS) = 0;
+    virtual void                     vMessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS) {
+        SDL_MessageBoxButtonData buttons[3];
+        int buttonCnt = 1;
+
+        buttons[0].buttonid = 0;
+        buttons[0].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
+        buttons[0].text = Button1;
+
+        if (Button2 != nullptr && Button2[0] != '\0')
+        {
+            ++buttonCnt;
+            buttons[1].buttonid = 1;
+            buttons[1].flags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
+            buttons[1].text = Button2;
+        }
+
+        if (Button3 != nullptr && Button3[0] != '\0')
+        {
+            ++buttonCnt;
+            buttons[2].buttonid = 2;
+            buttons[2].flags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
+            buttons[2].text = Button3;
+
+            buttons[1].flags = 0;
+        }
+
+        const SDL_MessageBoxColorScheme colorScheme = {
+            { /* .colors (.r, .g, .b) */
+                /* [SDL_MESSAGEBOX_COLOR_BACKGROUND] */
+                { 88, 135, 63 },
+                /* [SDL_MESSAGEBOX_COLOR_TEXT] */
+                { 250, 250, 250 },
+                /* [SDL_MESSAGEBOX_COLOR_BUTTON_BORDER] */
+                { 255, 255, 0 },
+                /* [SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND] */
+                { 0, 0, 255 },
+                /* [SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED] */
+                { 255, 0, 255 }
+            }
+        };
+
+        const SDL_MessageBoxData messageboxdata = {
+            SDL_MESSAGEBOX_INFORMATION, /* .flags */
+            //NULL, /* .window */
+            //CurrentContext.CurrentWindow,
+            BWrapper::GetActiveWindow(),
+            //NULL,
+            Title, /* .title */
+            Message, /* .message */
+            buttonCnt, /* .numbuttons */
+            buttons, /* .buttons */
+            &colorScheme /* .colorScheme */
+        };
+
+        int buttonid;
+
+        if (SDL_ShowMessageBox(&messageboxdata, &buttonid) < 0) {
+            logError("error displaying message box");
+            return;
+        }
+
+        if (buttonid == -1)
+        {
+            logDebug("no selection");
+            CustomEvents::MessageBoxCallback(Code, 0); // 0 - Cancel
+        }
+        else
+        {
+            CustomEvents::MessageBoxCallback(Code, buttonid + 1); // msgBox::Action Button[n]
+        }
+    }
     virtual void                     vShareText(const char* Title, const char* Message) {};
     virtual void                     vSharePNG(const char* Title, const char* File) {};
     virtual void                     vSharePDF(const char* Title, const char* File) {};

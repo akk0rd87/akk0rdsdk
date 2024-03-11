@@ -3,6 +3,7 @@
 
 #include <unordered_map>
 #include <utility>
+#include <cmath>
 #include "basewrapper.h"
 
 // https://github.com/libgdx/libgdx/wiki/distance-field-fonts
