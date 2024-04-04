@@ -56,8 +56,19 @@ for item in data["data"]:
     attrs = item['attributes']
     if(attrs['profileState'] == 'ACTIVE' and attrs['profileType'] == 'IOS_APP_STORE') :
         print(f"ProfileID = {item['id']}")
-        print(attrs['profileState'])
-        print(attrs['profileType'])
-        print(attrs['uuid'])
+        print('profile state:' + attrs['profileState'])
+        print('profile type :' + attrs['profileType'])
+        print('profile uuid :' + attrs['uuid'])
+        print('profile name: ' + attrs['name'])
+
+        # save profile
         with open(profile_save_path + "/" + attrs['uuid'] + '.mobileprovision', 'wb') as fw:
             fw.write(base64.b64decode(attrs['profileContent']))
+
+        # replace profile name in exportOptions.plist file
+        optionsFilename = os.environ['EXPORT_OPTIONS_FILE']
+        with open(optionsFilename, "r") as f:
+            newText=f.read().replace('$(PROVISION_PROFILE_UUID)', attrs['name'])
+
+        with open(optionsFilename, "w", newline='\n') as f:
+            f.write(newText)
