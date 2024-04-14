@@ -1,74 +1,67 @@
-from datetime import datetime, timedelta
-from time import time, mktime
-import jwt
-import os
+from pathlib import Path
 import requests
+import os
 import re
 import base64
+import getToken
 
 profile_save_path = os.environ['HOME'] + "/Library/MobileDevice/Provisioning Profiles"
-app_bundle_name = os.environ['APP_BUNDLE_ID']
+Path(profile_save_path).mkdir(parents=True, exist_ok=True)
 
-dt = datetime.now() + timedelta(minutes=5)
+requestHeaders = getToken.getRequestHeaders()
 
-headers = {
-    "alg": "ES256",
-    "kid": os.environ['API_KEY_ID'],
-    "typ": "JWT",
-}
+def getProfile(app_bundle_name):
+    URL = "https://api.appstoreconnect.apple.com/v1/bundleIds?filter[identifier]=" + app_bundle_name
+    appBundleId = ""
 
-payload = {
-    "iss": os.environ['API_ISSUER'],
-    "iat": int(time()),
-    "exp": int(mktime(dt.timetuple())),
-    "aud": "appstoreconnect-v1",
-}
+    # READ THE APP BUNDLE ID BY BUNDLE_NAME
+    r = requests.get(URL, headers=requestHeaders)
+    data = r.json()
+    for item in data["data"]:
+        attrs = item['attributes']
+        if(attrs['identifier'] == app_bundle_name) :
+            appBundleId = item['id']
 
+    print(f"[{app_bundle_name}]: Bundleid = {appBundleId}")
 
-with open(os.environ['API_KEY_FILE'], "rb") as fh: # Add your file
-    signing_key = fh.read()
+    # READ PROFILES BY APP BUNDLE ID
+    URL = "https://api.appstoreconnect.apple.com/v1/bundleIds/" + appBundleId + "/profiles?fields[profiles]=profileState,bundleId,uuid,name,profileType,profileContent,expirationDate"
+    r = requests.get(URL, headers=requestHeaders)
+    data = r.json()
+    # print(data)
 
-access_token =  jwt.encode(payload, signing_key, algorithm="ES256", headers=headers)
+    for item in data["data"]:
+        attrs = item['attributes']
+        if(attrs['profileState'] == 'ACTIVE' and attrs['profileType'] == 'IOS_APP_STORE') :
+            print(f"Found profile for [{app_bundle_name}]: Bundleid = {appBundleId}")
+            print(f"profile name : {attrs['name']}")
+            print(f"ProfileID = {item['id']}")
+            print(f"profile state: {attrs['profileState']}")
+            print(f"profile type : {attrs['profileType']}")
+            print(f"profile uuid : {attrs['uuid']}")
+            print(f"profile expirationDate : {attrs['expirationDate']}")
 
-requestHeaders = {'Authorization': 'Bearer {}'.format(access_token)}
+            # save profile
+            profile_filename = profile_save_path + "/" + attrs['uuid'] + '.mobileprovision'
+            if os.path.exists(profile_filename):
+                print(f"File {profile_filename} already exists")
+            else :
+                print(f"Save profile in {profile_filename}")
+                with open(profile_filename, 'wb') as fw:
+                    fw.write(base64.b64decode(attrs['profileContent']))
 
-URL = "https://api.appstoreconnect.apple.com/v1/bundleIds?filter[identifier]=" + app_bundle_name
-appBundleId = ""
+            # replace profile name in exportOptions.plist file
+            optionsFilename = os.environ['EXPORT_OPTIONS_FILE']
+            with open(optionsFilename, "r") as f:
+                newText=f.read().replace('$(PROVISION_PROFILE_UUID)', attrs['name'])
 
-# READ THE APP BUNDLE ID BY BUNDLE_NAME
-r = requests.get(URL, headers=requestHeaders)
-data = r.json()
-for item in data["data"]:
-    attrs = item['attributes']
-    if(attrs['identifier'] == app_bundle_name) :
-        appBundleId = item['id']
+            with open(optionsFilename, "w", newline='\n') as f:
+                f.write(newText)
 
-print(appBundleId)
+            return 0
 
-# READ PROFILES BY APP BUNDLE ID
-URL = "https://api.appstoreconnect.apple.com/v1/bundleIds/" + appBundleId + "/profiles?fields[profiles]=profileState,bundleId,uuid,name,profileType,profileContent"
+    print(f"Did not find profiles for {app_bundle_name}")
+    return 1
 
-r = requests.get(URL, headers=requestHeaders)
-data = r.json()
-# print(data)
-
-for item in data["data"]:
-    attrs = item['attributes']
-    if(attrs['profileState'] == 'ACTIVE' and attrs['profileType'] == 'IOS_APP_STORE') :
-        print(f"ProfileID = {item['id']}")
-        print('profile state:' + attrs['profileState'])
-        print('profile type :' + attrs['profileType'])
-        print('profile uuid :' + attrs['uuid'])
-        print('profile name: ' + attrs['name'])
-
-        # save profile
-        with open(profile_save_path + "/" + attrs['uuid'] + '.mobileprovision', 'wb') as fw:
-            fw.write(base64.b64decode(attrs['profileContent']))
-
-        # replace profile name in exportOptions.plist file
-        optionsFilename = os.environ['EXPORT_OPTIONS_FILE']
-        with open(optionsFilename, "r") as f:
-            newText=f.read().replace('$(PROVISION_PROFILE_UUID)', attrs['name'])
-
-        with open(optionsFilename, "w", newline='\n') as f:
-            f.write(newText)
+if (0 != getProfile(os.environ['APP_BUNDLE_ID'])) :
+    getProfile('*')
