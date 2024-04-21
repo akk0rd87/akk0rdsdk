@@ -1,4 +1,5 @@
 #import <YandexMobileAds/YandexMobileAds.h>
+#import <YandexMobileAds/YandexMobileAds-Swift.h>
 #include "implyandexadsios.h"
 #include "basewrapper.h"
 #include "core/platformwrapper/ios/ios_wrapper.h"
@@ -88,7 +89,7 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
             auto controller = iosWrapper::getRootViewController();
             if(controller) {
                 self.interstitial.delegate = self;
-                [self.interstitial showFromViewController:controller];            
+                [self.interstitial showFromViewController:controller];
                 return;
             }
         }
