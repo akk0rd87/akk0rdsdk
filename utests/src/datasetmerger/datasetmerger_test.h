@@ -175,7 +175,7 @@ TEST(TestSDK, DatasetMerger_SetAndUSet) {
     EXPECT_TRUE(result.empty());
 }
 
-TEST(TestSDK, DatasetMerger_ListAndForwardedList) {
+TEST(TestSDK, DatasetMerger_ListAndForwardList) {
     std::list<int> v{ 1, 2, 4, 8, 10, 55 };
     std::forward_list<int> d{ 0, 1, 2, 4, 66 };
 
