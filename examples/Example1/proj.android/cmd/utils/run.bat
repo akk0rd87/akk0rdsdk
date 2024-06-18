@@ -1,2 +1,0 @@
-for /f "tokens=* delims=" %%# in ('call %AKKORD_SDK_HOME%/tools/xpath/xpath.bat %~dp0../../AndroidManifest.xml "//manifest/@package"') do set "reagent=%%#"
-%AKKORD_SDK_HOME%/tools/runOnAndroid/runOnAndroid.bat %reagent% MainActivity 1

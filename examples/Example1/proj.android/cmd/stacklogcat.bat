@@ -1,1 +1,0 @@
-FOR /F %%a IN ('adb -s %1 shell getprop ro.product.cpu.abi') DO call adb -s %1 logcat | "%ANDROID_NDK_HOME%/ndk-stack.cmd" -sym %~dp0/../app/build/intermediates/ndkBuild/debug/obj/local/%%a
