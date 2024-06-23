@@ -24,6 +24,7 @@ import com.google.android.gms.tasks.TaskCompletionSource;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
@@ -217,7 +218,7 @@ public class SnapshotCoordinator {
                   setClosed(snapshot.getMetadata().getUniqueName());
               }
               catch(Exception e) {
-                  Log.e(TAG, e.getMessage());
+                  Log.e(TAG, Objects.requireNonNull(e.getMessage()));
               }
           }
         }));
@@ -243,7 +244,7 @@ public class SnapshotCoordinator {
         }
       }
       catch(Exception e) {
-          Log.e(TAG, e.getMessage());
+          Log.e(TAG, Objects.requireNonNull(e.getMessage()));
       }
     };
   }
@@ -329,7 +330,7 @@ public class SnapshotCoordinator {
               setClosed(filename);
             }
             catch(Exception e) {
-                Log.e(TAG, e.getMessage());
+                Log.e(TAG, Objects.requireNonNull(e.getMessage()));
             }
           }
         }));
@@ -359,7 +360,7 @@ public class SnapshotCoordinator {
               setClosed(filename);
             }
             catch(Exception e) {
-                Log.e(TAG, e.getMessage());
+                Log.e(TAG, Objects.requireNonNull(e.getMessage()));
             }
           }
         }));
@@ -380,7 +381,7 @@ public class SnapshotCoordinator {
               }
             }
             catch(Exception e) {
-                Log.e(TAG, e.getMessage());
+                Log.e(TAG, Objects.requireNonNull(e.getMessage()));
             }
           }
         }));

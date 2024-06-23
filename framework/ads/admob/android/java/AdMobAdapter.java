@@ -9,6 +9,8 @@ import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import android.util.Log;
 import java.util.Map;
+import java.util.Objects;
+
 import com.google.android.gms.ads.initialization.AdapterStatus;
 import com.google.android.gms.ads.initialization.AdapterStatus.State;
 import com.google.android.gms.ads.initialization.InitializationStatus;
@@ -37,7 +39,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
             mInterstitialContentCallback  = new MyInterstitialContentCallback();
         }
         catch(Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -47,7 +49,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
             mRewardedContentCallback = new MyRewardedContentCallback();
         }
         catch(Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -68,7 +70,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                 }
             }
             catch(Exception e) {
-                Log.e(TAG, e.getMessage());
+                Log.e(TAG, Objects.requireNonNull(e.getMessage()));
             }
         }
 
@@ -81,7 +83,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                 AdCallback_Local(EVENT_INTERSTITIAL_FAILED_TO_LOAD);
             }
             catch(Exception e) {
-                Log.e(TAG, e.getMessage());
+                Log.e(TAG, Objects.requireNonNull(e.getMessage()));
             }
         }
     }
@@ -96,7 +98,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                 AdCallback_Local(EVENT_INTERSTITIAL_CLOSED);
             }
             catch(Exception e) {
-                Log.e(TAG, e.getMessage());
+                Log.e(TAG, Objects.requireNonNull(e.getMessage()));
             }
         }
 
@@ -109,7 +111,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                 AdCallback_Local(EVENT_INTERSTITIAL_FAILED_TO_SHOW);
             }
             catch(Exception e) {
-                Log.e(TAG, e.getMessage());
+                Log.e(TAG, Objects.requireNonNull(e.getMessage()));
             }
         }
 
@@ -125,7 +127,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                 Log.d(TAG, "The ad was shown.");
             }
             catch(Exception e) {
-                Log.e(TAG, e.getMessage());
+                Log.e(TAG, Objects.requireNonNull(e.getMessage()));
             }
         }
     }
@@ -139,7 +141,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                 AdCallback_Local(EVENT_REWARDEDVIDEO_FAILED_TO_LOAD);
             }
             catch(Exception e) {
-                Log.e(TAG, e.getMessage());
+                Log.e(TAG, Objects.requireNonNull(e.getMessage()));
             }
         }
 
@@ -157,7 +159,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                 }
             }
             catch(Exception e) {
-                Log.e(TAG, e.getMessage());
+                Log.e(TAG, Objects.requireNonNull(e.getMessage()));
             }
         }
 
@@ -175,7 +177,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                 mRewardedAd = null;
             }
             catch(Exception e) {
-                Log.e(TAG, e.getMessage());
+                Log.e(TAG, Objects.requireNonNull(e.getMessage()));
             }
         }
     }
@@ -190,7 +192,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                 AdCallback_Local(EVENT_REWARDEDVIDEO_STARTED);
             }
             catch(Exception e) {
-                Log.e(TAG, e.getMessage());
+                Log.e(TAG, Objects.requireNonNull(e.getMessage()));
             }
         }
 
@@ -203,7 +205,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                 AdCallback_Local(EVENT_REWARDEDVIDEO_FAILED_TO_SHOW);
             }
             catch(Exception e) {
-                Log.e(TAG, e.getMessage());
+                Log.e(TAG, Objects.requireNonNull(e.getMessage()));
             }
         }
 
@@ -218,7 +220,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                 AdCallback_Local(EVENT_REWARDEDVIDEO_CLOSED);
             }
             catch(Exception e) {
-                Log.e(TAG, e.getMessage());
+                Log.e(TAG, Objects.requireNonNull(e.getMessage()));
             }
         }
     }
@@ -265,7 +267,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
             AdCallback(EventType);
         }
         catch(Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -286,7 +288,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
         }
         catch(Exception e) {
             InitCallback(INIT_ERROR);
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -332,7 +334,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                         InterstitialAd.load(org.akkord.lib.Utils.GetContext(), InterstitialUnitID, new AdRequest.Builder().build(), mInterstitialCallbackListener);
                     }
                     catch(Exception e) {
-                        Log.e(TAG, e.getMessage());
+                        Log.e(TAG, Objects.requireNonNull(e.getMessage()));
                     }
                 });
             }
@@ -343,7 +345,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
         }
         catch(Exception e)
         {
-            Log.v(TAG, e.getMessage());
+            Log.v(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -365,7 +367,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                         RewardedAd.load(org.akkord.lib.Utils.GetContext(), RewardedVideoUnitID, new AdRequest.Builder().build(), mRewardedCallback);
                     }
                     catch(Exception e) {
-                        Log.e(TAG, e.getMessage());
+                        Log.e(TAG, Objects.requireNonNull(e.getMessage()));
                     }
                 });
             }
@@ -376,7 +378,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
         }
         catch(Exception e)
         {
-            Log.v(TAG, e.getMessage());
+            Log.v(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -392,7 +394,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                     }
                 }
                 catch(Exception e) {
-                    Log.e(TAG, e.getMessage());
+                    Log.e(TAG, Objects.requireNonNull(e.getMessage()));
                 }
             });
 
@@ -400,7 +402,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
         }
         catch(Exception e)
         {
-            Log.v(TAG, e.getMessage());
+            Log.v(TAG, Objects.requireNonNull(e.getMessage()));
             return -1;
         }
     }
@@ -417,7 +419,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
                     }
                 }
                 catch(Exception e) {
-                    Log.e(TAG, e.getMessage());
+                    Log.e(TAG, Objects.requireNonNull(e.getMessage()));
                 }
             });
 
@@ -425,8 +427,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
         }
         catch(Exception e)
         {
-            System.err.println(e.getMessage());
-            Log.v(TAG, e.getMessage());
+            Log.v(TAG, Objects.requireNonNull(e.getMessage()));
             return -1;
         }
     }
@@ -458,7 +459,7 @@ public class AdMobAdapter extends AdListener implements OnInitializationComplete
         catch(Exception e) {
             InitCallback(INIT_ERROR);
             System.err.println(e.getMessage());
-            Log.v(TAG, e.getMessage());
+            Log.v(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 }

@@ -27,6 +27,8 @@ import com.android.billingclient.api.AcknowledgePurchaseParams;
 import com.android.billingclient.api.AcknowledgePurchaseResponseListener;
 import com.android.billingclient.api.PurchaseHistoryRecord;
 import com.android.billingclient.api.PurchaseHistoryResponseListener;
+
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -118,7 +120,7 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
         }
         catch(Exception e)
         {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -142,13 +144,13 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
                     mBillingClient.queryProductDetailsAsync(params, billingManager);
                 }
                 catch(Exception e) {
-                    Log.v(TAG, e.getMessage());
+                    Log.v(TAG, Objects.requireNonNull(e.getMessage()));
                 }
             });
         }
         catch(Exception e)
         {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -175,13 +177,13 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
                     mBillingClient.queryPurchasesAsync(ProductType.INAPP, billingManager);
                 }
                 catch(Exception e)  {
-                    Log.e(TAG, e.getMessage());
+                    Log.e(TAG, Objects.requireNonNull(e.getMessage()));
                 }
             });
         }
         catch(Exception e)
         {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -266,7 +268,7 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
         }
         catch(Exception e)
         {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -290,20 +292,20 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
                                     }
                                 }
                                 catch(Exception e) {
-                                    Log.e(TAG, e.getMessage());
+                                    Log.e(TAG, Objects.requireNonNull(e.getMessage()));
                                 }
                             }
                         }
                     );
                 }
                 catch(Exception e) {
-                    Log.e(TAG, e.getMessage());
+                    Log.e(TAG, Objects.requireNonNull(e.getMessage()));
                 }
             });
         }
         catch(Exception e)
         {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -341,20 +343,20 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
                                     }
                                 }
                                 catch(Exception e) {
-                                    Log.e(TAG, e.getMessage());
+                                    Log.e(TAG, Objects.requireNonNull(e.getMessage()));
                                 }
                             }
                         }
                     );
                 }
                 catch(Exception e) {
-                    Log.e(TAG, e.getMessage());
+                    Log.e(TAG, Objects.requireNonNull(e.getMessage()));
                 }
             });
         }
         catch(Exception e)
         {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -365,19 +367,19 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
                     mBillingClient.queryPurchaseHistoryAsync(ProductType.INAPP, billingManager);
                 }
                 catch(Exception e) {
-                    Log.e(TAG, e.getMessage());
+                    Log.e(TAG, Objects.requireNonNull(e.getMessage()));
                 }
             });
         }
         catch(Exception e)
         {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
     private static void processRunnableQueue() {
         try {
-            if((runnableQueue.size() > 0) && mBillingClient.isReady()) {
+            if((!runnableQueue.isEmpty()) && mBillingClient.isReady()) {
                 Runnable r = new Runnable() {
                     public void run() {
                         try {
@@ -388,12 +390,12 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
                                     rTask.run();
                                 }
                                 catch(Exception e) {
-                                    Log.e(TAG, e.getMessage());
+                                    Log.e(TAG, Objects.requireNonNull(e.getMessage()));
                                 }
                             }
                         }
                         catch(Exception e) {
-                            Log.e(TAG, e.getMessage());
+                            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
                         }
                     }
                 };
@@ -401,7 +403,7 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
             }
         }
         catch(Exception e) {
-            Log.v(TAG, e.getMessage());
+            Log.v(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -418,8 +420,7 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
             Log.v(TAG, "after executeServiceRequest");
         }
         catch(Exception e) {
-            Log.e(TAG, e.getMessage());
-            e.printStackTrace();
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -455,8 +456,7 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
             }
         }
         catch(Exception e) {
-            Log.e(TAG, e.getMessage());
-            e.printStackTrace();
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -469,8 +469,7 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
             checkPurchases(billingResult, purchases);
         }
         catch(Exception e) {
-            Log.e(TAG, e.getMessage());
-            e.printStackTrace();
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -483,8 +482,7 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
             checkPurchases(billingResult, purchases);
         }
         catch(Exception e) {
-            Log.e(TAG, e.getMessage());
-            e.printStackTrace();
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -530,14 +528,16 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
                         }
                     }
 
+                /*
                 if(true) { // logging
                     for(HashMap.Entry<String, ProductDetails> entry : CachedSKUMap.entrySet())
                         Log.v(TAG, "cache SKU ID: " + entry.getKey());
                 }
+                 */
             }
         }
         catch(Exception e) {
-            Log.v(TAG, e.getMessage());
+            Log.v(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -550,7 +550,7 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
             Log.v(TAG, "onPurchaseHistoryResponse Result: " + DecodeBillingResponse(billingResult.getResponseCode()) + "; " + billingResult.getDebugMessage());
         }
         catch(Exception e) {
-            Log.v(TAG, e.getMessage());
+            Log.v(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -567,12 +567,12 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
             if(billingObserver != null) {
                 billingObserver.BillingSetupFinished(ResponseCode);
             }
-            if(runnableQueue.size() > 0) { // тут нужно отпроцессить очередь
+            if(!runnableQueue.isEmpty()) { // тут нужно отпроцессить очередь
                 processRunnableQueue();
             }
         }
         catch(Exception e) {
-            Log.v(TAG, e.getMessage());
+            Log.v(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -587,12 +587,12 @@ public class BillingManager implements PurchaseHistoryResponseListener, Purchase
             }
 
             // если очередь непуста, то делаем рестар connection
-            if(runnableQueue.size() > 0) {
+            if(!runnableQueue.isEmpty()) {
                 checkBillingConnection();
             }
         }
         catch(Exception e) {
-            Log.v(TAG, e.getMessage());
+            Log.v(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 }

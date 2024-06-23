@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import java.io.File;
 import java.util.Locale;
+import java.util.Objects;
 
 import android.net.Uri;
 import android.widget.Toast;
@@ -53,13 +54,12 @@ public class Utils {
     public static int getAudioOutputRate() { // https://developer.android.com/ndk/guides/audio/audio-latency
         int sampleRate = 0;
         try {
-            if (android.os.Build.VERSION.SDK_INT >= 17) { // getProperty requires api level 17
-                AudioManager am = (AudioManager) _context.getSystemService(Context.AUDIO_SERVICE);
-                sampleRate = Integer.parseInt(am.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE));
-            }
+            // getProperty requires api level 17
+            AudioManager am = (AudioManager) _context.getSystemService(Context.AUDIO_SERVICE);
+            sampleRate = Integer.parseInt(am.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE));
         }
         catch(Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
 
         if (sampleRate == 0) {
@@ -71,13 +71,12 @@ public class Utils {
     public static int getAudioOutputBufferSize() { // https://developer.android.com/ndk/guides/audio/audio-latency
         int framesPerBufferInt = 0;
         try {
-            if (android.os.Build.VERSION.SDK_INT >= 17) { // getProperty requires api level 17
-                AudioManager am = (AudioManager) _context.getSystemService(Context.AUDIO_SERVICE);
-                framesPerBufferInt = Integer.parseInt(am.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER));
-            }
+            // getProperty requires api level 17
+            AudioManager am = (AudioManager) _context.getSystemService(Context.AUDIO_SERVICE);
+            framesPerBufferInt = Integer.parseInt(am.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER));
         }
         catch(Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
 
         if (framesPerBufferInt == 0) {
@@ -107,11 +106,7 @@ public class Utils {
                 try {
                     AlertDialog.Builder builder;
                     //android.os.Build.VERSION.SDK_INT
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-                        builder = new AlertDialog.Builder(_context, android.R.style.Theme_Material_Dialog_Alert);
-                    } else {
-                        builder = new AlertDialog.Builder(_context);
-                    }
+                    builder = new AlertDialog.Builder(_context, android.R.style.Theme_Material_Dialog_Alert);
                     builder.setTitle(msgTitle)
                             .setMessage(msgMessage)
                             .setPositiveButton(msgButton1, (dialog, which) -> {
@@ -158,56 +153,52 @@ public class Utils {
                                         mAlertDialog.dismiss();
                                     }
                             } catch (Exception e) {
-                                Log.e(TAG, e.getMessage());
+                                Log.e(TAG, Objects.requireNonNull(e.getMessage()));
                             }
                         });
                         mTimeOutThread.start();
                     }
                 }
                 catch(Exception e) {
-                    Log.e(TAG, e.getMessage());
+                    Log.e(TAG, Objects.requireNonNull(e.getMessage()));
                 }
             });
         }
         catch(Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
     public static void shareText(String Title, String Message)
     {
         try {
-            if (android.os.Build.VERSION.SDK_INT >= 14)
-            {
-                class OneShotTask implements Runnable {
-                    private final String shareTitle;
-                    private final String shareMessage;
+            class OneShotTask implements Runnable {
+                private final String shareTitle;
+                private final String shareMessage;
 
-                    OneShotTask(String pTitle, String pMessage)
-                    {
-                        shareTitle = pTitle;
-                        shareMessage = pMessage;
-                    }
-
-                    public void run() {
-                        try {
-                            Intent sendIntent = new Intent();
-                            sendIntent.setAction(Intent.ACTION_SEND);
-                            sendIntent.putExtra(Intent.EXTRA_TEXT, shareMessage);
-                            sendIntent.setType("text/plain");
-                            _context.startActivity(Intent.createChooser(sendIntent, shareTitle));
-                        } catch (Exception e) {
-                            Log.e(TAG, e.getMessage());
-                        }
-                    }
+                OneShotTask(String pTitle, String pMessage) {
+                    shareTitle = pTitle;
+                    shareMessage = pMessage;
                 }
 
-                _context.runOnUiThread(new OneShotTask(Title, Message));
+                public void run() {
+                    try {
+                        Intent sendIntent = new Intent();
+                        sendIntent.setAction(Intent.ACTION_SEND);
+                        sendIntent.putExtra(Intent.EXTRA_TEXT, shareMessage);
+                        sendIntent.setType("text/plain");
+                        _context.startActivity(Intent.createChooser(sendIntent, shareTitle));
+                    } catch (Exception e) {
+                        Log.e(TAG, Objects.requireNonNull(e.getMessage()));
+                    }
+                }
             }
+
+            _context.runOnUiThread(new OneShotTask(Title, Message));
         }
         catch(Exception e)
         {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -255,7 +246,7 @@ public class Utils {
             _context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName)));
         }
         catch(Exception ex) {
-            Log.e(TAG, ex.getMessage());
+            Log.e(TAG, Objects.requireNonNull(ex.getMessage()));
         }
     }
 
@@ -264,7 +255,7 @@ public class Utils {
             openGooglePlayURL(_context.getPackageName());
         }
         catch(Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -279,13 +270,13 @@ public class Utils {
                     toast.show();
                 }
                 catch(Exception e) {
-                    Log.e(TAG, e.getMessage());
+                    Log.e(TAG, Objects.requireNonNull(e.getMessage()));
                 }
             });
         }
         catch(Exception e)
         {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -318,7 +309,7 @@ public class Utils {
         }
         catch(Exception e)
         {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
             return 0;
         }
     }
@@ -335,7 +326,7 @@ public class Utils {
         }
         catch(Exception e)
         {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -370,7 +361,7 @@ public class Utils {
         }
         catch(Exception e)
         {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
             return 2; // delete error
         }
     }
@@ -404,7 +395,7 @@ public class Utils {
         }
         catch(Exception e)
         {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
             return 1; // Error
         }
     }
@@ -414,7 +405,7 @@ public class Utils {
             final PackageInfo pInfo = _context.getPackageManager().getPackageInfo(_context.getPackageName(), 0);
             return pInfo.versionName;
         } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
             return "";
         }
     }
@@ -429,7 +420,7 @@ public class Utils {
                 return Long.toString(pInfo.getLongVersionCode());
             }
         } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
             return "";
         }
     }
@@ -464,7 +455,7 @@ public class Utils {
                             }
                         }
                         catch (Exception e) {
-                            Log.e(TAG, e.getMessage());
+                            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
                         }
                     } else {
                         Log.d(TAG, "requestReviewFlow is NOT Successful");
@@ -474,7 +465,7 @@ public class Utils {
             }
         }
         catch (Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -554,11 +545,31 @@ public class Utils {
             }
         }
         catch(Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
+        }
+    }
+
+    private static long getAppInstallTineInMillis() {
+        try {
+            return _context.getPackageManager().getPackageInfo(_context.getPackageName(), 0).firstInstallTime;
+        } catch (Exception e) {
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
+            return 0;
         }
     }
 
     public static void checkUpdate() {
+        try {
+            final int milliSecondsInDay = 86400000;
+            if (System.currentTimeMillis() - getAppInstallTineInMillis() > milliSecondsInDay * 3) {
+                checkAppUpdate();
+            }
+        } catch (Exception e) {
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
+        }
+    }
+
+    private static void checkAppUpdate() {
         try {
             mAppUpdateManager = AppUpdateManagerFactory.create(_context);
 
@@ -583,8 +594,7 @@ public class Utils {
                         mAppUpdateManager.startUpdateFlowForResult(appUpdateInfo, AppUpdateType.FLEXIBLE /*AppUpdateType.IMMEDIATE*/, _context, /*RC_APP_UPDATE*/ 100500);
 
                     } catch (Exception e) {
-                        e.printStackTrace();
-                        Log.e(TAG, e.getMessage());
+                        Log.e(TAG, Objects.requireNonNull(e.getMessage()));
                     }
 
                 } else if (appUpdateInfo.installStatus() == InstallStatus.DOWNLOADED) {
@@ -596,7 +606,7 @@ public class Utils {
             });
         }
         catch(Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -607,7 +617,7 @@ public class Utils {
             }
         }
         catch(Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 }

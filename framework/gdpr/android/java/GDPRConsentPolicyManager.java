@@ -12,6 +12,8 @@ import com.google.android.ump.FormError;
 import com.google.android.ump.ConsentForm.OnConsentFormDismissedListener;
 import com.google.android.ump.UserMessagingPlatform;
 import com.google.android.ump.ConsentDebugSettings;
+
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class GDPRConsentPolicyManager {
@@ -36,7 +38,7 @@ public class GDPRConsentPolicyManager {
             }
         }
         catch(Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -48,7 +50,7 @@ public class GDPRConsentPolicyManager {
             }
         }
         catch(Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -61,7 +63,7 @@ public class GDPRConsentPolicyManager {
             private_Initialize();
         }
         catch(Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -79,12 +81,12 @@ public class GDPRConsentPolicyManager {
                     );
                 }
                 catch(Exception e) {
-                    Log.e(TAG, e.getMessage());
+                    Log.e(TAG, Objects.requireNonNull(e.getMessage()));
                 }
             });
         }
         catch(Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 

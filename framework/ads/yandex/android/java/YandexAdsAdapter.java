@@ -20,6 +20,8 @@ import com.yandex.mobile.ads.interstitial.InterstitialAdEventListener;
 import com.yandex.mobile.ads.rewarded.RewardedAdLoadListener;
 import com.yandex.mobile.ads.rewarded.RewardedAdLoader;
 
+import java.util.Objects;
+
 public class YandexAdsAdapter implements InitializationListener {
     private static final String TAG = "SDL";
     private static YandexAdsAdapter       yandexAdsAdapter = null;
@@ -50,7 +52,7 @@ public class YandexAdsAdapter implements InitializationListener {
         }
         catch(Exception e) {
             InitCallback(INIT_ERROR);
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -253,7 +255,7 @@ public class YandexAdsAdapter implements InitializationListener {
             }
         }
         catch(Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -264,7 +266,7 @@ public class YandexAdsAdapter implements InitializationListener {
             }
         }
         catch(Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -275,7 +277,7 @@ public class YandexAdsAdapter implements InitializationListener {
             }
         }
         catch(Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -286,7 +288,7 @@ public class YandexAdsAdapter implements InitializationListener {
             }
         }
         catch(Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
@@ -298,7 +300,7 @@ public class YandexAdsAdapter implements InitializationListener {
             return 0;
         }
         catch(Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
             return 1;
         }
     }
@@ -311,7 +313,7 @@ public class YandexAdsAdapter implements InitializationListener {
             return 0;
         }
         catch(Exception e) {
-            Log.e(TAG, e.getMessage());
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
             return 1;
         }
     }
