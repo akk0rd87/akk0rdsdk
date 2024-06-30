@@ -11,33 +11,15 @@ import android.net.Uri;
 import android.widget.Toast;
 import android.util.Log;
 import android.app.*;
-import android.content.*;
 import android.content.res.AssetManager;
 import android.media.AudioManager;
 import android.content.pm.PackageInfo;
-
-import com.google.android.gms.tasks.Task;
-import com.google.android.play.core.review.ReviewManager;
-import com.google.android.play.core.review.ReviewInfo;
-import com.google.android.play.core.review.ReviewManagerFactory;
-
-import com.google.android.play.core.appupdate.AppUpdateInfo;
-import com.google.android.play.core.appupdate.AppUpdateManager;
-import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
-import com.google.android.play.core.install.InstallState;
-import com.google.android.play.core.install.InstallStateUpdatedListener;
-import com.google.android.play.core.install.model.AppUpdateType;
-import com.google.android.play.core.install.model.InstallStatus;
-import com.google.android.play.core.install.model.UpdateAvailability;
-import com.google.android.gms.tasks.OnSuccessListener;
+import org.akkord.lib.AndroidStoreFacade;
 
 public class Utils {
-    private static  final String TAG = "SDL";
-    private static  Activity _context = null;
-    private static  AssetManager AssetMgr = null;
-
-    private static AppUpdateManager mAppUpdateManager = null;
-    private static InstallStateUpdatedListener installStateUpdatedListener = null;
+    public  static final String TAG = "SDL";
+    private static Activity _context = null;
+    private static AssetManager AssetMgr = null;
 
     public static native void MessageBoxCallback(int Code, int Result);
 
@@ -427,42 +409,7 @@ public class Utils {
 
     public static void LaunchAppReviewIfAvailable() {
         try {
-            Log.d(TAG, "LaunchAppReviewIfAvailable");
-            ReviewManager reviewManager = ReviewManagerFactory.create(_context);
-            if(null != reviewManager) {
-                Log.d(TAG, "requestReviewFlow");
-                Task<ReviewInfo> requestFlow = reviewManager.requestReviewFlow();
-                requestFlow.addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        try {
-                            // We can get the ReviewInfo object
-                            Log.d(TAG, "requestReviewFlow isSuccessful");
-                            ReviewInfo reviewInfo = task.getResult();
-                            if(null != reviewInfo) {
-                                Log.d(TAG, "launchReviewFlow");
-                                Task<Void> flow = reviewManager.launchReviewFlow(_context, reviewInfo);
-                                //flow.addOnCompleteListener(flowTask -> {
-                                //    // The flow has finished. The API does not indicate whether the user
-                                //    // reviewed or not, or even whether the review dialog was shown. Thus, no
-                                //    // matter the result, we continue our app flow.
-                                //    if (flowTask.isSuccessful()) {
-                                //        Log.d(TAG, "launchReviewFlow isSuccessful");
-                                //    }
-                                //    else {
-                                //        Log.d(TAG, "launchReviewFlow is not Successful");
-                                //    }
-                                //});
-                            }
-                        }
-                        catch (Exception e) {
-                            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
-                        }
-                    } else {
-                        Log.d(TAG, "requestReviewFlow is NOT Successful");
-                        // There was some problem, continue regardless of the result.
-                    }
-                });
-            }
+            AndroidStoreFacade.launchAppReviewIfPossible();
         }
         catch (Exception e) {
             Log.e(TAG, Objects.requireNonNull(e.getMessage()));
@@ -537,86 +484,18 @@ public class Utils {
         }
     }
 
-    private static void popupSnackbarForCompleteUpdate() {
-        try {
-            if(mAppUpdateManager != null) {
-                mAppUpdateManager.completeUpdate();
-                Log.d(TAG, "popupSnackbarForCompleteUpdate");
-            }
-        }
-        catch(Exception e) {
-            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
-        }
-    }
-
-    private static long getAppInstallTineInMillis() {
-        try {
-            return _context.getPackageManager().getPackageInfo(_context.getPackageName(), 0).firstInstallTime;
-        } catch (Exception e) {
-            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
-            return 0;
-        }
-    }
-
     public static void checkUpdate() {
         try {
-            final int milliSecondsInDay = 86400000;
-            if (System.currentTimeMillis() - getAppInstallTineInMillis() > milliSecondsInDay * 3) {
-                checkAppUpdate();
-            }
+            AndroidStoreFacade.checkAppUpdate();
         } catch (Exception e) {
             Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }
 
-    private static void checkAppUpdate() {
+    public static void onActivityStop() {
         try {
-            mAppUpdateManager = AppUpdateManagerFactory.create(_context);
-
-            installStateUpdatedListener = state -> {
-                if (state.installStatus() == InstallStatus.DOWNLOADED){
-                    //CHECK THIS if AppUpdateType.FLEXIBLE, otherwise you can skip
-                    popupSnackbarForCompleteUpdate();
-                } else if (state.installStatus() == InstallStatus.INSTALLED){
-                    if (mAppUpdateManager != null && installStateUpdatedListener != null){
-                    mAppUpdateManager.unregisterListener(installStateUpdatedListener);
-                    }
-                } else {
-                    Log.i(TAG, "InstallStateUpdatedListener: state: " + state.installStatus());
-                }
-            };
-
-            mAppUpdateManager.registerListener(installStateUpdatedListener);
-            mAppUpdateManager.getAppUpdateInfo().addOnSuccessListener(appUpdateInfo -> {
-                if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
-                        //&& appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE /*AppUpdateType.IMMEDIATE*/))
-                    try {
-                        mAppUpdateManager.startUpdateFlowForResult(appUpdateInfo, AppUpdateType.FLEXIBLE /*AppUpdateType.IMMEDIATE*/, _context, /*RC_APP_UPDATE*/ 100500);
-
-                    } catch (Exception e) {
-                        Log.e(TAG, Objects.requireNonNull(e.getMessage()));
-                    }
-
-                } else if (appUpdateInfo.installStatus() == InstallStatus.DOWNLOADED) {
-                    //CHECK THIS if AppUpdateType.FLEXIBLE, otherwise you can skip
-                    popupSnackbarForCompleteUpdate();
-                } else {
-                    Log.e(TAG, "checkForAppUpdateAvailability: something else");
-                }
-            });
-        }
-        catch(Exception e) {
-            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
-        }
-    }
-
-    public static void UnregisterUpdateListener() {
-        try {
-            if (mAppUpdateManager != null && installStateUpdatedListener != null) {
-                mAppUpdateManager.unregisterListener(installStateUpdatedListener);
-            }
-        }
-        catch(Exception e) {
+            AndroidStoreFacade.onActivityStop();
+        } catch (Exception e) {
             Log.e(TAG, Objects.requireNonNull(e.getMessage()));
         }
     }

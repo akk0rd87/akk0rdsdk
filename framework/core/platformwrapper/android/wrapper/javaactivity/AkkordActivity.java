@@ -75,6 +75,6 @@ public class AkkordActivity extends SDLActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        org.akkord.lib.Utils.UnregisterUpdateListener();
+        Utils.onActivityStop();
     }
 }

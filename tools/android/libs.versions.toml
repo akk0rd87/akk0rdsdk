@@ -1,19 +1,34 @@
-[libraries]
-android-application                = "com.android.tools.build:gradle:8.3.0"
-google-services                    = "com.google.gms:google-services:4.4.2"
-triplet-play-publisher             = "com.github.triplet.gradle:play-publisher:3.10.1"
+[versions]
+kotlin = '2.0.0'
 
+[libraries]
 getkeepsafe-relinker               = "com.getkeepsafe.relinker:relinker:1.4.5"
+
 admobads                           = "com.google.android.gms:play-services-ads:23.1.0"
-play-billing                       = "com.android.billingclient:billing:7.0.0"
+google-play-billing                = "com.android.billingclient:billing:7.0.0"
+google-play-review                 = "com.google.android.play:review:2.0.1"
+google-app-update                  = "com.google.android.play:app-update:2.1.0"
+
 play-services-games                = "com.google.android.gms:play-services-games:23.2.0"
 play-services-auth                 = "com.google.android.gms:play-services-auth:21.2.0"
-play-review                        = "com.google.android.play:review:2.0.1"
-app-update                         = "com.google.android.play:app-update:2.1.0"
 play-appset                        = "com.google.android.gms:play-services-appset:16.1.0"
+
 user_messaging_platform            = "com.google.android.ump:user-messaging-platform:2.2.0"
 yandexadssdk                       = "com.yandex.android:mobileads:7.1.0"
 okhttp3                            = "com.squareup.okhttp3:okhttp:4.12.0" # added for yandex for version 7.1.0 support
 
+rustore-appreview                  = "ru.rustore.sdk:review:2.0.0"
+rustore-appupdate                  = "ru.rustore.sdk:appupdate:2.0.0"
+
+androidx-core-ktx                  = "androidx.core:core-ktx:1.13.1"
+kotlin-stdlib                      = "org.jetbrains.kotlin:kotlin-stdlib:2.0.0"
+
+[plugins]
+android-application                = { id = 'com.android.application', version = '8.5.0' }
+google-services                    = { id = 'com.google.gms.google-services', version = '4.4.2' }
+kotlin                             = { id = 'org.jetbrains.kotlin.android', version.ref = 'kotlin' }
+triplet-play-publisher             = { id = 'com.github.triplet.play', version = '3.10.1' }
+
 [bundles]
-yandexads = ['yandexadssdk', 'okhttp3']
+yandexads                          = ['yandexadssdk', 'okhttp3']
+kotlin                             = ['androidx-core-ktx', 'kotlin-stdlib']
