@@ -20,9 +20,6 @@ okhttp3                            = "com.squareup.okhttp3:okhttp:4.12.0" # adde
 rustore-appreview                  = "ru.rustore.sdk:review:2.0.0"
 rustore-appupdate                  = "ru.rustore.sdk:appupdate:2.0.0"
 
-androidx-core-ktx                  = "androidx.core:core-ktx:1.13.1"
-kotlin-stdlib                      = "org.jetbrains.kotlin:kotlin-stdlib:2.0.0"
-
 [plugins]
 android-application                = { id = 'com.android.application', version = '8.5.0' }
 google-services                    = { id = 'com.google.gms.google-services', version = '4.4.2' }
@@ -31,4 +28,3 @@ triplet-play-publisher             = { id = 'com.github.triplet.play', version =
 
 [bundles]
 yandexads                          = ['yandexadssdk', 'okhttp3']
-kotlin                             = ['androidx-core-ktx', 'kotlin-stdlib']
