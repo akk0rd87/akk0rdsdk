@@ -5,6 +5,44 @@
 #include "adunitstatus.h"
 #include "core/platformwrapper/android/android_javautf8_string.h"
 
+#define AKKORSDK_ANDROIDJNIPROVIDER_IMPLEMENTATION(java_class_name) \
+class AndroidProvider : public Provider { \
+public: \
+    AndroidProvider(JNIEnv* jnienv, std::weak_ptr<ads::ProviderCallback> callback, ads::Format format) : \
+        Provider(callback), \
+        jniProvider(java_class_name, jnienv, format, interstitialStatus, rewardedVideoStatus) {} \
+    void onAdEvent(int eventType) { \
+        eventCallback(static_cast<ads::Event>(eventType)); \
+    } \
+    static void setStaticProvider(std::shared_ptr<AndroidProvider>& provider) { \
+        staticProvider = provider; \
+    } \
+    static bool wasInited; \
+    static std::weak_ptr<AndroidProvider> staticProvider; \
+protected: \
+    virtual void InterstitialSetUnitId(const std::string& unitId) override { \
+        jniProvider.InterstitialSetUnitId(unitId); \
+    } \
+    virtual void setRewardedVideoUnit(const char* unit) override { \
+        jniProvider.setRewardedVideoUnit(unit); \
+    } \
+    virtual void v_tryLoadInterstitial() override { \
+        jniProvider.v_tryLoadInterstitial(); \
+    } \
+    virtual void v_tryLoadRewardedVideo() override { \
+        jniProvider.v_tryLoadRewardedVideo(); \
+    } \
+    virtual void v_showInterstitial() override { \
+        jniProvider.v_showInterstitial(); \
+    } \
+    virtual void v_showRewardedVideo() override { \
+        jniProvider.v_showRewardedVideo(); \
+    } \
+    virtual bool isInited() const override { return wasInited; } \
+private: \
+    ads::AndroidJNIProvider jniProvider; \
+}
+
 namespace ads {
     class AndroidJNIProvider {
     public:
@@ -35,7 +73,7 @@ namespace ads {
                 return;
             }
 
-            jmethodID initMethod = env->GetStaticMethodID(adsGlobalRef, "Initialize", "(II)V");
+            jmethodID initMethod = env->GetStaticMethodID(adsGlobalRef, "initialize", "()V");
             if (!initMethod) {
                 logError("Initialize Java method not Found");
                 return;
@@ -44,7 +82,7 @@ namespace ads {
             {
                 const auto interstitialInit = (!(!(format & ads::Format::Interstitial))) ? 1 : 0;
                 const auto rewardedvideoInit = (!(!(format & ads::Format::RewardedVideo))) ? 1 : 0;
-                env->CallStaticVoidMethod(adsGlobalRef, initMethod, interstitialInit, rewardedvideoInit);
+                env->CallStaticVoidMethod(adsGlobalRef, initMethod);
 
                 if (interstitialInit) {
                     interstitialStatus = ads::InterstitialStatus::ReadyToLoad;
@@ -55,12 +93,12 @@ namespace ads {
                 }
             }
 
-            midInterstitialSetUnitId = env->GetStaticMethodID(adsGlobalRef, "InterstitialSetUnitId", "(Ljava/lang/String;)V");
-            midInterstitialLoad = env->GetStaticMethodID(adsGlobalRef, "InterstitialLoad", "()V");
-            midInterstitialShow = env->GetStaticMethodID(adsGlobalRef, "InterstitialShow", "()I");
-            midRewardedVideoSetUnitId = env->GetStaticMethodID(adsGlobalRef, "RewardedVideoSetUnitId", "(Ljava/lang/String;)V");
-            midRewardedVideoLoad = env->GetStaticMethodID(adsGlobalRef, "RewardedVideoLoad", "()V");
-            midRewardedVideoShow = env->GetStaticMethodID(adsGlobalRef, "RewardedVideoShow", "()I");
+            midInterstitialSetUnitId = env->GetStaticMethodID(adsGlobalRef, "interstitialSetUnitId", "(Ljava/lang/String;)V");
+            midInterstitialLoad = env->GetStaticMethodID(adsGlobalRef, "interstitialLoad", "()V");
+            midInterstitialShow = env->GetStaticMethodID(adsGlobalRef, "interstitialShow", "()I");
+            midRewardedVideoSetUnitId = env->GetStaticMethodID(adsGlobalRef, "rewardedVideoSetUnitId", "(Ljava/lang/String;)V");
+            midRewardedVideoLoad = env->GetStaticMethodID(adsGlobalRef, "rewardedVideoLoad", "()V");
+            midRewardedVideoShow = env->GetStaticMethodID(adsGlobalRef, "rewardedVideoShow", "()I");
 
             if (!midInterstitialSetUnitId) { logError("midInterstitialSetUnitId Java method not found"); }
             if (!midInterstitialLoad) { logError("midInterstitialLoad Java method not found"); }
@@ -71,60 +109,60 @@ namespace ads {
         }
 
         void InterstitialSetUnitId(const std::string& unitId) {
-            JNIEnv* env = getJNIEnv();
             if (!midInterstitialSetUnitId) {
                 logError("InterstitialSetUnitId Java method not Found");
                 return;
             }
+            JNIEnv* env = getJNIEnv();
             AndroidJavaUTF8String url_jstring(env, unitId.c_str());
             env->CallStaticVoidMethod(adsGlobalRef, midInterstitialSetUnitId, url_jstring.get());
         }
 
         void setRewardedVideoUnit(const char* unit) {
-            JNIEnv* env = getJNIEnv();
             if (!midRewardedVideoSetUnitId)
             {
-                logError("RewardedVideoSetUnitId Java method not Found");
+                logError("rewardedVideoSetUnitId Java method not Found");
                 return;
             }
+            JNIEnv* env = getJNIEnv();
             AndroidJavaUTF8String url_jstring(env, unit);
             env->CallStaticVoidMethod(adsGlobalRef, midRewardedVideoSetUnitId, url_jstring.get());
             return;
         }
 
         void v_tryLoadInterstitial() {
-            JNIEnv* env = getJNIEnv();
             if (!midInterstitialLoad) {
-                logError("InterstitialLoad Java method not Found");
+                logError("interstitialLoad Java method not Found");
                 return;
             }
+            JNIEnv* env = getJNIEnv();
             env->CallStaticVoidMethod(adsGlobalRef, midInterstitialLoad);
         }
 
         void v_tryLoadRewardedVideo() {
-            JNIEnv* env = getJNIEnv();
             if (!midRewardedVideoLoad) {
-                logError("RewardedVideoLoad Java method not Found");
+                logError("rewardedVideoLoad Java method not Found");
                 return;
             }
+            JNIEnv* env = getJNIEnv();
             env->CallStaticVoidMethod(adsGlobalRef, midRewardedVideoLoad);
         }
 
         void v_showInterstitial() {
-            JNIEnv* env = getJNIEnv();
             if (!midInterstitialShow) {
-                logError("InterstitialShow Java method not Found");
+                logError("interstitialShow Java method not Found");
                 return;
             }
+            JNIEnv* env = getJNIEnv();
             env->CallStaticIntMethod(adsGlobalRef, midInterstitialShow);
         }
 
         void v_showRewardedVideo() {
-            JNIEnv* env = getJNIEnv();
             if (!midRewardedVideoShow) {
-                logError("RewardedVideoShow Java method not Found");
+                logError("rewardedVideoShow Java method not Found");
                 return;
             }
+            JNIEnv* env = getJNIEnv();
             env->CallStaticIntMethod(adsGlobalRef, midRewardedVideoShow);
         }
 
