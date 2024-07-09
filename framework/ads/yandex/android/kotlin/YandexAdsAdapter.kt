@@ -1,5 +1,6 @@
 package org.akkord.lib
 
+import android.app.Activity
 import android.util.Log
 import com.yandex.mobile.ads.common.AdError
 import com.yandex.mobile.ads.common.AdRequestConfiguration
@@ -261,7 +262,7 @@ class YandexAdsAdapter {
             }
         }
 
-        private fun getContext() = org.akkord.lib.Utils.GetContext()
-        private fun getTag() = org.akkord.lib.Utils.TAG
+        private fun getContext(): Activity = org.akkord.lib.Utils.GetContext()
+        private fun getTag(): String = org.akkord.lib.Utils.TAG
     }
 }

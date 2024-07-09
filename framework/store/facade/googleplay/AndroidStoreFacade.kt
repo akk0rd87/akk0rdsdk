@@ -1,7 +1,7 @@
 package org.akkord.lib
 
+import android.app.Activity
 import android.util.Log
-import com.google.android.gms.tasks.OnSuccessListener
 import com.google.android.gms.tasks.Task
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManager
@@ -14,11 +14,10 @@ import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.android.play.core.review.ReviewInfo
 import com.google.android.play.core.review.ReviewManagerFactory
-import java.util.Objects
 
 class AndroidStoreFacade {
     companion object {
-        private val mAppUpdateManager : AppUpdateManager by lazy { AppUpdateManagerFactory.create(org.akkord.lib.Utils.GetContext()) }
+        private val mAppUpdateManager : AppUpdateManager by lazy { AppUpdateManagerFactory.create(getContext()) }
 
         private val installStateUpdatedListener = InstallStateUpdatedListener { state: InstallState ->
             when(state.installStatus()) {
@@ -29,24 +28,24 @@ class AndroidStoreFacade {
 
         @JvmStatic
         fun launchAppReviewIfPossible() {
-            val reviewManager = ReviewManagerFactory.create(org.akkord.lib.Utils.GetContext())
+            val reviewManager = ReviewManagerFactory.create(getContext())
             val requestFlow = reviewManager.requestReviewFlow()
 
             requestFlow.addOnCompleteListener { task: Task<ReviewInfo?> ->
                 if (task.isSuccessful) {
                     try {
                         // We can get the ReviewInfo object
-                        Log.d(org.akkord.lib.Utils.TAG, "requestReviewFlow isSuccessful")
+                        Log.d(getTag(), "requestReviewFlow isSuccessful")
                         task.result?.let { reviewInfo ->
-                            Log.d(org.akkord.lib.Utils.TAG, "launchReviewFlow")
-                            reviewManager.launchReviewFlow(org.akkord.lib.Utils.GetContext(), reviewInfo)
+                            Log.d(getTag(), "launchReviewFlow")
+                            reviewManager.launchReviewFlow(getContext(), reviewInfo)
                         }
 
                     } catch (e: Exception) {
-                        Log.d(org.akkord.lib.Utils.TAG, e.message?:"unknown exception")
+                        e.message?.let { Log.e(getTag(), it ) }
                     }
                 } else {
-                    Log.d(org.akkord.lib.Utils.TAG, "requestReviewFlow is NOT Successful")
+                    Log.e(getTag(), "requestReviewFlow is NOT Successful")
                 }
             }
         }
@@ -55,29 +54,26 @@ class AndroidStoreFacade {
         fun checkAppUpdate() {
             mAppUpdateManager.registerListener(installStateUpdatedListener)
             mAppUpdateManager.appUpdateInfo.
-                addOnSuccessListener(OnSuccessListener<AppUpdateInfo> { appUpdateInfo: AppUpdateInfo ->
+                addOnSuccessListener { appUpdateInfo: AppUpdateInfo ->
                     if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
                         //&& appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE /*AppUpdateType.IMMEDIATE*/))
                         try {
                             mAppUpdateManager.startUpdateFlowForResult(
                                 appUpdateInfo,
-                                org.akkord.lib.Utils.GetContext(),  /*RC_APP_UPDATE*/
+                                getContext(),
                                 AppUpdateOptions.newBuilder(AppUpdateType.FLEXIBLE).build(),
                                 100500
                             )
-                        } catch (e: java.lang.Exception) {
-                            Log.e(
-                                org.akkord.lib.Utils.TAG,
-                                Objects.requireNonNull<String?>(e.message)
-                            )
+                        } catch (e: Exception) {
+                            e.message?.let { Log.e(getTag(), it ) }
                         }
                     } else if (appUpdateInfo.installStatus() == InstallStatus.DOWNLOADED) {
                         //CHECK THIS if AppUpdateType.FLEXIBLE, otherwise you can skip
                         popupSnackbarForCompleteUpdate()
                     } else {
-                        Log.e(org.akkord.lib.Utils.TAG, "checkForAppUpdateAvailability: something else")
+                        Log.e(getTag(), "checkForAppUpdateAvailability: something else")
                     }
-                })
+                }
         }
 
         @JvmStatic
@@ -88,10 +84,10 @@ class AndroidStoreFacade {
         private fun popupSnackbarForCompleteUpdate() {
             try {
                 mAppUpdateManager.completeUpdate()
-                Log.i(org.akkord.lib.Utils.TAG, "popupSnackbarForCompleteUpdate")
+                Log.i(getTag(), "popupSnackbarForCompleteUpdate")
             }
             catch(e: Exception) {
-                Log.d(org.akkord.lib.Utils.TAG, e.message?:"unknown exception")
+                e.message?.let { Log.e(getTag(), it ) }
             }
         }
 
@@ -100,8 +96,11 @@ class AndroidStoreFacade {
                 mAppUpdateManager.unregisterListener(installStateUpdatedListener)
             }
             catch(e: Exception) {
-                Log.d(org.akkord.lib.Utils.TAG, e.message?:"unknown exception")
+                e.message?.let { Log.e(getTag(), it ) }
             }
         }
+
+        private fun getContext(): Activity = org.akkord.lib.Utils.GetContext()
+        private fun getTag(): String = org.akkord.lib.Utils.TAG
     }
 }

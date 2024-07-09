@@ -17,8 +17,8 @@ user_messaging_platform            = "com.google.android.ump:user-messaging-plat
 yandexadssdk                       = "com.yandex.android:mobileads:7.1.0"
 okhttp3                            = "com.squareup.okhttp3:okhttp:4.12.0" # added for yandex for version 7.1.0 support
 
-rustore-appreview                  = "ru.rustore.sdk:review:2.0.0"
-rustore-appupdate                  = "ru.rustore.sdk:appupdate:2.0.0"
+rustore-appreview                  = "ru.rustore.sdk:review:6.0.0"
+rustore-appupdate                  = "ru.rustore.sdk:appupdate:6.0.0"
 
 [plugins]
 android-application                = { id = 'com.android.application', version = '8.5.0' }

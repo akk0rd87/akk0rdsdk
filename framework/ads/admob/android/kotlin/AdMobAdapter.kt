@@ -1,5 +1,6 @@
 package org.akkord.lib
 
+import android.app.Activity
 import android.util.Log
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdRequest
@@ -335,7 +336,7 @@ class AdMobAdapter {
             }
         }
 
-        private fun getContext() = org.akkord.lib.Utils.GetContext()
-        private fun getTag() = org.akkord.lib.Utils.TAG
+        private fun getContext(): Activity = org.akkord.lib.Utils.GetContext()
+        private fun getTag(): String = org.akkord.lib.Utils.TAG
     }
 }
