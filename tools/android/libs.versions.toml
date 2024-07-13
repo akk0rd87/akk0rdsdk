@@ -19,6 +19,9 @@ okhttp3                            = "com.squareup.okhttp3:okhttp:4.12.0" # adde
 
 rustore-appreview                  = "ru.rustore.sdk:review:6.0.0"
 rustore-appupdate                  = "ru.rustore.sdk:appupdate:6.0.0"
+rustore-billing                    = "ru.rustore.sdk:billingclient:6.0.0"
+
+lifecycle-viewmodel-ktx            = "androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.3"
 
 [plugins]
 android-application                = { id = 'com.android.application', version = '8.5.0' }
@@ -28,3 +31,4 @@ triplet-play-publisher             = { id = 'com.github.triplet.play', version =
 
 [bundles]
 yandexads                          = ['yandexadssdk', 'okhttp3']
+rustore-billing                    = ['rustore-billing', 'lifecycle-viewmodel-ktx']

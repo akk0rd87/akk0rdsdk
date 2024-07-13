@@ -48,7 +48,7 @@ class AndroidStoreFacade {
                         appUpdateManager.startUpdateFlow(appUpdateInfo, getAppUpdateOptions())
                     }
                 }
-             */
+            */
         }
 
         @JvmStatic

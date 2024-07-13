@@ -51,7 +51,7 @@ bool AndroidBillingManager::Init()
     env->DeleteLocalRef(localClass);
 
     // Common Initialize method
-    jmethodID BillingInit = env->GetStaticMethodID(AndroidBillingClass, "Initialize", "()V");
+    jmethodID BillingInit = env->GetStaticMethodID(AndroidBillingClass, "initialize", "()V");
     if(!BillingInit)
     {
         logError("Initialize Java method not Found");
@@ -60,10 +60,10 @@ bool AndroidBillingManager::Init()
 
     env->CallStaticVoidMethod(AndroidBillingClass, BillingInit);
 
-    midQueryProductDetails = env->GetStaticMethodID(AndroidBillingClass, "QueryProductDetails", "([Ljava/lang/String;)V");
-    midRestorePurchases    = env->GetStaticMethodID(AndroidBillingClass, "RestorePurchases", "()V");
-    midPurchaseProdItem    = env->GetStaticMethodID(AndroidBillingClass, "PurchaseProdItem", "(Ljava/lang/String;)V");
-    midConsumeProductItem  = env->GetStaticMethodID(AndroidBillingClass, "ConsumeProductItem", "(Ljava/lang/String;Ljava/lang/String;)V");
+    midQueryProductDetails = env->GetStaticMethodID(AndroidBillingClass, "queryProductDetails", "([Ljava/lang/String;)V");
+    midRestorePurchases    = env->GetStaticMethodID(AndroidBillingClass, "restorePurchases", "()V");
+    midPurchaseProdItem    = env->GetStaticMethodID(AndroidBillingClass, "purchaseProdItem", "(Ljava/lang/String;)V");
+    midConsumeProductItem  = env->GetStaticMethodID(AndroidBillingClass, "consumeProductItem", "(Ljava/lang/String;Ljava/lang/String;)V");
 
     if(midQueryProductDetails == nullptr) { Result = false; logError("Java midQueryProductDetails load error"); }
     if(midRestorePurchases    == nullptr) { Result = false; logError("Java midRestorePurchases    load error"); }
