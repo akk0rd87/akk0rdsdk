@@ -1,0 +1,16 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    versionCatalogs {
+        libs {
+            from(files(System.getenv('AKKORD_SDK_HOME') + "/tools/android/libs.versions.toml"))
+        }
+    }
+}
+
+include 'app'

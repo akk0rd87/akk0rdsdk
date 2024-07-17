@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <application>
+    <activity android:name=".MainActivity">
+      <intent-filter>
+          <action android:name="android.intent.action.VIEW" />
+          <category android:name="android.intent.category.DEFAULT" />
+          <category android:name="android.intent.category.BROWSABLE" />
+          <data android:scheme="orgpopapptest" />
+      </intent-filter>
+    </activity>
+
+    <meta-data android:name="akk0rdsdk.rustore.app.scheme"
+               android:value="orgpopapptest"/>
+
+    <!-- https://console.rustore.ru/apps/289739455/versions -->
+    <meta-data android:name="akk0rdsdk.rustore.app.id"
+               android:value="100000000"/>
+  </application>
+
+</manifest>

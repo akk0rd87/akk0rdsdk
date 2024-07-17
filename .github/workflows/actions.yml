@@ -1,0 +1,52 @@
+name: Build
+run-name: Build 🚀
+on: [push]
+
+jobs:
+  cmake-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cmake -S utests -B utests/build && cmake --build utests/build && ctest --test-dir utests/build
+
+  sdl-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cmake -S libraries/SDL/SDL -B libraries/SDL/SDL/build && cmake --build libraries/SDL/SDL/build
+
+  build-googlePlay:
+    runs-on: ubuntu-latest
+    env:
+      AKKORD_SDK_HOME: "$(pwd)/akk0rdsdk/"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set Up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+      - name: Run gradle build
+        run: |
+          chmod +x ci/proj.android/gradlew
+          AKKORD_SDK_HOME=$(pwd)
+          ci/proj.android/gradlew --no-daemon app:assembleGooglePlayRelease -p ci/proj.android
+
+  build-ruStore:
+    runs-on: ubuntu-latest
+    env:
+      AKKORD_SDK_HOME: "$(pwd)/akk0rdsdk/"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set Up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+      - name: Run gradle build
+        run: |
+          chmod +x ci/proj.android/gradlew
+          AKKORD_SDK_HOME=$(pwd)
+          ci/proj.android/gradlew --no-daemon app:assembleRuStoreRelease -p ci/proj.android

@@ -11,18 +11,8 @@
 **/.gradle/*
 **/.idea/*
 
-examples/**/data-ram
-examples/**/build/*
-examples/**/lib/*
-examples/**/libs/*
-examples/**/obj/*
-examples/**/*.exp
-examples/**/*.lib
-examples/**/*.db
-examples/**/*.opendb
-examples/**/*.ipch
-examples/**/Release/*
-examples/**/Debug/*
+ci/proj.android/app/build
+ci/proj.android/main/lib
 
 libraries/SDL/SDL/VisualC/Win32/*
 

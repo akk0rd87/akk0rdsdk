@@ -1,0 +1,29 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+import org.apache.tools.ant.taskdefs.condition.Os
+
+buildscript {
+    repositories {
+        google()
+        jcenter()
+        maven { url 'https://plugins.gradle.org/m2/' }
+    }
+}
+
+plugins {
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.kotlin) apply false
+    alias(libs.plugins.google.services) apply false
+    alias(libs.plugins.triplet.play.publisher) apply false
+}
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+        maven { url = uri("https://artifactory-external.vkpartner.ru/artifactory/maven") }
+    }
+}
+
+ext {
+    compileSdkVersion = 34
+}

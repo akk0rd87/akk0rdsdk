@@ -1,0 +1,230 @@
+apply plugin: 'com.android.application'
+apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.github.triplet.play'
+apply plugin: 'kotlin-android'
+
+def akkord_sdk_path        = System.getenv('AKKORD_SDK_HOME')
+def proGuardParamsDir      = System.getenv('AKKORD_SDK_HOME') + "/framework/core/platformwrapper/android/proguard/"
+
+
+android {
+    namespace 'org.popapp.citest'
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    defaultConfig {
+        minSdkVersion    = 21
+        targetSdkVersion = 34
+        multiDexEnabled true // yandex ads
+    }
+    externalNativeBuild {
+        ndkBuild {
+            // Tells Gradle to find the root ndk-build script in the same
+            // directory as the module's build.gradle file. Gradle requires this
+            // build script to add your ndk-build project as a build dependency and
+            // pull your native sources into your Android project.
+            buildStagingDirectory "../main/lib"
+            path "../main/Android.mk"
+
+            //cppFlags.addAll(["-std=c++11"])
+        }
+    }
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+            manifest.srcFile '../AndroidManifest.xml'
+            kotlin.srcDir "${akkord_sdk_path}/framework/ads/admob/android/kotlin/"
+            kotlin.srcDir "${akkord_sdk_path}/framework/ads/yandex/android/kotlin/"
+            kotlin.srcDir "${akkord_sdk_path}/framework/core/platformwrapper/android/billing/"
+
+            java.srcDir   "${akkord_sdk_path}/libraries/SDL/SDL/android-project/app/src/main/java/org/libsdl/app/"
+            java.srcDir   "${akkord_sdk_path}/framework/core/platformwrapper/android/wrapper/javaactivity/"
+            java.srcDir   "${akkord_sdk_path}/framework/core/platformwrapper/android/wrapper/utils/"
+            java.srcDir   "${akkord_sdk_path}/framework/gdpr/android/java/"
+            java.srcDir   "${akkord_sdk_path}/framework/core/platformwrapper/android/snapshotcoordinator/"
+            java.srcDir '../java'
+            res.srcDirs = ['../res']
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), file(proGuardParamsDir + 'proguard-rules_release.pro').absolutePath
+            ndk { debugSymbolLevel 'FULL' }
+        }
+        debug {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), file(proGuardParamsDir + 'proguard-rules_debug.pro').absolutePath
+        }
+    }
+
+    flavorDimensions "Store"
+
+    productFlavors {
+        googlePlay {
+            dimension "Store"
+            versionCode 1
+
+            sourceSets {
+                googlePlay {
+                    manifest.srcFile "../customization/google_play/manifest_permissions.xml"
+                    java.srcDir      "../customization/google_play/src/"
+                    kotlin.srcDir    "${akkord_sdk_path}/framework/store/facade/googleplay/"
+                    java.srcDir      "${akkord_sdk_path}/framework/billing/googleplay/"
+                }
+            }
+        }
+
+        samsung {
+            dimension "Store"
+            versionCode 1
+
+            externalNativeBuild {
+                ndkBuild {
+                    cFlags "-D__ALTERNATIVE_STORE__"
+                }
+            }
+            sourceSets {
+                samsung {
+                    manifest.srcFile "../customization/samsung/manifest_permissions.xml"
+                    java.srcDir      "../customization/samsung/src/"
+                    kotlin.srcDir    "${akkord_sdk_path}/framework/store/facade/googleplay/"
+                }
+            }
+        }
+
+        alternativeStore {
+            dimension "Store"
+            versionCode 1
+
+            externalNativeBuild {
+                ndkBuild {
+                    cFlags "-D__ALTERNATIVE_STORE__"
+                }
+            }
+            sourceSets {
+                alternativeStore {
+                    kotlin.srcDir "${akkord_sdk_path}/framework/store/facade/googleplay/"
+                    java.srcDir   "../customization/google_play/src/"
+                }
+            }
+        }
+
+        ruStore {
+            dimension "Store"
+            versionCode 1
+            versionName '1'
+
+            minSdkVersion 23
+
+            sourceSets {
+                ruStore {
+                    manifest.srcFile "../customization/rustore/manifest_permissions.xml"
+                    java.srcDir      "../customization/rustore/src/"
+                    kotlin.srcDir    "${akkord_sdk_path}/framework/billing/rustore/"
+                    kotlin.srcDir    "${akkord_sdk_path}/framework/store/facade/rustore/"
+                }
+            }
+            externalNativeBuild {
+                ndkBuild {
+                    cFlags "-D__ALTERNATIVE_STORE__ -D__ALTERNATIVE_STORE_RUSTORE__"
+                }
+            }
+        }
+    }
+
+    playConfigs {
+        googlePlay {
+            track.set("internal")
+            defaultToAppBundles.set(true)
+            promoteTrack.set("alpha")
+            fromTrack.set("internal")
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8 // yandex ads
+        targetCompatibility JavaVersion.VERSION_1_8 // yandex ads
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    lint {
+        disable 'MobileAdsSdkOutdatedVersion'
+    }
+
+    configurations { // https://stackoverflow.com/a/59138342/11195868
+        all*.exclude group: 'com.google.guava', module: 'listenablefuture'
+    }
+
+    testOptions {
+        managedDevices {
+            devices {
+                pixel2api30 (com.android.build.api.dsl.ManagedVirtualDevice) {
+                    // Use device profiles you typically see in Android Studio.
+                    device = "Pixel 2"
+                    // Use only API levels 27 and higher.
+                    apiLevel = 30
+                    // To include Google services, use "google".
+                    systemImageSource = "aosp-atd"
+                }
+            }
+            groups {
+                phoneAndTablet {
+                    targetDevices.add(devices.pixel2api30)
+                }
+            }
+        }
+    }
+}
+
+androidComponents {
+    def getProjGitHash = { ->
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'rev-parse', '--short', 'HEAD'
+            standardOutput = stdout
+        }
+        return stdout.toString().trim()
+    }
+
+    def getSDKGitHash = { ->
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', '--git-dir', akkord_sdk_path + '/.git', 'rev-parse', '--short', 'HEAD'
+            standardOutput = stdout
+        }
+        return stdout.toString().trim()
+    }
+
+    def projVersionHash = getProjGitHash()
+    def sdkVersionHash  = getSDKGitHash()
+
+    def release = selector().withBuildType("release")
+    onVariants (release) { variant ->
+        for (output in variant.outputs) {
+            def processedVersionCode = output.versionCode.map { playVersionCode -> "$playVersionCode [$projVersionHash]-[$sdkVersionHash]" }
+            output.versionName.set(processedVersionCode)
+        }
+    }
+}
+
+dependencies {
+    implementation(libs.getkeepsafe.relinker)
+    implementation(libs.admobads)
+    implementation(libs.play.services.games)
+    implementation(libs.play.services.auth)
+    implementation(libs.play.appset)
+    implementation(libs.bundles.yandexads)
+    implementation(libs.user.messaging.platform)
+
+    // Store-dependant
+    googlePlayImplementation(libs.google.play.review)
+    googlePlayImplementation(libs.google.app.update)
+    googlePlayImplementation(libs.google.play.billing)
+
+    samsungImplementation   (libs.google.play.review)
+    samsungImplementation   (libs.google.app.update)
+
+    ruStoreImplementation   (libs.rustore.appreview)
+    ruStoreImplementation   (libs.rustore.appupdate)
+    ruStoreImplementation   (libs.bundles.rustore.billing)
+}
