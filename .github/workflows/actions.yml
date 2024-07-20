@@ -17,8 +17,6 @@ jobs:
 
   build-googlePlay:
     runs-on: ubuntu-latest
-    env:
-      AKKORD_SDK_HOME: "$(pwd)/akk0rdsdk/"
     steps:
       - uses: actions/checkout@v4
       - name: Set Up JDK
@@ -30,13 +28,11 @@ jobs:
       - name: Run gradle build
         run: |
           chmod +x ci/proj.android/gradlew
-          AKKORD_SDK_HOME=$(pwd)
+          export AKKORD_SDK_HOME=${GITHUB_WORKSPACE}
           ci/proj.android/gradlew --no-daemon app:assembleGooglePlayRelease -p ci/proj.android
 
   build-ruStore:
     runs-on: ubuntu-latest
-    env:
-      AKKORD_SDK_HOME: "$(pwd)/akk0rdsdk/"
     steps:
       - uses: actions/checkout@v4
       - name: Set Up JDK
@@ -48,5 +44,5 @@ jobs:
       - name: Run gradle build
         run: |
           chmod +x ci/proj.android/gradlew
-          AKKORD_SDK_HOME=$(pwd)
+          export AKKORD_SDK_HOME=${GITHUB_WORKSPACE}
           ci/proj.android/gradlew --no-daemon app:assembleRuStoreRelease -p ci/proj.android
