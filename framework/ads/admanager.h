@@ -10,14 +10,13 @@ namespace ads {
     class Manager : public ProviderCallback {
     public:
         Manager(EventListener* EventListener = nullptr) :
-            inited(GetSeconds()),
-            lastShowed(0),
+            lastShowed(GetSeconds()),
             showDelay(3 * 60),// 3 минуты в секундах
             eventListener(EventListener)
         { }
 
         virtual timeMS GetInterstitialNextShowTime() const {
-            return (lastShowed == static_cast<decltype(lastShowed)>(0) ? inited + showDelay / static_cast <decltype(showDelay)>(2) : lastShowed + showDelay);
+            return lastShowed + showDelay;
         };
 
         void SetIntersitialShowDelay(timeMS DelaySeconds) {
@@ -135,8 +134,8 @@ namespace ads {
             }
         };
 
-        timeMS inited, lastShowed, showDelay;
         std::vector<std::shared_ptr<Provider>> providers;
+        timeMS lastShowed, showDelay;
         EventListener* const eventListener;
     };
 };
