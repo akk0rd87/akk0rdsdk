@@ -19,6 +19,11 @@ int BillingManager::GetStatus()
 
 #ifdef __ANDROID__
 #include "core/platformwrapper/android/android_billing.h"
+
+static JNIEnv* getJNIEnv() {
+    return static_cast<JNIEnv*>(SDL_AndroidGetJNIEnv());
+}
+
 extern "C" {
 	JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManagerKt_billingSetupFinished(JNIEnv*, jclass, jint ResponseCode)
 	{
@@ -85,7 +90,7 @@ bool BillingManager::Init(BillingCallbackObserver* Observer)
 
 #ifdef __ANDROID__
     BillingContext.callbackObserver = Observer;
-    return AndroidBillingManager::Init();
+    return AndroidBillingManager::Init(getJNIEnv());
 #endif
 
 #ifdef __APPLE__
@@ -103,7 +108,7 @@ bool BillingManager::Init(BillingCallbackObserver* Observer)
 bool BillingManager::QueryProductDetails(const std::vector<std::string>& ProdList)
 {
 #ifdef __ANDROID__
-    return AndroidBillingManager::QueryProductDetails(ProdList);
+    return AndroidBillingManager::QueryProductDetails(getJNIEnv(), ProdList);
 #endif
 
 #ifdef __APPLE__
@@ -115,7 +120,7 @@ bool BillingManager::QueryProductDetails(const std::vector<std::string>& ProdLis
 bool BillingManager::RestorePurchases()
 {
 #ifdef __ANDROID__
-    return AndroidBillingManager::RestorePurchases();
+    return AndroidBillingManager::RestorePurchases(getJNIEnv());
 #endif
 
 #ifdef __APPLE__
@@ -127,7 +132,7 @@ bool BillingManager::RestorePurchases()
 bool BillingManager::PurchaseProdItem(const char* ProductCode)
 {
 #ifdef __ANDROID__
-    return AndroidBillingManager::PurchaseProdItem(ProductCode);
+    return AndroidBillingManager::PurchaseProdItem(getJNIEnv(), ProductCode);
 #endif
 
 #ifdef __APPLE__
@@ -148,7 +153,7 @@ bool BillingManager::PurchaseProdItem(const char* ProductCode)
 bool BillingManager::ConsumeProductItem(const char* PurchaseToken, const char* ProductCode)
 {
 #ifdef __ANDROID__
-    return AndroidBillingManager::ConsumeProductItem(PurchaseToken, ProductCode);
+    return AndroidBillingManager::ConsumeProductItem(getJNIEnv(), PurchaseToken, ProductCode);
 #endif
 
     return false;
