@@ -85,7 +85,7 @@ bool BillingManager::Init(BillingCallbackObserver* Observer)
 
 #ifdef __ANDROID__
     BillingContext.callbackObserver = Observer;
-    return AndroidBillingManager::Init();
+    return AndroidBillingManager::Init((JNIEnv*) SDL_AndroidGetJNIEnv());
 #endif
 
 #ifdef __APPLE__

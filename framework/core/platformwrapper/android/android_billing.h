@@ -2,15 +2,14 @@
 #ifndef __AKK0RD_SDK_ANDROID_INAPP_BILLING_H__
 #define __AKK0RD_SDK_ANDROID_INAPP_BILLING_H__
 
-#include "basewrapper.h"
 #include <jni.h>
-#include "core/core_defines.h"
 
 static jclass    AndroidBillingClass    = nullptr;
 static jmethodID midQueryProductDetails = nullptr;
 static jmethodID midRestorePurchases    = nullptr;
 static jmethodID midPurchaseProdItem    = nullptr;
 static jmethodID midConsumeProductItem  = nullptr;
+static JNIEnv*   jniEnv                 = nullptr;
 
 class AndroidBillingManager
 {
@@ -18,7 +17,7 @@ class AndroidBillingManager
 private:
 
 public:
-    static bool Init();
+    static bool Init(JNIEnv* javaEnv);
     static bool QueryProductDetails(const std::vector<std::string>& ProductSKUList);
     static bool RestorePurchases();
     static bool PurchaseProdItem(const char* ProductSKU);
@@ -36,34 +35,34 @@ public:
 //----------
 //----------
 
-bool AndroidBillingManager::Init()
+bool AndroidBillingManager::Init(JNIEnv* javaEnv)
 {
     bool Result = true;
-    JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-    jclass localClass =  env->FindClass("org/akkord/lib/BillingManager");
+    jniEnv = javaEnv;
+    jclass localClass =  jniEnv->FindClass("org/akkord/lib/BillingManager");
     if(!localClass)
     {
         logError("Could not find BillingManager class");
         return false;
     }
 
-    AndroidBillingClass = reinterpret_cast<jclass>(env->NewGlobalRef(localClass));
-    env->DeleteLocalRef(localClass);
+    AndroidBillingClass = reinterpret_cast<jclass>(jniEnv->NewGlobalRef(localClass));
+    jniEnv->DeleteLocalRef(localClass);
 
     // Common Initialize method
-    jmethodID BillingInit = env->GetStaticMethodID(AndroidBillingClass, "initialize", "()V");
+    jmethodID BillingInit = jniEnv->GetStaticMethodID(AndroidBillingClass, "initialize", "()V");
     if(!BillingInit)
     {
         logError("Initialize Java method not Found");
         return false;
     }
 
-    env->CallStaticVoidMethod(AndroidBillingClass, BillingInit);
+    jniEnv->CallStaticVoidMethod(AndroidBillingClass, BillingInit);
 
-    midQueryProductDetails = env->GetStaticMethodID(AndroidBillingClass, "queryProductDetails", "([Ljava/lang/String;)V");
-    midRestorePurchases    = env->GetStaticMethodID(AndroidBillingClass, "restorePurchases", "()V");
-    midPurchaseProdItem    = env->GetStaticMethodID(AndroidBillingClass, "purchaseProdItem", "(Ljava/lang/String;)V");
-    midConsumeProductItem  = env->GetStaticMethodID(AndroidBillingClass, "consumeProductItem", "(Ljava/lang/String;Ljava/lang/String;)V");
+    midQueryProductDetails = jniEnv->GetStaticMethodID(AndroidBillingClass, "queryProductDetails", "([Ljava/lang/String;)V");
+    midRestorePurchases    = jniEnv->GetStaticMethodID(AndroidBillingClass, "restorePurchases", "()V");
+    midPurchaseProdItem    = jniEnv->GetStaticMethodID(AndroidBillingClass, "purchaseProdItem", "(Ljava/lang/String;)V");
+    midConsumeProductItem  = jniEnv->GetStaticMethodID(AndroidBillingClass, "consumeProductItem", "(Ljava/lang/String;Ljava/lang/String;)V");
 
     if(midQueryProductDetails == nullptr) { Result = false; logError("Java midQueryProductDetails load error"); }
     if(midRestorePurchases    == nullptr) { Result = false; logError("Java midRestorePurchases    load error"); }
@@ -75,76 +74,70 @@ bool AndroidBillingManager::Init()
 
 bool AndroidBillingManager::QueryProductDetails(const std::vector<std::string>& ProductSKUList)
 {
-    JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
     //https://communities.ca.com/docs/DOC-99575135
-    //jmethodID QueryProductDetails = env->GetStaticMethodID(AndroidBillingClass, "QueryProductDetails", "([Ljava/lang/String;)V");
+    //jmethodID QueryProductDetails = jniEnv->GetStaticMethodID(AndroidBillingClass, "QueryProductDetails", "([Ljava/lang/String;)V");
     if(!midQueryProductDetails)
     {
         logError("QueryProductDetails Java method not Found");
         return false;
     }
 
-    jobjectArray Java_array = env->NewObjectArray(ProductSKUList.size(), env->FindClass("java/lang/String"), env->NewStringUTF(""));
+    jobjectArray Java_array = jniEnv->NewObjectArray(ProductSKUList.size(), jniEnv->FindClass("java/lang/String"), jniEnv->NewStringUTF(""));
 
     //https://stackoverflow.com/questions/20819004/call-jar-file-from-c-how-to-get-and-send-args
     // how to release https://stackoverflow.com/questions/12207941/proper-way-to-clean-up-new-object-array-in-jni
     int i = 0;
     for(const auto& v : ProductSKUList) {
-        env->SetObjectArrayElement(Java_array, i, env->NewStringUTF(v.c_str()));
+        jniEnv->SetObjectArrayElement(Java_array, i, jniEnv->NewStringUTF(v.c_str()));
         ++i;
     }
 
-    env->CallStaticVoidMethod(AndroidBillingClass, midQueryProductDetails, Java_array);
-    //env->DeleteLocalRef(jobjectArray);
+    jniEnv->CallStaticVoidMethod(AndroidBillingClass, midQueryProductDetails, Java_array);
+    //jniEnv->DeleteLocalRef(jobjectArray);
     return true;
 }
 
 bool AndroidBillingManager::RestorePurchases()
 {
-    JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
     if(!midRestorePurchases)
     {
         logError("RestorePurchases Java method not Found");
         return false;
     }
 
-    env->CallStaticVoidMethod(AndroidBillingClass, midRestorePurchases);
+    jniEnv->CallStaticVoidMethod(AndroidBillingClass, midRestorePurchases);
 
     return true;
 }
 
 bool AndroidBillingManager::PurchaseProdItem(const char* ProductSKU)
 {
-    JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-
     if(!midPurchaseProdItem)
     {
         logError("PurchaseProdItem Java method not Found");
         return false;
     }
 
-    jstring prod_jstring = (jstring)env->NewStringUTF(ProductSKU);
-    env->CallStaticVoidMethod(AndroidBillingClass, midPurchaseProdItem, prod_jstring);
-    env->DeleteLocalRef(prod_jstring);
+    jstring prod_jstring = (jstring)jniEnv->NewStringUTF(ProductSKU);
+    jniEnv->CallStaticVoidMethod(AndroidBillingClass, midPurchaseProdItem, prod_jstring);
+    jniEnv->DeleteLocalRef(prod_jstring);
 
     return true;
 }
 
 bool AndroidBillingManager::ConsumeProductItem(const char* PurchaseToken, const char* ProductSKU)
 {
-    JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-
     if(!midConsumeProductItem)
     {
         logError("ConsumeProductItem Java method not Found");
         return false;
     }
 
-    jstring purch_jstring = (jstring)env->NewStringUTF(PurchaseToken);
-    jstring prod_jstring  = (jstring)env->NewStringUTF(ProductSKU);
-    env->CallStaticVoidMethod(AndroidBillingClass, midConsumeProductItem, purch_jstring, prod_jstring);
-    env->DeleteLocalRef(purch_jstring);
-    env->DeleteLocalRef(prod_jstring);
+    jstring purch_jstring = (jstring)jniEnv->NewStringUTF(PurchaseToken);
+    jstring prod_jstring  = (jstring)jniEnv->NewStringUTF(ProductSKU);
+    jniEnv->CallStaticVoidMethod(AndroidBillingClass, midConsumeProductItem, purch_jstring, prod_jstring);
+    jniEnv->DeleteLocalRef(purch_jstring);
+    jniEnv->DeleteLocalRef(prod_jstring);
 
     return true;
 }
