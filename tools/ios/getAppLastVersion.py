@@ -24,7 +24,7 @@ for item in data["data"]:
 
 print(f"last_version={last_version}")
 
-new_version = last_version + 1
+new_version = last_version + int(os.environ['VERSION_INCREMENT'])
 print(f"new_version={new_version}")
 
 f = open(os.environ['NEW_VERSION_FILE'], "w")
