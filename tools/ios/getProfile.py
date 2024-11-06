@@ -32,7 +32,7 @@ def getProfile(app_bundle_name):
 
     for item in data["data"]:
         attrs = item['attributes']
-        if(attrs['profileState'] == 'ACTIVE' and attrs['profileType'] == 'IOS_APP_STORE') :
+        if(attrs['profileState'] == 'ACTIVE' and attrs['profileType'] == 'IOS_APP_STORE' and attrs['name'] == 'JDraw') :
             print(f"Found profile for [{app_bundle_name}]: Bundleid = {appBundleId}")
             print(f"profile name : {attrs['name']}")
             print(f"ProfileID = {item['id']}")
