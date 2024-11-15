@@ -17,7 +17,7 @@ class BillingImplementation(
     private val billingClient: RuStoreBillingClient = getBillingManager()
 
     fun init() {
-        RuStoreBillingClient.checkPurchasesAvailability(getContext())
+        RuStoreBillingClient.checkPurchasesAvailability()
             .addOnSuccessListener { result ->
                 Log.e(getTag(), "onBillingSetupFinished $result")
                 observer.onBillingSetupFinished(0)
