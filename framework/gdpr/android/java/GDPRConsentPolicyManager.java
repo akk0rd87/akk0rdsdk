@@ -1,17 +1,13 @@
 package org.akkord.lib;
 
-import android.app.Activity;
-import android.os.Bundle;
 import android.util.Log;
 
 import com.google.android.ump.ConsentInformation;
 import com.google.android.ump.ConsentInformation.OnConsentInfoUpdateSuccessListener;
 import com.google.android.ump.ConsentInformation.OnConsentInfoUpdateFailureListener;
 import com.google.android.ump.ConsentRequestParameters;
-import com.google.android.ump.FormError;
 import com.google.android.ump.ConsentForm.OnConsentFormDismissedListener;
 import com.google.android.ump.UserMessagingPlatform;
-import com.google.android.ump.ConsentDebugSettings;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;

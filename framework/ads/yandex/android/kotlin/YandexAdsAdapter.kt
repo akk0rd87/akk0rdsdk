@@ -7,7 +7,7 @@ import com.yandex.mobile.ads.common.AdRequestConfiguration
 import com.yandex.mobile.ads.common.AdRequestError
 import com.yandex.mobile.ads.common.ImpressionData
 import com.yandex.mobile.ads.common.InitializationListener
-import com.yandex.mobile.ads.common.MobileAds.initialize
+import com.yandex.mobile.ads.common.MobileAds
 import com.yandex.mobile.ads.interstitial.InterstitialAd
 import com.yandex.mobile.ads.interstitial.InterstitialAdEventListener
 import com.yandex.mobile.ads.interstitial.InterstitialAdLoadListener
@@ -197,7 +197,7 @@ class YandexAdsAdapter {
         @JvmStatic
         fun initialize() {
             try {
-                initialize(getContext(), this)
+                MobileAds.initialize(getContext(), this)
             } catch (e: Exception) {
                 initCallback(INIT_ERROR)
                 e.message?.let { Log.e(getTag(), it) }

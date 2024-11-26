@@ -233,22 +233,6 @@ public class BillingImplementation implements PurchaseHistoryResponseListener, P
         }
     }
 
-    public void QueryPurchaseHistory() {
-        try {
-            executeServiceRequest(() -> {
-                try {
-                    mBillingClient.queryPurchaseHistoryAsync(ProductType.INAPP, this);
-                }
-                catch(Exception e) {
-                    Log.e(getTag(), Objects.requireNonNull(e.getMessage()));
-                }
-            });
-        }
-        catch(Exception e) {
-            Log.e(getTag(), Objects.requireNonNull(e.getMessage()));
-        }
-    }
-
     private void processRunnableQueue() {
         try {
             if((!runnableQueue.isEmpty()) && mBillingClient.isReady()) {

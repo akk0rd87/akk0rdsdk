@@ -16,6 +16,9 @@ import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.google.android.gms.ads.rewarded.RewardItem
 import com.google.android.gms.ads.rewarded.RewardedAd
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 private external fun adCallback(eventType: Int)
 private external fun initCallback(code: Int)
@@ -25,6 +28,7 @@ class AdMobAdapter {
         override fun onAdLoaded(interstitialAd: InterstitialAd) {
             try {
                 mInterstitialAd = interstitialAd
+                Log.d(getTag(), "The ad loaded")
                 adCallbackLocal(EVENT_INTERSTITIAL_LOADED)
             } catch (e: Exception) {
                 e.message?.let { Log.e(getTag(), it) }
@@ -35,6 +39,7 @@ class AdMobAdapter {
             try {
                 // Handle the error
                 mInterstitialAd = null
+                Log.d(getTag(), "The ad failed to load")
                 adCallbackLocal(EVENT_INTERSTITIAL_FAILED_TO_LOAD)
             } catch (e: Exception) {
                 e.message?.let { Log.e(getTag(), it) }
@@ -191,12 +196,14 @@ class AdMobAdapter {
                 val mp = initializationStatus.adapterStatusMap
                 for ((_, value) in mp) {
                     if (AdapterStatus.State.READY == value.initializationState) {
+                        Log.d(getTag(), "Admob: onInitializationComplete: Success")
                         mAdMobInitializationCompleted = true
                         initCallback(INIT_SUCCESS)
                         return
                     }
                 }
                 initCallback(INIT_ERROR)
+                Log.d(getTag(), "Admob: onInitializationComplete: Error")
             } catch (e: Exception) {
                 initCallback(INIT_ERROR)
                 e.message?.let { Log.e(getTag(), it) }
@@ -214,8 +221,12 @@ class AdMobAdapter {
         @JvmStatic
         fun initialize() {
             try {
-                mAdMobInitializationCompleted = false
-                MobileAds.initialize(getContext(), this)
+                val backgroundScope = CoroutineScope(Dispatchers.IO)
+                val initializationListener = this
+                backgroundScope.launch {
+                    mAdMobInitializationCompleted = false
+                    MobileAds.initialize(getContext(), initializationListener)
+                }
             } catch (e: Exception) {
                 initCallback(INIT_ERROR)
                 e.message?.let { Log.e(getTag(), it) }
