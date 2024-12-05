@@ -4,7 +4,7 @@ kotlin = '2.0.0'
 [libraries]
 getkeepsafe-relinker               = "com.getkeepsafe.relinker:relinker:1.4.5"
 
-admobads                           = "com.google.android.gms:play-services-ads:23.5.0"
+admobads                           = "com.google.android.gms:play-services-ads:23.6.0"
 google-play-billing                = "com.android.billingclient:billing:7.1.1"
 google-play-review                 = "com.google.android.play:review:2.0.2"
 google-app-update                  = "com.google.android.play:app-update:2.1.0"
@@ -17,8 +17,8 @@ user_messaging_platform            = "com.google.android.ump:user-messaging-plat
 yandexadssdk                       = "com.yandex.android:mobileads:7.7.0"
 okhttp3                            = "com.squareup.okhttp3:okhttp:4.12.0" # added for yandex for version 7.1.0 support
 
-rustore-appreview                  = "ru.rustore.sdk:review:6.1.0"
-rustore-appupdate                  = "ru.rustore.sdk:appupdate:6.1.0"
+rustore-appreview                  = "ru.rustore.sdk:review:7.0.0"
+rustore-appupdate                  = "ru.rustore.sdk:appupdate:7.0.0"
 rustore-billing                    = "ru.rustore.sdk:billingclient:7.0.0"
 
 lifecycle-viewmodel-ktx            = "androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.3"
