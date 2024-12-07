@@ -1,5 +1,6 @@
 [versions]
-kotlin = '2.0.0'
+kotlin                             = '2.0.0'
+rustore-sdk                        = "7.0.0"
 
 [libraries]
 getkeepsafe-relinker               = "com.getkeepsafe.relinker:relinker:1.4.5"
@@ -15,11 +16,10 @@ play-appset                        = "com.google.android.gms:play-services-appse
 
 user_messaging_platform            = "com.google.android.ump:user-messaging-platform:3.1.0"
 yandexadssdk                       = "com.yandex.android:mobileads:7.7.0"
-okhttp3                            = "com.squareup.okhttp3:okhttp:4.12.0" # added for yandex for version 7.1.0 support
 
-rustore-appreview                  = "ru.rustore.sdk:review:7.0.0"
-rustore-appupdate                  = "ru.rustore.sdk:appupdate:7.0.0"
-rustore-billing                    = "ru.rustore.sdk:billingclient:7.0.0"
+rustore-appreview                  = { module = "ru.rustore.sdk:review", version.ref = 'rustore-sdk' }
+rustore-appupdate                  = { module = "ru.rustore.sdk:appupdate", version.ref = 'rustore-sdk' }
+rustore-billing                    = { module = "ru.rustore.sdk:billingclient", version.ref = 'rustore-sdk' }
 
 lifecycle-viewmodel-ktx            = "androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.3"
 
@@ -30,5 +30,5 @@ kotlin                             = { id = 'org.jetbrains.kotlin.android', vers
 triplet-play-publisher             = { id = 'com.github.triplet.play', version = '3.10.1' }
 
 [bundles]
-yandexads                          = ['yandexadssdk', 'okhttp3']
+yandexads                          = ['yandexadssdk']
 rustore-billing                    = ['rustore-billing', 'lifecycle-viewmodel-ktx']
