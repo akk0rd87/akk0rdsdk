@@ -209,12 +209,44 @@ void AdRandomizer::OpenURL(BWrapper::OS OSCode, Apps AppId)
             break;
         }
         break;
+
+    case Apps::CJCrossRuStore:
+        BWrapper::OpenURL("https://www.rustore.ru/catalog/app/org.popapp.colornonograms");
+        break;
+
+    case Apps::JCrossRuStore:
+        BWrapper::OpenURL("https://www.rustore.ru/catalog/app/org.popapp.jc");
+        break;
+
+    case Apps::JDrawRuStore:
+        BWrapper::OpenURL("https://www.rustore.ru/catalog/app/org.popapp.jdraw");
+        break;
+
+    case Apps::PirateBombRuStore:
+        BWrapper::OpenURL("https://www.rustore.ru/catalog/app/org.akk0rdsdk.PirateBomb");
+        break;
+
+    case Apps::CFCrossRuStore:
+        BWrapper::OpenURL("https://www.rustore.ru/catalog/app/org.popapp.color_fcross");
+        break;
+
+    case Apps::FCrossRuStore:
+        BWrapper::OpenURL("https://www.rustore.ru/catalog/app/org.popapp.fcross");
+        break;
+
+    case Apps::WordsRu1RuStore:
+        BWrapper::OpenURL("https://www.rustore.ru/catalog/app/com.popapp.WordsRu");
+        break;
+
+    case Apps::SudokuRuStore:
+        BWrapper::OpenURL("https://www.rustore.ru/catalog/app/org.popapp.sudoku");
+        break;
     }
 }
 
 void AdRandomizer::OpenURL(Apps AppId)
 {
-    auto DeviceOs = BWrapper::GetDeviceOS();
+    const auto DeviceOs = BWrapper::GetDeviceOS();
     switch (DeviceOs)
     {
         // на Windows открываем ссылки по всем платформам
