@@ -223,6 +223,17 @@ public class Utils {
     }
     */
 
+    public static void openURL(String url) {
+        try {
+            //_context.openURL(url);
+            Intent browseIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            _context.startActivity(browseIntent);
+        }
+        catch(Exception e) {
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
+        }
+    }
+
     public static void openGooglePlayURL(final String appPackageName) {
         try {
             _context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName)));

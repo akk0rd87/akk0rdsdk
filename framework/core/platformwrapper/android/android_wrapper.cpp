@@ -13,28 +13,28 @@ class AndroidPlatformWrapper : public PlatformWrapper, public MessageBoxCallback
         CustomEvents::MessageBoxCallback(Code, Result);
     }
 
-    bool vInit() override {
+    virtual bool vInit() override {
         wrapper = std::make_unique<AndroidUtilsWrapper>((JNIEnv*)SDL_AndroidGetJNIEnv(), this);
         return wrapper ? true : false;
     };
 
-    Locale::Lang             vGetDeviceLanguage() override {
+    virtual Locale::Lang             vGetDeviceLanguage() override {
         return Locale::DecodeLang_ISO639_Code(wrapper->getLanguage().c_str());
     };
 
-    std::string              vGetInternalWriteDir() override {
+    virtual std::string              vGetInternalWriteDir() override {
         return wrapper->getInternalWriteDir();
     };
 
-    std::string              vGetInternalAssetsDir() override {
+    virtual std::string              vGetInternalAssetsDir() override {
         return "";
     };
 
-    bool vDirCreate(const char* Dir) override {
+    virtual bool vDirCreate(const char* Dir) override {
         return wrapper->dirCreate(Dir);
     };
 
-    bool vDirExists(const char* Dir) override {
+    virtual bool vDirExists(const char* Dir) override {
         DIR* dir = opendir(Dir);
         if (dir != nullptr) {
             closedir(dir);
@@ -43,15 +43,15 @@ class AndroidPlatformWrapper : public PlatformWrapper, public MessageBoxCallback
         return false;
     };
 
-    bool vDirRemove(const char* Dir) override {
+    virtual bool vDirRemove(const char* Dir) override {
         return wrapper->dirRemove(Dir);
     };
 
-    bool vDirRemoveRecursive(const char* Dir) override {
+    virtual bool vDirRemoveRecursive(const char* Dir) override {
         return wrapper->dirRemoveRecursive(Dir);
     };
 
-    bool vGetDirContent(const char* Dir, DirContentElementArray& ArrayList)  override {
+    virtual bool vGetDirContent(const char* Dir, DirContentElementArray& ArrayList)  override {
         // https://www.gnu.org/software/libc/manual/html_node/Directory-Entries.html
         struct dirent* entry;
         DIR* dir = opendir(Dir);
@@ -71,36 +71,40 @@ class AndroidPlatformWrapper : public PlatformWrapper, public MessageBoxCallback
         return true;
     };
 
-    void vMessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS) override {
+    virtual void vMessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS) override {
         wrapper->messageBoxShow(Code, Title, Message, Button1, Button2, Button3, TimeOutMS);
     };
 
-    void vShareText(const char* Title, const char* Message) override {
+    virtual void vShareText(const char* Title, const char* Message) override {
         wrapper->shareText(Title, Message);
     };
 
-    int vGetAudioOutputRate() override {
+    virtual int vGetAudioOutputRate() override {
         return wrapper->getAudioOutputRate();
     };
 
-    int vGetAudioOutputBufferSize() override {
+    virtual int vGetAudioOutputBufferSize() override {
         return wrapper->getAudioOutputBufferSize();
     };
 
-    bool vLaunchAppReviewIfAvailable() override {
+    virtual bool vLaunchAppReviewIfAvailable() override {
         return wrapper->launchAppReviewIfAvailable();
     }
 
-    bool vRequestFlexibleUpdateIfAvailable() override {
+    virtual bool vRequestFlexibleUpdateIfAvailable() override {
         return wrapper->requestFlexibleUpdateIfAvailable();
     }
 
-    std::string vGetAppVersionCode() override {
+    virtual std::string vGetAppVersionCode() override {
         return wrapper->getAppVersionCode();
     }
 
-    std::string vGetAppVersionName() override {
+    virtual std::string vGetAppVersionName() override {
         return wrapper->getAppVersionName();
+    }
+
+    virtual bool vOpenURL(const char* url) override {
+        return wrapper->openURL(url);
     }
 
 public:

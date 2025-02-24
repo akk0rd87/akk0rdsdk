@@ -41,6 +41,7 @@ public:
         AndroidWrapperState.midShareText = getJavaStaticMethod(jniEnv, AndroidWrapperState.UtilsClass, "shareText", "(Ljava/lang/String;Ljava/lang/String;)V", true);
         AndroidWrapperState.midLaunchAppReviewIfAvailable = getJavaStaticMethod(jniEnv, AndroidWrapperState.UtilsClass, "LaunchAppReviewIfAvailable", "()V", true);
         AndroidWrapperState.midRequestFlexibleUpdateIfAvailable = getJavaStaticMethod(jniEnv, AndroidWrapperState.UtilsClass, "RequestFlexibleUpdateIfAvailable", "()V", true);
+        AndroidWrapperState.midOpenURL = getJavaStaticMethod(jniEnv, AndroidWrapperState.UtilsClass, "openURL", "(Ljava/lang/String;)V", true);
 
         AndroidWrapperState.midGetAppVersionCode = getJavaStaticMethod(jniEnv, AndroidWrapperState.UtilsClass, "GetAppVersionCode", "()Ljava/lang/String;", true);
         AndroidWrapperState.midGetAppVersionName = getJavaStaticMethod(jniEnv, AndroidWrapperState.UtilsClass, "GetAppVersionName", "()Ljava/lang/String;", true);
@@ -293,7 +294,15 @@ public:
         return nullptr;
     }
 
-    void openURL(const char* url) {} // TODO
+    bool openURL(const char* url) {
+        if (!AndroidWrapperState.midOpenURL) {
+            logError("AndroidWrapper::openURL Java method not Found");
+            return false;
+        }
+        AndroidJavaUTF8String url_jstring(jniEnv, url);
+        jniEnv->CallStaticVoidMethod(AndroidWrapperState.UtilsClass, AndroidWrapperState.midOpenURL, url_jstring.get());
+        return true;
+    }
 
     static void onMessageboxCallback(int Code, int Result);
 private:
@@ -313,6 +322,7 @@ private:
         jmethodID midRequestFlexibleUpdateIfAvailable{ nullptr };
         jmethodID midGetAppVersionCode{ nullptr };
         jmethodID midGetAppVersionName{ nullptr };
+        jmethodID midOpenURL{ nullptr };
 
         std::string sLanguage;
         //std::string sInternalDir;
