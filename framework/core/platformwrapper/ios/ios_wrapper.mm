@@ -26,7 +26,6 @@ class iOSPlatformWrapper : public PlatformWrapper {
         return true;
     }
 
-    /*
     bool vOpenURL(const char* url) override {
         // https://useyourloaf.com/blog/openurl-deprecated-in-ios10/
         @autoreleasepool
@@ -39,7 +38,6 @@ class iOSPlatformWrapper : public PlatformWrapper {
 
             //if ([app canOpenURL:nsurl]) NSLog(@"Can open");
             //else NSLog(@"Cant't open");
-
 
             if([app respondsToSelector:@selector(openURL:options:completionHandler:)])
             {
@@ -61,7 +59,6 @@ class iOSPlatformWrapper : public PlatformWrapper {
             return Result;
         }
     }
-    */
 
     std::string vGetInternalWriteDir() override {
         @autoreleasepool {
@@ -165,7 +162,7 @@ class iOSPlatformWrapper : public PlatformWrapper {
 
                 if(res) return true;
                 else    return false;
-            }        
+            }
             return true;
         }
     }
