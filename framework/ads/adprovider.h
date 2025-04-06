@@ -11,7 +11,7 @@ namespace ads {
 
     class Provider {
     public:
-        Provider(std::weak_ptr<ProviderCallback> callback, timeMS interstitialLoadDelaySeconds, timeMS rewardedVideoLoadDelaySeconds) :
+        Provider(std::weak_ptr<ProviderCallback> callback, timeMS interstitialLoadDelaySeconds = 5, timeMS rewardedVideoLoadDelaySeconds = 5) :
             callback(callback),
             lastIntLoadTime(0),
             lastRewLoadTime(0),

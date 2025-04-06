@@ -15,13 +15,15 @@ play-services-auth                 = "com.google.android.gms:play-services-auth:
 play-appset                        = "com.google.android.gms:play-services-appset:16.1.0"
 
 user_messaging_platform            = "com.google.android.ump:user-messaging-platform:3.1.0"
-yandexadssdk                       = "com.yandex.android:mobileads:7.10.1"
+yandexadssdk                       = "com.yandex.android:mobileads:7.11.0"
 
 rustore-appreview                  = { module = "ru.rustore.sdk:review", version.ref = 'rustore-sdk' }
 rustore-appupdate                  = { module = "ru.rustore.sdk:appupdate", version.ref = 'rustore-sdk' }
 rustore-billing                    = { module = "ru.rustore.sdk:billingclient", version.ref = 'rustore-sdk' }
 
 lifecycle-viewmodel-ktx            = "androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.3"
+
+mytarget-sdk                       = "com.my.target:mytarget-sdk:5.27.1"
 
 [plugins]
 android-application                = { id = 'com.android.application', version = '8.5.0' }

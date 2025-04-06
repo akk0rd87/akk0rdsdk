@@ -10,7 +10,7 @@ namespace ads {
         class Provider : public ads::Provider {
         public:
             Provider(std::weak_ptr<ads::ProviderCallback> Callback) :
-                ads::Provider(Callback, 5, 5)
+                ads::Provider(Callback)
             {}
         };
     };
