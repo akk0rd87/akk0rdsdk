@@ -11,8 +11,8 @@ android {
     namespace 'org.popapp.citest'
     compileSdkVersion rootProject.ext.compileSdkVersion
     defaultConfig {
-        minSdkVersion    = 21
-        targetSdkVersion = 34
+        minSdkVersion    23
+        targetSdkVersion 34
         multiDexEnabled true // yandex ads
     }
     externalNativeBuild {
@@ -113,8 +113,6 @@ android {
             versionCode 1
             versionName '1'
 
-            minSdkVersion 23
-
             sourceSets {
                 ruStore {
                     manifest.srcFile "../customization/rustore/manifest_permissions.xml"
@@ -208,6 +206,9 @@ androidComponents {
 }
 
 dependencies {
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+
     implementation(libs.getkeepsafe.relinker)
     implementation(libs.admobads)
     implementation(libs.play.services.games)
