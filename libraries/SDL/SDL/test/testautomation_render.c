@@ -43,6 +43,7 @@ static int _isSupported(int code);
 void InitCreateRenderer(void *arg)
 {
     int posX = 100, posY = 100, width = 320, height = 240;
+    int renderer_flags = SDL_RENDERER_ACCELERATED;
     renderer = NULL;
     window = SDL_CreateWindow("render_testCreateRenderer", posX, posY, width, height, 0);
     SDLTest_AssertPass("SDL_CreateWindow()");
@@ -51,7 +52,11 @@ void InitCreateRenderer(void *arg)
         return;
     }
 
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "dummy") == 0) {
+        renderer_flags = 0;
+    }
+
+    renderer = SDL_CreateRenderer(window, -1, renderer_flags);
     SDLTest_AssertPass("SDL_CreateRenderer()");
     SDLTest_AssertCheck(renderer != NULL, "Check SDL_CreateRenderer result");
     if (renderer == NULL) {
@@ -65,13 +70,13 @@ void InitCreateRenderer(void *arg)
  */
 void CleanupDestroyRenderer(void *arg)
 {
-    if (renderer != NULL) {
+    if (renderer) {
         SDL_DestroyRenderer(renderer);
         renderer = NULL;
         SDLTest_AssertPass("SDL_DestroyRenderer()");
     }
 
-    if (window != NULL) {
+    if (window) {
         SDL_DestroyWindow(window);
         window = NULL;
         SDLTest_AssertPass("SDL_DestroyWindow");
@@ -806,6 +811,136 @@ int render_testBlitBlend(void *arg)
     return TEST_COMPLETED;
 }
 
+static Uint32 read_surface_pixel32(SDL_Surface *surface, int x, int y) {
+    Uint32 result;
+
+    if (x >= surface->w || y >= surface->h) {
+        SDLTest_AssertCheck(x < surface->w, "x (%d) < surface->w (%d)", x, surface->w);
+        SDLTest_AssertCheck(y < surface->h, "y (%d) < surface->h (%d)", y, surface->h);
+        result = 0xdeadbabe;
+    } else {
+        SDL_memcpy(&result, (Uint8 *)surface->pixels + surface->pitch * y + surface->format->BytesPerPixel * x, sizeof(Uint32));
+    }
+    return result;
+}
+
+static int render_testRGBSurfaceNoAlpha(void* arg)
+{
+    SDL_Surface *surface;
+    SDL_Renderer *software_renderer;
+    SDL_Surface *surface2;
+    SDL_Texture *texture2;
+    int result;
+    SDL_Rect dest_rect;
+    SDL_Point point;
+    Uint32 pixel;
+
+    SDLTest_AssertPass("About to call SDL_CreateRGBSurface(0, 128, 128, 32, 0xff0000, 0xff00, 0xff, 0)");
+    surface = SDL_CreateRGBSurface(0, 128, 128, 32, 0xff0000, 0xff00, 0xff, 0);
+    SDLTest_AssertCheck(surface != NULL, "Returned surface must be not NULL");
+
+    SDLTest_AssertCheck(surface->format->BitsPerPixel == 32, "surface->format->BitsPerPixel should be 32, actual value is %d", surface->format->BitsPerPixel);
+    SDLTest_AssertCheck(surface->format->BytesPerPixel == 4, "surface->format->BytesPerPixels should be 4, actual value is %d", surface->format->BytesPerPixel);
+
+    SDLTest_AssertPass("About to call SDL_CreateSoftwareRenderer(surface)");
+    software_renderer = SDL_CreateSoftwareRenderer(surface);
+    SDLTest_AssertCheck(software_renderer != NULL, "Returned renderer must be not NULL");
+
+    SDLTest_AssertPass("About to call SDL_CreateRGBSurface(0, 16, 16, 32, 0xff0000, 0xff00, 0xff, 0)");
+    surface2 = SDL_CreateRGBSurface(0, 16, 16, 32, 0xff0000, 0xff00, 0xff, 0);
+    SDLTest_AssertCheck(surface2 != NULL, "Returned surface must be not NULL");
+
+    SDLTest_AssertPass("About to call SDL_FillRect(surface2, NULL, 0)");
+    result = SDL_FillRect(surface2, NULL, SDL_MapRGB(surface2->format, 0, 0, 0));
+    SDLTest_AssertCheck(result == 0, "Result should be 0, actual value is %d", result);
+
+    SDLTest_AssertPass("About to call SDL_CreateTextureFromSurface(software_renderer, surface2)");
+    texture2 = SDL_CreateTextureFromSurface(software_renderer, surface2);
+    SDLTest_AssertCheck(texture2 != NULL, "Returned texture is not NULL");
+
+    SDLTest_AssertPass("About to call SDL_SetRenderDrawColor(renderer, 0xaa, 0xbb, 0xcc, 0x0)");
+    result = SDL_SetRenderDrawColor(software_renderer, 0xaa, 0xbb, 0xcc, 0x0);
+
+    SDLTest_AssertPass("About to call SDL_RenderClear(renderer)");
+    result = SDL_RenderClear(software_renderer);
+    SDLTest_AssertCheck(result == 0, "Result should be 0, actual value is %d", result);
+
+    SDLTest_AssertPass("About to call SDL_SetRenderDrawColor(renderer, 0x0, 0x0, 0x0, 0x0)");
+    result = SDL_SetRenderDrawColor(software_renderer, 0x0, 0x0, 0x0, 0x0);
+    SDLTest_AssertCheck(result == 0, "Result should be 0, actual value is %d", result);
+
+    dest_rect.x = 32;
+    dest_rect.y = 32;
+    dest_rect.w = surface2->w;
+    dest_rect.h = surface2->h;
+    point.x = 0;
+    point.y = 0;
+    SDLTest_AssertPass("About to call SDL_RenderCopy(software_renderer, texture, NULL, &{%d, %d, %d, %d})",
+        dest_rect.x, dest_rect.h, dest_rect.w, dest_rect.h);
+    result = SDL_RenderCopyEx(software_renderer, texture2, NULL, &dest_rect, 180, &point, SDL_FLIP_NONE);
+    SDLTest_AssertCheck(result == 0, "Result should be 0, actual value is %d", result);
+
+    SDLTest_AssertPass("About to call SDL_RenderPresent(software_renderer)");
+    SDL_RenderPresent(software_renderer);
+
+    pixel = read_surface_pixel32(surface, 0, 0);
+    SDLTest_AssertCheck(pixel == 0xAABBCCu, "Pixel at (0, 0) should be 0x%08x, actual value is 0x%08" SDL_PRIx32, 0xAABBCCu, pixel);
+    pixel = read_surface_pixel32(surface, 15, 15);
+    SDLTest_AssertCheck(pixel == 0xAABBCCu, "Pixel at (15, 15) should be 0x%08x, actual value is 0x%08" SDL_PRIx32, 0xAABBCCu, pixel);
+    pixel = read_surface_pixel32(surface, 16, 16);
+    SDLTest_AssertCheck(pixel == 0xFF000000u, "Pixel at (16, 16) should be 0x%08x, actual value is 0x%08" SDL_PRIx32, 0xFF000000u, pixel);
+    pixel = read_surface_pixel32(surface, 31, 31);
+    SDLTest_AssertCheck(pixel == 0xFF000000u, "Pixel at (31, 31) should be 0x%08x, actual value is 0x%08" SDL_PRIx32, 0xFF000000u, pixel);
+    pixel = read_surface_pixel32(surface, 32, 32);
+    SDLTest_AssertCheck(pixel == 0xAABBCCu, "Pixel at (32, 32) should be 0x%08x, actual value is 0x%08" SDL_PRIx32, 0xAABBCCu, pixel);
+
+    SDL_DestroyTexture(texture2);
+    SDL_FreeSurface(surface2);
+    SDL_DestroyRenderer(software_renderer);
+    SDL_FreeSurface(surface);
+    return TEST_COMPLETED;
+}
+
+/**
+ * @brief Tests setting and getting texture scale mode.
+ *
+ * \sa
+ * http://wiki.libsdl.org/SDL2/SDL_SetTextureScaleMode
+ * http://wiki.libsdl.org/SDL2/SDL_GetTextureScaleMode
+ */
+int render_testGetSetTextureScaleMode(void *arg)
+{
+    const struct {
+        const char *name;
+        SDL_ScaleMode mode;
+    } modes[] = {
+        { "SDL_ScaleModeNearest", SDL_ScaleModeNearest },
+        { "SDL_ScaleModeLinear",  SDL_ScaleModeLinear },
+        { "SDL_ScaleModeBest",    SDL_ScaleModeBest }
+    };
+    size_t i;
+
+    for (i = 0; i < SDL_arraysize(modes); i++) {
+        SDL_Texture *texture;
+        int result;
+        SDL_ScaleMode actual_mode = SDL_ScaleModeNearest;
+
+        SDL_ClearError();
+        SDLTest_AssertPass("About to call SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 16, 16)");
+        texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 16, 16);
+        SDLTest_AssertCheck(texture != NULL, "SDL_CreateTexture must return a non-NULL texture");
+        SDLTest_AssertPass("About to call SDL_SetTextureScaleMode(texture, %s)", modes[i].name);
+        result = SDL_SetTextureScaleMode(texture, modes[i].mode);
+        SDLTest_AssertCheck(result == 0, "SDL_SetTextureScaleMode must return 0, actual %d", result);
+        SDLTest_AssertPass("About to call SDL_GetTextureScaleMode(texture)");
+        result = SDL_GetTextureScaleMode(texture, &actual_mode);
+        SDLTest_AssertCheck(result == 0, "SDL_SetTextureScaleMode must return 0, actual %d", result);
+        SDLTest_AssertCheck(actual_mode == modes[i].mode, "SDL_GetTextureScaleMode must return %s (%d), actual=%d",
+            modes[i].name, modes[i].mode, actual_mode);
+    }
+    return TEST_COMPLETED;
+}
+
 /**
  * @brief Checks to see if functionality is supported. Helper function.
  */
@@ -938,12 +1073,12 @@ _loadTestFace(void)
     SDL_Texture *tface;
 
     face = SDLTest_ImageFace();
-    if (face == NULL) {
+    if (!face) {
         return NULL;
     }
 
     tface = SDL_CreateTextureFromSurface(renderer, face);
-    if (tface == NULL) {
+    if (!tface) {
         SDLTest_LogError("SDL_CreateTextureFromSurface() failed with error: %s", SDL_GetError());
     }
 
@@ -970,7 +1105,7 @@ _hasTexColor(void)
 
     /* Get test face. */
     tface = _loadTestFace();
-    if (tface == NULL) {
+    if (!tface) {
         return 0;
     }
 
@@ -1014,7 +1149,7 @@ _hasTexAlpha(void)
 
     /* Get test face. */
     tface = _loadTestFace();
-    if (tface == NULL) {
+    if (!tface) {
         return 0;
     }
 
@@ -1043,7 +1178,7 @@ _hasTexAlpha(void)
 /**
  * @brief Compares screen pixels with image pixels. Helper function.
  *
- * @param s Image to compare against.
+ * @param referenceSurface Image to compare against.
  *
  * \sa
  * http://wiki.libsdl.org/SDL_RenderReadPixels
@@ -1156,9 +1291,17 @@ static const SDLTest_TestCaseReference renderTest7 = {
     (SDLTest_TestCaseFp)render_testBlitBlend, "render_testBlitBlend", "Tests blitting with blending", TEST_DISABLED
 };
 
+static const SDLTest_TestCaseReference renderTest8 = {
+    (SDLTest_TestCaseFp)render_testGetSetTextureScaleMode, "render_testGetSetTextureScaleMode", "Tests setting/getting texture scale mode", TEST_ENABLED
+};
+
+static const SDLTest_TestCaseReference renderTest9 = {
+    (SDLTest_TestCaseFp)render_testRGBSurfaceNoAlpha, "render_testRGBSurfaceNoAlpha", "Tests RGB surface with no alpha using software renderer", TEST_ENABLED
+};
+
 /* Sequence of Render test cases */
 static const SDLTest_TestCaseReference *renderTests[] = {
-    &renderTest1, &renderTest2, &renderTest3, &renderTest4, &renderTest5, &renderTest6, &renderTest7, NULL
+    &renderTest1, &renderTest2, &renderTest3, &renderTest4, &renderTest5, &renderTest6, &renderTest7, &renderTest8, &renderTest9, NULL
 };
 
 /* Render test suite (global) */
