@@ -1,5 +1,5 @@
 [versions]
-kotlin                             = '2.0.0'
+kotlin                             = '2.1.10'
 rustore-sdk                        = "7.0.0"
 
 [libraries]
@@ -15,7 +15,7 @@ play-services-auth                 = "com.google.android.gms:play-services-auth:
 play-appset                        = "com.google.android.gms:play-services-appset:16.1.0"
 
 user_messaging_platform            = "com.google.android.ump:user-messaging-platform:3.1.0"
-yandexadssdk                       = "com.yandex.android:mobileads:7.11.0"
+yandexadssdk                       = "com.yandex.android:mobileads:7.12.1"
 
 rustore-appreview                  = { module = "ru.rustore.sdk:review", version.ref = 'rustore-sdk' }
 rustore-appupdate                  = { module = "ru.rustore.sdk:appupdate", version.ref = 'rustore-sdk' }
@@ -26,10 +26,10 @@ lifecycle-viewmodel-ktx            = "androidx.lifecycle:lifecycle-viewmodel-ktx
 mytarget-sdk                       = "com.my.target:mytarget-sdk:5.27.1"
 
 [plugins]
-android-application                = { id = 'com.android.application', version = '8.5.0' }
+android-application                = { id = 'com.android.application', version = '8.9.0' }
 google-services                    = { id = 'com.google.gms.google-services', version = '4.4.2' }
 kotlin                             = { id = 'org.jetbrains.kotlin.android', version.ref = 'kotlin' }
-triplet-play-publisher             = { id = 'com.github.triplet.play', version = '3.10.1' }
+triplet-play-publisher             = { id = 'com.github.triplet.play', version = '3.12.1' }
 
 [bundles]
 yandexads                          = ['yandexadssdk']
