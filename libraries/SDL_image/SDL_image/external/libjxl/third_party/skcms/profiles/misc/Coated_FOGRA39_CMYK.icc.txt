@@ -1,0 +1,58 @@
+                Size : 0x0009FC10 : 654352
+    Data color space : 0x434D594B : 'CMYK'
+                 PCS : 0x4C616220 : 'Lab '
+           Tag count : 0x0000000E : 14
+
+ Tag    : Type   : Size   : Offset
+ ------ : ------ : ------ : --------
+ 'desc' : 'desc' :    124 : 300
+ 'cprt' : 'text' :     43 : 424
+ 'wtpt' : 'XYZ ' :     20 : 468
+ 'targ' : 'text' :     24 : 488
+ 'tech' : 'sig ' :     12 : 512
+ 'vued' : 'desc' :     94 : 524
+ 'view' : 'view' :     36 : 620
+ 'A2B0' : 'mft2' :  89958 : 656
+ 'A2B2' : 'mft2' :  89958 : 656
+ 'A2B1' : 'mft2' :  89958 : 90616
+ 'B2A0' : 'mft1' : 145588 : 180576
+ 'B2A1' : 'mft1' : 145588 : 326164
+ 'B2A2' : 'mft1' : 145588 : 471752
+ 'gamt' : 'mft1' :  37009 : 617340
+
+ A2B : "A", CLUT, "B"
+ "A" : 4 inputs
+  A0 : 16-bit table with 256 entries
+  ~= : 1.054482, 1.018707, -0.007989861, 0.8365758, 0.007843138, 0.006626129, 0 (Max error: 0.0167007) (D-gap: 6.47497e-05) (f(1) = 1.01789)
+  A1 : 16-bit table with 256 entries
+  ~= : 1.113842, 1.019768, 0.006776623, 0.7665369, 0.007843138, -0.003089905, 0 (Max error: 0.0232544) (D-gap: 4.07971e-05) (f(1) = 1.02643)
+  A2 : 16-bit table with 256 entries
+  ~= : 1.098878, 1.066177, -0.1630624, 0.7986631, 0.1529412, 0.1223068, 0 (Max error: 0.0139961) (D-gap: 0.000158347) (f(1) = 1.01624)
+  A3 : 16-bit table with 256 entries
+  ~= : 1.253323, 1, -8.940697e-07, 0.7159533, 0.007843137, 0.003326416, 0 (Max error: 0.0246906) (D-gap: 7.42497e-06) (f(1) = 1.00334)
+CLUT : 11 x 11 x 11 x 11 (16 bpp)
+ "B" : 3 outputs
+  B0 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+  B1 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+  B2 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+WTPT : | 0.84480286 0.87620544 0.745697 |
+252 random bytes transformed to linear XYZD50 bytes:
+	111c23 3a220f 0c0e06 1b131a 1c1305 18220c 251f11
+	27253e 000102 101615 232f4c 4a2f21 2c2e1e 030201
+	060704 6e4840 000100 48515f 331c18 040300 281c18
+	232316 020201 3d423a 6c8470 1e2d12 121937 31371b
+	090a07 040301 020205 030301 030301 030406 0c0e09
+	070b07 867261 373334 2d2f0c 030606 090803 030205
+	344526 070403 080905 010101 04050b 2b332e 0c0a08
+	020100 202004 111216 363d12 191b14 130f16 0c0c0f
+	020201 0c0e15 0e0805 1a1814 070502 16130f 211f27
+81 edge-case pixels transformed to sRGB 8888 (unpremul):
+	ff010000 ff01000f ff000020  ff010500 ff000c08 ff00101e  ff001200 ff001900 ff001e1b
+	ff010000 ff020013 ff010022  ff070100 ff04090b ff000d20  ff0f0e00 ff0c1700 ff091d1b
+	ff0b0100 ff060014 ff020025  ff170100 ff14030c ff110921  ff200b00 ff1e1600 ff1c1d1c
+	ff1a201e ff11195a ff041288  ff234100 ff174e5c ff005b91  ff285f00 ff157759 ff00909b
+	ff381b1e ff33155c ff2f0a8b  ff4a4000 ff4c515b ff4c5f92  ff5b6000 ff607b55 ff61959a
+	ff52141f ff500c5d ff4d008c  ff704000 ff765359 ff796393  ff8b6200 ff96804e ff9c9c9b
+	ff313231 ff262992 ff150ce2  ff3b6600 ff2a7b94 ff0092f1  ff419600 ff21c093 ff00edff
+	ff5a2e2f ff562593 ff5100e3  ff786700 ff7b8093 ff7b98f1  ff939900 ff9ac78b ff9bf5ff
+	ff84282f ff811d94 ff7e00e4  ffb46900 ffbe848f ffc49ef0  ffe39e00 fff5cf7f fffffefc

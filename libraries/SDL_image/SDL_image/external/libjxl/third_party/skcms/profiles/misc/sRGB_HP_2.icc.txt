@@ -1,0 +1,63 @@
+                Size : 0x00001C5D : 7261
+    Data color space : 0x52474220 : 'RGB '
+                 PCS : 0x58595A20 : 'XYZ '
+           Tag count : 0x00000011 : 17
+
+ Tag    : Type   : Size   : Offset
+ ------ : ------ : ------ : --------
+ 'cprt' : 'text' :     51 : 336
+ 'desc' : 'desc' :    108 : 387
+ 'wtpt' : 'XYZ ' :     20 : 495
+ 'bkpt' : 'XYZ ' :     20 : 515
+ 'rXYZ' : 'XYZ ' :     20 : 535
+ 'gXYZ' : 'XYZ ' :     20 : 555
+ 'bXYZ' : 'XYZ ' :     20 : 575
+ 'dmnd' : 'desc' :    112 : 595
+ 'dmdd' : 'desc' :    136 : 707
+ 'vued' : 'desc' :    134 : 843
+ 'view' : 'view' :     36 : 977
+ 'lumi' : 'XYZ ' :     20 : 1013
+ 'meas' : 'meas' :     36 : 1033
+ 'tech' : 'sig ' :     12 : 1069
+ 'rTRC' : 'curv' :   2060 : 1081
+ 'gTRC' : 'curv' :   2060 : 3141
+ 'bTRC' : 'curv' :   2060 : 5201
+
+rTRC : 16-bit table with 1024 entries (~sRGB)
+  ~= : 2.395543, 0.9495392, 0.04946931, 0.07771055, 0.04496579, 0.0003471375, 0 (Max error: 0.00197129) (D-gap: 0.000160849) (f(1) = 0.997971) (~sRGB)
+gTRC : 16-bit table with 1024 entries (~sRGB)
+  ~= : 2.395543, 0.9495392, 0.04946931, 0.07771055, 0.04496579, 0.0003471375, 0 (Max error: 0.00197129) (D-gap: 0.000160849) (f(1) = 0.997971) (~sRGB)
+bTRC : 16-bit table with 1024 entries (~sRGB)
+  ~= : 2.395543, 0.9495392, 0.04946931, 0.07771055, 0.04496579, 0.0003471375, 0 (Max error: 0.00197129) (D-gap: 0.000160849) (f(1) = 0.997971) (~sRGB)
+TRCs ≈ sRGB
+Best : 2.395543, 0.9495392, 0.04946931, 0.07771055, 0.04496579, 0.0003471375, 0 (D-gap: 0.000160849) (f(1) = 0.997971) (~sRGB)
+Inv  : 0.4174418, 1.132225, -0.0003930377, 12.86827, 0.003494316, -0.05207062, -0 (D-gap: -0.00197129) (f(1) = 1.0009)
+Best Error: | 0.00197129 0.00197129 0.00197129 |
+ XYZ : | 0.43606567 0.3851471 0.1430664 |
+       | 0.2224884 0.71687317 0.06060791 |
+       | 0.013916016 0.097076416 0.71409607 |
+WTPT : | 0.9504547 1 1.0890503 |
+252 random bytes transformed to linear XYZD50 bytes:
+	345632 a4d61e 4c6617 190e2f 1e1149 5e4809 4d8927
+	6c3b2e 1c1711 6e4726 a1a315 4d5f0c 2d442c 44268d
+	a68d9d 4c628e 7c864f 41551a 2a1554 8a770e 8b4c9c
+	764120 0c0539 d2ef66 7f408f 89b72c 221077 4b7245
+	484a2f 372c3d 1f1045 898d53 8ecb6f 83486f 427610
+	758d86 394d19 542b05 559533 080908 180f66 262b50
+	1d0d7b 282a05 486571 0b0b1a 23370c 4d3113 8e698e
+	b5ad58 a373b6 5c371e 406c2f 53873e 190f0f 62b21d
+	518024 78650c 211726 352e0d 0e0933 06031b 3f2c1d
+	69606b 553760 39610e 51285b 2f1726 2b304f 5d668b
+	2a4215 322481 110a31 582e06 599714 03020c 4f59a4
+	63a91b 43292c 394539 5c3b22 548d3f 4d3018 506084
+81 edge-case pixels transformed to sRGB 8888 (unpremul):
+	00000000 0000007f 000000ff  00007f00 00007f7f 00007fff  0000ff00 0000ff7f 0000ffff
+	007f0000 007f007f 007f00ff  007f7f00 007f7f7f 007f7fff  007fff00 007fff7f 007fffff
+	00ff0000 00ff007f 00ff00ff  00ff7f00 00ff7f7f 00ff7fff  00ffff00 00ffff7f 00ffffff
+	7f000000 7f00007f 7f0000ff  7f007f00 7f007f7f 7f007fff  7f00ff00 7f00ff7f 7f00ffff
+	7f7f0000 7f7f007f 7f7f00ff  7f7f7f00 7f7f7f7f 7f7f7fff  7f7fff00 7f7fff7f 7f7fffff
+	7fff0000 7fff007f 7fff00ff  7fff7f00 7fff7f7f 7fff7fff  7fffff00 7fffff7f 7fffffff
+	ff000000 ff00007f ff0000ff  ff007f00 ff007f7f ff007fff  ff00ff00 ff00ff7f ff00ffff
+	ff7f0000 ff7f007f ff7f00ff  ff7f7f00 ff7f7f7f ff7f7fff  ff7fff00 ff7fff7f ff7fffff
+	ffff0000 ffff007f ffff00ff  ffff7f00 ffff7f7f ffff7fff  ffffff00 ffffff7f ffffffff
+This profile ≈ sRGB.

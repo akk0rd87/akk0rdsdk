@@ -1,0 +1,159 @@
+{
+  "jobs": {
+    "skcms": {
+      "tasks": [
+        "skcms-Linux",
+        "skcms-Mac",
+        "skcms-Win"
+      ]
+    },
+    "skcms-Linux": {
+      "tasks": [
+        "skcms-Linux"
+      ]
+    },
+    "skcms-Mac": {
+      "tasks": [
+        "skcms-Mac"
+      ]
+    },
+    "skcms-Win": {
+      "tasks": [
+        "skcms-Win"
+      ]
+    }
+  },
+  "tasks": {
+    "skcms-Linux": {
+      "cipd_packages": [
+        {
+          "name": "infra/ninja/linux-amd64",
+          "path": "ninja",
+          "version": "version:1.8.2"
+        },
+        {
+          "name": "skia/bots/android_ndk_linux",
+          "path": "ndk",
+          "version": "version:15"
+        },
+        {
+          "name": "skia/bots/clang_linux",
+          "path": "clang_linux",
+          "version": "version:14"
+        },
+        {
+          "name": "skia/bots/mips64el_toolchain_linux",
+          "path": "mips64el_toolchain_linux",
+          "version": "version:4"
+        },
+        {
+          "name": "infra/python/cpython/linux-amd64",
+          "path": "python",
+          "version": "version:2.7.15.chromium14"
+        }
+      ],
+      "command": [
+        "python/bin/python",
+        "skcms/infra/bots/bot.py",
+        "ninja",
+        "ndk",
+        "clang_linux",
+        "mips64el_toolchain_linux"
+      ],
+      "dimensions": [
+        "os:Linux",
+        "cpu:x86-64-Skylake_GCE",
+        "gpu:none",
+        "pool:Skia"
+      ],
+      "isolate": "bot.isolate",
+      "max_attempts": 1,
+      "service_account": "skia-external-compile-tasks@skia-swarming-bots.iam.gserviceaccount.com"
+    },
+    "skcms-Mac": {
+      "caches": [
+        {
+          "name": "xcode_skcms",
+          "path": "cache/Xcode_skcms.app"
+        }
+      ],
+      "cipd_packages": [
+        {
+          "name": "infra/ninja/mac-amd64",
+          "path": "ninja",
+          "version": "version:1.8.2"
+        },
+        {
+          "name": "skia/bots/android_ndk_darwin",
+          "path": "ndk",
+          "version": "version:9"
+        },
+        {
+          "name": "infra/tools/mac_toolchain/${platform}",
+          "path": "mac_toolchain",
+          "version": "git_revision:796d2b92cff93fc2059623ce0a66284373ceea0a"
+        },
+        {
+          "name": "infra/python/cpython/mac-amd64",
+          "path": "python",
+          "version": "version:2.7.15.chromium14"
+        }
+      ],
+      "command": [
+        "python/bin/python",
+        "skcms/infra/bots/bot.py",
+        "ninja",
+        "ndk",
+        "mac_toolchain",
+        "cache/Xcode_skcms.app"
+      ],
+      "dimensions": [
+        "os:Mac",
+        "gpu:none",
+        "pool:Skia"
+      ],
+      "isolate": "bot.isolate",
+      "max_attempts": 1,
+      "service_account": "skia-external-compile-tasks@skia-swarming-bots.iam.gserviceaccount.com"
+    },
+    "skcms-Win": {
+      "cipd_packages": [
+        {
+          "name": "skia/bots/win_ninja",
+          "path": "ninja",
+          "version": "version:2"
+        },
+        {
+          "name": "skia/bots/win_toolchain",
+          "path": "win_toolchain",
+          "version": "version:9"
+        },
+        {
+          "name": "skia/bots/clang_win",
+          "path": "clang_win",
+          "version": "version:9"
+        },
+        {
+          "name": "infra/python/cpython/windows-amd64",
+          "path": "python",
+          "version": "version:2.7.15.chromium14"
+        }
+      ],
+      "command": [
+        "python/bin/python.exe",
+        "skcms/infra/bots/bot.py",
+        "ninja",
+        "win_toolchain",
+        "clang_win"
+      ],
+      "dimensions": [
+        "os:Windows-2016Server",
+        "gpu:none",
+        "pool:Skia"
+      ],
+      "isolate": "bot.isolate",
+      "max_attempts": 1,
+      "service_account": "skia-external-compile-tasks@skia-swarming-bots.iam.gserviceaccount.com"
+    }
+  }
+}

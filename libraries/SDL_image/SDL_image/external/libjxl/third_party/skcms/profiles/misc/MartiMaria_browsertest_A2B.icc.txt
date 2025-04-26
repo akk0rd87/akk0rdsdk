@@ -1,0 +1,48 @@
+                Size : 0x00007554 : 30036
+    Data color space : 0x52474220 : 'RGB '
+                 PCS : 0x58595A20 : 'XYZ '
+           Tag count : 0x00000006 : 6
+
+ Tag    : Type   : Size   : Offset
+ ------ : ------ : ------ : --------
+ 'desc' : 'desc' :    212 : 204
+ 'cprt' : 'text' :     41 : 416
+ 'wtpt' : 'XYZ ' :     20 : 460
+ 'A2B0' : 'mft2' :  29554 : 480
+ 'A2B1' : 'mft2' :  29554 : 480
+ 'A2B2' : 'mft2' :  29554 : 480
+
+ A2B : "A", CLUT, "B"
+ "A" : 3 inputs
+  A0 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+  A1 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+  A2 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+CLUT : 17 x 17 x 17 (16 bpp)
+ "B" : 3 outputs
+  B0 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+  B1 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+  B2 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+WTPT : | 0.9642029 1 0.8249054 |
+252 random bytes transformed to linear XYZD50 bytes:
+	181915 7b8069 7b8069 7b8069 7b8069 7b8069 090a08
+	7b8069 7b8069 7b8069 7b8069 7b8069 7b8069 7b8069
+	7b8069 7b8069 7b8069 7b8069 7b8069 7b8069 7b8069
+	7b8069 2b2c25 7b8069 7b8069 7b8069 7b8069 7b8069
+	7b8069 7b8069 7b8069 7b8069 7b8069 7b8069 767b65
+	7b8069 7b8069 7b8069 2e3027 6a6e5a 494c3f 7b8069
+	7b8069 7b8069 7b8069 656956 7b8069 7b8069 7b8069
+	7b8069 7b8069 7b8069 535647 7b8069 7b8069 707460
+	7b8069 7b8069 7b8069 7b8069 595c4c 46493c 7b8069
+	7b8069 7b8069 7b8069 7b8069 7b8069 7b8069 7b8069
+	7b8069 7b8069 7b8069 7b8069 7b8069 060605 7b8069
+	7b8069 7b8069 7b8069 7b8069 686c59 7b8069 7b8069
+81 edge-case pixels transformed to sRGB 8888 (unpremul):
+	00000000 00bcbcbc 00bcbcbc  00000000 00bcbcbc 00bcbcbc  00000000 00bcbcbc 00bcbcbc
+	00000000 00bcbcbc 00bcbcbc  00000000 00bcbcbc 00bcbcbc  00000000 00bcbcbc 00bcbcbc
+	00000000 00bcbcbc 00bcbcbc  00000000 00bcbcbc 00bcbcbc  00000000 00bcbcbc 00bcbcbc
+	7f000000 7fbcbcbc 7fbcbcbc  7f000000 7fbcbcbc 7fbcbcbc  7f000000 7fbcbcbc 7fbcbcbc
+	7f000000 7fbcbcbc 7fbcbcbc  7f000000 7fbcbcbc 7fbcbcbc  7f000000 7fbcbcbc 7fbcbcbc
+	7f000000 7fbcbcbc 7fbcbcbc  7f000000 7fbcbcbc 7fbcbcbc  7f000000 7fbcbcbc 7fbcbcbc
+	ff000000 ffbcbcbc ffbcbcbc  ff000000 ffbcbcbc ffbcbcbc  ff000000 ffbcbcbc ffbcbcbc
+	ff000000 ffbcbcbc ffbcbcbc  ff000000 ffbcbcbc ffbcbcbc  ff000000 ffbcbcbc ffbcbcbc
+	ff000000 ffbcbcbc ffbcbcbc  ff000000 ffbcbcbc ffbcbcbc  ff000000 ffbcbcbc ffbcbcbc

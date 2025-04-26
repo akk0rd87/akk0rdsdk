@@ -1,0 +1,44 @@
+                Size : 0x00000240 : 576
+    Data color space : 0x47524159 : 'GRAY'
+                 PCS : 0x58595A20 : 'XYZ '
+           Tag count : 0x00000001 : 1
+
+ Tag    : Type   : Size   : Offset
+ ------ : ------ : ------ : --------
+ 'kTRC' : 'curv' :    528 : 48
+
+rTRC : 16-bit table with 258 entries
+  ~= : 2.025319, 1, 2.325047e-06, 206.8078, 0.00389105, 0.8047485, 0 (Max error: 0.999377) (D-gap: 6.19888e-05) (f(1) = 1.80476)
+gTRC : 16-bit table with 258 entries
+  ~= : 2.025319, 1, 2.325047e-06, 206.8078, 0.00389105, 0.8047485, 0 (Max error: 0.999377) (D-gap: 6.19888e-05) (f(1) = 1.80476)
+bTRC : 16-bit table with 258 entries
+  ~= : 2.025319, 1, 2.325047e-06, 206.8078, 0.00389105, 0.8047485, 0 (Max error: 0.999377) (D-gap: 6.19888e-05) (f(1) = 1.80476)
+Best : 2.025319, 1, 2.325047e-06, 206.8078, 0.00389105, 0.8047485, 0 (D-gap: 6.19888e-05) (f(1) = 1.80476)
+Inv  : 0.4937495, 1, -0.8046997, 0.004835406, 0.8046997, -3.051758e-05, -0 (D-gap: -0.00392157) (f(1) = 0.446409)
+Best Error: | 0.999377 0.999377 0.999377 |
+ XYZ : | 0.95739746 0 0 |
+       | 0 1.0083008 0 |
+       | 0 0 0.8161621 |
+252 random bytes transformed to linear XYZD50 bytes:
+	0d201a f42100 1fff1a 1f201a 1f001a 1f201a ee201a
+	33201a 1f201a 1f201a 1f781a 48202c 1f20c8 1f2044
+	1f201a d17f1a 1f201a f4201a 1f9e1a 1f201a 1f201a
+	1f621b dc001a 1f211a dd201a 74b81a 1f3b1a 1fff9d
+	e720cf 1f201a d5201a 1f201a 1fffd0 1f21d0 1f20bf
+	1f201a 1f201a c2c51a 1f201a 38701a 1f201a 75201a
+	1f201a 3d20c0 1f981a 00201a 1f201a f4201a 1f201a
+	ec201a 1f20bb 1f201a 1f9e1a 72201a 1f011a 0b271a
+	f420d0 1f401a 1f21d0 b8201a 1f201a 1f201a 54201a
+	f4c91a 1fff1a 1f20c1 1f02d0 1fcfd0 1fff1a 1f201a
+	5b511a 1fff1a 1f182d 1f2018 f42006 ebff1a 1f201a
+	1f351a f4651a 3c20b9 1fbb1a 60211a f4204a 1f201a
+81 edge-case pixels transformed to sRGB 8888 (unpremul):
+	00636462 007700ff 00636366  0000ff00 0000feff 0000ff00  00626760 007700ff 00626664
+	00ff6d00 00ff00ff 00ff6c00  00f6ff00 00fdfffb 00f6ff00  00ff6f00 00ff00ff 00ff6e00
+	00646461 007800ff 00646365  0000ff00 0000feff 0000ff00  0064675f 007800ff 00646663
+	7f636462 7f7700ff 7f636366  7f00ff00 7f00feff 7f00ff00  7f626760 7f7700ff 7f626664
+	7fff6d00 7fff00ff 7fff6c00  7ff6ff00 7ffdfffb 7ff6ff00  7fff6f00 7fff00ff 7fff6e00
+	7f646461 7f7800ff 7f646365  7f00ff00 7f00feff 7f00ff00  7f64675f 7f7800ff 7f646663
+	ff636462 ff7700ff ff636366  ff00ff00 ff00feff ff00ff00  ff626760 ff7700ff ff626664
+	ffff6d00 ffff00ff ffff6c00  fff6ff00 fffdfffb fff6ff00  ffff6f00 ffff00ff ffff6e00
+	ff646461 ff7800ff ff646365  ff00ff00 ff00feff ff00ff00  ff64675f ff7800ff ff646663

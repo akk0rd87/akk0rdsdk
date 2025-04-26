@@ -1,0 +1,50 @@
+                Size : 0x000001EA : 490
+    Data color space : 0x52474220 : 'RGB '
+                 PCS : 0x58595A20 : 'XYZ '
+           Tag count : 0x00000009 : 9
+
+ Tag    : Type   : Size   : Offset
+ ------ : ------ : ------ : --------
+ 'cprt' : 'text' :     13 : 240
+ 'desc' : 'desc' :    140 : 256
+ 'wtpt' : 'XYZ ' :     20 : 396
+ 'rXYZ' : 'XYZ ' :     20 : 416
+ 'gXYZ' : 'XYZ ' :     20 : 436
+ 'bXYZ' : 'XYZ ' :     20 : 456
+ 'rTRC' : 'curv' :     14 : 476
+ 'gTRC' : 'curv' :     14 : 476
+ 'bTRC' : 'curv' :     14 : 476
+
+rTRC : 2.199219, 1, 0, 0, 0, 0, 0 (f(1) = 1)
+gTRC : 2.199219, 1, 0, 0, 0, 0, 0 (f(1) = 1)
+bTRC : 2.199219, 1, 0, 0, 0, 0, 0 (f(1) = 1)
+Best : 2.199219, 1, 0, 0, 0, 0, 0 (f(1) = 1)
+Inv  : 0.4547069, 1, -0, 0, 0, 0, 0 (f(1) = 1)
+Best Error: | 0.000167131 0.000167131 0.000167131 |
+ XYZ : | 0.20527649 0.14918518 0.6097412 |
+       | 0.6256714 0.06321716 0.31111145 |
+       | 0.06086731 0.7445526 0.019470215 |
+WTPT : | 0.95047 1 1.0890503 |
+252 random bytes transformed to linear XYZD50 bytes:
+	341958 4873c4 283361 302a05 463407 2c712e 2e158e
+	539d14 182310 4b9424 489b84 223c56 2e1a45 8a7111
+	b8cc67 84465d 687a72 272f50 544a06 3f9855 b4d71d
+	4ca817 321a02 94bdce a7cc12 4a5fab 6b4305 492b72
+	3e4b3e 45491e 443705 718d75 7d5ec3 8fc61b 1a0e7b
+	8d6d80 242749 297a0c 3a1b9a 070508 592e08 4b2a27
+	6b3a05 122622 6c3963 170d09 121037 2f6817 a7c043
+	86c288 cee445 3f8118 32196f 43248a 162406 2914b8
+	302581 388846 2b300d 1e3d21 2d1805 170d01 305319
+	7a7d4b 6e7d1e 171164 6c830b 334a07 4c302b 8b6559
+	1a1342 784e18 2d1d04 2b7e0d 241d99 0a0501 985850
+	2a1eac 3f6213 3f343f 417d1e 442290 336a17 805058
+81 edge-case pixels transformed to sRGB 8888 (unpremul):
+	00000000 00008000 0000ff00  00830000 00808000 0076ff00  00ff0000 00ff8000 00ffff00
+	00000095 00008080 0000ff00  00830095 00808080 0076ff00  00ff0095 00ff8080 00ffff00
+	000000ff 000080ff 0000ffff  008300ff 008080ff 0076ffff  00ff00ff 00ff80ff 00ffffff
+	7f000000 7f008000 7f00ff00  7f830000 7f808000 7f76ff00  7fff0000 7fff8000 7fffff00
+	7f000095 7f008080 7f00ff00  7f830095 7f808080 7f76ff00  7fff0095 7fff8080 7fffff00
+	7f0000ff 7f0080ff 7f00ffff  7f8300ff 7f8080ff 7f76ffff  7fff00ff 7fff80ff 7fffffff
+	ff000000 ff008000 ff00ff00  ff830000 ff808000 ff76ff00  ffff0000 ffff8000 ffffff00
+	ff000095 ff008080 ff00ff00  ff830095 ff808080 ff76ff00  ffff0095 ffff8080 ffffff00
+	ff0000ff ff0080ff ff00ffff  ff8300ff ff8080ff ff76ffff  ffff00ff ffff80ff ffffffff

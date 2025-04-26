@@ -1,0 +1,7 @@
+builddir = out
+
+subninja build/msvs
+subninja build/msvs.clang
+subninja build/msvs.clang-fast
+subninja build/msvs.fast
+subninja build/msvs.analyze

@@ -1,0 +1,65 @@
+                Size : 0x00000F28 : 3880
+    Data color space : 0x52474220 : 'RGB '
+                 PCS : 0x58595A20 : 'XYZ '
+           Tag count : 0x00000011 : 17
+
+ Tag    : Type   : Size   : Offset
+ ------ : ------ : ------ : --------
+ 'desc' : 'desc' :     98 : 336
+ 'dscm' : 'mluc' :   1038 : 436
+ 'cprt' : 'text' :     35 : 1476
+ 'wtpt' : 'XYZ ' :     20 : 1512
+ 'rXYZ' : 'XYZ ' :     20 : 1532
+ 'gXYZ' : 'XYZ ' :     20 : 1552
+ 'bXYZ' : 'XYZ ' :     20 : 1572
+ 'rTRC' : 'curv' :   2060 : 1592
+ 'aarg' : 'para' :     32 : 3652
+ 'vcgt' : 'vcgt' :     48 : 3684
+ 'ndin' : 'ndin' :     62 : 3732
+ 'chad' : 'sf32' :     44 : 3796
+ 'mmod' : 'mmod' :     40 : 3840
+ 'bTRC' : 'curv' :   2060 : 1592
+ 'gTRC' : 'curv' :   2060 : 1592
+ 'aabg' : 'para' :     32 : 3652
+ 'aagg' : 'para' :     32 : 3652
+
+rTRC : 16-bit table with 1024 entries (~sRGB)
+  ~= : 2.395543, 0.9495392, 0.04946931, 0.07771055, 0.04496579, 0.0003471375, 0 (Max error: 0.00197129) (D-gap: 0.000160849) (f(1) = 0.997971) (~sRGB)
+gTRC : 16-bit table with 1024 entries (~sRGB)
+  ~= : 2.395543, 0.9495392, 0.04946931, 0.07771055, 0.04496579, 0.0003471375, 0 (Max error: 0.00197129) (D-gap: 0.000160849) (f(1) = 0.997971) (~sRGB)
+bTRC : 16-bit table with 1024 entries (~sRGB)
+  ~= : 2.395543, 0.9495392, 0.04946931, 0.07771055, 0.04496579, 0.0003471375, 0 (Max error: 0.00197129) (D-gap: 0.000160849) (f(1) = 0.997971) (~sRGB)
+TRCs ≈ sRGB
+Best : 2.395543, 0.9495392, 0.04946931, 0.07771055, 0.04496579, 0.0003471375, 0 (D-gap: 0.000160849) (f(1) = 0.997971) (~sRGB)
+Inv  : 0.4174418, 1.132225, -0.0003930377, 12.86827, 0.003494316, -0.05207062, -0 (D-gap: -0.00197129) (f(1) = 1.0009)
+Best Error: | 0.00197129 0.00197129 0.00197129 |
+ XYZ : | 0.44433594 0.3794403 0.14041138 |
+       | 0.22476196 0.7261658 0.049072266 |
+       | 0.0054779053 0.07797241 0.7414551 |
+CHAD : | 1.0486145 0.02331543 -0.050338745 |
+       | 0.030181885 0.99002075 -0.01713562 |
+       | -0.009216309 0.015029907 0.75172424 |
+WTPT : | 0.94955444 1 1.0890198 |
+252 random bytes transformed to linear XYZD50 bytes:
+	345632 a4d918 4b6715 1a0d31 1e104c 5f4907 4c8a24
+	6d3b2e 1d1711 6f4725 a2a510 4d6009 2c452c 442491
+	a68c9e 4b6191 7c864e 415618 2b1457 8b780a 8c4aa0
+	78411f 0c053b d2f062 813e93 89b928 220e7b 4a7244
+	494b2e 372c3d 1f0f47 8a8e52 8dcc6d 844771 41780d
+	758c87 394d18 562c04 549630 070908 180d6a 252a52
+	1c0b7f 282a04 476572 0b0b1b 23380b 4e3111 8f6890
+	b6ae56 a471ba 5d371e 3f6d2d 51883c 190f0f 61b418
+	508221 796609 221727 362e0c 0d0834 06021c 3f2c1d
+	695f6c 563662 38620b 52275e 301727 2b2f50 5d658d
+	2a4314 312385 100933 592e04 589910 03020d 4e57a8
+	62ab17 44292c 394539 5d3b22 538e3d 4e3117 4f5f86
+81 edge-case pixels transformed to sRGB 8888 (unpremul):
+	00000000 00000081 000000ff  00008000 0000807f 00007fff  0000ff00 0000ff7a 0000ffff
+	00810000 00810080 007e00ff  00807f00 007f7f7f 007c7eff  0079ff00 0078ff7a 0076ffff
+	00ff0000 00ff0080 00ff00ff  00ff7b00 00ff7b7e 00ff7aff  00ffff00 00ffff79 00ffffff
+	7f000000 7f000081 7f0000ff  7f008000 7f00807f 7f007fff  7f00ff00 7f00ff7a 7f00ffff
+	7f810000 7f810080 7f7e00ff  7f807f00 7f7f7f7f 7f7c7eff  7f79ff00 7f78ff7a 7f76ffff
+	7fff0000 7fff0080 7fff00ff  7fff7b00 7fff7b7e 7fff7aff  7fffff00 7fffff79 7fffffff
+	ff000000 ff000081 ff0000ff  ff008000 ff00807f ff007fff  ff00ff00 ff00ff7a ff00ffff
+	ff810000 ff810080 ff7e00ff  ff807f00 ff7f7f7f ff7c7eff  ff79ff00 ff78ff7a ff76ffff
+	ffff0000 ffff0080 ffff00ff  ffff7b00 ffff7b7e ffff7aff  ffffff00 ffffff79 ffffffff

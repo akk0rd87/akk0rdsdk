@@ -1,0 +1,53 @@
+                Size : 0x001BE8D5 : 1829077
+    Data color space : 0x434D594B : 'CMYK'
+                 PCS : 0x4C616220 : 'Lab '
+           Tag count : 0x0000000D : 13
+
+ Tag    : Type   : Size   : Offset
+ ------ : ------ : ------ : --------
+ 'cprt' : 'text' :    103 : 288
+ 'wtpt' : 'XYZ ' :     20 : 392
+ 'A2B0' : 'mft2' : 396852 : 412
+ 'B2A0' : 'mft2' : 291132 : 397264
+ 'gamt' : 'mft1' :  33840 : 688396
+ 'A2B1' : 'mft2' : 396852 : 722236
+ 'B2A1' : 'mft2' : 291132 : 1119088
+ 'A2B2' : 'mft2' : 396852 : 412
+ 'B2A2' : 'mft2' : 291132 : 1410220
+ 'kTRC' : 'curv' :    524 : 1701352
+ 'hd10' : 'text' :    364 : 1701876
+ 'desc' : 'desc' :    152 : 1702240
+ 'targ' : 'text' : 126685 : 1702392
+
+ A2B : "A", CLUT, "B"
+ "A" : 4 inputs
+  A0 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+  A1 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+  A2 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+  A3 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+CLUT : 16 x 16 x 16 x 16 (16 bpp)
+ "B" : 3 outputs
+  B0 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+  B1 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+  B2 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+WTPT : | 0.84552 0.87683105 0.74716187 |
+252 random bytes transformed to linear XYZD50 bytes:
+	162328 3a2310 090a05 1d151d 1b1306 18230c 211b10
+	2a2742 000101 101615 253047 4c3123 27291b 020201
+	040503 714b47 000000 474f5a 341d1b 030301 261b17
+	1e1e13 020201 393e36 8bab8e 203014 151c35 2d341a
+	060705 030301 020205 020301 020201 020304 0a0b07
+	070a07 897564 353232 292a0b 030505 070603 030206
+	374928 050302 060704 000001 030408 2a312d 0a0807
+	010000 1c1c04 0e0f13 343b12 151611 140f17 0a0a0d
+	010101 0b0c13 0c0805 161411 050402 12100c 201e26
+81 edge-case pixels transformed to sRGB 8888 (unpremul):
+	ff010000 ff010000 ff020a1b  ff010000 ff010c0a ff011119  ff0d1800 ff021704 ff011918
+	ff010000 ff010000 ff02031d  ff010000 ff030303 ff050c19  ff171800 ff0c1300 ff0e1716
+	ff010000 ff010000 ff010000  ff010000 ff050100 ff100918  ff010000 ff171100 ff161614
+	ff161816 ff141852 ff0b188e  ff233c00 ff154552 ff005993  ff326800 ff008058 ff00929c
+	ff351b1c ff341858 ff2d008c  ff473d00 ff454951 ff495b8d  ff646900 ff5f7954 ff5f9195
+	ff5f1720 ff6a0464 ff570092  ff744400 ff745259 ff755f8c  ff896600 ff907c4f ff999896
+	ff272727 ff292c90 ff1d2cdb  ff436d00 ff2a7790 ff0793f3  ff5aa600 ff11d1a1 ff1ae0f9
+	ff5b2e30 ff5a2a92 ff510be3  ff7c6d00 ff767b8d ff7d9ffd  ffa1aa00 ffa9e89d ffa2f1fe
+	ff992b3a ffac1f9b ff860ddf  ffb87400 ffd68b9c ffc79df0  ffd4a300 ffecd293 fffffefc

@@ -1,0 +1,46 @@
+                Size : 0x00000198 : 408
+    Data color space : 0x47524159 : 'GRAY'
+                 PCS : 0x58595A20 : 'XYZ '
+           Tag count : 0x00000005 : 5
+
+ Tag    : Type   : Size   : Offset
+ ------ : ------ : ------ : --------
+ 'cprt' : 'text' :     50 : 192
+ 'desc' : 'desc' :    105 : 244
+ 'wtpt' : 'XYZ ' :     20 : 352
+ 'bkpt' : 'XYZ ' :     20 : 372
+ 'kTRC' : 'curv' :     14 : 392
+
+rTRC : 2.199219, 1, 0, 0, 0, 0, 0 (f(1) = 1)
+gTRC : 2.199219, 1, 0, 0, 0, 0, 0 (f(1) = 1)
+bTRC : 2.199219, 1, 0, 0, 0, 0, 0 (f(1) = 1)
+Best : 2.199219, 1, 0, 0, 0, 0, 0 (f(1) = 1)
+Inv  : 0.4547069, 1, -0, 0, 0, 0, 0 (f(1) = 1)
+Best Error: | 0.000167131 0.000167131 0.000167131 |
+ XYZ : | 0.9642029 0 0 |
+       | 0 1 0 |
+       | 0 0 0.8249054 |
+WTPT : | 0.9505005 1 1.0890961 |
+252 random bytes transformed to linear XYZD50 bytes:
+	00752e 96fb03 3c7c0b 210336 1f0455 a93001 00be18
+	d50831 2a1111 cb1e25 df9e02 516d00 075a2a 500ba1
+	cf74a6 087898 828c4b 346611 390162 e15f01 e30eb0
+	f00920 000043 d7ff57 db01a3 6edb19 16018b 0e9541
+	524b2d 472142 260151 9d8d50 3ffd64 e70c7d 05a500
+	49a189 295e12 bb0002 00cd24 040a07 010777 093158
+	06018f 372900 078176 030b1d 0f4905 951210 c8449b
+	eb9f52 e543c8 b3101f 029426 08b634 2d0410 04f605
+	1baa16 ca4d02 300c2a 562408 02053b 01001f 6d181d
+	775772 7f1a6c 0c8601 8d0069 59002b 123556 3b6e95
+	0d580e 201993 0b0339 c00203 1acb00 00000d 1765b3
+	15e504 790d30 274f3a ab1922 03c035 931217 1e6f8e
+81 edge-case pixels transformed to sRGB 8888 (unpremul):
+	00000000 002100d3 004b00ff  0000ac00 00007e96 002700ff  0000ff00 0000ff00 0000fcff
+	00891200 008d00c6 009900ff  007cad00 00808080 008e00ff  0028ff00 0036ff00 0055fdff
+	00ff2e00 00ff0088 00ff00ff  00ffb100 00ff8600 00ff00ff  00f7ff00 00f9ff00 00ffffff
+	7f000000 7f2100d3 7f4b00ff  7f00ac00 7f007e96 7f2700ff  7f00ff00 7f00ff00 7f00fcff
+	7f891200 7f8d00c6 7f9900ff  7f7cad00 7f808080 7f8e00ff  7f28ff00 7f36ff00 7f55fdff
+	7fff2e00 7fff0088 7fff00ff  7fffb100 7fff8600 7fff00ff  7ff7ff00 7ff9ff00 7fffffff
+	ff000000 ff2100d3 ff4b00ff  ff00ac00 ff007e96 ff2700ff  ff00ff00 ff00ff00 ff00fcff
+	ff891200 ff8d00c6 ff9900ff  ff7cad00 ff808080 ff8e00ff  ff28ff00 ff36ff00 ff55fdff
+	ffff2e00 ffff0088 ffff00ff  ffffb100 ffff8600 ffff00ff  fff7ff00 fff9ff00 ffffffff

@@ -1,0 +1,49 @@
+                Size : 0x00000390 : 912
+    Data color space : 0x47524159 : 'GRAY'
+                 PCS : 0x58595A20 : 'XYZ '
+           Tag count : 0x00000005 : 5
+
+ Tag    : Type   : Size   : Offset
+ ------ : ------ : ------ : --------
+ 'cprt' : 'text' :     50 : 192
+ 'desc' : 'desc' :    103 : 244
+ 'wtpt' : 'XYZ ' :     20 : 348
+ 'bkpt' : 'XYZ ' :     20 : 368
+ 'kTRC' : 'curv' :    524 : 388
+
+rTRC : 16-bit table with 256 entries
+  ~= : 1.736919, 1, -3.613532e-07, 0.06290532, 0.02352941, 0, 0 (Max error: 0.000202144) (D-gap: 4.44008e-06) (f(1) = 1.00002)
+gTRC : 16-bit table with 256 entries
+  ~= : 1.736919, 1, -3.613532e-07, 0.06290532, 0.02352941, 0, 0 (Max error: 0.000202144) (D-gap: 4.44008e-06) (f(1) = 1.00002)
+bTRC : 16-bit table with 256 entries
+  ~= : 1.736919, 1, -3.613532e-07, 0.06290532, 0.02352941, 0, 0 (Max error: 0.000202144) (D-gap: 4.44008e-06) (f(1) = 1.00002)
+Best : 1.736919, 1, -3.613532e-07, 0.06290532, 0.02352941, 0, 0 (D-gap: 4.44008e-06) (f(1) = 1.00002)
+Inv  : 0.5757321, 1, -0, 15.89691, 0.001480125, -1.525879e-05, -0 (D-gap: -5.66281e-05) (f(1) = 0.999985)
+Best Error: | 0.000202144 0.000202144 0.000202144 |
+ XYZ : | 0.9642029 0 0 |
+       | 0 1 0 |
+       | 0 0 0.8249054 |
+WTPT : | 0.9642029 1 0.8249054 |
+252 random bytes transformed to linear XYZD50 bytes:
+	018a40 a7fc08 509115 320748 300a67 b74404 00ca26
+	dc1043 3d1e1d d43036 e4af05 668201 0f703a 6515ab
+	d789af 118da3 959f5e 487c1d 4d0373 e57503 e71ab7
+	f1132f 020056 ddff69 e103ac 82e227 240297 1aa753
+	68613f 5c3255 380363 ada062 54fd75 ea178b 0cb400
+	5eb296 3c741e c60105 02d735 09130e 040f86 12456a
+	0e039b 4b3c01 0f9585 07152c 1b5f0b a5201c d15aa5
+	eeb064 e959ca c01c2e 05a636 11c446 400a1b 0af80b
+	2bb924 d26305 43163b 6b3711 060b4d 04002f 81272c
+	8a6d82 922a7c 179902 9e007a 6f003c 1f4a68 4f83a0
+	186e19 31299f 15074b ca0507 29d500 000118 257ab9
+	24eb0a 8d1841 39654c b82832 08cc47 a41f25 2f859a
+81 edge-case pixels transformed to sRGB 8888 (unpremul):
+	00000000 002700f4 004b00ff  0000c700 000093ad 000400ff  0000ff00 0000ff00 0000fcff
+	009f1600 00a300e5 00ac00ff  0090c800 00949494 009f00ff  0060ff00 0068ff00 0077fdff
+	00ff2e00 00ff00bb 00ff00ff  00ffcb00 00ff991f 00ff00ff  00f7ff00 00f9ff00 00ffffff
+	7f000000 7f2700f4 7f4b00ff  7f00c700 7f0093ad 7f0400ff  7f00ff00 7f00ff00 7f00fcff
+	7f9f1600 7fa300e5 7fac00ff  7f90c800 7f949494 7f9f00ff  7f60ff00 7f68ff00 7f77fdff
+	7fff2e00 7fff00bb 7fff00ff  7fffcb00 7fff991f 7fff00ff  7ff7ff00 7ff9ff00 7fffffff
+	ff000000 ff2700f4 ff4b00ff  ff00c700 ff0093ad ff0400ff  ff00ff00 ff00ff00 ff00fcff
+	ff9f1600 ffa300e5 ffac00ff  ff90c800 ff949494 ff9f00ff  ff60ff00 ff68ff00 ff77fdff
+	ffff2e00 ffff00bb ffff00ff  ffffcb00 ffff991f ffff00ff  fff7ff00 fff9ff00 ffffffff
