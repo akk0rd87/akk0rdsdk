@@ -1,0 +1,61 @@
+                Size : 0x00000F3C : 3900
+    Data color space : 0x52474220 : 'RGB '
+                 PCS : 0x58595A20 : 'XYZ '
+           Tag count : 0x0000000E : 14
+
+ Tag    : Type   : Size   : Offset
+ ------ : ------ : ------ : --------
+ 'desc' : 'desc' :    111 : 300
+ 'dscm' : 'mluc' :     68 : 412
+ 'cprt' : 'text' :     35 : 480
+ 'wtpt' : 'XYZ ' :     20 : 516
+ 'rXYZ' : 'XYZ ' :     20 : 536
+ 'gXYZ' : 'XYZ ' :     20 : 556
+ 'bXYZ' : 'XYZ ' :     20 : 576
+ 'rTRC' : 'curv' :    524 : 596
+ 'bTRC' : 'curv' :    524 : 1120
+ 'gTRC' : 'curv' :    524 : 1644
+ 'vcgt' : 'vcgt' :     48 : 2168
+ 'ndin' : 'ndin' :   1598 : 2216
+ 'chad' : 'sf32' :     44 : 3816
+ 'mmod' : 'mmod' :     40 : 3860
+
+rTRC : 16-bit table with 256 entries
+  ~= : 6.241715, 0.4478817, 0.5665821, 0.1407054, 0.2431373, -0.05149078, 0 (Max error: 0.0142212) (D-gap: 0.000690889) (f(1) = 1.04203)
+gTRC : 16-bit table with 256 entries
+  ~= : 2.198663, 1.013107, -0.02007966, 0.09246967, 0.1333333, 0.00378418, 0 (Max error: 0.0138438) (D-gap: 5.86417e-05) (f(1) = 0.988472)
+bTRC : 16-bit table with 256 entries
+  ~= : 1.462179, 1, -2.393499e-07, 0.0077821, 0.003921569, -0.0002593994, 0 (Max error: 0.0897047) (D-gap: 1.28816e-05) (f(1) = 0.999756)
+Best : 2.198663, 1.013107, -0.02007966, 0.09246967, 0.1333333, 0.00378418, 0 (D-gap: 5.86417e-05) (f(1) = 0.988472)
+Inv  : 0.4548219, 0.971817, -0.00367753, 10.81436, 0.01232929, 0.01985931, -0 (D-gap: -0.000332966) (f(1) = 1.00521)
+Best Error: | 0.0450786 0.0138438 0.154441 |
+ XYZ : | 0.3805542 0.434021 0.14962769 |
+       | 0.21951294 0.68196106 0.098526 |
+       | 0.04006958 0.088272095 0.6965637 |
+CHAD : | 1.0478821 0.022918701 -0.050201416 |
+       | 0.029571533 0.9904938 -0.017059326 |
+       | -0.009231567 0.015075684 0.75164795 |
+WTPT : | 0.95047 1 1.0890961 |
+252 random bytes transformed to linear XYZD50 bytes:
+	3f564a a3cb20 4b5e1b 1b124c 23186f 52430d 578330
+	68404e 191519 68493e 9e9c1a 4a580d 364642 442fad
+	a894bd 5867b0 7b8273 425221 2e1d7b 867614 8857b8
+	6d4335 150e5c def08f 7f4db3 8baf37 291b9d 557066
+	4a4c49 392f60 23176a 888a79 9ecb94 83539c 476e0e
+	7d8eab 3a4a21 472a0a 649244 08090a 22198c 303275
+	2619a0 242606 556896 0e0d27 25350d 402c1c 9073b5
+	b8ae81 a17dc0 513631 496840 5f8457 150e17 70ad1d
+	55792c 716312 21193e 2e2a11 151051 0a072a 372a2d
+	6a6493 523c88 3b580d 4c2f84 2c1a3f 343774 656baf
+	2d401a 372da5 150f4f 4b2d0c 5f8d13 040311 5760b7
+	6ba01b 3d2948 404858 513a37 638b59 412d26 5a65a9
+81 edge-case pixels transformed to sRGB 8888 (unpremul):
+	00000000 0012186c 00333fe9  0000783c 00127b7b 003386ef  0000f27f 0010f3a3 0033f8ff
+	009f2a00 00a03368 00a64ce8  009f7f34 00a08277 00a58cee  009ff47c 00a0f6a0 00a5faff
+	00fb4800 00fc4d61 00ff5fe5  00fb8a1f 00fc8c71 00ff96eb  00fbf976 00fcfa9c 00ffffff
+	7f000000 7f12186c 7f333fe9  7f00783c 7f127b7b 7f3386ef  7f00f27f 7f10f3a3 7f33f8ff
+	7f9f2a00 7fa03368 7fa64ce8  7f9f7f34 7fa08277 7fa58cee  7f9ff47c 7fa0f6a0 7fa5faff
+	7ffb4800 7ffc4d61 7fff5fe5  7ffb8a1f 7ffc8c71 7fff96eb  7ffbf976 7ffcfa9c 7fffffff
+	ff000000 ff12186c ff333fe9  ff00783c ff127b7b ff3386ef  ff00f27f ff10f3a3 ff33f8ff
+	ff9f2a00 ffa03368 ffa64ce8  ff9f7f34 ffa08277 ffa58cee  ff9ff47c ffa0f6a0 ffa5faff
+	fffb4800 fffc4d61 ffff5fe5  fffb8a1f fffc8c71 ffff96eb  fffbf976 fffcfa9c ffffffff

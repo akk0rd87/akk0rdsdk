@@ -1,0 +1,52 @@
+                Size : 0x00000A34 : 2612
+    Data color space : 0x20202020 : '    '
+                 PCS : 0x58595A20 : 'XYZ '
+           Tag count : 0x0000000B : 11
+
+ Tag    : Type   : Size   : Offset
+ ------ : ------ : ------ : --------
+ '    ' : '    ' :     32 : 288
+ '    ' : '    ' :     32 : 288
+ '    ' : '    ' :     32 : 288
+ '    ' : '    ' :     32 : 288
+ 'rXYZ' : 'XYZ ' :     32 : 448
+ 'gXYZ' : 'XYZ ' :     32 : 468
+ 'bXYZ' : 'XYZ ' :     32 : 488
+ 'rTRC' : 'curv' :   2080 : 508
+ '    ' : '' :     32 : 2568
+ 'bTRC' : 'curv' :   2080 : 508
+ 'gTRC' : 'curv' :   2080 : 508
+
+rTRC : 16-bit table with 1024 entries
+  ~= : 11.04649, 1, -0.0009775171, 0.4995193, 0.0009775171, 0.0003890991, 0 (Max error: 1) (D-gap: -9.91896e-05) (f(1) = 0.989616)
+gTRC : 16-bit table with 1024 entries
+  ~= : 11.04649, 1, -0.0009775171, 0.4995193, 0.0009775171, 0.0003890991, 0 (Max error: 1) (D-gap: -9.91896e-05) (f(1) = 0.989616)
+bTRC : 16-bit table with 1024 entries
+  ~= : 11.04649, 1, -0.0009775171, 0.4995193, 0.0009775171, 0.0003890991, 0 (Max error: 1) (D-gap: -9.91896e-05) (f(1) = 0.989616)
+ XYZ : | 8224.125 8224.125 8224.125 |
+       | 8224.125 8224.125 8224.125 |
+       | -0.0034179688 8224.125 8224.125 |
+ !!! This does not appear to use a D50 whitepoint, rather [24672.4 24672.4 16448.2]
+252 random bytes transformed to linear XYZD50 bytes:
+	ffffff ffffff ffffff ffffff ffffff ffffff ffffff
+	ffffff ffffff ffffff ffffff ffffff ffffff ffffff
+	ffffff ffffff ffffff ffffff ffffff ffffff ffffff
+	ffffff ffffff ffffff ffffff ffffff ffffff ffffff
+	ffffff ffffff ffffff ffffff ffffff ffffff ffffff
+	ffffff ffffff ffffff ffffff ffffff ffffff ffffff
+	ffffff ffffff ffffff ffffff ffffff ffffff ffffff
+	ffffff ffffff ffffff ffffff ffffff ffffff ffffff
+	ffffff ffffff ffffff ffffff ffffff ffffff ffffff
+	ffffff ffffff ffffff ffffff ffffff ffffff ffffff
+	ffffff ffffff ffffff ffffff ffffff ffffff ffffff
+	ffffff ffffff ffffff ffffff ffffff ffffff ffffff
+81 edge-case pixels transformed to sRGB 8888 (unpremul):
+	00000000 0000ffff 00000000  00ffffff 00ffffff 00ffffff  00000000 0000ffff 00000000
+	00ffffff 00ffffff 00ffffff  00ffffff 00ffffff 00ffffff  00ffffff 00ffffff 00ffffff
+	00000000 0000ffff 00000000  00ffffff 00ffffff 00ffffff  00000000 0000ffff 00000000
+	7f000000 7f00ffff 7f000000  7fffffff 7fffffff 7fffffff  7f000000 7f00ffff 7f000000
+	7fffffff 7fffffff 7fffffff  7fffffff 7fffffff 7fffffff  7fffffff 7fffffff 7fffffff
+	7f000000 7f00ffff 7f000000  7fffffff 7fffffff 7fffffff  7f000000 7f00ffff 7f000000
+	ff000000 ff00ffff ff000000  ffffffff ffffffff ffffffff  ff000000 ff00ffff ff000000
+	ffffffff ffffffff ffffffff  ffffffff ffffffff ffffffff  ffffffff ffffffff ffffffff
+	ff000000 ff00ffff ff000000  ffffffff ffffffff ffffffff  ff000000 ff00ffff ff000000

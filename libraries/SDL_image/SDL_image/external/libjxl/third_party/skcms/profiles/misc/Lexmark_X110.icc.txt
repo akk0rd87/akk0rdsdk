@@ -1,0 +1,48 @@
+                Size : 0x00004288 : 17032
+    Data color space : 0x52474220 : 'RGB '
+                 PCS : 0x4C616220 : 'Lab '
+           Tag count : 0x00000006 : 6
+
+ Tag    : Type   : Size   : Offset
+ ------ : ------ : ------ : --------
+ 'cprt' : 'text' :     77 : 204
+ 'dmnd' : 'desc' :    116 : 284
+ 'dmdd' : 'desc' :    131 : 400
+ 'desc' : 'desc' :    155 : 532
+ 'wtpt' : 'XYZ ' :     20 : 688
+ 'A2B0' : 'mft1' :  16323 : 708
+
+ A2B : "A", CLUT, "B"
+ "A" : 3 inputs
+  A0 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+  A1 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+  A2 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+CLUT : 17 x 17 x 17 (8 bpp)
+ "B" : 3 outputs
+  B0 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+  B1 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+  B2 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+WTPT : | 0.9505005 1 1.0888062 |
+252 random bytes transformed to linear XYZD50 bytes:
+	6fa094 d8f243 a7d043 825cbe 8365c0 a39f15 5c8161
+	a871bd 5a5249 aa8b81 d2f028 a6cb1b 729e83 937fb7
+	eef4d1 8cbccd eafab5 97ba4e 8c67be c3d51b c9aec8
+	a166b5 4236bc effcbc b88dc4 e3f77a 6659b1 9dc9af
+	898f6a 917bb7 8563c0 edf9b5 e5f6d3 bf9ac6 73bf25
+	e0f4d2 8cad4d 733c2e 618371 282e29 4e54c0 6168af
+	5350ae 6b790f 8fbdce 353366 7ab533 7d6244 ddd4cd
+	eefbb7 e7e6d1 926a79 608470 95c2a2 603f77 8ccb4f
+	97c267 bac41a 7c5daa 767528 4a40bd 2f1ca0 796760
+	cfc8cc ac90bc 8ecc2e 9d6eb0 8852a9 7175b1 c2dad0
+	81b95a 8a86c5 5644a3 774525 a6d92b 180c68 9bbbcd
+	9fcf42 9a6fb3 7d8a7c 90726d 8fbeab 7f6259 9cb4cb
+81 edge-case pixels transformed to sRGB 8888 (unpremul):
+	00000000 000206a2 00243cff  0035d000 000bcabc 0002cffe  0063ff1e 005cf3cd 003dffff
+	00ff674a 00ff68df 00f55ffd  00f6fc00 00b5b5b5 00d4c7fd  00d1d464 00e1ffe5 00d9fffe
+	00ffa03e 00ffa4d1 00ffa4fd  00fff300 00ffddb7 00ffeefe  00fff240 00fff5aa 00ffffff
+	7f000000 7f0206a2 7f243cff  7f35d000 7f0bcabc 7f02cffe  7f63ff1e 7f5cf3cd 7f3dffff
+	7fff674a 7fff68df 7ff55ffd  7ff6fc00 7fb5b5b5 7fd4c7fd  7fd1d464 7fe1ffe5 7fd9fffe
+	7fffa03e 7fffa4d1 7fffa4fd  7ffff300 7fffddb7 7fffeefe  7ffff240 7ffff5aa 7fffffff
+	ff000000 ff0206a2 ff243cff  ff35d000 ff0bcabc ff02cffe  ff63ff1e ff5cf3cd ff3dffff
+	ffff674a ffff68df fff55ffd  fff6fc00 ffb5b5b5 ffd4c7fd  ffd1d464 ffe1ffe5 ffd9fffe
+	ffffa03e ffffa4d1 ffffa4fd  fffff300 ffffddb7 ffffeefe  fffff240 fffff5aa ffffffff

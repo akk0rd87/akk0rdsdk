@@ -1,0 +1,48 @@
+                Size : 0x000003B7 : 951
+    Data color space : 0x47524159 : 'GRAY'
+                 PCS : 0x58595A20 : 'XYZ '
+           Tag count : 0x00000005 : 5
+
+ Tag    : Type   : Size   : Offset
+ ------ : ------ : ------ : --------
+ '    ' : '    ' :     32 : 32
+ '   ÿ' : '    ' :     32 : 32
+ '    ' : '    ' :     32 : 288
+ '    ' : '    ' :     32 : 288
+ 'kTRC' : 'curv' :    544 : 388
+
+rTRC : 16-bit table with 257 entries
+  ~= : 0.07488938, 0.007860422, -3.070464e-05, 0.1250019, 0.00390625, -0.1817474, 0 (Max error: 1181.7) (D-gap: 5.7213e-05) (f(1) = 0.513702)
+gTRC : 16-bit table with 257 entries
+  ~= : 0.07488938, 0.007860422, -3.070464e-05, 0.1250019, 0.00390625, -0.1817474, 0 (Max error: 1181.7) (D-gap: 5.7213e-05) (f(1) = 0.513702)
+bTRC : 16-bit table with 257 entries
+  ~= : 0.07488938, 0.007860422, -3.070464e-05, 0.1250019, 0.00390625, -0.1817474, 0 (Max error: 1181.7) (D-gap: 5.7213e-05) (f(1) = 0.513702)
+Best : 0.07488938, 0.007860422, -3.070464e-05, 0.1250019, 0.00390625, -0.1817474, 0 (D-gap: 5.7213e-05) (f(1) = 0.513702)
+Inv  : 13.35303, 1.437515, 0.2612647, 7.999878, 0.0004882887, 0.003726959, -0 (D-gap: -0.000179274) (f(1) = 1181.82)
+Best Error: | 1181.7 1181.7 1181.7 |
+ XYZ : | 0.9614258 0 0 |
+       | 0 1.0004883 0 |
+       | 0 0 0.82470703 |
+252 random bytes transformed to linear XYZD50 bytes:
+	1f2074 f5201a 81201a 1fe37b 97201a 3c201a 0020c3
+	1f20cd 1f20b1 1fec67 ebffbd ef771a 1f741a ef202f
+	272074 1f2085 e2201a 1f209f ef201a 27f91a 1f2072
+	1f205e 1f0085 1f201a 1f20b5 1f20c3 ec20d2 1fff1a
+	71f91a ef201b 1f205a f521cd 1f201a 1f20d2 1fff00
+	efffd2 1ff9ca db2031 1f2a1a 1f201b 1f8944 1f201a
+	cb209f ef201a 1fffa8 a2205e 1ff937 f5204f 1f811a
+	1fff1a 1ff91a 32205d 1fffc3 1f201a 88208e 1f201a
+	ecffca 1f7b1a 1f201a f5201a 37207f 1ffea8 1ff57e
+	1fa547 53f5cb 1f8b1a c501a1 a3001a 5b201a efaa1a
+	1ffd1a 1ff51a 1f341a 34201a ec8f00 00201a ec201a
+	ec201a 1f20cd 1f201a 1ff51a 1f201a f520c7 e34d39
+81 edge-case pixels transformed to sRGB 8888 (unpremul):
+	00fffffe 00f8ff00 00f8ff00  00ff00ff 00ff6c00 00ff6c00  00ff00ff 00ff6c00 00ff6c00
+	0000fcff 0000ff00 0000ff00  007700ff 00636363 00636363  007700ff 00636363 00636363
+	0000fcff 0000ff00 0000ff00  007700ff 00636363 00636363  007700ff 00636363 00636363
+	7ffffffe 7ff8ff00 7ff8ff00  7fff00ff 7fff6c00 7fff6c00  7fff00ff 7fff6c00 7fff6c00
+	7f00fcff 7f00ff00 7f00ff00  7f7700ff 7f636363 7f636363  7f7700ff 7f636363 7f636363
+	7f00fcff 7f00ff00 7f00ff00  7f7700ff 7f636363 7f636363  7f7700ff 7f636363 7f636363
+	fffffffe fff8ff00 fff8ff00  ffff00ff ffff6c00 ffff6c00  ffff00ff ffff6c00 ffff6c00
+	ff00fcff ff00ff00 ff00ff00  ff7700ff ff636363 ff636363  ff7700ff ff636363 ff636363
+	ff00fcff ff00ff00 ff00ff00  ff7700ff ff636363 ff636363  ff7700ff ff636363 ff636363

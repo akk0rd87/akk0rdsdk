@@ -1,12 +1,53 @@
-2.0.6:
-Thomas Bernard - Mon Oct 26 23:32:10 2020
+2.8.8:
+ * Fixed alpha in less than 32-bit ICO and CUR images
+
+2.8.6:
+ * Fixed partial alpha in ICO and CUR images
+
+2.8.5:
+ * Handle WEBP animation composition
+
+2.8.4:
+ * Fixed a regression in the last release with certain grayscale PNG images
+
+2.8.3:
+ * Fixed handling of grayscale images with alpha
+
+2.8.2:
+ * Fixed crash loading LBM images
+ * Automatically set the colorkey for indexed PNG images with transparency
+
+2.8.1:
+ * Indexed PNG images with alpha have blending automatically enabled
+ * Fixed a crash in the 32-bit webp DLLs on Windows
+ * Fixed issue extracting the tar release archives on Linux
+
+2.8.0:
+ * Added support for loading WEBP animations
+ * PNG images with a palette are loaded as SDL surfaces with a palette
+
+2.6.3:
+ * Fixed loading of 4-bit .ico files
+
+2.6.2:
+ * Updated autotools to use ax_compute_relative_paths, fixing homebrew on macOS
+
+2.6.1:
+ * Fixed loading grayscale PNGs when using stb_image
+
+2.6.0:
+ * Added support for building with CMake
+ * Added stb_image as the default backend for JPG and PNG images loading.
+   To use libpng and libjpg instead, configure using --disable-stb-image
+ * Added IMG_LoadSizedSVG_RW()
+ * Added support for AVIF images (https://github.com/AOMediaCodec/libavif)
+ * Added IMG_ReadXPMFromArrayToRGB888()
+ * Added support for JXL images (https://jpegxl.info/)
+ * Added support for QOI images (https://qoiformat.org/)
  * Fixed XCF regression introduced in 2.0.5
-Sam Lantinga - Thu Oct  3 18:09:17 PDT 2019
  * Added support for loading animated GIFs
-Sylvain Becker Sat Aug 31 22:55:31 2019
- * LoadBMP() now loads files using SDL2.
-Ozkan Sezer - Mon Aug 19 21:35:04 2019
- * Allow using libwebpdecoder instead libwebp.
+ * LoadBMP() now loads files using SDL2
+ * Allow using libwebpdecoder instead libwebp
 
 2.0.5:
 Sam Lantinga - Wed Jun 19 07:30:51 PDT 2019

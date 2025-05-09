@@ -1,0 +1,55 @@
+                Size : 0x000007A8 : 1960
+    Data color space : 0x52474220 : 'RGB '
+                 PCS : 0x58595A20 : 'XYZ '
+           Tag count : 0x0000000B : 11
+
+ Tag    : Type   : Size   : Offset
+ ------ : ------ : ------ : --------
+ 'desc' : 'desc' :    111 : 264
+ 'dscm' : 'mluc' :   1388 : 376
+ 'cprt' : 'text' :     56 : 1764
+ 'wtpt' : 'XYZ ' :     20 : 1820
+ 'rXYZ' : 'XYZ ' :     20 : 1840
+ 'gXYZ' : 'XYZ ' :     20 : 1860
+ 'bXYZ' : 'XYZ ' :     20 : 1880
+ 'rTRC' : 'curv' :     14 : 1900
+ 'chad' : 'sf32' :     44 : 1916
+ 'bTRC' : 'curv' :     14 : 1900
+ 'gTRC' : 'curv' :     14 : 1900
+
+rTRC : 1.800781, 1, 0, 0, 0, 0, 0 (f(1) = 1)
+gTRC : 1.800781, 1, 0, 0, 0, 0, 0 (f(1) = 1)
+bTRC : 1.800781, 1, 0, 0, 0, 0, 0 (f(1) = 1)
+Best : 1.800781, 1, 0, 0, 0, 0, 0 (f(1) = 1)
+Inv  : 0.5553145, 1, -0, 0, 0, 0, 0 (f(1) = 1)
+Best Error: | 0.000189781 0.000189781 0.000189781 |
+ XYZ : | 0.45429993 0.35334778 0.15664673 |
+       | 0.24191284 0.67362976 0.0844574 |
+       | 0.014892578 0.09063721 0.719574 |
+CHAD : | 1.0478821 0.022918701 -0.050201416 |
+       | 0.029571533 0.9904938 -0.017059326 |
+       | -0.009231567 0.015075684 0.75164795 |
+WTPT : | 0.95047 1 1.0890961 |
+252 random bytes transformed to linear XYZD50 bytes:
+	3b6141 a8d31f 5a751f 26173e 2b1b59 6d590c 4e8b31
+	78473d 2a241b 7d5834 a9ad17 5c6e0e 37523b 553797
+	b5a1a7 577199 8d9760 506524 392063 958610 985da4
+	804d2c 100948 d5ee74 8b4b98 92bb36 2d1983 557d55
+	5c5e3e 4a3f4d 2c1955 9a9e64 95ca7c 90577d 447b10
+	859c93 485d23 5e3207 56953f 0c0f0d 1f1775 323b60
+	241586 363907 537380 121326 2e4511 5c3f1c 9f7f9a
+	c0ba68 b288bb 6b462b 46743c 588d4c 251818 5eaa1f
+	5a892e 85750f 302434 463e13 141042 0a0526 503d2a
+	7d767b 684b70 3f6b0f 60346a 3e2134 3a415f 6f7a97
+	34501e 41368d 191140 613609 5d9814 050313 5d6cac
+	64a71d 55383b 4a574a 6c4c30 58914e 5d4024 5f7291
+81 edge-case pixels transformed to sRGB 8888 (unpremul):
+	00000000 00001193 000026ff  00008e00 00008f91 000093ff  0000f900 0000fa8d 0000fbff
+	00921801 00922193 00912fff  00929000 00919191 009195ff  0091fa00 0091fb8d 0091fcff
+	00ff3304 00ff3793 00ff40ff  00ff9600 00ff9792 00ff9aff  00fffd00 00fffd8d 00ffffff
+	7f000000 7f001193 7f0026ff  7f008e00 7f008f91 7f0093ff  7f00f900 7f00fa8d 7f00fbff
+	7f921801 7f922193 7f912fff  7f929000 7f919191 7f9195ff  7f91fa00 7f91fb8d 7f91fcff
+	7fff3304 7fff3793 7fff40ff  7fff9600 7fff9792 7fff9aff  7ffffd00 7ffffd8d 7fffffff
+	ff000000 ff001193 ff0026ff  ff008e00 ff008f91 ff0093ff  ff00f900 ff00fa8d ff00fbff
+	ff921801 ff922193 ff912fff  ff929000 ff919191 ff9195ff  ff91fa00 ff91fb8d ff91fcff
+	ffff3304 ffff3793 ffff40ff  ffff9600 ffff9792 ffff9aff  fffffd00 fffffd8d ffffffff

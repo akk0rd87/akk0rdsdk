@@ -2,6 +2,7 @@ autom4te*
 config.cache
 config.log
 config.status
+configure~
 Makefile
 libtool
 .deps
@@ -25,7 +26,7 @@ Release
 *.suo
 *.sdf
 *.opensdf
-
-# generated zlib files
-external/zlib-1.2.11/zconf.h
-external/zlib-1.2.11/zconf.h.included
+deps
+dist
+build-mingw
+Xcode/build.xcconfig

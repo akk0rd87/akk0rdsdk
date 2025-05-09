@@ -1,0 +1,57 @@
+                Size : 0x00000290 : 656
+    Data color space : 0x52474220 : 'RGB '
+                 PCS : 0x58595A20 : 'XYZ '
+           Tag count : 0x0000000B : 11
+
+ Tag    : Type   : Size   : Offset
+ ------ : ------ : ------ : --------
+ 'desc' : 'mluc' :     56 : 264
+ 'cprt' : 'mluc' :     78 : 320
+ 'wtpt' : 'XYZ ' :     20 : 400
+ 'chad' : 'sf32' :     44 : 420
+ 'rXYZ' : 'XYZ ' :     20 : 464
+ 'bXYZ' : 'XYZ ' :     20 : 484
+ 'gXYZ' : 'XYZ ' :     20 : 504
+ 'rTRC' : 'para' :     32 : 524
+ 'gTRC' : 'para' :     32 : 556
+ 'bTRC' : 'para' :     32 : 588
+ 'chrm' : 'chrm' :     36 : 620
+
+rTRC : 2.399994, 0.9478607, 0.05213928, 0.07739258, 0.04045105, 0, 0 (D-gap: 8.08388e-07) (f(1) = 1) (~sRGB)
+gTRC : 2.399994, 0.9478607, 0.05213928, 0.07739258, 0.04045105, 0, 0 (D-gap: 8.08388e-07) (f(1) = 1) (~sRGB)
+bTRC : 2.399994, 0.9478607, 0.05213928, 0.07739258, 0.04045105, 0, 0 (D-gap: 8.08388e-07) (f(1) = 1) (~sRGB)
+TRCs ≈ sRGB
+Best : 2.399994, 0.9478607, 0.05213928, 0.07739258, 0.04045105, 0, 0 (D-gap: 8.08388e-07) (f(1) = 1) (~sRGB)
+Inv  : 0.4166677, 1.137306, -0, 12.92114, 0.003130611, -0.05498505, -0 (D-gap: 1.33514e-05) (f(1) = 1)
+Best Error: | 8.2612e-05 8.2612e-05 8.2612e-05 |
+ XYZ : | 0.43585205 0.3853302 0.14302063 |
+       | 0.22238159 0.717041 0.06059265 |
+       | 0.013916016 0.09713745 0.71383667 |
+CHAD : | 1.0480042 0.022994995 -0.05014038 |
+       | 0.029708862 0.9903412 -0.017059326 |
+       | -0.009231567 0.015014648 0.7522583 |
+WTPT : | 0.9642029 1 0.8249054 |
+252 random bytes transformed to linear XYZD50 bytes:
+	345632 a4d61e 4c6617 190e2f 1e1149 5e4809 4d8927
+	6c3b2e 1c1711 6e4726 a1a315 4d5f0c 2d442c 44268d
+	a68d9d 4c628e 7c864f 41551a 2a1554 8a770e 8b4c9c
+	764120 0c0539 d2ef66 7f3f8f 89b72c 221077 4b7245
+	484a2f 372c3c 1f1045 898d53 8ecb6f 83486f 427610
+	758d86 394d19 542b05 559533 080908 180f66 262b50
+	1d0d7b 282a05 496571 0b0b1a 23370c 4d3113 8e698e
+	b5ad58 a373b6 5c371e 406c2f 53873e 190f0f 62b21d
+	518024 78650c 211726 352e0d 0e0933 06031b 3f2c1d
+	69606b 553760 39610e 51285b 2f1726 2b304f 5d668b
+	2a4215 322481 110a31 582e06 599714 03020c 4f59a4
+	63a91b 43292c 394539 5c3b22 548d3f 4d3018 506084
+81 edge-case pixels transformed to sRGB 8888 (unpremul):
+	00000000 0000007f 000000ff  00007f00 00007f7f 00007fff  0000ff01 0000ff7f 0000ffff
+	007f0000 007f007f 007f00ff  007f7f00 007f7f7f 007f7fff  007fff01 007fff7f 007fffff
+	00ff0000 00ff007f 00ff00ff  00ff7f00 00ff7f7f 00ff7fff  00ffff01 00ffff7f 00ffffff
+	7f000000 7f00007f 7f0000ff  7f007f00 7f007f7f 7f007fff  7f00ff01 7f00ff7f 7f00ffff
+	7f7f0000 7f7f007f 7f7f00ff  7f7f7f00 7f7f7f7f 7f7f7fff  7f7fff01 7f7fff7f 7f7fffff
+	7fff0000 7fff007f 7fff00ff  7fff7f00 7fff7f7f 7fff7fff  7fffff01 7fffff7f 7fffffff
+	ff000000 ff00007f ff0000ff  ff007f00 ff007f7f ff007fff  ff00ff01 ff00ff7f ff00ffff
+	ff7f0000 ff7f007f ff7f00ff  ff7f7f00 ff7f7f7f ff7f7fff  ff7fff01 ff7fff7f ff7fffff
+	ffff0000 ffff007f ffff00ff  ffff7f00 ffff7f7f ffff7fff  ffffff01 ffffff7f ffffffff
+This profile ≈ sRGB.

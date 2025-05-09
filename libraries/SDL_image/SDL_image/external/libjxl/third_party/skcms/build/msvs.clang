@@ -1,0 +1,5 @@
+mode = .clang
+
+include build/msvs
+
+cl = "../clang_win/bin/clang-cl.exe"

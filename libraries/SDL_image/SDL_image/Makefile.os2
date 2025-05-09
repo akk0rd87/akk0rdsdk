@@ -5,7 +5,10 @@
 # your own environment!.
 
 LIBNAME = SDL2img
-VERSION = 2.0.6
+MAJOR_VERSION = 2
+MINOR_VERSION = 8
+MICRO_VERSION = 9
+VERSION = $(MAJOR_VERSION).$(MINOR_VERSION).$(MICRO_VERSION)
 
 TITLENAME = $(LIBNAME) $(VERSION)
 
@@ -19,9 +22,9 @@ DEPS_LIB=C:\SDL2DEV\lib
 
 SRCS = IMG.c IMG_bmp.c IMG_gif.c IMG_jpg.c IMG_lbm.c IMG_pcx.c IMG_png.c &
        IMG_pnm.c IMG_svg.c IMG_tga.c IMG_tif.c IMG_xcf.c IMG_xpm.c IMG_xv.c &
-       IMG_webp.c IMG_qoi.c
+       IMG_webp.c IMG_qoi.c IMG_avif.c IMG_jxl.c IMG_stb.c
 
-LIBS = libpng.lib libtiff.lib zlib.lib jpeg.lib webpdec.lib SDL2.lib
+LIBS = libpng.lib libtiff.lib zlib.lib jpeg.lib webpdec.lib webpdemux.lib SDL2.lib
 
 CFLAGS_BASE = -bt=os2 -ei -d0 -q -5s -fp5 -fpi87 -sg -oeatxh
 # warnings:
@@ -30,7 +33,7 @@ CFLAGS_BASE+= -wx -wcd=202
 CFLAGS_BASE+= -wcd=303
 # include paths:
 CFLAGS_BASE+= -I"$(%WATCOM)/h/os2" -I"$(%WATCOM)/h"
-CFLAGS_BASE+= -I. $(DEPS_INC)
+CFLAGS_BASE+= -Iinclude $(DEPS_INC)
 CFLAGS =$(CFLAGS_BASE)
 # to build a dll:
 CFLAGS+= -bd
@@ -40,15 +43,25 @@ CFLAGS+= -DBUILD_SDL
 # wanted formats:
 CFLAGS+= -DLOAD_JPG -DLOAD_PNG -DLOAD_BMP -DLOAD_GIF -DLOAD_LBM &
          -DLOAD_PCX -DLOAD_PNM -DLOAD_TGA -DLOAD_XCF -DLOAD_XPM &
-         -DLOAD_XV -DLOAD_SVG -DLOAD_TIF -DLOAD_WEBP -DLOAD_QOI 
+         -DLOAD_XV -DLOAD_SVG -DLOAD_TIF -DLOAD_WEBP -DLOAD_QOI
 
+#CFLAGS+= -DLOAD_AVIF
+#CFLAGS+= -DLOAD_JXL
+#CFLAGS+= -DUSE_STBIMAGE -DSTBI_NO_SIMD
+
+CFLAGS+= -DSDL_IMAGE_SAVE_JPG=1
+CFLAGS+= -DSDL_IMAGE_SAVE_PNG=1
+
+CFLAGS+= -DSDL_BUILD_MAJOR_VERSION=$(MAJOR_VERSION)
+CFLAGS+= -DSDL_BUILD_MINOR_VERSION=$(MINOR_VERSION)
+CFLAGS+= -DSDL_BUILD_MICRO_VERSION=$(MICRO_VERSION)
 
 .extensions:
 .extensions: .lib .dll .obj .c
 
 OBJS = $(SRCS:.c=.obj)
 
-all: $(LIBFILE) showimage.exe
+all: $(LIBFILE) showimage.exe showanim.exe
 
 $(LIBFILE): $(DLLFILE)
   @echo * Create library: $@...
@@ -73,14 +86,21 @@ $(LNKFILE):
   @%append $@ OPTION OSNAME='OS/2 and eComStation'
   @%append $@ OPTION SHOWDEAD
 
+.c: ./src
 .c.obj:
   wcc386 $(CFLAGS) -fo=$^@ $<
 
-showimage.obj: showimage.c
+showimage.obj: examples/showimage.c
+  wcc386 $(CFLAGS_BASE) -fo=$^@ $<
+
+showanim.obj: examples/showanim.c
   wcc386 $(CFLAGS_BASE) -fo=$^@ $<
 
 showimage.exe: $(LIBFILE) showimage.obj
   wlink SYS os2v2 OP q LIBPATH $(DEPS_LIB) LIBR {$(LIBFILE) SDL2.lib} F {showimage.obj}  N showimage.exe
+
+showanim.exe: $(LIBFILE) showanim.obj
+  wlink SYS os2v2 OP q LIBPATH $(DEPS_LIB) LIBR {$(LIBFILE) SDL2.lib} F {showanim.obj}  N showanim.exe
 
 clean: .SYMBOLIC
   @echo * Clean: $(TITLENAME)

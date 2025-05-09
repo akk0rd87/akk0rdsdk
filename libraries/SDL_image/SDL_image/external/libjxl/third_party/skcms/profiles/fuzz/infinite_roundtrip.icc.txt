@@ -1,0 +1,48 @@
+                Size : 0x0000020C : 524
+    Data color space : 0x20202020 : '    '
+                 PCS : 0x58595A20 : 'XYZ '
+           Tag count : 0x0000000A : 10
+
+ Tag    : Type   : Size   : Offset
+ ------ : ------ : ------ : --------
+ '    ' : '    ' :     32 : 32
+ '    ' : '    ' :     32 : 288
+ '    ' : '    ' :     32 : 288
+ '    ' : '    ' :     32 : 288
+ 'rXYZ' : 'XYZ ' :     32 : 400
+ 'gXYZ' : 'XYZ ' :     32 : 420
+ 'bXYZ' : 'XYZ ' :     32 : 440
+ 'rTRC' : 'para' :     64 : 460
+ 'gTRC' : 'para' :     64 : 460
+ 'bTRC' : 'para' :     64 : 460
+
+rTRC : 1.996582, 8224.125, 8224.125, 8224.125, 0, 8224.125, 0 (f(1) = 2.61714e+08)
+gTRC : 1.996582, 8224.125, 8224.125, 8224.125, 0, 8224.125, 0 (f(1) = 2.61714e+08)
+bTRC : 1.996582, 8224.125, 8224.125, 8224.125, 0, 8224.125, 0 (f(1) = 2.61714e+08)
+ XYZ : | 8224.125 8224.125 8224.125 |
+       | 8224.125 8224.125 8224.125 |
+       | 8224.125 8224.125 8224.125 |
+ !!! This does not appear to use a D50 whitepoint, rather [24672.4 24672.4 24672.4]
+252 random bytes transformed to linear XYZD50 bytes:
+	ffffff ffffff ffffff ffffff ffffff ffffff ffffff
+	ffffff ffffff ffffff ffffff ffffff ffffff ffffff
+	ffffff ffffff ffffff ffffff ffffff ffffff ffffff
+	ffffff ffffff ffffff ffffff ffffff ffffff ffffff
+	ffffff ffffff ffffff ffffff ffffff ffffff ffffff
+	ffffff ffffff ffffff ffffff ffffff ffffff ffffff
+	ffffff ffffff ffffff ffffff ffffff ffffff ffffff
+	ffffff ffffff ffffff ffffff ffffff ffffff ffffff
+	ffffff ffffff ffffff ffffff ffffff ffffff ffffff
+	ffffff ffffff ffffff ffffff ffffff ffffff ffffff
+	ffffff ffffff ffffff ffffff ffffff ffffff ffffff
+	ffffff ffffff ffffff ffffff ffffff ffffff ffffff
+81 edge-case pixels transformed to sRGB 8888 (unpremul):
+	00ffffff 00ffffff 00ffffff  00ffffff 00ffffff 00ffffff  00ffffff 00ffffff 00ffffff
+	00ffffff 00ffffff 00ffffff  00ffffff 00ffffff 00ffffff  00ffffff 00ffffff 00ffffff
+	00ffffff 00ffffff 00ffffff  00ffffff 00ffffff 00ffffff  00ffffff 00ffffff 00ffffff
+	7fffffff 7fffffff 7fffffff  7fffffff 7fffffff 7fffffff  7fffffff 7fffffff 7fffffff
+	7fffffff 7fffffff 7fffffff  7fffffff 7fffffff 7fffffff  7fffffff 7fffffff 7fffffff
+	7fffffff 7fffffff 7fffffff  7fffffff 7fffffff 7fffffff  7fffffff 7fffffff 7fffffff
+	ffffffff ffffffff ffffffff  ffffffff ffffffff ffffffff  ffffffff ffffffff ffffffff
+	ffffffff ffffffff ffffffff  ffffffff ffffffff ffffffff  ffffffff ffffffff ffffffff
+	ffffffff ffffffff ffffffff  ffffffff ffffffff ffffffff  ffffffff ffffffff ffffffff

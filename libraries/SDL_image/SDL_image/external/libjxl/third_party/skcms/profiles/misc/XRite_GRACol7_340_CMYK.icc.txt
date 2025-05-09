@@ -1,0 +1,57 @@
+                Size : 0x0034FB80 : 3472256
+    Data color space : 0x434D594B : 'CMYK'
+                 PCS : 0x4C616220 : 'Lab '
+           Tag count : 0x0000000E : 14
+
+ Tag    : Type   : Size   : Offset
+ ------ : ------ : ------ : --------
+ 'wtpt' : 'XYZ ' :     20 : 300
+ 'bkpt' : 'XYZ ' :     20 : 320
+ 'cprt' : 'text' :     31 : 340
+ 'A2B0' : 'mft2' : 558522 : 372
+ 'A2B1' : 'mft2' : 558522 : 558896
+ 'A2B2' : 'mft2' : 558522 : 1117420
+ 'B2A0' : 'mft2' : 344892 : 1675944
+ 'B2A1' : 'mft2' : 344892 : 2020836
+ 'B2A2' : 'mft2' : 344892 : 2365728
+ 'gamt' : 'mft1' :  37009 : 2710620
+ 'chad' : 'sf32' :     44 : 2747632
+ 'DEVD' : 'MSBN' :  32216 : 2747676
+ 'DEVS' : 'MSBN' : 692224 : 2779892
+ 'desc' : 'desc' :    138 : 3472116
+
+ A2B : "A", CLUT, "B"
+ "A" : 4 inputs
+  A0 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+  A1 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+  A2 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+  A3 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+CLUT : 17 x 17 x 17 x 17 (16 bpp)
+ "B" : 3 outputs
+  B0 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+  B1 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+  B2 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+CHAD : | 1 0 0 |
+       | 0 1 0 |
+       | 0 0 1 |
+WTPT : | 0.8447876 0.8761749 0.7453766 |
+252 random bytes transformed to linear XYZD50 bytes:
+	121d23 3b2510 0c0e07 1c151b 1e1607 17210e 252013
+	242239 010102 111616 212b45 493020 26281a 030201
+	050604 6c473d 000000 3c4453 351e19 040301 271c17
+	201f15 020202 333730 617864 1d2c14 131a35 2d341b
+	090b08 050402 030205 030301 030201 030406 0d0e0b
+	070c08 7a6755 2f2b2c 2a2c0c 040606 090804 040305
+	314225 070503 080906 010101 04050b 262d2a 0c0a08
+	020100 1e1e06 101216 2f3612 1a1b15 151118 0d0d11
+	020202 0c0d15 0f0906 181614 070502 15130f 201e25
+81 edge-case pixels transformed to sRGB 8888 (unpremul):
+	ff000000 ff000011 ff000021  ff000700 ff000708 ff000d1d  ff001900 ff001800 ff001d1a
+	ff060007 ff000016 ff000024  ff090400 ff020409 ff000a1d  ff101500 ff0b1600 ff0c1c1a
+	ff0f0010 ff0c0019 ff000025  ff160000 ff12010e ff11081f  ff200c00 ff1e1600 ff1d1d1d
+	ff1f211f ff181f59 ff121d8b  ff294000 ff234e58 ff165b91  ff336200 ff257751 ff008d96
+	ff38201d ff371d5b ff32198f  ff4d4100 ff4e4f57 ff4a5d90  ff5f6300 ff5d774d ff5b8f93
+	ff531d18 ff52195a ff510c8f  ff704000 ff735056 ff735d8f  ff8d6300 ff907a46 ff93928f
+	ff343434 ff2f3596 ff2026e7  ff446a00 ff347e92 ff0c90f0  ff4c9b00 ff2abe89 ff00f0ff
+	ff60352b ff5d3496 ff5521ea  ff7c6b00 ff797e8e ff7494ef  ff959c00 ff94c283 ff98f6ff
+	ff8a3122 ff882f94 ff820de8  ffb46b00 ffb8818b ffbb96eb  ffe4a000 ffefc876 fffffffe

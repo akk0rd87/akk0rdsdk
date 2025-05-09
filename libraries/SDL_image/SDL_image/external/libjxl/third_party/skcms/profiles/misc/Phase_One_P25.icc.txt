@@ -1,0 +1,70 @@
+                Size : 0x000358E4 : 219364
+    Data color space : 0x52474220 : 'RGB '
+                 PCS : 0x4C616220 : 'Lab '
+           Tag count : 0x0000000C : 12
+
+ Tag    : Type   : Size   : Offset
+ ------ : ------ : ------ : --------
+ 'desc' : 'desc' :    119 : 276
+ 'cprt' : 'text' :     63 : 395
+ 'rXYZ' : 'XYZ ' :     20 : 458
+ 'gXYZ' : 'XYZ ' :     20 : 478
+ 'bXYZ' : 'XYZ ' :     20 : 498
+ 'rTRC' : 'curv' :    524 : 518
+ 'gTRC' : 'curv' :    524 : 1042
+ 'bTRC' : 'curv' :    524 : 1566
+ 'wtpt' : 'XYZ ' :     20 : 2090
+ 'bkpt' : 'XYZ ' :     20 : 2110
+ 'A2B0' : 'mft2' : 217222 : 2130
+ 'tech' : 'sig ' :     12 : 219352
+
+rTRC : 16-bit table with 256 entries
+  ~= : 0.378341, 1.767159, 0.01614364, 3.844358, 0.007843138, -0.2351913, 0 (Max error: 0.0199992) (D-gap: 9.07481e-06) (f(1) = 1.00939)
+gTRC : 16-bit table with 256 entries
+  ~= : 0.2420229, 17.14722, 0.625267, 5.754864, 0.003921569, -0.8921661, 0 (Max error: 0.223358) (D-gap: 0.000140799) (f(1) = 1.1144)
+bTRC : 16-bit table with 256 entries
+  ~= : 0.669867, 1, -1.56872e-05, 2.64747, 0.05882354, 0.005882263, 0 (Max error: 0.0488108) (D-gap: -4.27663e-06) (f(1) = 1.00588)
+Best : 0.378341, 1.767159, 0.01614364, 3.844358, 0.007843138, -0.2351913, 0 (D-gap: 9.07481e-06) (f(1) = 1.00939)
+Inv  : 2.643118, 0.806221, 0.1896162, 0.2601215, 0.03015183, -0.009002686, -0 (D-gap: 0.000124334) (f(1) = 0.980007)
+Best Error: | 0.0199992 0.102694 0.124728 |
+ XYZ : | 0.64790344 0.35736084 0.15641785 |
+       | 0.3829193 1.109726 0 |
+       | 0.08326721 0.6792755 0.52342224 |
+ !!! This does not appear to use a D50 whitepoint, rather [1.16168 1.49265 1.28596]
+ A2B : "A", CLUT, "B"
+ "A" : 3 inputs
+  A0 : 16-bit table with 256 entries
+  ~= : 0.4952933, 1, -8.765608e-06, 7.968518, 0.04313726, 0.1330681, 0 (Max error: 0.267904) (D-gap: 9.10759e-05) (f(1) = 1.13308)
+  A1 : 16-bit table with 256 entries
+  ~= : 0.4952933, 1, -8.765608e-06, 7.968518, 0.04313726, 0.1330681, 0 (Max error: 0.267904) (D-gap: 9.10759e-05) (f(1) = 1.13308)
+  A2 : 16-bit table with 256 entries
+  ~= : 0.4952933, 1, -8.765608e-06, 7.968518, 0.04313726, 0.1330681, 0 (Max error: 0.267904) (D-gap: 9.10759e-05) (f(1) = 1.13308)
+CLUT : 33 x 33 x 33 (16 bpp)
+ "B" : 3 outputs
+  B0 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+  B1 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+  B2 : 1, 1, 0, 0, 0, 0, 0 (f(1) = 1) (~Identity)
+WTPT : | 0.9634552 1 0.82403564 |
+252 random bytes transformed to linear XYZD50 bytes:
+	1d5c40 86f80b 4a7913 2e1551 341674 8a6006 38a75e
+	b45e34 2f2417 af6d2b b4ae06 547302 1f4c33 6822be
+	c09bb2 306088 859252 436518 4c1886 b68a07 a93f92
+	ca6f22 130467 c4f04c 822b7f 73cf1c 350ba4 327854
+	585a37 4e3b53 3a1473 979a58 65d07c bc5372 35a02f
+	6a908c 395c18 995005 3caf70 090e0a 1f0e8f 21315d
+	2a079e 373902 2d6474 0d0f29 1e450b 814f14 b377a6
+	cfbb5c cb74c1 9b5923 257847 31945e 2f1a1b 60f678
+	399833 a47a07 37233c 4e3f0c 120b52 0b0338 654323
+	7c6f7e 7a467f 267e18 822d79 542541 2a385d 5a6c95
+	214f17 4128a4 1c0d53 9e5406 4bcd2f 04021c 3e5ba2
+	59e84c 6a3d42 3a4f41 955c27 339b69 814e1b 426388
+81 edge-case pixels transformed to sRGB 8888 (unpremul):
+	00010000 000000b5 00002eff  00009c00 0000928d 001a74ff  00c1ff00 0031ff00 0000ffcd
+	00ae0000 00a700b1 007100ff  00879300 008c8d8b 008787ff  00dfff00 0095ff00 0000fff3
+	00c40000 00e40044 00d300b0  00f68e00 00ff7296 00ff00ff  00ffff00 00ffff00 00fffefc
+	7f010000 7f0000b5 7f002eff  7f009c00 7f00928d 7f1a74ff  7fc1ff00 7f31ff00 7f00ffcd
+	7fae0000 7fa700b1 7f7100ff  7f879300 7f8c8d8b 7f8787ff  7fdfff00 7f95ff00 7f00fff3
+	7fc40000 7fe40044 7fd300b0  7ff68e00 7fff7296 7fff00ff  7fffff00 7fffff00 7ffffefc
+	ff010000 ff0000b5 ff002eff  ff009c00 ff00928d ff1a74ff  ffc1ff00 ff31ff00 ff00ffcd
+	ffae0000 ffa700b1 ff7100ff  ff879300 ff8c8d8b ff8787ff  ffdfff00 ff95ff00 ff00fff3
+	ffc40000 ffe40044 ffd300b0  fff68e00 ffff7296 ffff00ff  ffffff00 ffffff00 fffffefc
