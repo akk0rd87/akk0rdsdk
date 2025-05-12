@@ -1,6 +1,6 @@
 /*
   SDL_mixer:  An audio mixer library based on the SDL library
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -65,7 +65,7 @@ static void *MusicCMD_CreateFromFile(const char *file)
     /* Allocate and fill the music structure */
     music = (MusicCMD *)SDL_calloc(1, sizeof *music);
     if (music == NULL) {
-        Mix_SetError("Out of memory");
+        Mix_OutOfMemory();
         return NULL;
     }
     music->file = SDL_strdup(file);
@@ -123,7 +123,7 @@ static int ParseCommandLine(char *cmdline, char **argv)
     if (argv) {
         argv[argc] = NULL;
     }
-    return(argc);
+    return argc;
 }
 
 static char **parse_args(char *command, char *last_arg)
@@ -138,7 +138,7 @@ static char **parse_args(char *command, char *last_arg)
     }
     argv = (char **)SDL_malloc((argc+1)*(sizeof *argv));
     if (argv == NULL) {
-        return(NULL);
+        return NULL;
     }
     argc = ParseCommandLine(command, argv);
 
@@ -149,7 +149,7 @@ static char **parse_args(char *command, char *last_arg)
     argv[argc] = NULL;
 
     /* We're ready! */
-    return(argv);
+    return argv;
 }
 
 /* Start playback of a given music stream */
@@ -160,14 +160,15 @@ static int MusicCMD_Play(void *context, int play_count)
     music->play_count = play_count;
 #ifdef HAVE_FORK
     music->pid = fork();
-#else
+#elif defined(HAVE_VFORK)
     music->pid = vfork();
+#else
+    music->pid = -1;
 #endif
     switch(music->pid) {
     /* Failed fork() system call */
     case -1:
-        Mix_SetError("fork() failed");
-        return -1;
+        return Mix_SetError("fork() failed");
 
     /* Child process - executes here */
     case 0: {
@@ -291,6 +292,8 @@ Mix_MusicInterface Mix_MusicInterface_CMD =
     NULL,   /* LoopEnd */
     NULL,   /* LoopLength */
     NULL,   /* GetMetaTag */
+    NULL,   /* GetNumTracks */
+    NULL,   /* StartTrack */
     MusicCMD_Pause,
     MusicCMD_Resume,
     MusicCMD_Stop,

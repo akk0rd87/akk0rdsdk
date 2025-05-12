@@ -1,6 +1,6 @@
 /*
   SDL_mixer:  An audio mixer library based on the SDL library
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifdef MUSIC_OGG
+#if defined(MUSIC_OGG) && !defined(OGG_USE_STB)
 
 /* This file supports Ogg Vorbis music streams */
 
@@ -61,9 +61,7 @@ typedef struct {
     ogg_int64_t (*ov_pcm_tell)(OggVorbis_File *vf);
 } vorbis_loader;
 
-static vorbis_loader vorbis = {
-    0, NULL
-};
+static vorbis_loader vorbis;
 
 #ifdef OGG_DYNAMIC
 #define FUNCTION_LOADER(FUNC, SIG) \
@@ -71,23 +69,20 @@ static vorbis_loader vorbis = {
     if (vorbis.FUNC == NULL) { SDL_UnloadObject(vorbis.handle); return -1; }
 #else
 #define FUNCTION_LOADER(FUNC, SIG) \
-    vorbis.FUNC = FUNC;
+    vorbis.FUNC = FUNC; \
+    if (vorbis.FUNC == NULL) { Mix_SetError("Missing vorbis.framework or tremor.framework"); return -1; }
 #endif
 
+#ifdef __APPLE__
+    /* Need to turn off optimizations so weak framework load check works */
+    __attribute__ ((optnone))
+#endif
 static int OGG_Load(void)
 {
     if (vorbis.loaded == 0) {
 #ifdef OGG_DYNAMIC
         vorbis.handle = SDL_LoadObject(OGG_DYNAMIC);
         if (vorbis.handle == NULL) {
-            return -1;
-        }
-#elif defined(__MACOSX__)
-        extern int ov_open_callbacks(void*, OggVorbis_File*, const char*, long, ov_callbacks) __attribute__((weak_import));
-        if (ov_open_callbacks == NULL)
-        {
-            /* Missing weakly linked framework */
-            Mix_SetError("Missing Vorbis.framework");
             return -1;
         }
 #endif
@@ -180,12 +175,18 @@ static size_t sdl_read_func(void *ptr, size_t size, size_t nmemb, void *datasour
 
 static int sdl_seek_func(void *datasource, ogg_int64_t offset, int whence)
 {
-    return (int)SDL_RWseek((SDL_RWops*)datasource, offset, whence);
+    return (SDL_RWseek((SDL_RWops*)datasource, offset, whence) < 0)? -1 : 0;
 }
 
 static long sdl_tell_func(void *datasource)
 {
     return (long)SDL_RWtell((SDL_RWops*)datasource);
+}
+
+static int sdl_close_func(void *datasource)
+{
+    (void)datasource;
+    return 0;
 }
 
 static int OGG_Seek(void *context, double time);
@@ -197,8 +198,7 @@ static int OGG_UpdateSection(OGG_music *music)
 
     vi = vorbis.ov_info(&music->vf, -1);
     if (!vi) {
-        Mix_SetError("ov_info returned NULL");
-        return -1;
+        return Mix_SetError("ov_info returned NULL");
     }
 
     if (vi->channels == music->vi.channels && vi->rate == music->vi.rate) {
@@ -250,13 +250,13 @@ static void *OGG_CreateFromRW(SDL_RWops *src, int freesrc)
     music->volume = MIX_MAX_VOLUME;
     music->section = -1;
 
-    SDL_zero(callbacks);
     callbacks.read_func = sdl_read_func;
     callbacks.seek_func = sdl_seek_func;
+    callbacks.close_func = sdl_close_func;
     callbacks.tell_func = sdl_tell_func;
 
     if (vorbis.ov_open_callbacks(src, &music->vf, NULL, 0, callbacks) < 0) {
-        SDL_SetError("Not an Ogg Vorbis audio stream");
+        Mix_SetError("Not an Ogg Vorbis audio stream");
         SDL_free(music);
         return NULL;
     }
@@ -266,55 +266,57 @@ static void *OGG_CreateFromRW(SDL_RWops *src, int freesrc)
         return NULL;
     }
 
-    vc = vorbis.ov_comment(&music->vf, -1);
     rate = music->vi.rate;
-    for (i = 0; i < vc->comments; i++) {
-        char *param = SDL_strdup(vc->user_comments[i]);
-        char *argument = param;
-        char *value = SDL_strchr(param, '=');
-        if (value == NULL) {
-            value = param + SDL_strlen(param);
+    vc = vorbis.ov_comment(&music->vf, -1);
+    if (vc != NULL) {
+        for (i = 0; i < vc->comments; i++) {
+            char *param = SDL_strdup(vc->user_comments[i]);
+            char *argument = param;
+            char *value = SDL_strchr(param, '=');
+            if (value == NULL) {
+                value = param + SDL_strlen(param);
+            } else {
+                *(value++) = '\0';
+            }
+
+            /* Want to match LOOP-START, LOOP_START, etc. Remove - or _ from
+             * string if it is present at position 4. */
+            if (_Mix_IsLoopTag(argument) && ((argument[4] == '_') || (argument[4] == '-'))) {
+                SDL_memmove(argument + 4, argument + 5, SDL_strlen(argument) - 4);
+            }
+
+            if (SDL_strcasecmp(argument, "LOOPSTART") == 0)
+                music->loop_start = _Mix_ParseTime(value, rate);
+            else if (SDL_strcasecmp(argument, "LOOPLENGTH") == 0) {
+                music->loop_len = SDL_strtoll(value, NULL, 10);
+                is_loop_length = SDL_TRUE;
+            } else if (SDL_strcasecmp(argument, "LOOPEND") == 0) {
+                music->loop_end = _Mix_ParseTime(value, rate);
+                is_loop_length = SDL_FALSE;
+            } else if (SDL_strcasecmp(argument, "TITLE") == 0) {
+                meta_tags_set(&music->tags, MIX_META_TITLE, value);
+            } else if (SDL_strcasecmp(argument, "ARTIST") == 0) {
+                meta_tags_set(&music->tags, MIX_META_ARTIST, value);
+            } else if (SDL_strcasecmp(argument, "ALBUM") == 0) {
+                meta_tags_set(&music->tags, MIX_META_ALBUM, value);
+            } else if (SDL_strcasecmp(argument, "COPYRIGHT") == 0) {
+                meta_tags_set(&music->tags, MIX_META_COPYRIGHT, value);
+            }
+            SDL_free(param);
+        }
+
+        if (is_loop_length) {
+            music->loop_end = music->loop_start + music->loop_len;
         } else {
-            *(value++) = '\0';
+            music->loop_len = music->loop_end - music->loop_start;
         }
 
-        /* Want to match LOOP-START, LOOP_START, etc. Remove - or _ from
-         * string if it is present at position 4. */
-        if (_Mix_IsLoopTag(argument) && ((argument[4] == '_') || (argument[4] == '-'))) {
-            SDL_memmove(argument + 4, argument + 5, SDL_strlen(argument) - 4);
+        /* Ignore invalid loop tag */
+        if (music->loop_start < 0 || music->loop_len < 0 || music->loop_end < 0) {
+            music->loop_start = 0;
+            music->loop_len = 0;
+            music->loop_end = 0;
         }
-
-        if (SDL_strcasecmp(argument, "LOOPSTART") == 0)
-            music->loop_start = _Mix_ParseTime(value, rate);
-        else if (SDL_strcasecmp(argument, "LOOPLENGTH") == 0) {
-            music->loop_len = SDL_strtoll(value, NULL, 10);
-            is_loop_length = SDL_TRUE;
-        } else if (SDL_strcasecmp(argument, "LOOPEND") == 0) {
-            music->loop_end = _Mix_ParseTime(value, rate);
-            is_loop_length = SDL_FALSE;
-        } else if (SDL_strcasecmp(argument, "TITLE") == 0) {
-            meta_tags_set(&music->tags, MIX_META_TITLE, value);
-        } else if (SDL_strcasecmp(argument, "ARTIST") == 0) {
-            meta_tags_set(&music->tags, MIX_META_ARTIST, value);
-        } else if (SDL_strcasecmp(argument, "ALBUM") == 0) {
-            meta_tags_set(&music->tags, MIX_META_ALBUM, value);
-        } else if (SDL_strcasecmp(argument, "COPYRIGHT") == 0) {
-            meta_tags_set(&music->tags, MIX_META_COPYRIGHT, value);
-        }
-        SDL_free(param);
-    }
-
-    if (is_loop_length) {
-        music->loop_end = music->loop_start + music->loop_len;
-    } else {
-        music->loop_len = music->loop_end - music->loop_start;
-    }
-
-    /* Ignore invalid loop tag */
-    if (music->loop_start < 0 || music->loop_len < 0 || music->loop_end < 0) {
-        music->loop_start = 0;
-        music->loop_len = 0;
-        music->loop_end = 0;
     }
 
     full_length = vorbis.ov_pcm_total(&music->vf, -1);
@@ -355,6 +357,12 @@ static int OGG_Play(void *context, int play_count)
     return OGG_Seek(music, 0.0);
 }
 
+static void OGG_Stop(void *context)
+{
+    OGG_music *music = (OGG_music *)context;
+    SDL_AudioStreamClear(music->stream);
+}
+
 /* Play some of a stream previously started with OGG_play() */
 static int OGG_GetSome(void *context, void *data, int bytes, SDL_bool *done)
 {
@@ -382,8 +390,7 @@ static int OGG_GetSome(void *context, void *data, int bytes, SDL_bool *done)
     amount = (int)vorbis.ov_read(&music->vf, music->buffer, music->buffer_size, SDL_BYTEORDER == SDL_BIG_ENDIAN, 2, 1, &section);
 #endif
     if (amount < 0) {
-        set_ov_error("ov_read", amount);
-        return -1;
+        return set_ov_error("ov_read", amount);
     }
 
     if (section != music->section) {
@@ -398,8 +405,7 @@ static int OGG_GetSome(void *context, void *data, int bytes, SDL_bool *done)
         amount -= (int)((pcmPos - music->loop_end) * music->vi.channels) * (int)sizeof(Sint16);
         result = vorbis.ov_pcm_seek(&music->vf, music->loop_start);
         if (result < 0) {
-            set_ov_error("ov_pcm_seek", result);
-            return -1;
+            return set_ov_error("ov_pcm_seek", result);
         } else {
             int play_count = -1;
             if (music->play_count > 0) {
@@ -473,7 +479,7 @@ static double OGG_Duration(void *context)
 #endif
 }
 
-static double   OGG_LoopStart(void *music_p)
+static double OGG_LoopStart(void *music_p)
 {
     OGG_music *music = (OGG_music *)music_p;
     if (music->loop > 0) {
@@ -482,7 +488,7 @@ static double   OGG_LoopStart(void *music_p)
     return -1.0;
 }
 
-static double   OGG_LoopEnd(void *music_p)
+static double OGG_LoopEnd(void *music_p)
 {
     OGG_music *music = (OGG_music *)music_p;
     if (music->loop > 0) {
@@ -491,7 +497,7 @@ static double   OGG_LoopEnd(void *music_p)
     return -1.0;
 }
 
-static double   OGG_LoopLength(void *music_p)
+static double OGG_LoopLength(void *music_p)
 {
     OGG_music *music = (OGG_music *)music_p;
     if (music->loop > 0) {
@@ -544,9 +550,11 @@ Mix_MusicInterface Mix_MusicInterface_OGG =
     OGG_LoopEnd,
     OGG_LoopLength,
     OGG_GetMetaTag,   /* GetMetaTag */
+    NULL,   /* GetNumTracks */
+    NULL,   /* StartTrack */
     NULL,   /* Pause */
     NULL,   /* Resume */
-    NULL,   /* Stop */
+    OGG_Stop,
     OGG_Delete,
     NULL,   /* Close */
     OGG_Unload
@@ -554,4 +562,3 @@ Mix_MusicInterface Mix_MusicInterface_OGG =
 
 #endif /* MUSIC_OGG */
 
-/* vi: set ts=4 sw=4 expandtab: */

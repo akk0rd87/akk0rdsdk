@@ -1,6 +1,6 @@
 /*
   SDL_mixer:  An audio mixer library based on the SDL library
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -45,8 +45,11 @@ static void TIMIDITY_Delete(void *context);
 /* Config file should contain any other directory that needs
  * to be added to the search path. The library adds the path
  * of the config file to its search path, too. */
-#if defined(__WIN32__) || defined(__OS2__)
+#if defined(__WIN32__)
 # define TIMIDITY_CFG           "C:\\TIMIDITY\\TIMIDITY.CFG"
+#elif defined(__OS2__)
+# define TIMIDITY_CFG           "C:\\TIMIDITY\\TIMIDITY.CFG"
+# define TIMIDITY_CFG_ETC       "/@unixroot/etc/timidity/timidity.cfg"
 #else  /* unix: */
 # define TIMIDITY_CFG_ETC       "/etc/timidity.cfg"
 # define TIMIDITY_CFG_FREEPATS  "/etc/timidity/freepats.cfg"
@@ -152,6 +155,12 @@ static int TIMIDITY_Play(void *context, int play_count)
     return TIMIDITY_Seek(music, 0.0);
 }
 
+static SDL_bool TIMIDITY_IsPlaying(void *context)
+{
+    TIMIDITY_Music *music = (TIMIDITY_Music *)context;
+    return Timidity_IsActive(music->song);
+}
+
 static int TIMIDITY_GetSome(void *context, void *data, int bytes, SDL_bool *done)
 {
     TIMIDITY_Music *music = (TIMIDITY_Music *)context;
@@ -216,6 +225,12 @@ static int TIMIDITY_Seek(void *context, double position)
     return 0;
 }
 
+static double TIMIDITY_Tell(void *context)
+{
+    TIMIDITY_Music *music = (TIMIDITY_Music *)context;
+    return Timidity_GetSongTime(music->song) / 1000.0;
+}
+
 static double TIMIDITY_Duration(void *context)
 {
     TIMIDITY_Music *music = (TIMIDITY_Music *)context;
@@ -238,6 +253,12 @@ static void TIMIDITY_Delete(void *context)
     SDL_free(music);
 }
 
+static void TIMIDITY_Stop(void *context)
+{
+    TIMIDITY_Music *music = (TIMIDITY_Music *)context;
+    Timidity_Stop(music->song);
+}
+
 Mix_MusicInterface Mix_MusicInterface_TIMIDITY =
 {
     "TIMIDITY",
@@ -253,19 +274,21 @@ Mix_MusicInterface Mix_MusicInterface_TIMIDITY =
     TIMIDITY_SetVolume,
     TIMIDITY_GetVolume,
     TIMIDITY_Play,
-    NULL,   /* IsPlaying */
+    TIMIDITY_IsPlaying,
     TIMIDITY_GetAudio,
     NULL,   /* Jump */
     TIMIDITY_Seek,
-    NULL,   /* Tell */
+    TIMIDITY_Tell,
     TIMIDITY_Duration,
     NULL,   /* LoopStart */
     NULL,   /* LoopEnd */
     NULL,   /* LoopLength */
     NULL,   /* GetMetaTag */
+    NULL,   /* GetNumTracks */
+    NULL,   /* StartTrack */
     NULL,   /* Pause */
     NULL,   /* Resume */
-    NULL,   /* Stop */
+    TIMIDITY_Stop,
     TIMIDITY_Delete,
     TIMIDITY_Close,
     NULL    /* Unload */

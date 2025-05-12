@@ -1,6 +1,6 @@
 /*
   SDL_mixer:  An audio mixer library based on the SDL library
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,7 +24,7 @@
 /* This file supports streaming WAV files */
 
 #include "music_wav.h"
-
+#include "mp3utils.h"
 
 typedef struct {
     SDL_bool active;
@@ -79,6 +79,7 @@ typedef struct {
 #define WAVE_MONO   1
 #define WAVE_STEREO 2
 
+#pragma pack(push, 1)
 typedef struct {
 /* Not saved in the chunk we read:
     Uint32  chunkID;
@@ -93,6 +94,7 @@ typedef struct {
 } WaveFMT;
 
 typedef struct {
+    WaveFMT format;
     Uint16  cbSize;
     union {
         Uint16 validbitspersample; /* bits of precision */
@@ -105,7 +107,7 @@ typedef struct {
     Uint16 sub_data2;
     Uint16 sub_data3;
     Uint8  sub_data[8];
-} WaveFMTex;
+} WaveFMTEx;
 
 typedef struct {
     Uint32 identifier;
@@ -132,6 +134,7 @@ typedef struct {
     Uint32  sampler_data;
     SampleLoop loops[1];
 } SamplerChunk;
+#pragma pack(pop)
 
 /*********************************************/
 /* Define values for AIFF (IFF audio) format */
@@ -178,7 +181,7 @@ static void *WAV_CreateFromRW(SDL_RWops *src, int freesrc)
 
     music = (WAV_Music *)SDL_calloc(1, sizeof(*music));
     if (!music) {
-        SDL_OutOfMemory();
+        Mix_OutOfMemory();
         return NULL;
     }
     music->src = src;
@@ -196,11 +199,12 @@ static void *WAV_CreateFromRW(SDL_RWops *src, int freesrc)
         Mix_SetError("Unknown WAVE format");
     }
     if (!loaded) {
-        SDL_free(music);
+        WAV_Delete(music);
         return NULL;
     }
     music->buffer = (Uint8*)SDL_malloc(music->spec.size);
     if (!music->buffer) {
+        Mix_OutOfMemory();
         WAV_Delete(music);
         return NULL;
     }
@@ -243,6 +247,12 @@ static int WAV_Play(void *context, int play_count)
         return -1;
     }
     return 0;
+}
+
+static void WAV_Stop(void *context)
+{
+    WAV_Music *music = (WAV_Music *)context;
+    SDL_AudioStreamClear(music->stream);
 }
 
 static int fetch_pcm(void *context, int length)
@@ -334,7 +344,7 @@ static int fetch_float64be(void *context, int length)
     if (length % music->samplesize != 0) {
         length -= length % music->samplesize;
     }
-    for (i = 0, o = 0; i <= length; i += 8, o += 4) {
+    for (i = 0, o = 0; i < length; i += 8, o += 4) {
         union
         {
             float f;
@@ -357,7 +367,7 @@ static int fetch_float64le(void *context, int length)
     if (length % music->samplesize != 0) {
         length -= length % music->samplesize;
     }
-    for (i = 0, o = 0; i <= length; i += 8, o += 4) {
+    for (i = 0, o = 0; i < length; i += 8, o += 4) {
         union
         {
             float f;
@@ -543,7 +553,8 @@ static int WAV_GetSome(void *context, void *data, int bytes, SDL_bool *done)
             if (loop->current_play_count > 0) {
                 --loop->current_play_count;
             }
-            SDL_RWseek(music->src, loop_start, RW_SEEK_SET);
+            if (SDL_RWseek(music->src, loop_start, RW_SEEK_SET) < 0)
+                return -1;
             looped = SDL_TRUE;
         }
     }
@@ -582,7 +593,8 @@ static int WAV_Seek(void *context, double position)
     destpos -= dest_offset % sample_size;
     if (destpos > music->stop)
         return -1;
-    SDL_RWseek(music->src, destpos, RW_SEEK_SET);
+    if (SDL_RWseek(music->src, destpos, RW_SEEK_SET) < 0)
+        return -1;
     return 0;
 }
 
@@ -632,33 +644,34 @@ static void WAV_Delete(void *context)
 static SDL_bool ParseFMT(WAV_Music *wave, Uint32 chunk_length)
 {
     SDL_AudioSpec *spec = &wave->spec;
-    WaveFMT *format;
-    WaveFMTex *formatEx = NULL;
-    Uint8 *data;
+    WaveFMTEx fmt;
+    size_t size;
     int bits;
-    SDL_bool loaded = SDL_FALSE;
 
-    if (chunk_length < sizeof(*format)) {
+    if (chunk_length < sizeof(fmt.format)) {
         Mix_SetError("Wave format chunk too small");
         return SDL_FALSE;
     }
 
-    data = (Uint8 *)SDL_malloc(chunk_length);
-    if (!data) {
-        Mix_SetError("Out of memory");
-        return SDL_FALSE;
-    }
-    if (!SDL_RWread(wave->src, data, chunk_length, 1)) {
+    size = (chunk_length >= sizeof(fmt)) ? sizeof(fmt) : sizeof(fmt.format);
+    if (!SDL_RWread(wave->src, &fmt, size, 1)) {
         Mix_SetError("Couldn't read %d bytes from WAV file", chunk_length);
         return SDL_FALSE;
     }
-    format = (WaveFMT *)data;
+    chunk_length = (Uint32)(chunk_length - size);
+    if (chunk_length != 0 && SDL_RWseek(wave->src, chunk_length, RW_SEEK_CUR) < 0) {
+        Mix_SetError("Couldn't read %d bytes from WAV file", chunk_length);
+        return SDL_FALSE;
+    }
 
-    wave->encoding = SDL_SwapLE16(format->encoding);
+    wave->encoding = SDL_SwapLE16(fmt.format.encoding);
 
     if (wave->encoding == EXT_CODE) {
-        formatEx = (WaveFMTex*)(data + sizeof(WaveFMT));
-        wave->encoding = (Uint16)SDL_SwapLE32(formatEx->subencoding);
+        if (size < sizeof(fmt)) {
+            Mix_SetError("Wave format chunk too small");
+            return SDL_FALSE;
+        }
+        wave->encoding = (Uint16)SDL_SwapLE32(fmt.subencoding);
     }
 
     /* Decode the audio data format */
@@ -679,10 +692,10 @@ static SDL_bool ParseFMT(WAV_Music *wave, Uint32 chunk_length)
         default:
             /* but NOT this */
             Mix_SetError("Unknown WAVE data format");
-            goto done;
+            return SDL_FALSE;
     }
-    spec->freq = (int)SDL_SwapLE32(format->frequency);
-    bits = (int) SDL_SwapLE16(format->bitspersample);
+    spec->freq = (int)SDL_SwapLE32(fmt.format.frequency);
+    bits = (int) SDL_SwapLE16(fmt.format.bitspersample);
     switch (bits) {
         case 8:
             switch(wave->encoding) {
@@ -726,9 +739,9 @@ static SDL_bool ParseFMT(WAV_Music *wave, Uint32 chunk_length)
         default:
             unknown_bits:
             Mix_SetError("Unknown PCM format with %d bits", bits);
-            goto done;
+            return SDL_FALSE;
     }
-    spec->channels = (Uint8) SDL_SwapLE16(format->channels);
+    spec->channels = (Uint8) SDL_SwapLE16(fmt.format.channels);
     spec->samples = 4096;       /* Good default buffer size */
     wave->samplesize = spec->channels * (bits / 8);
     /* SDL_CalculateAudioSpec */
@@ -736,18 +749,15 @@ static SDL_bool ParseFMT(WAV_Music *wave, Uint32 chunk_length)
     spec->size *= spec->channels;
     spec->size *= spec->samples;
 
-    loaded = SDL_TRUE;
-
-done:
-    SDL_free(data);
-    return loaded;
+    return SDL_TRUE;
 }
 
 static SDL_bool ParseDATA(WAV_Music *wave, Uint32 chunk_length)
 {
     wave->start = SDL_RWtell(wave->src);
     wave->stop = wave->start + chunk_length;
-    SDL_RWseek(wave->src, chunk_length, RW_SEEK_CUR);
+    if (SDL_RWseek(wave->src, chunk_length, RW_SEEK_CUR) < 0)
+        return SDL_FALSE;
     return SDL_TRUE;
 }
 
@@ -756,7 +766,7 @@ static SDL_bool AddLoopPoint(WAV_Music *wave, Uint32 play_count, Uint32 start, U
     WAVLoopPoint *loop;
     WAVLoopPoint *loops = SDL_realloc(wave->loops, (wave->numloops + 1) * sizeof(*wave->loops));
     if (!loops) {
-        Mix_SetError("Out of memory");
+        Mix_OutOfMemory();
         return SDL_FALSE;
     }
 
@@ -780,11 +790,12 @@ static SDL_bool ParseSMPL(WAV_Music *wave, Uint32 chunk_length)
 
     data = (Uint8 *)SDL_malloc(chunk_length);
     if (!data) {
-        Mix_SetError("Out of memory");
+        Mix_OutOfMemory();
         return SDL_FALSE;
     }
     if (!SDL_RWread(wave->src, data, chunk_length, 1)) {
         Mix_SetError("Couldn't read %d bytes from WAV file", chunk_length);
+        SDL_free(data);
         return SDL_FALSE;
     }
     chunk = (SamplerChunk *)data;
@@ -825,17 +836,17 @@ static void read_meta_field(Mix_MusicMetaTags *tags, Mix_MusicMetaTag tag_type, 
 
 static SDL_bool ParseLIST(WAV_Music *wave, Uint32 chunk_length)
 {
-    SDL_bool loaded = SDL_FALSE;
-
     Uint8 *data;
+
     data = (Uint8 *)SDL_malloc(chunk_length);
     if (!data) {
-        Mix_SetError("Out of memory");
+        Mix_OutOfMemory();
         return SDL_FALSE;
     }
 
     if (!SDL_RWread(wave->src, data, chunk_length, 1)) {
         Mix_SetError("Couldn't read %d bytes from WAV file", chunk_length);
+        SDL_free(data);
         return SDL_FALSE;
     }
 
@@ -857,7 +868,33 @@ static SDL_bool ParseLIST(WAV_Music *wave, Uint32 chunk_length)
             }
             i++;
         }
-        loaded = SDL_TRUE;
+    }
+
+    /* done: */
+    SDL_free(data);
+
+    return SDL_TRUE;
+}
+
+static SDL_bool ParseID3(WAV_Music *wave, Uint32 chunk_length)
+{
+    SDL_bool loaded = SDL_TRUE;
+
+    Uint8 *data;
+    data = (Uint8 *)SDL_malloc(chunk_length);
+
+    if (!data) {
+        SDL_OutOfMemory();
+        return SDL_FALSE;
+    }
+
+    if (!SDL_RWread(wave->src, data, chunk_length, 1)) {
+        Mix_SetError("Couldn't read %d bytes from WAV file", chunk_length);
+        loaded = SDL_FALSE;
+    }
+
+    if (loaded) {
+        read_id3v2_from_mem(&wave->tags, data, chunk_length);
     }
 
     /* done: */
@@ -894,8 +931,7 @@ static SDL_bool LoadWAVMusic(WAV_Music *wave)
         if (chunk_length == 0)
             break;
 
-        switch (chunk_type)
-        {
+        switch (chunk_type) {
         case FMT:
             found_FMT = SDL_TRUE;
             if (!ParseFMT(wave, chunk_length))
@@ -914,9 +950,20 @@ static SDL_bool LoadWAVMusic(WAV_Music *wave)
             if (!ParseLIST(wave, chunk_length))
                 return SDL_FALSE;
             break;
-        default:
-            SDL_RWseek(src, chunk_length, RW_SEEK_CUR);
+        case ID3_:
+            if (!ParseID3(wave, chunk_length))
+                return SDL_FALSE;
             break;
+        default:
+            if (SDL_RWseek(src, chunk_length, RW_SEEK_CUR) < 0)
+                return SDL_FALSE;
+            break;
+        }
+
+        /* RIFF chunks have a 2-byte alignment. Skip padding byte. */
+        if (chunk_length & 1) {
+            if (SDL_RWseek(src, 1, RW_SEEK_CUR) < 0)
+                return SDL_FALSE;
         }
     }
 
@@ -1031,6 +1078,11 @@ static SDL_bool LoadAIFFMusic(WAV_Music *wave)
             (void)AIFCVersion1; /* unused */
             break;
 
+        case AIFF_ID3_:
+            if (!ParseID3(wave, chunk_length))
+                return SDL_FALSE;
+            break;
+
         case MARK:
         case INST:
             /* Just skip those chunks */
@@ -1071,7 +1123,7 @@ static SDL_bool LoadAIFFMusic(WAV_Music *wave)
             /* Unknown/unsupported chunk: we just skip over */
             break;
         }
-    } while (next_chunk < file_length && SDL_RWseek(src, next_chunk, RW_SEEK_SET) != -1);
+    } while (next_chunk < file_length && SDL_RWseek(src, next_chunk, RW_SEEK_SET) >= 0);
 
     if (!found_SSND) {
         Mix_SetError("Bad AIFF/AIFF-C file (no SSND chunk)");
@@ -1087,7 +1139,6 @@ static SDL_bool LoadAIFFMusic(WAV_Music *wave)
         Mix_SetError("Bad AIFF-C file (no FVER chunk)");
         return SDL_FALSE;
     }
-
 
     wave->samplesize = channels * (samplesize / 8);
     wave->stop = wave->start + channels * numsamples * (samplesize / 8);
@@ -1207,9 +1258,11 @@ Mix_MusicInterface Mix_MusicInterface_WAV =
     NULL,   /* LoopEnd */
     NULL,   /* LoopLength */
     WAV_GetMetaTag,   /* GetMetaTag */
+    NULL,   /* GetNumTracks */
+    NULL,   /* StartTrack */
     NULL,   /* Pause */
     NULL,   /* Resume */
-    NULL,   /* Stop */
+    WAV_Stop, /* Stop */
     WAV_Delete,
     NULL,   /* Close */
     NULL    /* Unload */

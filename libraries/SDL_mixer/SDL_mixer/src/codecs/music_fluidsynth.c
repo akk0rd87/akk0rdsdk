@@ -1,6 +1,6 @@
 /*
   SDL_mixer:  An audio mixer library based on the SDL library
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -39,6 +39,7 @@ typedef struct {
 #if (FLUIDSYNTH_VERSION_MAJOR >= 2)
     void (*delete_fluid_player)(fluid_player_t*);
     void (*delete_fluid_synth)(fluid_synth_t*);
+    int (*fluid_player_seek)(fluid_player_t *, int);
 #else
     int (*delete_fluid_player)(fluid_player_t*);
     int (*delete_fluid_synth)(fluid_synth_t*);
@@ -56,14 +57,13 @@ typedef struct {
     void (*fluid_synth_set_gain)(fluid_synth_t*, float);
     int (*fluid_synth_sfload)(fluid_synth_t*, const char*, int);
     int (*fluid_synth_write_s16)(fluid_synth_t*, int, void*, int, int, void*, int, int);
+    int (*fluid_synth_write_float)(fluid_synth_t*, int, void*, int, int, void*, int, int);
     fluid_player_t* (*new_fluid_player)(fluid_synth_t*);
     fluid_settings_t* (*new_fluid_settings)(void);
     fluid_synth_t* (*new_fluid_synth)(fluid_settings_t*);
 } fluidsynth_loader;
 
-static fluidsynth_loader fluidsynth = {
-    0, NULL
-};
+static fluidsynth_loader fluidsynth;
 
 #ifdef FLUIDSYNTH_DYNAMIC
 #define FUNCTION_LOADER(FUNC, SIG) \
@@ -86,6 +86,7 @@ static int FLUIDSYNTH_Load()
 #if (FLUIDSYNTH_VERSION_MAJOR >= 2)
         FUNCTION_LOADER(delete_fluid_player, void (*)(fluid_player_t*))
         FUNCTION_LOADER(delete_fluid_synth, void (*)(fluid_synth_t*))
+        FUNCTION_LOADER(fluid_player_seek, int (*)(fluid_player_t *, int))
 #else
         FUNCTION_LOADER(delete_fluid_player, int (*)(fluid_player_t*))
         FUNCTION_LOADER(delete_fluid_synth, int (*)(fluid_synth_t*))
@@ -103,6 +104,7 @@ static int FLUIDSYNTH_Load()
         FUNCTION_LOADER(fluid_synth_set_gain, void (*)(fluid_synth_t*, float))
         FUNCTION_LOADER(fluid_synth_sfload, int(*)(fluid_synth_t*, const char*, int))
         FUNCTION_LOADER(fluid_synth_write_s16, int(*)(fluid_synth_t*, int, void*, int, int, void*, int, int))
+        FUNCTION_LOADER(fluid_synth_write_float, int(*)(fluid_synth_t*, int, void*, int, int, void*, int, int))
         FUNCTION_LOADER(new_fluid_player, fluid_player_t* (*)(fluid_synth_t*))
         FUNCTION_LOADER(new_fluid_settings, fluid_settings_t* (*)(void))
         FUNCTION_LOADER(new_fluid_synth, fluid_synth_t* (*)(fluid_settings_t*))
@@ -128,11 +130,14 @@ static void FLUIDSYNTH_Unload()
 
 typedef struct {
     fluid_synth_t *synth;
+    fluid_settings_t *settings;
     fluid_player_t *player;
+    int (*synth_write)(fluid_synth_t*, int, void*, int, int, void*, int, int);
     SDL_AudioStream *stream;
     void *buffer;
     int buffer_size;
     int volume;
+    SDL_bool is_paused;
 } FLUIDSYNTH_Music;
 
 static void FLUIDSYNTH_Delete(void *context);
@@ -171,62 +176,75 @@ static FLUIDSYNTH_Music *FLUIDSYNTH_LoadMusic(void *data)
 {
     SDL_RWops *src = (SDL_RWops *)data;
     FLUIDSYNTH_Music *music;
-    fluid_settings_t *settings;
     double samplerate; /* as set by the lib. */
+    const Uint8 channels = 2;
+    int src_format = AUDIO_S16SYS;
+    void *rw_mem;
+    size_t rw_size;
+    int ret;
 
-    if ((music = SDL_calloc(1, sizeof(FLUIDSYNTH_Music)))) {
-        Uint8 channels = 2;
-        music->volume = MIX_MAX_VOLUME;
-        music->buffer_size = music_spec.samples * sizeof(Sint16) * channels;
-        if ((music->buffer = SDL_malloc((size_t)music->buffer_size))) {
-            if ((settings = fluidsynth.new_fluid_settings())) {
-                fluidsynth.fluid_settings_setnum(settings, "synth.sample-rate", (double) music_spec.freq);
-                fluidsynth.fluid_settings_getnum(settings, "synth.sample-rate", &samplerate);
-
-                if ((music->synth = fluidsynth.new_fluid_synth(settings))) {
-                    if (Mix_EachSoundFont(fluidsynth_load_soundfont, (void*) music->synth)) {
-                        if ((music->player = fluidsynth.new_fluid_player(music->synth))) {
-                            void *buffer;
-                            size_t size;
-
-                            buffer = SDL_LoadFile_RW(src, &size, SDL_FALSE);
-                            if (buffer) {
-                                if (fluidsynth.fluid_player_add_mem(music->player, buffer, size) == FLUID_OK) {
-                                    SDL_free(buffer);
-                                    if ((music->stream = SDL_NewAudioStream(AUDIO_S16SYS, channels, (int) samplerate,
-                                                          music_spec.format, music_spec.channels, music_spec.freq))) {
-                                        return music;
-                                    } else {
-                                        FLUIDSYNTH_Delete(music);
-                                        return NULL;
-                                    }
-                                } else {
-                                    Mix_SetError("FluidSynth failed to load in-memory song");
-                                }
-                                SDL_free(buffer);
-                            } else {
-                                SDL_OutOfMemory();
-                            }
-                            fluidsynth.delete_fluid_player(music->player);
-                        } else {
-                            Mix_SetError("Failed to create FluidSynth player");
-                        }
-                    }
-                    fluidsynth.delete_fluid_synth(music->synth);
-                } else {
-                    Mix_SetError("Failed to create FluidSynth synthesizer");
-                }
-                fluidsynth.delete_fluid_settings(settings);
-            } else {
-                Mix_SetError("Failed to create FluidSynth settings");
-            }
-        } else {
-            SDL_OutOfMemory();
-        }
-        SDL_free(music);
-    } else {
+    if (!(music = SDL_calloc(1, sizeof(FLUIDSYNTH_Music)))) {
         SDL_OutOfMemory();
+        return NULL;
     }
+
+    music->volume = MIX_MAX_VOLUME;
+    music->buffer_size = music_spec.samples * sizeof(Sint16) * channels;
+    music->synth_write = fluidsynth.fluid_synth_write_s16;
+    if (music_spec.format & 0x0020) { /* 32 bit. */
+        src_format = AUDIO_F32SYS;
+        music->buffer_size <<= 1;
+        music->synth_write = fluidsynth.fluid_synth_write_float;
+    }
+
+    if (!(music->buffer = SDL_malloc((size_t)music->buffer_size))) {
+        SDL_OutOfMemory();
+        goto fail;
+    }
+
+    if (!(music->settings = fluidsynth.new_fluid_settings())) {
+        Mix_SetError("Failed to create FluidSynth settings");
+        goto fail;
+    }
+
+    fluidsynth.fluid_settings_setnum(music->settings, "synth.sample-rate", (double) music_spec.freq);
+    fluidsynth.fluid_settings_getnum(music->settings, "synth.sample-rate", &samplerate);
+
+    if (!(music->synth = fluidsynth.new_fluid_synth(music->settings))) {
+        Mix_SetError("Failed to create FluidSynth synthesizer");
+        goto fail;
+    }
+
+    if (!Mix_EachSoundFont(fluidsynth_load_soundfont, music->synth)) {
+        goto fail;
+    }
+
+    if (!(music->player = fluidsynth.new_fluid_player(music->synth))) {
+        Mix_SetError("Failed to create FluidSynth player");
+        goto fail;
+    }
+
+    rw_mem = SDL_LoadFile_RW(src, &rw_size, SDL_FALSE);
+    if (!rw_mem) {
+        SDL_OutOfMemory();
+        goto fail;
+    }
+
+    ret = fluidsynth.fluid_player_add_mem(music->player, rw_mem, rw_size);
+    SDL_free(rw_mem);
+    if (ret != FLUID_OK) {
+        Mix_SetError("FluidSynth failed to load in-memory song");
+        goto fail;
+    }
+
+    if (!(music->stream = SDL_NewAudioStream(src_format, channels, (int) samplerate,
+                          music_spec.format, music_spec.channels, music_spec.freq))) {
+        goto fail;
+    }
+
+    return music;
+fail:
+    FLUIDSYNTH_Delete(music);
     return NULL;
 }
 
@@ -244,9 +262,9 @@ static void *FLUIDSYNTH_CreateFromRW(SDL_RWops *src, int freesrc)
 static void FLUIDSYNTH_SetVolume(void *context, int volume)
 {
     FLUIDSYNTH_Music *music = (FLUIDSYNTH_Music *)context;
-    /* FluidSynth's default is 0.2. Make 1.2 the maximum. */
+    /* FluidSynth's default gain is 0.2. Make 1.0 the maximum gain value to avoid sound overload. */
     music->volume = volume;
-    fluidsynth.fluid_synth_set_gain(music->synth, (float) (volume * 1.2 / MIX_MAX_VOLUME));
+    fluidsynth.fluid_synth_set_gain(music->synth, volume * 1.0f / MIX_MAX_VOLUME);
 }
 
 static int FLUIDSYNTH_GetVolume(void *context)
@@ -259,14 +277,25 @@ static int FLUIDSYNTH_Play(void *context, int play_count)
 {
     FLUIDSYNTH_Music *music = (FLUIDSYNTH_Music *)context;
     fluidsynth.fluid_player_set_loop(music->player, play_count);
+#if (FLUIDSYNTH_VERSION_MAJOR >= 2)
+    fluidsynth.fluid_player_seek(music->player, 0);
+#endif
     fluidsynth.fluid_player_play(music->player);
+    music->is_paused = SDL_FALSE;
     return 0;
+}
+
+static void FLUIDSYNTH_Resume(void *context)
+{
+    FLUIDSYNTH_Music *music = (FLUIDSYNTH_Music *)context;
+    fluidsynth.fluid_player_play(music->player);
+    music->is_paused = SDL_FALSE;
 }
 
 static SDL_bool FLUIDSYNTH_IsPlaying(void *context)
 {
     FLUIDSYNTH_Music *music = (FLUIDSYNTH_Music *)context;
-    return fluidsynth.fluid_player_get_status(music->player) == FLUID_PLAYER_PLAYING ? SDL_TRUE : SDL_FALSE;
+    return music->is_paused || fluidsynth.fluid_player_get_status(music->player) == FLUID_PLAYER_PLAYING ? SDL_TRUE : SDL_FALSE;
 }
 
 static int FLUIDSYNTH_GetSome(void *context, void *data, int bytes, SDL_bool *done)
@@ -281,9 +310,8 @@ static int FLUIDSYNTH_GetSome(void *context, void *data, int bytes, SDL_bool *do
         return filled;
     }
 
-    if (fluidsynth.fluid_synth_write_s16(music->synth, music_spec.samples, music->buffer, 0, 2, music->buffer, 1, 2) != FLUID_OK) {
-        Mix_SetError("Error generating FluidSynth audio");
-        return -1;
+    if (music->synth_write(music->synth, music_spec.samples, music->buffer, 0, 2, music->buffer, 1, 2) != FLUID_OK) {
+        return Mix_SetError("Error generating FluidSynth audio");
     }
     if (SDL_AudioStreamPut(music->stream, music->buffer, music->buffer_size) < 0) {
         return -1;
@@ -299,17 +327,37 @@ static void FLUIDSYNTH_Stop(void *context)
 {
     FLUIDSYNTH_Music *music = (FLUIDSYNTH_Music *)context;
     fluidsynth.fluid_player_stop(music->player);
+#if (FLUIDSYNTH_VERSION_MAJOR >= 2)
+    fluidsynth.fluid_player_seek(music->player, 0);
+#endif
+    music->is_paused = SDL_FALSE;
+}
+
+static void FLUIDSYNTH_Pause(void *context)
+{
+    FLUIDSYNTH_Music *music = (FLUIDSYNTH_Music *)context;
+    fluidsynth.fluid_player_stop(music->player);
+    music->is_paused = SDL_TRUE;
 }
 
 static void FLUIDSYNTH_Delete(void *context)
 {
     FLUIDSYNTH_Music *music = (FLUIDSYNTH_Music *)context;
-    fluid_settings_t *settings = fluidsynth.fluid_synth_get_settings(music->synth);
-    fluidsynth.delete_fluid_player(music->player);
-    fluidsynth.delete_fluid_synth(music->synth);
-    fluidsynth.delete_fluid_settings(settings);
+
+    if (music->player) {
+        fluidsynth.delete_fluid_player(music->player);
+    }
+    if (music->synth) {
+        fluidsynth.delete_fluid_synth(music->synth);
+    }
+    if (music->settings) {
+        fluidsynth.delete_fluid_settings(music->settings);
+    }
     if (music->stream) {
         SDL_FreeAudioStream(music->stream);
+    }
+    if (music->buffer) {
+        SDL_free(music->buffer);
     }
     SDL_free(music);
 }
@@ -339,8 +387,10 @@ Mix_MusicInterface Mix_MusicInterface_FLUIDSYNTH =
     NULL,   /* LoopEnd */
     NULL,   /* LoopLength */
     NULL,   /* GetMetaTag */
-    NULL,   /* Pause */
-    NULL,   /* Resume */
+    NULL,   /* GetNumTracks */
+    NULL,   /* StartTrack */
+    FLUIDSYNTH_Pause,
+    FLUIDSYNTH_Resume,
     FLUIDSYNTH_Stop,
     FLUIDSYNTH_Delete,
     NULL,   /* Close */

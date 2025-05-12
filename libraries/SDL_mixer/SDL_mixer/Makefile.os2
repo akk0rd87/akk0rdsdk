@@ -5,7 +5,10 @@
 # your own environment!.
 
 LIBNAME = SDL2mix
-VERSION = 2.0.4
+MAJOR_VERSION = 2
+MINOR_VERSION = 8
+MICRO_VERSION = 1
+VERSION = $(MAJOR_VERSION).$(MINOR_VERSION).$(MICRO_VERSION)
 
 TITLENAME = $(LIBNAME) $(VERSION)
 
@@ -20,24 +23,32 @@ USE_WAV=yes
 USE_OGG=yes
 # use integer-only Tremor (libvorbisidec) instead of libvorbis?
 USE_TREMOR=no
-# flac music support
+# use stb_vorbis instead of libvorbis?
+USE_STBVORBIS=no
+# flac music support (using libflac)
 USE_FLAC=yes
+# flac music support (using dr_flac)
+USE_DRFLAC=no
 # opus music support
 USE_OPUS=yes
-# mp3 music support (using libmad)
-USE_LIBMAD=no
 # mp3 music support (using mpg123)
 USE_MPG123=yes
+# mp3 music support (using minimp3)
+USE_MINIMP3=no
+# wavpack music support
+USE_WAVPACK=yes
+# wavpack DSD music support
+USE_WAVPACK_DSD= no
 # midi music support (using timidity)
 USE_TIMIDITY=yes
 # midi music support (using fluidsynth)
 USE_FLUIDSYNTH=no
-# tracker music support (using libmikmod)
-USE_MIKMOD=no
 # tracker music support (using libxmp)
 USE_XMP=yes
 # tracker music support (using libmodplug)
 USE_MODPLUG=no
+# game-music-emu support (using libgme)
+USE_GME=no
 
 LIBFILE = $(LIBNAME).lib
 DLLFILE = $(LIBNAME).dll
@@ -47,9 +58,10 @@ TIMILIB = timidity.lib
 SRCS = utils.c effect_position.c effects_internal.c effect_stereoreverse.c mixer.c music.c
 # codec sources:
 SRCS+= load_aiff.c load_voc.c music_wav.c &
-       mp3utils.c music_mad.c music_mpg123.c &
-       music_ogg.c music_opus.c music_flac.c &
-       music_xmp.c music_mikmod.c music_modplug.c &
+       music_ogg.c music_ogg_stb.c music_opus.c &
+       music_flac.c music_drflac.c music_wavpack.c &
+       mp3utils.c music_mpg123.c music_minimp3.c &
+       music_xmp.c music_modplug.c music_gme.c &
        music_fluidsynth.c music_timidity.c
 # timidity sources:
 TIMISRCS = common.c instrum.c mix.c output.c playmidi.c readmidi.c resample.c tables.c timidity.c
@@ -59,9 +71,11 @@ TIMIOBJS = $(TIMISRCS:.c=.obj)
 
 LIBS = SDL2.lib
 
-CFLAGS_BASE = -bt=os2 -d0 -q -bm -5s -fp5 -fpi87 -sg -oteanbmier -ei -j
+CFLAGS_BASE = -bt=os2 -d0 -q -bm -5s -fp5 -fpi87 -sg -oeatxh -ei -j
 # warnings:
 CFLAGS_BASE+= -wx
+# newer OpenWatcom versions enable W303 by default
+CFLAGS_BASE+= -wcd=303
 # include paths:
 CFLAGS_BASE+= -Iinclude -Isrc -I"src/codecs" -I"src/codecs/timidity" $(DEPS_INC)
 CFLAGS_BASE+= -I"$(%WATCOM)/h/os2" -I"$(%WATCOM)/h"
@@ -91,47 +105,69 @@ VORBIS_LIBS=vorbisfile.lib vorbis.lib
 !endif
 !ifeq USE_OGG yes
 CFLAGS+= -DMUSIC_OGG
+!ifeq USE_STBVORBIS yes
+CFLAGS+= -DOGG_USE_STB
+!else
 !ifeq USE_TREMOR yes
 CFLAGS+= -DOGG_USE_TREMOR
 !endif
 LIBS+= $(VORBIS_LIBS)
-LIBS+= ogg.lib
+NEED_LIBOGG=yes
+!endif
 !endif
 
 !ifeq USE_FLAC yes
-CFLAGS+= -DMUSIC_FLAC
+CFLAGS+= -DMUSIC_FLAC_LIBFLAC
 LIBS+= FLAC.lib
+!endif
+!ifeq USE_DRFLAC yes
+CFLAGS+= -DMUSIC_FLAC_DRFLAC
+!endif
+
+!ifeq USE_WAVPACK yes
+CFLAGS+= -DMUSIC_WAVPACK
+!ifeq USE_WAVPACK_DSD yes
+CFLAGS+= -DMUSIC_WAVPACK_DSD
+!endif
+LIBS+= wavpack.lib
 !endif
 
 !ifeq USE_OPUS yes
 CFLAGS+= -DMUSIC_OPUS
 LIBS+= opusfile.lib opus.lib
-!ifneq USE_OGG yes
-LIBS+= ogg.lib
-!endif
+NEED_LIBOGG=yes
 !endif
 
-!ifeq USE_LIBMAD yes
-CFLAGS+= -DMUSIC_MP3_MAD
-LIBS+= mad.lib
-!endif
 !ifeq USE_MPG123 yes
 CFLAGS+= -DMUSIC_MP3_MPG123
 LIBS+= mpg123.lib
+!endif
+!ifeq USE_MINIMP3 yes
+CFLAGS+= -DMUSIC_MP3_MINIMP3
 !endif
 
 !ifeq USE_XMP yes
 CFLAGS+= -DMUSIC_MOD_XMP
 LIBS+= libxmp.lib
 !endif
-!ifeq USE_MIKMOD yes
-CFLAGS+= -DMUSIC_MOD_MIKMOD
-LIBS+= mikmod.lib
-!endif
 !ifeq USE_MODPLUG yes
 CFLAGS+= -DMUSIC_MOD_MODPLUG
 LIBS+= modplug.lib
 !endif
+
+!ifeq USE_GME yes
+CFLAGS+= -DMUSIC_GME
+LIBS+= gme.lib
+!endif
+
+!ifeq NEED_LIBOGG yes
+LIBS+= ogg.lib
+!endif
+
+# For the static assertions in mixer.c
+CFLAGS+= -DSDL_BUILD_MAJOR_VERSION=$(MAJOR_VERSION)
+CFLAGS+= -DSDL_BUILD_MINOR_VERSION=$(MINOR_VERSION)
+CFLAGS+= -DSDL_BUILD_MICRO_VERSION=$(MICRO_VERSION)
 
 all: $(DLLFILE) playwave.exe playmus.exe
 
@@ -149,7 +185,7 @@ $(LNKFILE):
   @%append $@ NAME $(LIBNAME)
   @for %i in ($(OBJS)) do @%append $@ FILE %i
   @%append $@ OPTION QUIET
-  @%append $@ OPTION DESCRIPTION '@$#libsdl org:$(VERSION)$#@Simple DirectMedia Layer Mixer'
+  @%append $@ OPTION DESCRIPTION '@$#libsdl org:$(VERSION)$#@Simple DirectMedia Layer Mixer Library'
   @%append $@ LIBPATH $(DEPS_LIB)
   @for %i in ($(LIBS)) do @%append $@ LIB %i
   @%append $@ OPTION MAP=$*
@@ -162,6 +198,9 @@ $(LNKFILE):
 
 .c.obj:
   wcc386 $(CFLAGS) -fo=$^@ $<
+
+music_minimp3.obj: music_minimp3.c
+  wcc386 $(CFLAGS) -za99 -fo=$^@ $<
 
 playmus.obj: playmus.c
   wcc386 $(CFLAGS_BASE) -fo=$^@ $<
@@ -185,6 +224,7 @@ clean: .SYMBOLIC
   @if exist *.err rm *.err
   @if exist $(TIMILIB) rm $(TIMILIB)
   @if exist $(LNKFILE) rm $(LNKFILE)
+
 distclean: .SYMBOLIC clean
   @if exist $(DLLFILE) rm $(DLLFILE)
   @if exist $(LIBFILE) rm $(LIBFILE)

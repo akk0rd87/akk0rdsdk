@@ -1,6 +1,6 @@
 /*
   SDL_mixer:  An audio mixer library based on the SDL library
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,8 +28,8 @@
 #include "music_opus.h"
 #include "utils.h"
 
-#if defined(OPUS_HEADER)
-#include OPUS_HEADER
+#ifdef OPUSFILE_HEADER
+#include OPUSFILE_HEADER
 #else
 #include <opus/opusfile.h>
 #endif
@@ -48,9 +48,7 @@ typedef struct {
     ogg_int64_t (*op_pcm_total)(const OggOpusFile *, int);
 } opus_loader;
 
-static opus_loader opus = {
-    0, NULL
-};
+static opus_loader opus;
 
 #ifdef OPUS_DYNAMIC
 #define FUNCTION_LOADER(FUNC, SIG) \
@@ -58,22 +56,20 @@ static opus_loader opus = {
     if (opus.FUNC == NULL) { SDL_UnloadObject(opus.handle); return -1; }
 #else
 #define FUNCTION_LOADER(FUNC, SIG) \
-    opus.FUNC = FUNC;
+    opus.FUNC = FUNC; \
+    if (opus.FUNC == NULL) { Mix_SetError("Missing opus.framework"); return -1; }
 #endif
 
+#ifdef __APPLE__
+    /* Need to turn off optimizations so weak framework load check works */
+    __attribute__ ((optnone))
+#endif
 static int OPUS_Load(void)
 {
     if (opus.loaded == 0) {
 #ifdef OPUS_DYNAMIC
         opus.handle = SDL_LoadObject(OPUS_DYNAMIC);
         if (opus.handle == NULL) {
-            return -1;
-        }
-#elif defined(__MACOSX__)
-        extern OggOpusFile *op_open_callbacks(void *,const OpusFileCallbacks *,const unsigned char *,size_t,int *) __attribute__((weak_import));
-        if (op_open_callbacks == NULL) {
-            /* Missing weakly linked framework */
-            Mix_SetError("Missing OpusFile.framework");
             return -1;
         }
 #endif
@@ -176,8 +172,7 @@ static int OPUS_UpdateSection(OPUS_music *music)
 
     op_info = opus.op_head(music->of, -1);
     if (!op_info) {
-        Mix_SetError("op_head returned NULL");
-        return -1;
+        return Mix_SetError("op_head returned NULL");
     }
 
     if (music->op_info && op_info->channel_count == music->op_info->channel_count) {
@@ -195,7 +190,7 @@ static int OPUS_UpdateSection(OPUS_music *music)
         music->stream = NULL;
     }
 
-    music->stream = SDL_NewAudioStream(AUDIO_S16, (Uint8)op_info->channel_count, 48000,
+    music->stream = SDL_NewAudioStream(AUDIO_S16SYS, (Uint8)op_info->channel_count, 48000,
                                        music_spec.format, music_spec.channels, music_spec.freq);
     if (!music->stream) {
         return -1;
@@ -214,7 +209,7 @@ static void *OPUS_CreateFromRW(SDL_RWops *src, int freesrc)
 {
     OPUS_music *music;
     OpusFileCallbacks callbacks;
-    const OpusTags* tags = NULL;
+    const OpusTags* tags;
     int err = 0, ci;
     SDL_bool is_loop_length = SDL_FALSE;
     ogg_int64_t full_length;
@@ -236,7 +231,7 @@ static void *OPUS_CreateFromRW(SDL_RWops *src, int freesrc)
     music->of = opus.op_open_callbacks(src, &callbacks, NULL, 0, &err);
     if (music->of == NULL) {
     /*  set_op_error("op_open_callbacks", err);*/
-        SDL_SetError("Not an Opus audio stream");
+        Mix_SetError("Not an Opus audio stream");
         SDL_free(music);
         return NULL;
     }
@@ -253,53 +248,55 @@ static void *OPUS_CreateFromRW(SDL_RWops *src, int freesrc)
     }
 
     tags = opus.op_tags(music->of, -1);
-    for (ci=0; ci < tags->comments; ci++) {
-        char *param = SDL_strdup(tags->user_comments[ci]);
-        char *argument = param;
-        char *value = SDL_strchr(param, '=');
-        if (value == NULL) {
-            value = param + SDL_strlen(param);
+    if (tags != NULL) {
+        for (ci = 0; ci < tags->comments; ci++) {
+            char *param = SDL_strdup(tags->user_comments[ci]);
+            char *argument = param;
+            char *value = SDL_strchr(param, '=');
+            if (value == NULL) {
+                value = param + SDL_strlen(param);
+            } else {
+                *(value++) = '\0';
+            }
+
+            /* Want to match LOOP-START, LOOP_START, etc. Remove - or _ from
+             * string if it is present at position 4. */
+            if (_Mix_IsLoopTag(argument) && ((argument[4] == '_') || (argument[4] == '-'))) {
+                SDL_memmove(argument + 4, argument + 5, SDL_strlen(argument) - 4);
+            }
+
+            if (SDL_strcasecmp(argument, "LOOPSTART") == 0)
+                music->loop_start = _Mix_ParseTime(value, 48000);
+            else if (SDL_strcasecmp(argument, "LOOPLENGTH") == 0) {
+                music->loop_len = SDL_strtoll(value, NULL, 10);
+                is_loop_length = SDL_TRUE;
+            } else if (SDL_strcasecmp(argument, "LOOPEND") == 0) {
+                music->loop_end = _Mix_ParseTime(value, 48000);
+                is_loop_length = SDL_FALSE;
+            } else if (SDL_strcasecmp(argument, "TITLE") == 0) {
+                meta_tags_set(&music->tags, MIX_META_TITLE, value);
+            } else if (SDL_strcasecmp(argument, "ARTIST") == 0) {
+                meta_tags_set(&music->tags, MIX_META_ARTIST, value);
+            } else if (SDL_strcasecmp(argument, "ALBUM") == 0) {
+                meta_tags_set(&music->tags, MIX_META_ALBUM, value);
+            } else if (SDL_strcasecmp(argument, "COPYRIGHT") == 0) {
+                meta_tags_set(&music->tags, MIX_META_COPYRIGHT, value);
+            }
+            SDL_free(param);
+        }
+
+        if (is_loop_length) {
+            music->loop_end = music->loop_start + music->loop_len;
         } else {
-            *(value++) = '\0';
+            music->loop_len = music->loop_end - music->loop_start;
         }
 
-        /* Want to match LOOP-START, LOOP_START, etc. Remove - or _ from
-         * string if it is present at position 4. */
-        if (_Mix_IsLoopTag(argument) && ((argument[4] == '_') || (argument[4] == '-'))) {
-            SDL_memmove(argument + 4, argument + 5, SDL_strlen(argument) - 4);
+        /* Ignore invalid loop tag */
+        if (music->loop_start < 0 || music->loop_len < 0 || music->loop_end < 0) {
+            music->loop_start = 0;
+            music->loop_len = 0;
+            music->loop_end = 0;
         }
-
-        if (SDL_strcasecmp(argument, "LOOPSTART") == 0)
-            music->loop_start = _Mix_ParseTime(value, 48000);
-        else if (SDL_strcasecmp(argument, "LOOPLENGTH") == 0) {
-            music->loop_len = SDL_strtoll(value, NULL, 10);
-            is_loop_length = SDL_TRUE;
-        } else if (SDL_strcasecmp(argument, "LOOPEND") == 0) {
-            music->loop_end = _Mix_ParseTime(value, 48000);
-            is_loop_length = SDL_FALSE;
-        } else if (SDL_strcasecmp(argument, "TITLE") == 0) {
-            meta_tags_set(&music->tags, MIX_META_TITLE, value);
-        } else if (SDL_strcasecmp(argument, "ARTIST") == 0) {
-            meta_tags_set(&music->tags, MIX_META_ARTIST, value);
-        } else if (SDL_strcasecmp(argument, "ALBUM") == 0) {
-            meta_tags_set(&music->tags, MIX_META_ALBUM, value);
-        } else if (SDL_strcasecmp(argument, "COPYRIGHT") == 0) {
-            meta_tags_set(&music->tags, MIX_META_COPYRIGHT, value);
-        }
-        SDL_free(param);
-    }
-
-    if (is_loop_length) {
-        music->loop_end = music->loop_start + music->loop_len;
-    } else {
-        music->loop_len = music->loop_end - music->loop_start;
-    }
-
-    /* Ignore invalid loop tag */
-    if (music->loop_start < 0 || music->loop_len < 0 || music->loop_end < 0) {
-        music->loop_start = 0;
-        music->loop_len = 0;
-        music->loop_end = 0;
     }
 
     full_length = opus.op_pcm_total(music->of, -1);
@@ -341,6 +338,13 @@ static int OPUS_Play(void *context, int play_count)
     return OPUS_Seek(music, 0.0);
 }
 
+/* Clean-up the output buffer */
+static void OPUS_Stop(void *context)
+{
+    OPUS_music *music = (OPUS_music *)context;
+    SDL_AudioStreamClear(music->stream);
+}
+
 /* Play some of a stream previously started with OPUS_Play() */
 static int OPUS_GetSome(void *context, void *data, int bytes, SDL_bool *done)
 {
@@ -364,8 +368,7 @@ static int OPUS_GetSome(void *context, void *data, int bytes, SDL_bool *done)
     section = music->section;
     samples = opus.op_read(music->of, (opus_int16 *)music->buffer, music->buffer_size / (int)sizeof(opus_int16), &section);
     if (samples < 0) {
-        set_op_error("op_read", samples);
-        return -1;
+        return set_op_error("op_read", samples);
     }
 
     if (section != music->section) {
@@ -380,8 +383,7 @@ static int OPUS_GetSome(void *context, void *data, int bytes, SDL_bool *done)
         samples -= (int)((pcmPos - music->loop_end) * music->op_info->channel_count) * (int)sizeof(Sint16);
         result = opus.op_pcm_seek(music->of, music->loop_start);
         if (result < 0) {
-            set_op_error("ov_pcm_seek", result);
-            return -1;
+            return set_op_error("ov_pcm_seek", result);
         } else {
             int play_count = -1;
             if (music->play_count > 0) {
@@ -475,6 +477,7 @@ static double OPUS_LoopLength(void *music_p)
 static void OPUS_Delete(void *context)
 {
     OPUS_music *music = (OPUS_music *)context;
+    meta_tags_clear(&music->tags);
     opus.op_free(music->of);
     if (music->stream) {
         SDL_FreeAudioStream(music->stream);
@@ -513,9 +516,11 @@ Mix_MusicInterface Mix_MusicInterface_Opus =
     OPUS_LoopEnd,
     OPUS_LoopLength,
     OPUS_GetMetaTag,
+    NULL,   /* GetNumTracks */
+    NULL,   /* StartTrack */
     NULL,   /* Pause */
     NULL,   /* Resume */
-    NULL,   /* Stop */
+    OPUS_Stop,
     OPUS_Delete,
     NULL,   /* Close */
     OPUS_Unload

@@ -1,6 +1,6 @@
 /*
   SDL_mixer:  An audio mixer library based on the SDL library
-  Copyright (C) 1997-2021 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -18,10 +18,10 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_mixer.h"
-
 #ifndef MUSIC_H_
 #define MUSIC_H_
+
+#include "SDL_mixer.h"
 
 /* Supported music APIs, in order of preference */
 
@@ -30,16 +30,18 @@ typedef enum
     MIX_MUSIC_CMD,
     MIX_MUSIC_WAVE,
     MIX_MUSIC_MODPLUG,
-    MIX_MUSIC_MIKMOD,
     MIX_MUSIC_FLUIDSYNTH,
     MIX_MUSIC_TIMIDITY,
     MIX_MUSIC_NATIVEMIDI,
     MIX_MUSIC_OGG,
+    MIX_MUSIC_MINIMP3,
     MIX_MUSIC_MPG123,
-    MIX_MUSIC_MAD,
+    MIX_MUSIC_DRFLAC,
     MIX_MUSIC_FLAC,
     MIX_MUSIC_OPUS,
     MIX_MUSIC_LIBXMP,
+    MIX_MUSIC_WAVPACK,
+    MIX_MUSIC_GME,
     MIX_MUSIC_LAST
 } Mix_MusicAPI;
 
@@ -132,6 +134,12 @@ typedef struct
     /* Get a meta-tag string if available */
     const char* (*GetMetaTag)(void *music, Mix_MusicMetaTag tag_type);
 
+    /* Get number of tracks. Returns -1 if not applicable */
+    int (*GetNumTracks)(void *music);
+
+    /* Start a specific track */
+    int (*StartTrack)(void *music, int track);
+
     /* Pause playing music */
     void (*Pause)(void *music);
 
@@ -149,7 +157,6 @@ typedef struct
 
     /* Unload the library */
     void (*Unload)(void);
-
 } Mix_MusicInterface;
 
 
@@ -163,6 +170,7 @@ extern void open_music(const SDL_AudioSpec *spec);
 extern int music_pcm_getaudio(void *context, void *data, int bytes, int volume,
                               int (*GetSome)(void *context, void *data, int bytes, SDL_bool *done));
 extern void SDLCALL music_mixer(void *udata, Uint8 *stream, int len);
+extern void pause_async_music(int pause_on);
 extern void close_music(void);
 extern void unload_music(void);
 
