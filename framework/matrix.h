@@ -1,6 +1,7 @@
 #ifndef __AKK0RD_SDK_MATRIX_H__
 #define __AKK0RD_SDK_MATRIX_H__
 
+#include <vector>
 template <class T>
 class Matrix {
 private:
