@@ -5,7 +5,7 @@ import re
 import base64
 import getToken
 
-profile_save_path = os.environ['HOME'] + "/Library/MobileDevice/Provisioning Profiles"
+profile_save_path = os.environ['HOME'] + "/Library/Developer/Xcode/UserData/Provisioning Profiles"
 Path(profile_save_path).mkdir(parents=True, exist_ok=True)
 
 requestHeaders = getToken.getRequestHeaders()
@@ -30,6 +30,15 @@ def getProfile(app_bundle_name):
     data = r.json()
     # print(data)
 
+    class Profile:
+        def __init__(self, name, expirationDate, uuid, profileContent):
+            self.name = name
+            self.expirationDate = expirationDate
+            self.uuid = uuid
+            self.profileContent = profileContent
+
+    profiles = []
+
     for item in data["data"]:
         attrs = item['attributes']
         if(attrs['profileState'] == 'ACTIVE' and attrs['profileType'] == 'IOS_APP_STORE') :
@@ -41,27 +50,38 @@ def getProfile(app_bundle_name):
             print(f"profile uuid : {attrs['uuid']}")
             print(f"profile expirationDate : {attrs['expirationDate']}")
 
-            # save profile
-            profile_filename = profile_save_path + "/" + attrs['uuid'] + '.mobileprovision'
-            if os.path.exists(profile_filename):
-                print(f"File {profile_filename} already exists")
-            else :
-                print(f"Save profile in {profile_filename}")
-                with open(profile_filename, 'wb') as fw:
-                    fw.write(base64.b64decode(attrs['profileContent']))
+            profile = Profile(attrs['name'], attrs['expirationDate'], attrs['uuid'], attrs['profileContent'])
+            profiles.append(profile)
 
-            # replace profile name in exportOptions.plist file
-            optionsFilename = os.environ['EXPORT_OPTIONS_FILE']
-            with open(optionsFilename, "r") as f:
-                newText=f.read().replace('$(PROVISION_PROFILE_UUID)', attrs['name'])
+    sorted_profiles_desc = sorted(profiles, key=lambda x: x.expirationDate, reverse=True)
 
-            with open(optionsFilename, "w", newline='\n') as f:
-                f.write(newText)
+    for p in sorted_profiles_desc:
+        print("Choose profile for saving: ")
+        print(f"profile name : {p.name}")
+        print(f"profile expirationDate : {p.expirationDate}")
+        print(f"profile uuid : {p.uuid}")
 
-            return 0
+        # save profile
+        profile_filename = profile_save_path + "/" + p.uuid + '.mobileprovision'
+        if os.path.exists(profile_filename):
+            print(f"File {profile_filename} already exists")
+        else :
+            print(f"Save profile in {profile_filename}")
+            with open(profile_filename, 'wb') as fw:
+                fw.write(base64.b64decode(p.profileContent))
+
+        # replace profile name in exportOptions.plist file
+
+        optionsFilename = os.environ['EXPORT_OPTIONS_FILE']
+        with open(optionsFilename, "r") as f:
+            newText=f.read().replace('$(PROVISION_PROFILE_UUID)', p.name)
+
+        with open(optionsFilename, "w", newline='\n') as f:
+            f.write(newText)
+
+        return 0
 
     print(f"Did not find profiles for {app_bundle_name}")
     return 1
 
-if (0 != getProfile(os.environ['APP_BUNDLE_ID'])) :
-    getProfile('*')
+getProfile(os.environ['APP_BUNDLE_ID'])
