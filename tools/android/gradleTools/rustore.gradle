@@ -1,0 +1,94 @@
+
+import groovy.json.JsonSlurper
+import java.security.KeyFactory
+import java.security.PrivateKey
+import java.security.Signature
+import java.security.spec.PKCS8EncodedKeySpec
+import java.text.SimpleDateFormat
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Base64
+
+def getRustoreBaseUrl() {
+    return "https://public-api.rustore.ru"
+}
+
+def getRustoreToken() {
+    def keyIdEnvVariable = 'RUSTORE_API_KEY_ID'
+    def keyValueEnvVariable = 'RUSTORE_API_KEY_VALUE'
+
+    String keyId = System.getenv(keyIdEnvVariable)
+    String privateKeyContent = System.getenv(keyValueEnvVariable)
+
+    if(keyId == null || keyId.isEmpty()) {
+        throw new Exception("$keyIdEnvVariable variable is not set")
+    }
+
+    if(privateKeyContent == null || privateKeyContent.isEmpty()) {
+        throw new Exception("$keyValueEnvVariable variable is not set")
+    }
+
+    KeyFactory kf = KeyFactory.getInstance("RSA")
+    PKCS8EncodedKeySpec keySpecPKCS8 = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(privateKeyContent))
+    PrivateKey privateKey = kf.generatePrivate(keySpecPKCS8)
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+    String timestamp = dateFormat.format(new Date())
+    String messageToSign = keyId.concat(timestamp)
+    Signature signature = Signature.getInstance("SHA512withRSA")
+    signature.initSign(privateKey)
+    signature.update(messageToSign.getBytes())
+    byte[] signatureBytes = signature.sign()
+    String signatureValue = Base64.getEncoder().encodeToString(signatureBytes)
+    String requestData = String.format("{\n  \"keyId\":\"%s\",\n  \"timestamp\":\"%s\",\n  \"signature\":\"%s\"\n}\n", keyId, timestamp, signatureValue)
+
+    def post = new URL("${getRustoreBaseUrl()}/public/auth").openConnection()
+    post.setRequestMethod("POST")
+    post.setDoOutput(true)
+    post.setRequestProperty("Content-Type", "application/json")
+    post.getOutputStream().write(requestData.getBytes("UTF-8"))
+    def postRC = post.getResponseCode()
+
+    if (postRC.equals(200)) {
+        def responseJson = new JsonSlurper().parseText(post.getInputStream().getText("UTF-8"))
+        return responseJson.body.jwe
+    }
+
+    throw new Exception("Rustore auth reponse ${postRC} is incorrect")
+}
+
+def requestLastRustoreVersionCode = { appId ->
+    def authToken = getRustoreToken()
+    def url = "${getRustoreBaseUrl()}/public/v1/application/$appId/version?page=0&size=1"
+
+    def get = new URL(url).openConnection()
+    get.setRequestMethod("GET")
+    get.setRequestProperty("accept", "application/json")
+    get.setRequestProperty("Public-Token", authToken)
+
+    def getRC = get.getResponseCode()
+    if(getRC != 200) {
+        throw new Exception("Rustore getVersions ${getRC} is incorrect")
+    }
+
+    def responseJson = new JsonSlurper().parseText(get.getInputStream().getText("UTF-8"))
+
+    if(responseJson.code != "OK") {
+        throw new Exception("Rustore getVersions ${responseJson.code} is incorrect")
+    }
+
+    def lastVersionCode = responseJson.body.content[0].versionCode.toInteger()
+    def newVersionCode = lastVersionCode + 1
+
+    println("rustoreVersionCode: lastVersionCode: $lastVersionCode, newVersionCode: $newVersionCode")
+
+    return newVersionCode
+
+}
+
+ext.getRuStoreVersionCode = { appId ->
+    if(System.getenv('RUSTORE_UPDATE_VERSION').equals("YES")) {
+        return requestLastRustoreVersionCode(appId)
+    }
+
+    return 1
+}
