@@ -1,3 +1,5 @@
+apply from: "${System.getenv('AKKORD_SDK_HOME')}/tools/android/gradleTools/rustore.gradle"
+
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.github.triplet.play'
@@ -110,7 +112,7 @@ android {
 
         ruStore {
             dimension "Store"
-            versionCode 1
+            versionCode getRuStoreVersionCode(namespace)
             versionName '1'
 
             sourceSets {
@@ -225,6 +227,7 @@ dependencies {
     samsungImplementation   (libs.google.play.review)
     samsungImplementation   (libs.google.app.update)
 
+    ruStoreImplementation   (platform(libs.rustore.bom))
     ruStoreImplementation   (libs.rustore.appreview)
     ruStoreImplementation   (libs.rustore.appupdate)
     ruStoreImplementation   (libs.bundles.rustore.billing)

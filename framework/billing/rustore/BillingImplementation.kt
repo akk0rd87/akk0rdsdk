@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.util.Log
 import ru.rustore.sdk.billingclient.RuStoreBillingClient
 import ru.rustore.sdk.billingclient.RuStoreBillingClientFactory
+import ru.rustore.sdk.billingclient.model.product.ProductType
 import ru.rustore.sdk.billingclient.model.purchase.PaymentResult
 import ru.rustore.sdk.billingclient.model.purchase.Purchase
 import ru.rustore.sdk.billingclient.model.purchase.PurchaseState
@@ -17,23 +18,34 @@ class BillingImplementation(
     private val billingClient: RuStoreBillingClient = getBillingManager()
 
     fun init() {
-        RuStoreBillingClient.checkPurchasesAvailability()
-            .addOnSuccessListener { result ->
-                Log.e(getTag(), "onBillingSetupFinished $result")
-                observer.onBillingSetupFinished(0)
-            }
-            .addOnFailureListener { throwable ->
-                Log.e(getTag(), "onBillingDisconnected: $throwable ${throwable.message}")
-                Log.e(getTag(), "onBillingDisconnected: $throwable ${throwable.stackTrace}")
-                observer.onBillingDisconnected()
-            }
+        // по умолчанию всегда считаем, что billing есть
+        // возможно придется поменять логику, если мы будем использовать этот биллинг в версиях приложений,
+        // скачанных вне RuStore
+        observer.onBillingSetupFinished(0)
     }
 
     fun restorePurchases() {
         billingClient.purchases.getPurchases().addOnSuccessListener{ purchases: List<Purchase> ->
             for(purchase in purchases) {
-                if(PurchaseState.PAID == purchase.purchaseState) {
-                    observer.onPurchaseQueried(purchase.purchaseId, purchase.productId, 0)
+                when(purchase.purchaseState) {
+                    // status PAID может быть только для CONSUMABLE товаров
+                    PurchaseState.PAID -> {
+                        if(ProductType.CONSUMABLE == purchase.productType) {
+                            observer.onPurchaseQueried(purchase.purchaseId, purchase.productId, 0)
+                        }
+                    }
+
+                    // статус CONFIRMED может быть для любых товаров, но тут мы обрабатываем только NON_CONSUMABLE
+                    // CONFIRMED для CONSUMABLE мы обрабатываем в callback для confirmPurchase в consumeProductItem
+                    // тут мы его не обрабатываем, так как тут он может приходить нам многократно при восстановлении покупок, а в consumeProductItem - однократно
+                    PurchaseState.CONFIRMED -> {
+                        if(ProductType.NON_CONSUMABLE == purchase.productType) {
+                            observer.onPurchaseQueried(purchase.purchaseId, purchase.productId, 0)
+                        }
+                    }
+                    else -> { // do nothing
+
+                    }
                 }
             }
         }

@@ -1,12 +1,13 @@
 [versions]
 kotlin                             = '2.1.10'
-rustore-sdk                        = "7.0.0"
 firebaseBom                        = "33.12.0"
+rustoreBom                         = "2025.02.01"
 
 [libraries]
 getkeepsafe-relinker               = "com.getkeepsafe.relinker:relinker:1.4.5"
 
 firebase-bom                       = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+rustore-bom                        = { module = "ru.rustore.sdk:bom", version.ref = "rustoreBom" }
 firebase-analytics                 = { module = "com.google.firebase:firebase-analytics-ktx" }
 
 admobads                           = "com.google.android.gms:play-services-ads:24.4.0"
@@ -21,9 +22,9 @@ play-appset                        = "com.google.android.gms:play-services-appse
 user_messaging_platform            = "com.google.android.ump:user-messaging-platform:3.1.0"
 yandexadssdk                       = "com.yandex.android:mobileads:7.13.0"
 
-rustore-appreview                  = { module = "ru.rustore.sdk:review", version.ref = 'rustore-sdk' }
-rustore-appupdate                  = { module = "ru.rustore.sdk:appupdate", version.ref = 'rustore-sdk' }
-rustore-billing                    = { module = "ru.rustore.sdk:billingclient", version.ref = 'rustore-sdk' }
+rustore-appreview                  = { module = "ru.rustore.sdk:review" }
+rustore-appupdate                  = { module = "ru.rustore.sdk:appupdate" }
+rustore-billing                    = { module = "ru.rustore.sdk:billingclient" }
 
 lifecycle-viewmodel-ktx            = "androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.3"
 
