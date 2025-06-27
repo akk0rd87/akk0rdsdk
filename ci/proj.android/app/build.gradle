@@ -1,3 +1,4 @@
+apply from: "${System.getenv('AKKORD_SDK_HOME')}/tools/android/gradleTools/common.gradle"
 apply from: "${System.getenv('AKKORD_SDK_HOME')}/tools/android/gradleTools/rustore.gradle"
 
 apply plugin: 'com.android.application'
@@ -8,13 +9,15 @@ apply plugin: 'kotlin-android'
 def akkord_sdk_path        = System.getenv('AKKORD_SDK_HOME')
 def proGuardParamsDir      = System.getenv('AKKORD_SDK_HOME') + "/framework/core/platformwrapper/android/proguard/"
 
+def minSdkVersionValue    = getMinSdkVersion()
+def targetSdkVersionValue = getTargetSdkVersion()
 
 android {
     namespace 'org.popapp.citest'
     compileSdkVersion rootProject.ext.compileSdkVersion
     defaultConfig {
-        minSdkVersion    23
-        targetSdkVersion 34
+        minSdkVersion    minSdkVersionValue
+        targetSdkVersion targetSdkVersionValue
         multiDexEnabled true // yandex ads
     }
     externalNativeBuild {

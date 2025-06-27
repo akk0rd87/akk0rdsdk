@@ -1,0 +1,11 @@
+ext.getMinSdkVersion = {
+    def minSdkVersion = 23
+    println("minSdkVersion: $minSdkVersion")
+    return minSdkVersion
+}
+
+ext.getTargetSdkVersion = {
+    def targetSdkVersion = 34
+    println("targetSdkVersion: $targetSdkVersion")
+    return targetSdkVersion
+}
