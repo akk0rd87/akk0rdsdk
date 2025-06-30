@@ -9,3 +9,9 @@ ext.getTargetSdkVersion = {
     println("targetSdkVersion: $targetSdkVersion")
     return targetSdkVersion
 }
+
+ext.getCompileSdkVersion = {
+    def compileSdkVersion = 35
+    println("compileSdkVersion: $compileSdkVersion")
+    return compileSdkVersion
+}

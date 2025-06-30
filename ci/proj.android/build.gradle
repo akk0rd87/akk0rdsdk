@@ -24,6 +24,8 @@ allprojects {
     }
 }
 
+apply from: "${System.getenv('AKKORD_SDK_HOME')}/tools/android/gradleTools/common.gradle"
+
 ext {
-    compileSdkVersion = 35
+    compileSdkVersion = getCompileSdkVersion()
 }
