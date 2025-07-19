@@ -18,9 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../SDL_internal.h"
+#include "SDL_internal.h"
 
-#if defined(SDL_INPUT_LINUXEV) || defined(SDL_VIDEO_DRIVER_DIRECTFB) || defined(SDL_VIDEO_DRIVER_WAYLAND) || defined(SDL_VIDEO_DRIVER_X11)
+#if defined(SDL_INPUT_LINUXEV) || defined(SDL_VIDEO_DRIVER_WAYLAND) || defined(SDL_VIDEO_DRIVER_X11)
 
 #include "SDL_scancode_tables_c.h"
 
@@ -68,6 +68,4 @@ SDL_Scancode SDL_GetScancodeFromTable(SDL_ScancodeTable table, int keycode)
     return scancode;
 }
 
-#endif /* SDL_INPUT_LINUXEV || SDL_VIDEO_DRIVER_DIRECTFB || SDL_VIDEO_DRIVER_WAYLAND || SDL_VIDEO_DRIVER_X11 */
-
-/* vi: set ts=4 sw=4 expandtab: */
+#endif // SDL_INPUT_LINUXEV || SDL_VIDEO_DRIVER_WAYLAND || SDL_VIDEO_DRIVER_X11

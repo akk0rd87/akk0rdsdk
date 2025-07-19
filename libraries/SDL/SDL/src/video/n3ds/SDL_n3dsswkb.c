@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifdef SDL_VIDEO_DRIVER_N3DS
 
@@ -45,12 +45,12 @@ void N3DS_SwkbQuit(void)
     return;
 }
 
-SDL_bool N3DS_HasScreenKeyboardSupport(_THIS)
+bool N3DS_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
 {
-    return SDL_TRUE;
+    return true;
 }
 
-void N3DS_StartTextInput(_THIS)
+bool N3DS_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     char buffer[BUFFER_SIZE];
     SwkbdButton button_pressed;
@@ -58,13 +58,12 @@ void N3DS_StartTextInput(_THIS)
     if (button_pressed == SWKBD_BUTTON_CONFIRM) {
         SDL_SendKeyboardText(buffer);
     }
+    return true;
 }
 
-void N3DS_StopTextInput(_THIS)
+bool N3DS_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    return;
+    return true;
 }
 
-#endif /* SDL_VIDEO_DRIVER_N3DS */
-
-/* vi: set sts=4 ts=4 sw=4 expandtab: */
+#endif // SDL_VIDEO_DRIVER_N3DS

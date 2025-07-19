@@ -22,12 +22,10 @@
 #ifndef SDL_nullevents_c_h_
 #define SDL_nullevents_c_h_
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #include "SDL_nullvideo.h"
 
-extern void DUMMY_PumpEvents(_THIS);
+extern void DUMMY_PumpEvents(SDL_VideoDevice *_this);
 
-#endif /* SDL_nullevents_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */
+#endif // SDL_nullevents_c_h_

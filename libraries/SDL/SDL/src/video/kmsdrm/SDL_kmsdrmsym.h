@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/* *INDENT-OFF* */ /* clang-format off */
+/* *INDENT-OFF* */ // clang-format off
 
 #ifndef SDL_KMSDRM_MODULE
 #define SDL_KMSDRM_MODULE(modname)
@@ -63,16 +63,14 @@ SDL_KMSDRM_SYM_OPT(int,drmModeAddFB2WithModifiers,(int fd, uint32_t width,
                          const uint32_t pitches[4], const uint32_t offsets[4],
                          const uint64_t modifier[4], uint32_t *buf_id, uint32_t flags))
 
+SDL_KMSDRM_SYM_OPT(const char *,drmModeGetConnectorTypeName,(uint32_t connector_type))
+
 SDL_KMSDRM_SYM(int,drmModeRmFB,(int fd, uint32_t bufferId))
 SDL_KMSDRM_SYM(drmModeFBPtr,drmModeGetFB,(int fd, uint32_t buf))
 SDL_KMSDRM_SYM(drmModeCrtcPtr,drmModeGetCrtc,(int fd, uint32_t crtcId))
 SDL_KMSDRM_SYM(int,drmModeSetCrtc,(int fd, uint32_t crtcId, uint32_t bufferId,
                                    uint32_t x, uint32_t y, uint32_t *connectors, int count,
                                    drmModeModeInfoPtr mode))
-SDL_KMSDRM_SYM(int,drmModeCrtcGetGamma,(int fd, uint32_t crtc_id, uint32_t size,
-                                        uint16_t *red, uint16_t *green, uint16_t *blue))
-SDL_KMSDRM_SYM(int,drmModeCrtcSetGamma,(int fd, uint32_t crtc_id, uint32_t size,
-                                        const uint16_t *red, const uint16_t *green, const uint16_t *blue))
 SDL_KMSDRM_SYM(int,drmModeSetCursor,(int fd, uint32_t crtcId, uint32_t bo_handle,
                                      uint32_t width, uint32_t height))
 SDL_KMSDRM_SYM(int,drmModeSetCursor2,(int fd, uint32_t crtcId, uint32_t bo_handle,
@@ -85,7 +83,7 @@ SDL_KMSDRM_SYM(int,drmHandleEvent,(int fd,drmEventContextPtr evctx))
 SDL_KMSDRM_SYM(int,drmModePageFlip,(int fd, uint32_t crtc_id, uint32_t fb_id,
                                     uint32_t flags, void *user_data))
 
-/* Planes stuff. */
+// Planes stuff.
 SDL_KMSDRM_SYM(int,drmSetClientCap,(int fd, uint64_t capability, uint64_t value))
 SDL_KMSDRM_SYM(drmModePlaneResPtr,drmModeGetPlaneResources,(int fd))
 SDL_KMSDRM_SYM(drmModePlanePtr,drmModeGetPlane,(int fd, uint32_t plane_id))
@@ -105,7 +103,7 @@ SDL_KMSDRM_SYM(int,drmModeSetPlane,(int fd, uint32_t plane_id, uint32_t crtc_id,
                                     uint32_t crtc_w, uint32_t crtc_h,
                                     uint32_t src_x, uint32_t src_y,
                                     uint32_t src_w, uint32_t src_h))
-/* Planes stuff ends. */
+// Planes stuff ends.
 
 SDL_KMSDRM_MODULE(GBM)
 SDL_KMSDRM_SYM(int,gbm_device_is_format_supported,(struct gbm_device *gbm,
@@ -144,6 +142,4 @@ SDL_KMSDRM_SYM_OPT(union gbm_bo_handle,gbm_bo_get_handle_for_plane,(struct gbm_b
 #undef SDL_KMSDRM_SYM_CONST
 #undef SDL_KMSDRM_SYM_OPT
 
-/* *INDENT-ON* */ /* clang-format on */
-
-/* vi: set ts=4 sw=4 expandtab: */
+/* *INDENT-ON* */ // clang-format on

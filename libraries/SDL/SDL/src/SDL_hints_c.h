@@ -18,15 +18,16 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "./SDL_internal.h"
+#include "SDL_internal.h"
 
-/* This file defines useful function for working with SDL hints */
+// This file defines useful function for working with SDL hints
 
 #ifndef SDL_hints_c_h_
 #define SDL_hints_c_h_
 
-extern SDL_bool SDL_GetStringBoolean(const char *value, SDL_bool default_value);
+extern void SDL_InitHints(void);
+extern bool SDL_GetStringBoolean(const char *value, bool default_value);
+extern int SDL_GetStringInteger(const char *value, int default_value);
+extern void SDL_QuitHints(void);
 
-#endif /* SDL_hints_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */
+#endif // SDL_hints_c_h_

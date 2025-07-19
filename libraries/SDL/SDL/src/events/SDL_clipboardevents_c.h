@@ -18,13 +18,11 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_clipboardevents_c_h_
 #define SDL_clipboardevents_c_h_
 
-extern int SDL_SendClipboardUpdate(void);
+extern void SDL_SendClipboardUpdate(bool owner, char **mime_types, size_t num_mime_types);
 
-#endif /* SDL_clipboardevents_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */
+#endif // SDL_clipboardevents_c_h_

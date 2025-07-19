@@ -18,24 +18,19 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_diskaudio_h_
 #define SDL_diskaudio_h_
 
-#include "SDL_rwops.h"
 #include "../SDL_sysaudio.h"
-
-/* Hidden "this" pointer for the audio functions */
-#define _THIS SDL_AudioDevice *_this
 
 struct SDL_PrivateAudioData
 {
-    /* The file descriptor for the audio device */
-    SDL_RWops *io;
+    // The file descriptor for the audio device
+    SDL_IOStream *io;
     Uint32 io_delay;
     Uint8 *mixbuf;
 };
 
-#endif /* SDL_diskaudio_h_ */
-/* vi: set ts=4 sw=4 expandtab: */
+#endif // SDL_diskaudio_h_

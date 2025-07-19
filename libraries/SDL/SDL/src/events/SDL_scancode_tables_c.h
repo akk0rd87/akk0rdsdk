@@ -18,9 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../SDL_internal.h"
-
-#include "../../include/SDL_scancode.h"
+#include "SDL_internal.h"
 
 typedef enum
 {
@@ -33,5 +31,3 @@ typedef enum
 
 extern const SDL_Scancode *SDL_GetScancodeTable(SDL_ScancodeTable table, int *num_entries);
 extern SDL_Scancode SDL_GetScancodeFromTable(SDL_ScancodeTable table, int keycode);
-
-/* vi: set ts=4 sw=4 expandtab: */
