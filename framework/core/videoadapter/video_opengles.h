@@ -2,7 +2,7 @@
 #define __AKK0RD_SDK_VIDEOADAPTER_OPENGLES_H__
 
 #include <cstring>
-#include "SDL_opengles2.h"
+#include <SDL3/SDL_opengles2.h>
 #include "video_interface.h"
 #include <array>
 
@@ -558,7 +558,7 @@ void VideoAdapter_OPENGLES::DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, co
     if (openGLState.ProgramId != shaderProgram->programId) {
         glUseProgram(shaderProgram->programId); CheckGLESError(); PrintGLESProgamLog(shaderProgram->programId);
     }
-    SDL_GL_BindTexture(Params.Texture, nullptr, nullptr);
+    //SDL_GL_BindTexture(Params.Texture, nullptr, nullptr);
     glUniform4f(shaderProgram->font_color, GLfloat(Params.Color->GetR()) / 255.0F, GLfloat(Params.Color->GetG()) / 255.0F, GLfloat(Params.Color->GetB()) / 255.0F, GLfloat(Params.Color->GetA()) / 255.0F); CheckGLESError();
     const GLfloat smoothness = std::min(0.3F, 0.25F / static_cast<GLfloat>(Params.Spread) / Params.Scale * 1.5F) * 850.0F / 255.0F / 3.333F;
     glUniform1f(shaderProgram->smooth, smoothness); CheckGLESError();
@@ -581,7 +581,7 @@ void VideoAdapter_OPENGLES::DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, co
 
     DrawElements(Buffer.UV, Buffer.squareVertices, Buffer.Indices, 2);
     // unbind texture
-    SDL_GL_UnbindTexture(Params.Texture);
+    //SDL_GL_UnbindTexture(Params.Texture);
 
     if (shaderProgram->programId != openGLState.ProgramId && openGLState.ProgramId > 0) {
         glUseProgram(openGLState.ProgramId); CheckGLESError();

@@ -504,7 +504,8 @@ bool BWrapper::DrawFRect(const AkkordFRect& Rect)
 
 bool BWrapper::FillRect(const AkkordRect& Rect)
 {
-    if (SDL_RenderFillRect(CurrentContext.CurrentRenderer, &Rect) == 0) return true;
+    AkkordFRect fRect(Rect.GetW(), Rect.GetY(), Rect.GetW(), Rect.GetH());
+    if (SDL_RenderFillRect(CurrentContext.CurrentRenderer, &fRect) == 0) return true;
     logError("Draw error %s", SDL_GetError());
     return false;
 };
@@ -714,12 +715,13 @@ void BWrapper::MessageBoxSetColorScheme(MessageBoxColorScheme& Scheme)
 
 int BWrapper::GetDisplayDPI(int DisplayIndex, float* Ddpi, float* Hdpi, float* Vdpi)
 {
-    return SDL_GetDisplayDPI(DisplayIndex, Ddpi, Hdpi, Vdpi);
+    //return SDL_GetDisplayDPI(DisplayIndex, Ddpi, Hdpi, Vdpi);
+    return 0;
 }
 
 void BWrapper::Quit()
 {
-    IMG_Quit();
+    //IMG_Quit();
     SDL_Quit();
     //atexit(SDL_Quit);
     //atexit(IMG_Quit);
@@ -912,14 +914,14 @@ decltype(time(nullptr)) BWrapper::GetTimeSeconds()
 
 std::string BWrapper::GetSDKVersionInfo()
 {
-    std::string VersionString;
-    SDL_version version;
-    SDL_VERSION(&version);
-    VersionString = std::string("Compiled version: ") + std::to_string(version.major) + "." + std::to_string(version.minor) + "." + std::to_string(version.patch) + "; ";
+    //std::string VersionString;
+    //SDL_version version;
+    //SDL_VERSION(&version);
+    //VersionString = std::string("Compiled version: ") + std::to_string(version.major) + "." + std::to_string(version.minor) + "." + std::to_string(version.patch) + "; ";
 
-    SDL_GetVersion(&version);
-    VersionString += std::string("Linked version: ") + std::to_string(version.major) + "." + std::to_string(version.minor) + "." + std::to_string(version.patch);
-    return VersionString;
+    // const auto versionNum = SDL_GetVersion();
+    //VersionString += std::string("Linked version: ") + std::to_string(version.major) + "." + std::to_string(version.minor) + "." + std::to_string(version.patch);
+    return std::to_string(SDL_GetVersion());
 }
 
 bool BWrapper::DirExists(const char* Dir)
@@ -1095,14 +1097,14 @@ bool WAVPlayer::LoadFromMemory(const char* Buffer, int Size)
     }
     SDL_zero(this->wav_spec);
 
-    if (SDL_LoadWAV_IO(io, 1, &this->wav_spec, &this->wav_buffer, &this->wav_length) == nullptr)
+    if (!SDL_LoadWAV_IO(io, true, &this->wav_spec, &this->wav_buffer, &this->wav_length))
     {
         logError("error SDL_LoadWAV_IO %s", SDL_GetError());
         result = false;
     }
     else
     {
-        this->deviceId = SDL_OpenAudioDevice(nullptr, 0, &this->wav_spec, nullptr, 0);
+        this->deviceId = SDL_OpenAudioDevice(0, &this->wav_spec);
         //logDebug("deviceId = %d", deviceId);
     }
     return result;
@@ -1131,8 +1133,8 @@ bool WAVPlayer::Play()
     if (this->wav_length)
     {
         //logDebug("Play audio");
-        SDL_QueueAudio(this->deviceId, this->wav_buffer, this->wav_length);
-        SDL_PauseAudioDevice(this->deviceId, 0);
+        //SDL_QueueAudio(this->deviceId, this->wav_buffer, this->wav_length);
+        //SDL_PauseAudioDevice(this->deviceId, 0);
         return true;
     }
     logError("Error play wav: wav_length = 0");
