@@ -212,6 +212,11 @@ if(WIN32)
   else()
     add_compile_definitions(fseeko=_fseeki64 ftello=_ftelli64)
   endif()
+elseif(CMAKE_SYSTEM_NAME MATCHES ".*Linux" OR
+       CMAKE_SYSTEM_NAME MATCHES ".*GNU.*" OR
+       CMAKE_SYSTEM_NAME MATCHES "Emscripten.*")
+  add_compile_definitions(_GNU_SOURCE)
+  list(APPEND CMAKE_REQUIRED_DEFINITIONS "-D_GNU_SOURCE")
 endif()
 
 list(APPEND config_variables HAVE_C11_GENERIC)

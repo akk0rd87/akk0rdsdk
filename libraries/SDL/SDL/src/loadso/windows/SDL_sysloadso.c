@@ -18,67 +18,51 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifdef SDL_LOADSO_WINDOWS
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* System dependent library loading routines                           */
+// System dependent library loading routines
 
 #include "../../core/windows/SDL_windows.h"
 
-#include "SDL_loadso.h"
-
-void *SDL_LoadObject(const char *sofile)
+SDL_SharedObject *SDL_LoadObject(const char *sofile)
 {
-    void *handle;
-    LPWSTR wstr;
-
-    if (!sofile) {
+    CHECK_PARAM(!sofile) {
         SDL_InvalidParamError("sofile");
         return NULL;
     }
-    wstr = WIN_UTF8ToStringW(sofile);
-#ifdef __WINRT__
-    /* WinRT only publicly supports LoadPackagedLibrary() for loading .dll
-       files.  LoadLibrary() is a private API, and not available for apps
-       (that can be published to MS' Windows Store.)
-    */
-    handle = (void *)LoadPackagedLibrary(wstr, 0);
-#else
-    handle = (void *)LoadLibraryW(wstr);
-#endif
+
+    LPWSTR wstr = WIN_UTF8ToStringW(sofile);
+    HMODULE handle = LoadLibraryW(wstr);
     SDL_free(wstr);
 
-    /* Generate an error message if all loads failed */
+    // Generate an error message if all loads failed
     if (!handle) {
         char errbuf[512];
-        SDL_strlcpy(errbuf, "Failed loading ", SDL_arraysize(errbuf));
-        SDL_strlcat(errbuf, sofile, SDL_arraysize(errbuf));
+        SDL_snprintf(errbuf, sizeof (errbuf), "Failed loading %s", sofile);
         WIN_SetError(errbuf);
     }
-    return handle;
+    return (SDL_SharedObject *) handle;
 }
 
-void *SDL_LoadFunction(void *handle, const char *name)
+SDL_FunctionPointer SDL_LoadFunction(SDL_SharedObject *handle, const char *name)
 {
-    void *symbol = (void *)GetProcAddress((HMODULE)handle, name);
+    SDL_FunctionPointer symbol = (SDL_FunctionPointer)GetProcAddress((HMODULE)handle, name);
     if (!symbol) {
         char errbuf[512];
-        SDL_strlcpy(errbuf, "Failed loading ", SDL_arraysize(errbuf));
-        SDL_strlcat(errbuf, name, SDL_arraysize(errbuf));
+        SDL_snprintf(errbuf, sizeof (errbuf), "Failed loading %s", name);
         WIN_SetError(errbuf);
     }
     return symbol;
 }
 
-void SDL_UnloadObject(void *handle)
+void SDL_UnloadObject(SDL_SharedObject *handle)
 {
     if (handle) {
         FreeLibrary((HMODULE)handle);
     }
 }
 
-#endif /* SDL_LOADSO_WINDOWS */
-
-/* vi: set ts=4 sw=4 expandtab: */
+#endif // SDL_LOADSO_WINDOWS

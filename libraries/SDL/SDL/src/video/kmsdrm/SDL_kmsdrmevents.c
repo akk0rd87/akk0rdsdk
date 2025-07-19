@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifdef SDL_VIDEO_DRIVER_KMSDRM
 
@@ -32,7 +32,7 @@
 #include "../../core/openbsd/SDL_wscons.h"
 #endif
 
-void KMSDRM_PumpEvents(_THIS)
+void KMSDRM_PumpEvents(SDL_VideoDevice *_this)
 {
 #ifdef SDL_INPUT_LINUXEV
     SDL_EVDEV_Poll();
@@ -41,4 +41,4 @@ void KMSDRM_PumpEvents(_THIS)
 #endif
 }
 
-#endif /* SDL_VIDEO_DRIVER_KMSDRM */
+#endif // SDL_VIDEO_DRIVER_KMSDRM

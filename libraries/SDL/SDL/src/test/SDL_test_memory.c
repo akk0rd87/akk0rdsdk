@@ -18,34 +18,23 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_config.h"
-#include "SDL_assert.h"
-#include "SDL_atomic.h"
-#include "SDL_loadso.h"
-#include "SDL_stdinc.h"
-#include "SDL_log.h"
-#include "SDL_test_crc32.h"
-#include "SDL_test_memory.h"
+#include <SDL3/SDL_test.h>
 
 #ifdef HAVE_LIBUNWIND_H
 #define UNW_LOCAL_ONLY
 #include <libunwind.h>
 #ifndef unw_get_proc_name_by_ip
 #define SDLTEST_UNWIND_NO_PROC_NAME_BY_IP
-static SDL_bool s_unwind_symbol_names = SDL_TRUE;
+static bool s_unwind_symbol_names = true;
 #endif
 #endif
 
-#if defined(__WIN32__) && !defined(__WATCOMC__)
-#define WIN32_WITH_DBGHELP
-#endif
-
-#ifdef WIN32_WITH_DBGHELP
+#ifdef SDL_PLATFORM_WIN32
 #include <windows.h>
 #include <dbghelp.h>
 
 static struct {
-    HMODULE module;
+    SDL_SharedObject *module;
     BOOL (WINAPI *pSymInitialize)(HANDLE hProcess, PCSTR UserSearchPath, BOOL fInvadeProcess);
     BOOL (WINAPI *pSymFromAddr)(HANDLE hProcess, DWORD64 Address, PDWORD64 Displacement, PSYMBOL_INFO Symbol);
     BOOL (WINAPI *pSymGetLineFromAddr64)(HANDLE hProcess, DWORD64 qwAddr, PDWORD pdwDisplacement, PIMAGEHLP_LINE64 Line);
@@ -64,7 +53,7 @@ __declspec(dllimport) USHORT WINAPI RtlCaptureStackBackTrace(ULONG FramesToSkip,
    for production code.
 */
 
-#define MAXIMUM_TRACKED_STACK_DEPTH 16
+#define MAXIMUM_TRACKED_STACK_DEPTH 32
 
 typedef struct SDL_tracked_allocation
 {
@@ -83,17 +72,19 @@ static SDL_calloc_func SDL_calloc_orig = NULL;
 static SDL_realloc_func SDL_realloc_orig = NULL;
 static SDL_free_func SDL_free_orig = NULL;
 static int s_previous_allocations = 0;
+static int s_unknown_frees = 0;
 static SDL_tracked_allocation *s_tracked_allocations[256];
-static SDL_atomic_t s_lock;
+static bool s_randfill_allocations = false;
+static SDL_AtomicInt s_lock;
 
 #define LOCK_ALLOCATOR()                               \
     do {                                               \
-        if (SDL_AtomicCAS(&s_lock, 0, 1)) {            \
+        if (SDL_CompareAndSwapAtomicInt(&s_lock, 0, 1)) { \
             break;                                     \
         }                                              \
         SDL_CPUPauseInstruction();                     \
-    } while (SDL_TRUE)
-#define UNLOCK_ALLOCATOR() do { SDL_AtomicSet(&s_lock, 0); } while (0)
+    } while (true)
+#define UNLOCK_ALLOCATOR() do { SDL_SetAtomicInt(&s_lock, 0); } while (0)
 
 static unsigned int get_allocation_bucket(void *mem)
 {
@@ -104,21 +95,31 @@ static unsigned int get_allocation_bucket(void *mem)
     return index;
 }
 
-static SDL_bool SDL_IsAllocationTracked(void *mem)
+static SDL_tracked_allocation *SDL_GetTrackedAllocation(void *mem)
 {
     SDL_tracked_allocation *entry;
-    int index;
-
     LOCK_ALLOCATOR();
-    index = get_allocation_bucket(mem);
+    int index = get_allocation_bucket(mem);
     for (entry = s_tracked_allocations[index]; entry; entry = entry->next) {
         if (mem == entry->mem) {
             UNLOCK_ALLOCATOR();
-            return SDL_TRUE;
+            return entry;
         }
     }
     UNLOCK_ALLOCATOR();
-    return SDL_FALSE;
+    return NULL;
+}
+
+static size_t SDL_GetTrackedAllocationSize(void *mem)
+{
+    SDL_tracked_allocation *entry = SDL_GetTrackedAllocation(mem);
+
+    return entry ? entry->size : SIZE_MAX;
+}
+
+static bool SDL_IsAllocationTracked(void *mem)
+{
+    return SDL_GetTrackedAllocation(mem) != NULL;
 }
 
 static void SDL_TrackAllocation(void *mem, size_t size)
@@ -129,12 +130,11 @@ static void SDL_TrackAllocation(void *mem, size_t size)
     if (SDL_IsAllocationTracked(mem)) {
         return;
     }
-    LOCK_ALLOCATOR();
     entry = (SDL_tracked_allocation *)SDL_malloc_orig(sizeof(*entry));
     if (!entry) {
-        UNLOCK_ALLOCATOR();
         return;
     }
+    LOCK_ALLOCATOR();
     entry->mem = mem;
     entry->size = size;
 
@@ -172,7 +172,7 @@ static void SDL_TrackAllocation(void *mem, size_t size)
             }
         }
     }
-#elif defined(WIN32_WITH_DBGHELP)
+#elif defined(SDL_PLATFORM_WIN32)
     {
         Uint32 count;
         PVOID frames[63];
@@ -212,21 +212,36 @@ static void SDL_UntrackAllocation(void *mem)
         }
         prev = entry;
     }
+    s_unknown_frees += 1;
     UNLOCK_ALLOCATOR();
 }
 
-static void *SDLCALL SDLTest_TrackedMalloc(size_t size)
+static void rand_fill_memory(void *ptr, size_t start, size_t end)
+{
+    Uint8 *mem = (Uint8 *)ptr;
+    size_t i;
+
+    if (!s_randfill_allocations)
+        return;
+
+    for (i = start; i < end; ++i) {
+        mem[i] = SDLTest_RandomUint8();
+    }
+}
+
+static void * SDLCALL SDLTest_TrackedMalloc(size_t size)
 {
     void *mem;
 
     mem = SDL_malloc_orig(size);
     if (mem) {
         SDL_TrackAllocation(mem, size);
+        rand_fill_memory(mem, 0, size);
     }
     return mem;
 }
 
-static void *SDLCALL SDLTest_TrackedCalloc(size_t nmemb, size_t size)
+static void * SDLCALL SDLTest_TrackedCalloc(size_t nmemb, size_t size)
 {
     void *mem;
 
@@ -237,17 +252,23 @@ static void *SDLCALL SDLTest_TrackedCalloc(size_t nmemb, size_t size)
     return mem;
 }
 
-static void *SDLCALL SDLTest_TrackedRealloc(void *ptr, size_t size)
+static void * SDLCALL SDLTest_TrackedRealloc(void *ptr, size_t size)
 {
     void *mem;
-
-    SDL_assert(ptr == NULL || SDL_IsAllocationTracked(ptr));
+    size_t old_size = 0;
+    if (ptr) {
+         old_size = SDL_GetTrackedAllocationSize(ptr);
+         SDL_assert(old_size != SIZE_MAX);
+    }
     mem = SDL_realloc_orig(ptr, size);
-    if (mem && mem != ptr) {
-        if (ptr) {
-            SDL_UntrackAllocation(ptr);
-        }
+    if (ptr) {
+        SDL_UntrackAllocation(ptr);
+    }
+    if (mem) {
         SDL_TrackAllocation(mem, size);
+        if (size > old_size) {
+            rand_fill_memory(mem, old_size, size);
+        }
     }
     return mem;
 }
@@ -258,38 +279,36 @@ static void SDLCALL SDLTest_TrackedFree(void *ptr)
         return;
     }
 
-    if (!s_previous_allocations) {
+    if (s_previous_allocations == 0) {
         SDL_assert(SDL_IsAllocationTracked(ptr));
     }
     SDL_UntrackAllocation(ptr);
     SDL_free_orig(ptr);
 }
 
-int SDLTest_TrackAllocations(void)
+void SDLTest_TrackAllocations(void)
 {
     if (SDL_malloc_orig) {
-        return 0;
+        return;
     }
 
     SDLTest_Crc32Init(&s_crc32_context);
 
     s_previous_allocations = SDL_GetNumAllocations();
-    if (s_previous_allocations != 0) {
-        SDL_Log("SDLTest_TrackAllocations(): There are %d previous allocations, disabling free() validation", s_previous_allocations);
-    }
 #ifdef SDLTEST_UNWIND_NO_PROC_NAME_BY_IP
     do {
         /* Don't use SDL_GetHint: SDL_malloc is off limits. */
-        const char *env_trackmem = SDL_getenv("SDL_TRACKMEM_SYMBOL_NAMES");
+        const char *env_trackmem = SDL_getenv_unsafe("SDL_TRACKMEM_SYMBOL_NAMES");
         if (env_trackmem) {
             if (SDL_strcasecmp(env_trackmem, "1") == 0 || SDL_strcasecmp(env_trackmem, "yes") == 0 || SDL_strcasecmp(env_trackmem, "true") == 0) {
-                s_unwind_symbol_names = SDL_TRUE;
+                s_unwind_symbol_names = true;
             } else if (SDL_strcasecmp(env_trackmem, "0") == 0 || SDL_strcasecmp(env_trackmem, "no") == 0 || SDL_strcasecmp(env_trackmem, "false") == 0) {
-                s_unwind_symbol_names = SDL_FALSE;
+                s_unwind_symbol_names = false;
             }
         }
     } while (0);
-#elif defined(WIN32_WITH_DBGHELP)
+
+#elif defined(SDL_PLATFORM_WIN32)
     do {
         dyn_dbghelp.module = SDL_LoadObject("dbghelp.dll");
         if (!dyn_dbghelp.module) {
@@ -305,7 +324,7 @@ int SDLTest_TrackAllocations(void)
             goto dbghelp_failed;
         }
         break;
-    dbghelp_failed:
+dbghelp_failed:
         if (dyn_dbghelp.module) {
             SDL_UnloadObject(dyn_dbghelp.module);
             dyn_dbghelp.module = NULL;
@@ -322,7 +341,19 @@ int SDLTest_TrackAllocations(void)
                            SDLTest_TrackedCalloc,
                            SDLTest_TrackedRealloc,
                            SDLTest_TrackedFree);
-    return 0;
+
+    if (s_previous_allocations < 0) {
+        SDL_Log("SDL was built without allocation count support, disabling free() validation");
+    } else if (s_previous_allocations != 0) {
+        SDL_Log("SDLTest_TrackAllocations(): There are %d previous allocations, disabling free() validation", s_previous_allocations);
+    }
+}
+
+void SDLTest_RandFillAllocations(void)
+{
+    SDLTest_TrackAllocations();
+
+    s_randfill_allocations = true;
 }
 
 void SDLTest_LogAllocations(void)
@@ -355,8 +386,6 @@ void SDLTest_LogAllocations(void)
 
     SDL_strlcpy(line, "Memory allocations:\n", sizeof(line));
     ADD_LINE();
-    SDL_strlcpy(line, "Expect 2 allocations from within SDL_GetErrBuf()\n", sizeof(line));
-    ADD_LINE();
 
     count = 0;
     total_allocated = 0;
@@ -367,6 +396,7 @@ void SDLTest_LogAllocations(void)
             /* Start at stack index 1 to skip our tracking functions */
             for (stack_index = 1; stack_index < SDL_arraysize(entry->stack); ++stack_index) {
                 char stack_entry_description[256] = "???";
+
                 if (!entry->stack[stack_index]) {
                     break;
                 }
@@ -383,15 +413,15 @@ void SDLTest_LogAllocations(void)
                     (void)SDL_snprintf(stack_entry_description, sizeof(stack_entry_description), "%s+0x%llx", name, (long long unsigned int)offset);
 #endif
                 }
-#elif defined(WIN32_WITH_DBGHELP)
+#elif defined(SDL_PLATFORM_WIN32)
                 {
                     DWORD64 dwDisplacement = 0;
-                    IMAGEHLP_LINE64 dbg_line;
                     char symbol_buffer[sizeof(SYMBOL_INFO) + MAX_SYM_NAME * sizeof(TCHAR)];
                     PSYMBOL_INFO pSymbol = (PSYMBOL_INFO)symbol_buffer;
                     DWORD lineColumn = 0;
                     pSymbol->SizeOfStruct = sizeof(SYMBOL_INFO);
                     pSymbol->MaxNameLen = MAX_SYM_NAME;
+                    IMAGEHLP_LINE64 dbg_line;
                     dbg_line.SizeOfStruct = sizeof(dbg_line);
                     dbg_line.FileName = "";
                     dbg_line.LineNumber = 0;
@@ -414,11 +444,16 @@ void SDLTest_LogAllocations(void)
             ++count;
         }
     }
-    (void)SDL_snprintf(line, sizeof(line), "Total: %.2f Kb in %d allocations\n", total_allocated / 1024.0, count);
+    (void)SDL_snprintf(line, sizeof(line), "Total: %.2f Kb in %d allocations", total_allocated / 1024.0, count);
+    ADD_LINE();
+    if (s_unknown_frees != 0) {
+        (void)SDL_snprintf(line, sizeof(line), ", %d unknown frees", s_unknown_frees);
+        ADD_LINE();
+    }
+    (void)SDL_snprintf(line, sizeof(line), "\n");
     ADD_LINE();
 #undef ADD_LINE
 
     SDL_Log("%s", message);
+    SDL_free_orig(message);
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

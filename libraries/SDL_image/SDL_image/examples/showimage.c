@@ -19,8 +19,9 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL.h"
-#include "SDL_image.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <SDL3_image/SDL_image.h>
 
 
 /* Draw a Gimpish background pattern to show transparency in the image */
@@ -30,19 +31,20 @@ static void draw_background(SDL_Renderer *renderer, int w, int h)
         { 0x66, 0x66, 0x66, 0xff },
         { 0x99, 0x99, 0x99, 0xff }
     };
-    SDL_Rect rect;
+    const int dx = 8, dy = 8;
+    SDL_FRect rect;
     int i, x, y;
 
-    rect.w = 8;
-    rect.h = 8;
-    for (y = 0; y < h; y += rect.h) {
-        for (x = 0; x < w; x += rect.w) {
+    rect.w = (float)dx;
+    rect.h = (float)dy;
+    for (y = 0; y < h; y += dy) {
+        for (x = 0; x < w; x += dx) {
             /* use an 8x8 checkerboard pattern */
             i = (((x ^ y) >> 3) & 1);
             SDL_SetRenderDrawColor(renderer, col[i].r, col[i].g, col[i].b, col[i].a);
 
-            rect.x = x;
-            rect.y = y;
+            rect.x = (float)x;
+            rect.y = (float)y;
             SDL_RenderFillRect(renderer, &rect);
         }
     }
@@ -50,96 +52,164 @@ static void draw_background(SDL_Renderer *renderer, int w, int h)
 
 int main(int argc, char *argv[])
 {
-    SDL_Window *window;
-    SDL_Renderer *renderer;
-    SDL_Texture *texture;
+    SDL_Window *window = NULL;
+    SDL_Renderer *renderer = NULL;
+    SDL_Texture *texture = NULL;
     Uint32 flags;
-    int i, w, h;
+    float w, h;
+    int i;
     int done = 0;
     int quit = 0;
     SDL_Event event;
+    const char *tonemap = NULL;
     const char *saveFile = NULL;
+    int attempted = 0;
+    int result = 0;
 
+    (void)argc;
+
+#if 0 /* We now allow drag and drop onto the window */
     /* Check command line usage */
-    if ( ! argv[1] ) {
-        SDL_Log("Usage: %s [-fullscreen] [-save file.png] <image_file> ...\n", argv[0]);
-        return(1);
+    if ( !argv[1] ) {
+        SDL_Log("Usage: %s [-fullscreen] [-tonemap X] [-save file.png] <image_file> ...\n", argv[0]);
+        result = 1;
+        goto done;
     }
+#endif
 
     flags = SDL_WINDOW_HIDDEN;
     for ( i=1; argv[i]; ++i ) {
         if ( SDL_strcmp(argv[i], "-fullscreen") == 0 ) {
-            SDL_ShowCursor(0);
+            SDL_HideCursor();
             flags |= SDL_WINDOW_FULLSCREEN;
         }
     }
 
-    if (SDL_Init(SDL_INIT_VIDEO) == -1) {
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_Log("SDL_Init(SDL_INIT_VIDEO) failed: %s\n", SDL_GetError());
-        return(2);
+        result = 2;
+        goto done;
     }
 
-    if (SDL_CreateWindowAndRenderer(0, 0, flags, &window, &renderer) < 0) {
-        SDL_Log("SDL_CreateWindowAndRenderer() failed: %s\n", SDL_GetError());
-        return(2);
+    window = SDL_CreateWindow("", 0, 0, flags);
+    if (!window) {
+        SDL_Log("SDL_CreateWindow() failed: %s\n", SDL_GetError());
+        result = 2;
+        goto done;
     }
 
-    for ( i=1; argv[i]; ++i ) {
-        if ( SDL_strcmp(argv[i], "-fullscreen") == 0 ) {
+    if (SDL_GetBooleanProperty(SDL_GetDisplayProperties(SDL_GetPrimaryDisplay()), SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN, false)) {
+        SDL_PropertiesID props = SDL_CreateProperties();
+
+        SDL_SetPointerProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, window);
+        SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB_LINEAR);
+        renderer = SDL_CreateRendererWithProperties(props);
+        SDL_DestroyProperties(props);
+    }
+    if (!renderer) {
+        renderer = SDL_CreateRenderer(window, NULL);
+    }
+    if (!renderer) {
+        SDL_Log("SDL_CreateRenderer() failed: %s\n", SDL_GetError());
+        result = 2;
+        goto done;
+    }
+
+    for (i=1; argv[i]; ++i) {
+        if (SDL_strcmp(argv[i], "-fullscreen") == 0) {
             continue;
         }
 
-        if ( SDL_strcmp(argv[i], "-quit") == 0 ) {
+        if (SDL_strcmp(argv[i], "-quit") == 0) {
             quit = 1;
             continue;
         }
 
-        if ( SDL_strcmp(argv[i], "-save") == 0 && argv[i+1] ) {
+        if (SDL_strcmp(argv[i], "-tonemap") == 0 && argv[i+1]) {
+            ++i;
+            tonemap = argv[i];
+            continue;
+        }
+
+        if (SDL_strcmp(argv[i], "-save") == 0 && argv[i+1]) {
             ++i;
             saveFile = argv[i];
             continue;
         }
 
         /* Open the image file */
-        texture = IMG_LoadTexture(renderer, argv[i]);
-        if (!texture) {
-            SDL_Log("Couldn't load %s: %s\n", argv[i], SDL_GetError());
-            continue;
+        ++attempted;
+        if (tonemap) {
+            SDL_Surface *surface, *temp;
+
+            surface = IMG_Load(argv[i]);
+            if (!surface) {
+                SDL_Log("Couldn't load %s: %s\n", argv[i], SDL_GetError());
+                continue;
+            }
+
+            /* Use the tonemap operator to convert to SDR output */
+            SDL_SetStringProperty(SDL_GetSurfaceProperties(surface), SDL_PROP_SURFACE_TONEMAP_OPERATOR_STRING, tonemap);
+            temp = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
+            SDL_DestroySurface(surface);
+            if (!temp) {
+                SDL_Log("Couldn't convert surface: %s\n", SDL_GetError());
+                continue;
+            }
+
+            texture = SDL_CreateTextureFromSurface(renderer, temp);
+            SDL_DestroySurface(temp);
+            if (!texture) {
+                SDL_Log("Couldn't create texture: %s\n", SDL_GetError());
+                continue;
+            }
+        } else {
+            texture = IMG_LoadTexture(renderer, argv[i]);
+            if (!texture) {
+                SDL_Log("Couldn't load %s: %s\n", argv[i], SDL_GetError());
+                continue;
+            }
         }
-        SDL_QueryTexture(texture, NULL, NULL, &w, &h);
+        SDL_GetTextureSize(texture, &w, &h);
 
         /* Save the image file, if desired */
-        if ( saveFile ) {
+        if (saveFile) {
             SDL_Surface *surface = IMG_Load(argv[i]);
             if (surface) {
-                int result;
                 const char *ext = SDL_strrchr(saveFile, '.');
-                if ( ext && SDL_strcasecmp(ext, ".bmp") == 0 ) {
-                    result = SDL_SaveBMP(surface, saveFile);
-                } else if ( ext && SDL_strcasecmp(ext, ".jpg") == 0 ) {
-                    result = IMG_SaveJPG(surface, saveFile, 90);
+                bool saved = false;
+                if (ext && SDL_strcasecmp(ext, ".avif") == 0) {
+                    saved = IMG_SaveAVIF(surface, saveFile, 90);
+                } else if (ext && SDL_strcasecmp(ext, ".bmp") == 0) {
+                    saved = SDL_SaveBMP(surface, saveFile);
+                } else if (ext && SDL_strcasecmp(ext, ".jpg") == 0) {
+                    saved = IMG_SaveJPG(surface, saveFile, 90);
+                } else if (ext && SDL_strcasecmp(ext, ".png") == 0) {
+                    saved = IMG_SavePNG(surface, saveFile);
                 } else {
-                    result = IMG_SavePNG(surface, saveFile);
+                    SDL_SetError("Unknown save file type");
                 }
-                if ( result < 0 ) {
+                if (!saved) {
                     SDL_Log("Couldn't save %s: %s\n", saveFile, SDL_GetError());
+                    result = 3;
                 }
             } else {
                 SDL_Log("Couldn't load %s: %s\n", argv[i], SDL_GetError());
+                result = 3;
             }
         }
 
         /* Show the window */
         SDL_SetWindowTitle(window, argv[i]);
-        SDL_SetWindowSize(window, w, h);
+        SDL_SetWindowSize(window, (int)w, (int)h);
         SDL_ShowWindow(window);
 
         done = quit;
         while ( !done ) {
             while ( SDL_PollEvent(&event) ) {
                 switch (event.type) {
-                    case SDL_KEYUP:
-                        switch (event.key.keysym.sym) {
+                    case SDL_EVENT_KEY_UP:
+                        switch (event.key.key) {
                         case SDLK_LEFT:
                             if ( i > 1 ) {
                                 i -= 2;
@@ -152,9 +222,9 @@ int main(int argc, char *argv[])
                             }
                             break;
                         case SDLK_ESCAPE:
-                        case SDLK_q:
+                        case SDLK_Q:
                             argv[i+1] = NULL;
-                        /* Drop through to done */
+                            SDL_FALLTHROUGH;
                         case SDLK_SPACE:
                         case SDLK_TAB:
                             done = 1;
@@ -163,10 +233,10 @@ int main(int argc, char *argv[])
                             break;
                         }
                         break;
-                    case SDL_MOUSEBUTTONDOWN:
+                    case SDL_EVENT_MOUSE_BUTTON_DOWN:
                         done = 1;
                         break;
-                    case SDL_QUIT:
+                    case SDL_EVENT_QUIT:
                         argv[i+1] = NULL;
                         done = 1;
                         break;
@@ -175,10 +245,70 @@ int main(int argc, char *argv[])
                 }
             }
             /* Draw a background pattern in case the image has transparency */
-            draw_background(renderer, w, h);
+            draw_background(renderer, (int)w, (int)h);
 
             /* Display the image */
-            SDL_RenderCopy(renderer, texture, NULL, NULL);
+            SDL_RenderTexture(renderer, texture, NULL, NULL);
+            SDL_RenderPresent(renderer);
+
+            SDL_Delay(100);
+        }
+        SDL_DestroyTexture(texture);
+        texture = NULL;
+    }
+
+    if (attempted == 0 && !quit) {
+        /* Show the window if needed */
+        SDL_SetWindowTitle(window, "showimage");
+        w = 640.0f;
+        h = 480.0f;
+        SDL_SetWindowSize(window, (int)w, (int)h);
+        SDL_ShowWindow(window);
+
+        while ( !done ) {
+            while ( SDL_PollEvent(&event) ) {
+                switch (event.type) {
+                    case SDL_EVENT_DROP_FILE:
+                        {
+                            const char *file = event.drop.data;
+
+                            SDL_DestroyTexture(texture);
+
+                            SDL_Log("Loading %s\n", file);
+                            texture = IMG_LoadTexture(renderer, file);
+                            if (!texture) {
+                                SDL_Log("Couldn't load %s: %s\n", file, SDL_GetError());
+                                break;
+                            }
+                            SDL_SetWindowTitle(window, file);
+                            SDL_GetTextureSize(texture, &w, &h);
+                            SDL_SetWindowSize(window, (int)w, (int)h);
+                        }
+                        break;
+                    case SDL_EVENT_KEY_UP:
+                        switch (event.key.key) {
+                        case SDLK_ESCAPE:
+                        case SDLK_Q:
+                            done = 1;
+                            break;
+                        }
+                        break;
+                    case SDL_EVENT_MOUSE_BUTTON_DOWN:
+                        done = 1;
+                        break;
+                    case SDL_EVENT_QUIT:
+                        done = 1;
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            /* Draw a background pattern in case the image has transparency */
+            draw_background(renderer, (int)w, (int)h);
+
+            /* Display the image */
+            SDL_RenderTexture(renderer, texture, NULL, NULL);
             SDL_RenderPresent(renderer);
 
             SDL_Delay(100);
@@ -186,11 +316,8 @@ int main(int argc, char *argv[])
         SDL_DestroyTexture(texture);
     }
 
-
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-
     /* We're done! */
+done:
     SDL_Quit();
-    return(0);
+    return result;
 }

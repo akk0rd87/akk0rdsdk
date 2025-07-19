@@ -29,7 +29,16 @@
 
 @end
 
-@interface SDLUIKitDelegate : NSObject<UIApplicationDelegate>
+API_AVAILABLE(ios(13.0))
+@interface SDLUIKitSceneDelegate : NSObject <UIApplicationDelegate, UIWindowSceneDelegate>
+
++ (NSString *)getSceneDelegateClassName;
+
+- (void)hideLaunchScreen;
+
+@end
+
+@interface SDLUIKitDelegate : NSObject <UIApplicationDelegate>
 
 + (id)sharedAppDelegate;
 + (NSString *)getAppDelegateClassName;
@@ -40,8 +49,6 @@
  * the app's UI is storyboard-based. SDL is not storyboard-based, however
  * several major third-party ad APIs (e.g. Google admob) incorrectly assume this
  * property always exists, and will crash if it doesn't. */
-@property (nonatomic) UIWindow *window;
+@property(nonatomic) UIWindow *window;
 
 @end
-
-/* vi: set ts=4 sw=4 expandtab: */

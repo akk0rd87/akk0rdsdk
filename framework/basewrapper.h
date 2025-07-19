@@ -52,6 +52,9 @@ public:
     int GetX() const { return x; };
     int GetY() const { return y; };
 
+    int GetBottomX() const { return x + w; }
+    int GetBottomY() const { return y + h; }
+
     AkkordRect& SetPosition(const AkkordPoint& Position) { x = Position.GetX(); y = Position.GetY(); return *this; };
     AkkordRect& SetPosition(int X, int Y) { x = X; y = Y; return *this; };
     AkkordRect& SetSize(const AkkordPoint& Size) { w = Size.GetX(); h = Size.GetY(); return *this; };
@@ -189,11 +192,11 @@ public:
     // System init-quit functions
     static bool                Init(Uint32 flags);
     static void                Quit();
-    static int                 GetCPUCount() { return SDL_GetCPUCount(); };
+    static int                 GetCPUCount() { return SDL_GetNumLogicalCPUCores(); };
 
     // Windows and Render functions
     static AkkordWindow* CreateRenderWindow(const char* Title, int X, int Y, int W, int H, Uint32 Flags);
-    static AkkordRenderer* CreateRenderer(AkkordWindow* window, int index, Uint32 flags);
+    static AkkordRenderer* CreateRenderer(AkkordWindow* window);
     static bool                SetActiveWindow(AkkordWindow* Window);
     static bool                SetActiveRenderer(AkkordRenderer* Renderer);
     static AkkordWindow* GetActiveWindow();
@@ -208,6 +211,7 @@ public:
     static AkkordPoint         GetScreenSize();
     static int                 GetScreenWidth() { return GetScreenSize().x; };
     static int                 GetScreenHeight() { return GetScreenSize().y; };
+    static AkkordRect          GetWindowSafeArea();
 
     // Drawing functions
     static bool                SetCurrentColor(const AkkordColor& Color);
@@ -255,12 +259,12 @@ public:
     static unsigned            Str2Num(const char* Str);
 
     // Event-handling functions
-    static BWrapper::KeyCodes  DecodeKey(const SDL_Keysym& SDL_Key);
+    static BWrapper::KeyCodes  DecodeKey(SDL_Keycode key);
 
     // Logging and debugging functions
     static void                Log(BWrapper::LogPriority Priority, const char* File, const char* Function, unsigned Line, SDL_PRINTF_FORMAT_STRING const char* Fmt, ...);
     static LogParamsStruct* GetLogParams();
-    static void                SetLogPriority(BWrapper::LogPriority Priority) { SDL_LogPriority sev = (SDL_LogPriority)Priority; SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, sev); };
+    static void                SetLogPriority(BWrapper::LogPriority Priority) { SDL_LogPriority sev = (SDL_LogPriority)Priority; SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, sev); };
     static bool                PrintDirContent(const char* Path, BWrapper::LogPriority Priority = BWrapper::LogPriority::Debug, bool Recursive = false);
 
     // Random functions
@@ -300,7 +304,7 @@ public:
 
     static constexpr BWrapper::OS GetDeviceOS()
     {
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
         return BWrapper::OS::iOS;
 #endif
 
@@ -308,7 +312,7 @@ public:
         return BWrapper::OS::AndroidOS;
 #endif
 
-#ifdef __WINDOWS__
+#ifdef SDL_PLATFORM_WINDOWS
         return  BWrapper::OS::Windows;
 #endif
 
@@ -337,7 +341,7 @@ class AkkordTexture
 private:
     std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)> tex;
 public:
-    enum struct TextureType : Uint8 { BMP, PNG, JPEG, SVG };
+    enum struct TextureType : Uint8 { BMP, PNG, SVG };
     enum struct Flip : Uint8 { None = SDL_FLIP_NONE, Horizontal = SDL_FLIP_HORIZONTAL, Vertical = SDL_FLIP_VERTICAL };
     void Destroy() { tex.reset(); };
     bool LoadFromFile(const char* FileName, TextureType Type, const BWrapper::FileSearchPriority SearchPriority = BWrapper::FileSearchPriority::Assets, float Scale = 1.0f);

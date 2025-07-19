@@ -22,12 +22,11 @@
 #ifndef SDL_audiodev_c_h_
 #define SDL_audiodev_c_h_
 
-#include "SDL.h"
-#include "../SDL_internal.h"
+#include "SDL_internal.h"
 #include "SDL_sysaudio.h"
 
-/* Open the audio device for playback, and don't block if busy */
-/* #define USE_BLOCKING_WRITES */
+// Open the audio device for playback, and don't block if busy
+//#define USE_BLOCKING_WRITES
 
 #ifdef USE_BLOCKING_WRITES
 #define OPEN_FLAGS_OUTPUT O_WRONLY
@@ -37,8 +36,6 @@
 #define OPEN_FLAGS_INPUT  (O_RDONLY | O_NONBLOCK)
 #endif
 
-extern void SDL_EnumUnixAudioDevices(const int classic, int (*test)(int));
+extern void SDL_EnumUnixAudioDevices(const bool classic, bool (*test)(int));
 
-#endif /* SDL_audiodev_c_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */
+#endif // SDL_audiodev_c_h_

@@ -24,8 +24,6 @@
 
 void N3DS_InitTouch(void);
 void N3DS_QuitTouch(void);
-void N3DS_PollTouch(_THIS);
+void N3DS_PollTouch(SDL_VideoDevice *_this);
 
-#endif /* SDL_n3dstouch_h_ */
-
-/* vi: set sts=4 ts=4 sw=4 expandtab: */
+#endif // SDL_n3dstouch_h_

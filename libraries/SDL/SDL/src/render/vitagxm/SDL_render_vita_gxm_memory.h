@@ -39,6 +39,4 @@ void vita_mem_vertex_usse_free(SceUID uid);
 void *vita_mem_fragment_usse_alloc(unsigned int size, SceUID *uid, unsigned int *usse_offset);
 void vita_mem_fragment_usse_free(SceUID uid);
 
-#endif /* SDL_RENDER_VITA_GXM_MEMORY_H */
-
-/* vi: set ts=4 sw=4 expandtab: */
+#endif // SDL_RENDER_VITA_GXM_MEMORY_H

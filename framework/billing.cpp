@@ -4,7 +4,7 @@ struct BillingContextStruct
 {
     decltype(SDL_RegisterEvents(1)) BillingEventCode;
 
-#if (__ANDROID__) || (__WINDOWS__)
+#if (__ANDROID__) || (SDL_PLATFORM_WINDOWS)
     BillingCallbackObserver* callbackObserver = nullptr;
 #endif
 };
@@ -69,7 +69,7 @@ extern "C" {
 }
 #endif
 
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
 #include "core/platformwrapper/ios/ios_billing.h"
 #endif
 
@@ -86,11 +86,11 @@ bool BillingManager::Init(BillingCallbackObserver* Observer)
     return AndroidBillingManager::Init(getJNIEnv());
 #endif
 
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
     return iOSBillingManager::Init(Observer);
 #endif
 
-#ifdef __WINDOWS__
+#ifdef SDL_PLATFORM_WINDOWS
     BillingContext.callbackObserver = Observer;
     return true; // будем считать, что на винде все прошло норм
 #endif
@@ -104,7 +104,7 @@ bool BillingManager::QueryProductDetails(const std::vector<std::string>& ProdLis
     return AndroidBillingManager::QueryProductDetails(getJNIEnv(), ProdList);
 #endif
 
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
     return iOSBillingManager::QueryProductDetails(ProdList);
 #endif
     return false;
@@ -116,7 +116,7 @@ bool BillingManager::RestorePurchases()
     return AndroidBillingManager::RestorePurchases(getJNIEnv());
 #endif
 
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
     return iOSBillingManager::RestorePurchases();
 #endif
     return false;
@@ -128,11 +128,11 @@ bool BillingManager::PurchaseProdItem(const char* ProductCode)
     return AndroidBillingManager::PurchaseProdItem(getJNIEnv(), ProductCode);
 #endif
 
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
     return iOSBillingManager::PurchaseProdItem(ProductCode);
 #endif
 
-#ifdef __WINDOWS__
+#ifdef SDL_PLATFORM_WINDOWS
     // на винде на десктопе в дебаг режиме всега подтверждаем покупку Callback-ом
     if (!BWrapper::IsReleaseBuild() && BillingContext.callbackObserver) {
         BillingContext.callbackObserver->PurchaseUpdatedCallback("testPurchaseToken", ProductCode, BillingManager::OperAction::Bought);
@@ -174,7 +174,7 @@ void BillingManager::PushEvent(int Code, int Result)
 };
 
 void BillingManager::ClearObserver() {
-#if (__ANDROID__) || (__WINDOWS__)
+#if (__ANDROID__) || (SDL_PLATFORM_WINDOWS)
     BillingContext.callbackObserver = nullptr;
 #endif
 }

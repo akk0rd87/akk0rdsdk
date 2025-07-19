@@ -1,18 +1,9 @@
+# CMake script for building SDL_image tests
+
 enable_testing()
 
-if(NOT TARGET SDL2::SDL2main)
-    find_package(SDL2main)
-endif()
+set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
 
-if(NOT TARGET SDL2::SDL2test)
-    find_package(SDL2test REQUIRED)
-endif()
-
-add_executable(testimage main.c)
-
-set(ALL_TESTS
-    testimage
-)
 set(RESOURCE_FILES
     palette.bmp
     palette.gif
@@ -38,47 +29,56 @@ set(RESOURCE_FILES
     svg64.bmp
 )
 
-set(TESTS_ENVIRONMENT
-    "SDL_TEST_SRCDIR=${CMAKE_CURRENT_SOURCE_DIR}"
-    "SDL_TEST_BUILDDIR=${CMAKE_CURRENT_BINARY_DIR}"
-    "SDL_VIDEODRIVER=dummy"
-)
-
-foreach(prog ${ALL_TESTS})
-    target_compile_definitions(${prog} PRIVATE $<TARGET_PROPERTY:SDL2_image,COMPILE_DEFINITIONS>)
-    target_link_libraries(${prog} PRIVATE SDL2_image::${sdl2_image_export_name})
-    if(TARGET SDL2::SDL2main)
-        target_link_libraries(${prog} PRIVATE SDL2::SDL2main)
-    endif()
-    target_link_libraries(${prog} PRIVATE SDL2::SDL2test ${sdl2_target_name})
+function(add_sdl_image_test_executable TARGET)
+    add_executable(${TARGET} ${ARGN})
+    target_compile_definitions(${TARGET}
+        PRIVATE
+            $<TARGET_PROPERTY:${sdl3_image_target_name},COMPILE_DEFINITIONS>
+            "SDL_IMAGE_SAVE_AVIF=$<BOOL:${SDLIMAGE_AVIF_SAVE}>"
+            "SDL_IMAGE_SAVE_JPG=$<BOOL:${SDLIMAGE_JPG_SAVE}>"
+            "SDL_IMAGE_SAVE_PNG=$<BOOL:${SDLIMAGE_PNG_SAVE}>"
+    )
+    sdl_add_warning_options(${TARGET} WARNING_AS_ERROR ${SDLIMAGE_WERROR})
+    target_link_libraries(${TARGET} PRIVATE SDL3_image::SDL3_image SDL3::SDL3_test SDL3::SDL3)
 
     add_test(
-        NAME ${prog}
-        COMMAND ${prog}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        NAME ${TARGET}
+        COMMAND ${TARGET}
+        WORKING_DIRECTORY "$<TARGET_FILE_DIR:${TARGET}>"
     )
-    set_tests_properties(
-        ${prog}
+
+    set(TESTS_ENVIRONMENT
+        "SDL_TEST_SRCDIR=${CMAKE_CURRENT_SOURCE_DIR}"
+        "SDL_TEST_BUILDDIR=$<TARGET_FILE_DIR:${TARGET}>"
+        "SDL_VIDEO_DRIVER=dummy"
+    )
+    set_tests_properties(${TARGET}
         PROPERTIES
-        ENVIRONMENT "${TESTS_ENVIRONMENT}"
-        TIMEOUT 30
+            ENVIRONMENT "${TESTS_ENVIRONMENT}"
+            TIMEOUT 30
     )
-    if(SDL2IMAGE_TESTS_INSTALL)
-        set(exe ${prog})
+    if(SDLIMAGE_TESTS_INSTALL)
         set(installedtestsdir "${CMAKE_INSTALL_FULL_LIBEXECDIR}/installed-tests/${PROJECT_NAME}")
-        configure_file(template.test.in "${exe}.test" @ONLY)
+        configure_file(template.test.in "${TARGET}.test" @ONLY)
         install(
-            FILES "${CMAKE_CURRENT_BINARY_DIR}/${exe}.test"
+            FILES "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.test"
             DESTINATION "${CMAKE_INSTALL_DATADIR}/installed-tests/${PROJECT_NAME}"
         )
     endif()
-endforeach()
+    if(SDLIMAGE_TESTS_INSTALL)
+        install(
+            TARGETS ${TARGET}
+            DESTINATION "${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/${PROJECT_NAME}"
+        )
+        if(MSVC)
+            SDL_install_pdb("${TARGET}" "${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/${PROJECT_NAME}")
+        endif()
+    endif()
+endfunction()
 
-if(SDL2IMAGE_TESTS_INSTALL)
-    install(
-        TARGETS ${ALL_TESTS}
-        DESTINATION "${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/${PROJECT_NAME}"
-    )
+add_sdl_image_test_executable(testimage main.c)
+
+if(SDLIMAGE_TESTS_INSTALL)
     install(
         FILES ${RESOURCE_FILES}
         DESTINATION "${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/${PROJECT_NAME}"

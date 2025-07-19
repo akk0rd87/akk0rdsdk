@@ -109,6 +109,14 @@ gl_FragColor = result_color; \
         }
         return true;
     }
+
+    virtual const char* getTextureIdProperty() const override {
+        return SDL_PROP_TEXTURE_OPENGL_TEXTURE_NUMBER;
+    }
+
+    virtual const char* getTextureTargetProperty() const override {
+        return SDL_PROP_TEXTURE_OPENGL_TEXTURE_TARGET_NUMBER;
+    }
 };
 
 #endif // __AKK0RD_SDK_VIDEOADAPTER_OPENGL_WIN_H__

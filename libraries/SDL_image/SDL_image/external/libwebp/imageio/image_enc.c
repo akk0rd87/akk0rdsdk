@@ -155,8 +155,8 @@ int WebPWritePNG(const char* out_file_name, int use_stdout,
 }
 
 #elif defined(WEBP_HAVE_PNG)    // !HAVE_WINCODEC_H
-static void PNGAPI PNGErrorFunction(png_structp png, png_const_charp dummy) {
-  (void)dummy;  // remove variable-unused warning
+static void PNGAPI PNGErrorFunction(png_structp png, png_const_charp unused) {
+  (void)unused;  // remove variable-unused warning
   longjmp(png_jmpbuf(png), 1);
 }
 
@@ -260,14 +260,20 @@ int WebPWritePAM(FILE* fout, const WebPDecBuffer* const buffer) {
 
 // Save 16b mode (RGBA4444, RGB565, ...) for debugging purpose.
 int WebPWrite16bAsPGM(FILE* fout, const WebPDecBuffer* const buffer) {
-  const uint32_t width = buffer->width;
-  const uint32_t height = buffer->height;
-  const uint8_t* rgba = buffer->u.RGBA.rgba;
-  const int stride = buffer->u.RGBA.stride;
+  uint32_t width, height;
+  uint8_t* rgba;
+  int stride;
   const uint32_t bytes_per_px = 2;
   uint32_t y;
 
-  if (fout == NULL || buffer == NULL || rgba == NULL) return 0;
+  if (fout == NULL || buffer == NULL) return 0;
+
+  width = buffer->width;
+  height = buffer->height;
+  rgba = buffer->u.RGBA.rgba;
+  stride = buffer->u.RGBA.stride;
+
+  if (rgba == NULL) return 0;
 
   fprintf(fout, "P5\n%u %u\n255\n", width * bytes_per_px, height);
   for (y = 0; y < height; ++y) {
@@ -280,7 +286,7 @@ int WebPWrite16bAsPGM(FILE* fout, const WebPDecBuffer* const buffer) {
 }
 
 //------------------------------------------------------------------------------
-// BMP
+// BMP (see https://en.wikipedia.org/wiki/BMP_file_format#Pixel_storage)
 
 static void PutLE16(uint8_t* const dst, uint32_t value) {
   dst[0] = (value >> 0) & 0xff;
@@ -293,49 +299,67 @@ static void PutLE32(uint8_t* const dst, uint32_t value) {
 }
 
 #define BMP_HEADER_SIZE 54
+#define BMP_HEADER_ALPHA_EXTRA_SIZE 16  // for alpha info
 int WebPWriteBMP(FILE* fout, const WebPDecBuffer* const buffer) {
-  const int has_alpha = WebPIsAlphaMode(buffer->colorspace);
-  const uint32_t width = buffer->width;
-  const uint32_t height = buffer->height;
-  const uint8_t* rgba = buffer->u.RGBA.rgba;
-  const int stride = buffer->u.RGBA.stride;
-  const uint32_t bytes_per_px = has_alpha ? 4 : 3;
+  int has_alpha, header_size;
+  uint32_t width, height;
+  uint8_t* rgba;
+  int stride;
   uint32_t y;
-  const uint32_t line_size = bytes_per_px * width;
-  const uint32_t bmp_stride = (line_size + 3) & ~3;   // pad to 4
-  const uint32_t total_size = bmp_stride * height + BMP_HEADER_SIZE;
-  uint8_t bmp_header[BMP_HEADER_SIZE] = { 0 };
+  uint32_t bytes_per_px, line_size, image_size, bmp_stride, total_size;
+  uint8_t bmp_header[BMP_HEADER_SIZE + BMP_HEADER_ALPHA_EXTRA_SIZE] = { 0 };
 
-  if (fout == NULL || buffer == NULL || rgba == NULL) return 0;
+  if (fout == NULL || buffer == NULL) return 0;
+
+  has_alpha = WebPIsAlphaMode(buffer->colorspace);
+  header_size = BMP_HEADER_SIZE + (has_alpha ? BMP_HEADER_ALPHA_EXTRA_SIZE : 0);
+  width = buffer->width;
+  height = buffer->height;
+  rgba = buffer->u.RGBA.rgba;
+  stride = buffer->u.RGBA.stride;
+  bytes_per_px = has_alpha ? 4 : 3;
+  line_size = bytes_per_px * width;
+  bmp_stride = (line_size + 3) & ~3;  // pad to 4
+  image_size = bmp_stride * height;
+  total_size = image_size + header_size;
+
+  if (rgba == NULL) return 0;
 
   // bitmap file header
   PutLE16(bmp_header + 0, 0x4d42);                // signature 'BM'
   PutLE32(bmp_header + 2, total_size);            // size including header
   PutLE32(bmp_header + 6, 0);                     // reserved
-  PutLE32(bmp_header + 10, BMP_HEADER_SIZE);      // offset to pixel array
+  PutLE32(bmp_header + 10, header_size);          // offset to pixel array
   // bitmap info header
-  PutLE32(bmp_header + 14, 40);                   // DIB header size
+  PutLE32(bmp_header + 14, header_size - 14);     // DIB header size
   PutLE32(bmp_header + 18, width);                // dimensions
-  PutLE32(bmp_header + 22, -(int)height);         // vertical flip!
+  PutLE32(bmp_header + 22, height);               // no vertical flip
   PutLE16(bmp_header + 26, 1);                    // number of planes
   PutLE16(bmp_header + 28, bytes_per_px * 8);     // bits per pixel
-  PutLE32(bmp_header + 30, 0);                    // no compression (BI_RGB)
-  PutLE32(bmp_header + 34, 0);                    // image size (dummy)
+  PutLE32(bmp_header + 30, has_alpha ? 3 : 0);    // BI_BITFIELDS or BI_RGB
+  PutLE32(bmp_header + 34, image_size);
   PutLE32(bmp_header + 38, 2400);                 // x pixels/meter
   PutLE32(bmp_header + 42, 2400);                 // y pixels/meter
   PutLE32(bmp_header + 46, 0);                    // number of palette colors
   PutLE32(bmp_header + 50, 0);                    // important color count
+  if (has_alpha) {  // BITMAPV3INFOHEADER complement
+    PutLE32(bmp_header + 54, 0x00ff0000);         // red mask
+    PutLE32(bmp_header + 58, 0x0000ff00);         // green mask
+    PutLE32(bmp_header + 62, 0x000000ff);         // blue mask
+    PutLE32(bmp_header + 66, 0xff000000);         // alpha mask
+  }
 
   // TODO(skal): color profile
 
   // write header
-  if (fwrite(bmp_header, sizeof(bmp_header), 1, fout) != 1) {
+  if (fwrite(bmp_header, header_size, 1, fout) != 1) {
     return 0;
   }
 
-  // write pixel array
+  // write pixel array, bottom to top
   for (y = 0; y < height; ++y) {
-    if (fwrite(rgba, line_size, 1, fout) != 1) {
+    const uint8_t* const src = &rgba[(uint64_t)(height - 1 - y) * stride];
+    if (fwrite(src, line_size, 1, fout) != 1) {
       return 0;
     }
     // write padding zeroes
@@ -345,11 +369,11 @@ int WebPWriteBMP(FILE* fout, const WebPDecBuffer* const buffer) {
         return 0;
       }
     }
-    rgba += stride;
   }
   return 1;
 }
 #undef BMP_HEADER_SIZE
+#undef BMP_HEADER_ALPHA_EXTRA_SIZE
 
 //------------------------------------------------------------------------------
 // TIFF
@@ -361,17 +385,14 @@ int WebPWriteBMP(FILE* fout, const WebPDecBuffer* const buffer) {
 #define TIFF_HEADER_SIZE (EXTRA_DATA_OFFSET + EXTRA_DATA_SIZE)
 
 int WebPWriteTIFF(FILE* fout, const WebPDecBuffer* const buffer) {
-  const int has_alpha = WebPIsAlphaMode(buffer->colorspace);
-  const uint32_t width = buffer->width;
-  const uint32_t height = buffer->height;
-  const uint8_t* rgba = buffer->u.RGBA.rgba;
-  const int stride = buffer->u.RGBA.stride;
-  const uint8_t bytes_per_px = has_alpha ? 4 : 3;
-  const uint8_t assoc_alpha =
-      WebPIsPremultipliedMode(buffer->colorspace) ? 1 : 2;
+  int has_alpha;
+  uint32_t width, height;
+  uint8_t* rgba;
+  int stride;
+  uint8_t bytes_per_px = 0;
+  const uint8_t assoc_alpha = 0;
   // For non-alpha case, we omit tag 0x152 (ExtraSamples).
-  const uint8_t num_ifd_entries = has_alpha ? NUM_IFD_ENTRIES
-                                            : NUM_IFD_ENTRIES - 1;
+  const uint8_t num_ifd_entries = 0;
   uint8_t tiff_header[TIFF_HEADER_SIZE] = {
     0x49, 0x49, 0x2a, 0x00,   // little endian signature
     8, 0, 0, 0,               // offset to the unique IFD that follows
@@ -405,7 +426,20 @@ int WebPWriteTIFF(FILE* fout, const WebPDecBuffer* const buffer) {
   };
   uint32_t y;
 
-  if (fout == NULL || buffer == NULL || rgba == NULL) return 0;
+  if (fout == NULL || buffer == NULL) return 0;
+
+  has_alpha = WebPIsAlphaMode(buffer->colorspace);
+  width = buffer->width;
+  height = buffer->height;
+  rgba = buffer->u.RGBA.rgba;
+  stride = buffer->u.RGBA.stride;
+
+  if (rgba == NULL) return 0;
+
+  // Update bytes_per_px, num_ifd_entries and assoc_alpha.
+  tiff_header[38] = tiff_header[102] = bytes_per_px = has_alpha ? 4 : 3;
+  tiff_header[8] = has_alpha ? NUM_IFD_ENTRIES : NUM_IFD_ENTRIES - 1;
+  tiff_header[186] = WebPIsPremultipliedMode(buffer->colorspace) ? 1 : 2;
 
   // Fill placeholders in IFD:
   PutLE32(tiff_header + 10 + 8, width);

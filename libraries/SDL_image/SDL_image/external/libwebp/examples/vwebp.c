@@ -292,6 +292,19 @@ static void PrintString(const char* const text) {
   }
 }
 
+static void PrintStringW(const char* const text) {
+#if defined(_WIN32) && defined(_UNICODE)
+  void* const font = GLUT_BITMAP_9_BY_15;
+  const W_CHAR* const wtext = (const W_CHAR*)text;
+  int i;
+  for (i = 0; wtext[i]; ++i) {
+    glutBitmapCharacter(font, wtext[i]);
+  }
+#else
+  PrintString(text);
+#endif
+}
+
 static float GetColorf(uint32_t color, int shift) {
   return ((color >> shift) & 0xff) / 255.f;
 }
@@ -396,7 +409,7 @@ static void HandleDisplay(void) {
 
     glColor4f(0.90f, 0.0f, 0.90f, 1.0f);
     glRasterPos2f(-0.95f, 0.90f);
-    PrintString(kParams.file_name);
+    PrintStringW(kParams.file_name);
 
     snprintf(tmp, sizeof(tmp), "Dimension:%d x %d", pic->width, pic->height);
     glColor4f(0.90f, 0.0f, 0.90f, 1.0f);
@@ -479,7 +492,7 @@ static void Help(void) {
       "  'q' / 'Q' / ESC .... quit\n");
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   int c;
   WebPDecoderConfig* const config = &kParams.config;
   WebPIterator* const curr = &kParams.curr_frame;
@@ -630,7 +643,7 @@ int main(int argc, char *argv[]) {
 
 #else   // !WEBP_HAVE_GL
 
-int main(int argc, const char *argv[]) {
+int main(int argc, const char* argv[]) {
   fprintf(stderr, "OpenGL support not enabled in %s.\n", argv[0]);
   (void)argc;
   return 0;

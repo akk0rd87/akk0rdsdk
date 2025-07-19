@@ -30,12 +30,12 @@ extern "C" {
 
 #include "../SDL_sysvideo.h"
 
-extern int HAIKU_CreateWindowFramebuffer(_THIS, SDL_Window *window,
-                                         Uint32 *format,
-                                         void **pixels, int *pitch);
-extern int HAIKU_UpdateWindowFramebuffer(_THIS, SDL_Window *window,
-                                         const SDL_Rect *rects, int numrects);
-extern void HAIKU_DestroyWindowFramebuffer(_THIS, SDL_Window *window);
+extern bool HAIKU_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window,
+                                          SDL_PixelFormat *format,
+                                          void **pixels, int *pitch);
+extern bool HAIKU_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window,
+                                          const SDL_Rect *rects, int numrects);
+extern void HAIKU_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window);
 extern int32 HAIKU_DrawThread(void *data);
 
 #ifdef __cplusplus
@@ -43,5 +43,3 @@ extern int32 HAIKU_DrawThread(void *data);
 #endif
 
 #endif
-
-/* vi: set ts=4 sw=4 expandtab: */
