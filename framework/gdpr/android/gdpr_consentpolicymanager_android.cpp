@@ -14,7 +14,7 @@ namespace GDPRConsentPolicy {
         }
     private:
         JNIEnv* getJNIEnv() {
-            return (JNIEnv*)SDL_AndroidGetJNIEnv();
+            return (JNIEnv*)SDL_GetAndroidJNIEnv();
         }
 
         jclass getGDPRManager() {

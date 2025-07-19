@@ -14,7 +14,7 @@ class AndroidPlatformWrapper : public PlatformWrapper, public MessageBoxCallback
     }
 
     virtual bool vInit() override {
-        wrapper = std::make_unique<AndroidUtilsWrapper>((JNIEnv*)SDL_AndroidGetJNIEnv(), this);
+        wrapper = std::make_unique<AndroidUtilsWrapper>((JNIEnv*)SDL_GetAndroidJNIEnv(), this);
         return wrapper ? true : false;
     };
 

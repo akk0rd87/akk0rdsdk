@@ -189,7 +189,7 @@ public:
     // System init-quit functions
     static bool                Init(Uint32 flags);
     static void                Quit();
-    static int                 GetCPUCount() { return SDL_GetCPUCount(); };
+    static int                 GetCPUCount() { return SDL_GetNumLogicalCPUCores(); };
 
     // Windows and Render functions
     static AkkordWindow* CreateRenderWindow(const char* Title, int X, int Y, int W, int H, Uint32 Flags);
@@ -255,12 +255,12 @@ public:
     static unsigned            Str2Num(const char* Str);
 
     // Event-handling functions
-    static BWrapper::KeyCodes  DecodeKey(const SDL_Keysym& SDL_Key);
+    //static BWrapper::KeyCodes  DecodeKey(const SDL_Keysym& SDL_Key);
 
     // Logging and debugging functions
     static void                Log(BWrapper::LogPriority Priority, const char* File, const char* Function, unsigned Line, SDL_PRINTF_FORMAT_STRING const char* Fmt, ...);
     static LogParamsStruct* GetLogParams();
-    static void                SetLogPriority(BWrapper::LogPriority Priority) { SDL_LogPriority sev = (SDL_LogPriority)Priority; SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, sev); };
+    static void                SetLogPriority(BWrapper::LogPriority Priority) { SDL_LogPriority sev = (SDL_LogPriority)Priority; SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, sev); };
     static bool                PrintDirContent(const char* Path, BWrapper::LogPriority Priority = BWrapper::LogPriority::Debug, bool Recursive = false);
 
     // Random functions
@@ -300,7 +300,7 @@ public:
 
     static constexpr BWrapper::OS GetDeviceOS()
     {
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
         return BWrapper::OS::iOS;
 #endif
 
@@ -308,7 +308,7 @@ public:
         return BWrapper::OS::AndroidOS;
 #endif
 
-#ifdef __WINDOWS__
+#ifdef SDL_PLATFORM_WINDOWS
         return  BWrapper::OS::Windows;
 #endif
 

@@ -1,11 +1,11 @@
 #ifndef __AKK0RD_SDK_PUBLIC_DEFINES__
 #define __AKK0RD_SDK_PUBLIC_DEFINES__
 
-#if defined(__WINDOWS__)
+#if defined(SDL_PLATFORM_WINDOWS)
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
-#include "SDL.h"
+#include "SDL3/SDL.h"
 #include <limits>
 #include <string>
 #include <vector>
@@ -15,7 +15,7 @@
 #include <algorithm>
 
 // Макросы дебага
-#if defined(__AKK0RD_SDK_DEBUG_FORCE__) || defined(_DEBUG) && defined(__WINDOWS__) || defined(__ANDROID__) && !defined(NDEBUG) || defined(__APPLE__) && defined(__DEBUG__) || defined(__CODEBLOCKS)
+#if defined(__AKK0RD_SDK_DEBUG_FORCE__) || defined(_DEBUG) && defined(SDL_PLATFORM_WINDOWS) || defined(__ANDROID__) && !defined(NDEBUG) || defined(SDL_PLATFORM_APPLE) && defined(__DEBUG__) || defined(__CODEBLOCKS)
 #define __AKK0RD_SDK_DEBUG_MACRO__ 1
 #endif
 
