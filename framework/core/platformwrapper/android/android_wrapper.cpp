@@ -170,9 +170,9 @@ int AndroidWrapper::AndroidGetApiLevel() {
 };
 
 JNIEnv* AndroidWrapper::GetJNIEnv() {
-    return (JNIEnv*)SDL_AndroidGetJNIEnv();
+    return (JNIEnv*)SDL_GetAndroidJNIEnv();
 };
 
 jobject AndroidWrapper::GetActivity() {
-    return reinterpret_cast<jobject>(SDL_AndroidGetActivity());
+    return reinterpret_cast<jobject>(SDL_GetAndroidActivity());
 };

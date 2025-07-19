@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifndef SDL_n3dsvideo_h_
 #define SDL_n3dsvideo_h_
@@ -27,17 +27,15 @@
 
 #include "../SDL_sysvideo.h"
 
-typedef struct SDL_VideoData
+struct SDL_VideoData
 {
-    int top_display;
-    int touch_display;
-} SDL_VideoData;
+    SDL_DisplayID top_display;
+    SDL_DisplayID touch_display;
+};
 
-typedef struct SDL_WindowData
+struct SDL_WindowData
 {
-    gfxScreen_t screen; /**< Keeps track of which N3DS screen is targetted */
-} SDL_WindowData;
+    gfxScreen_t screen; /**< Keeps track of which N3DS screen is targeted */
+};
 
-#endif /* SDL_n3dsvideo_h_ */
-
-/* vi: set sts=4 ts=4 sw=4 expandtab: */
+#endif // SDL_n3dsvideo_h_

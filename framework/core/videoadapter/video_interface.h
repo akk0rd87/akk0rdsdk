@@ -2,7 +2,7 @@
 #define __AKK0RD_SDK_VIDEOADAPTER_INTERFACE_H__
 #include <memory>
 #include "basewrapper.h"
-#include "SDL.h"
+#include "SDL3/SDL.h"
 
 using VideoFloatRect = AkkordFRect;
 struct VideoBufferAppendParams {

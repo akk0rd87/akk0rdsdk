@@ -1,4 +1,4 @@
-libtiff.so.5 {
+LIBTIFF_4.0 {
   global:
     TIFFAccessTagMethods;
     TIFFCIELabToRGBInit;
@@ -11,10 +11,7 @@ libtiff.so.5 {
     TIFFClose;
     TIFFComputeStrip;
     TIFFComputeTile;
-    TIFFCreateCustomDirectory;
     TIFFCreateDirectory;
-    TIFFCreateEXIFDirectory;
-    TIFFCreateGPSDirectory;
     TIFFCurrentDirOffset;
     TIFFCurrentDirectory;
     TIFFCurrentRow;
@@ -23,25 +20,17 @@ libtiff.so.5 {
     TIFFDataWidth;
     TIFFDefaultStripSize;
     TIFFDefaultTileSize;
-    TIFFDeferStrileArrayWriting;
     TIFFError;
     TIFFErrorExt;
     TIFFFdOpen;
-    TIFFFieldDataType;
-    TIFFFieldName;
-    TIFFFieldPassCount;
-    TIFFFieldReadCount;
-    TIFFFieldTag;
     TIFFFieldWithName;
     TIFFFieldWithTag;
-    TIFFFieldWriteCount;
     TIFFFileName;
     TIFFFileno;
     TIFFFindCODEC;
     TIFFFindField;
     TIFFFlush;
     TIFFFlushData;
-    TIFFForceStrileArrayWriting;
     TIFFFreeDirectory;
     TIFFGetBitRevTable;
     TIFFGetClientInfo;
@@ -54,10 +43,6 @@ libtiff.so.5 {
     TIFFGetReadProc;
     TIFFGetSeekProc;
     TIFFGetSizeProc;
-    TIFFGetStrileByteCount;
-    TIFFGetStrileByteCountWithErr;
-    TIFFGetStrileOffset;
-    TIFFGetStrileOffsetWithErr;
     TIFFGetTagListCount;
     TIFFGetTagListEntry;
     TIFFGetUnmapFileProc;
@@ -89,16 +74,12 @@ libtiff.so.5 {
     TIFFReadCustomDirectory;
     TIFFReadDirectory;
     TIFFReadEXIFDirectory;
-    TIFFReadGPSDirectory;
     TIFFReadEncodedStrip;
     TIFFReadEncodedTile;
-    TIFFReadFromUserBuffer;
     TIFFReadRGBAImage;
     TIFFReadRGBAImageOriented;
     TIFFReadRGBAStrip;
-    TIFFReadRGBAStripExt;
     TIFFReadRGBATile;
-    TIFFReadRGBATileExt;
     TIFFReadRawStrip;
     TIFFReadRawTile;
     TIFFReadScanline;
@@ -110,7 +91,6 @@ libtiff.so.5 {
     TIFFScanlineSize64;
     TIFFSetClientInfo;
     TIFFSetClientdata;
-    TIFFSetCompressionScheme;
     TIFFSetDirectory;
     TIFFSetErrorHandler;
     TIFFSetErrorHandlerExt;
@@ -155,7 +135,6 @@ libtiff.so.5 {
     TIFFWarningExt;
     TIFFWriteBufferSetup;
     TIFFWriteCheck;
-    TIFFWriteCustomDirectory;
     TIFFWriteDirectory;
     TIFFWriteEncodedStrip;
     TIFFWriteEncodedTile;
@@ -166,19 +145,80 @@ libtiff.so.5 {
     TIFFXYZToRGB;
     TIFFYCbCrToRGBInit;
     TIFFYCbCrtoRGB;
-   _TIFFCheckMalloc;
-   _TIFFCheckRealloc;
-   _TIFFRewriteField;
-   _TIFFfree;
-   _TIFFmalloc;
-   _TIFFmemcmp;
-   _TIFFmemcpy;
-   _TIFFmemset;
-   _TIFFrealloc;
-   _TIFFMultiply32;
-   _TIFFMultiply64;
-   _TIFFGetExifFields;
-   _TIFFGetGpsFields;
+    _TIFFfree;
+    _TIFFmalloc;
+    _TIFFmemcmp;
+    _TIFFmemcpy;
+    _TIFFmemset;
+    _TIFFrealloc;
+
   local:
     *;
 };
+
+LIBTIFF_4.1 {
+    _TIFFCheckMalloc;
+    _TIFFCheckRealloc;
+    _TIFFMultiply32;
+    _TIFFMultiply64;
+    _TIFFRewriteField;
+    TIFFCreateCustomDirectory;
+    TIFFCreateEXIFDirectory;
+    TIFFDeferStrileArrayWriting;
+    TIFFFieldDataType;
+    TIFFFieldName;
+    TIFFFieldPassCount;
+    TIFFFieldReadCount;
+    TIFFFieldTag;
+    TIFFFieldWriteCount;
+    TIFFForceStrileArrayWriting;
+    TIFFGetStrileByteCount;
+    TIFFGetStrileByteCountWithErr;
+    TIFFGetStrileOffset;
+    TIFFGetStrileOffsetWithErr;
+    TIFFReadFromUserBuffer;
+    TIFFReadRGBAStripExt;
+    TIFFReadRGBATileExt;
+    TIFFSetCompressionScheme;
+    TIFFWriteCustomDirectory;
+} LIBTIFF_4.0;
+
+LIBTIFF_4.2 {
+    TIFFCreateGPSDirectory;
+    TIFFReadGPSDirectory;
+    _TIFFGetExifFields;
+    _TIFFGetGpsFields;
+} LIBTIFF_4.1;
+
+LIBTIFF_4.3 {
+} LIBTIFF_4.2;
+
+LIBTIFF_4.4 {
+    TIFFFieldIsAnonymous;
+    TIFFFieldSetGetSize;
+    TIFFFieldSetGetCountSize;
+    TIFFIsBigTIFF;
+} LIBTIFF_4.3;
+
+LIBTIFF_4.5 {
+    _TIFFClampDoubleToUInt32;
+    TIFFClientOpenExt;
+    TIFFFdOpenExt;
+    TIFFOpenExt;
+    TIFFOpenWExt;
+    TIFFErrorExtR;
+    TIFFWarningExtR;
+    TIFFOpenOptionsAlloc;
+    TIFFOpenOptionsFree;
+    TIFFOpenOptionsSetMaxSingleMemAlloc;
+    TIFFOpenOptionsSetErrorHandlerExtR;
+    TIFFOpenOptionsSetWarningHandlerExtR;
+} LIBTIFF_4.4;
+
+LIBTIFF_4.6.1 {
+    TIFFOpenOptionsSetMaxCumulatedMemAlloc;
+} LIBTIFF_4.5;
+
+LIBTIFF_4.7.1 {
+    TIFFOpenOptionsSetWarnAboutUnknownTags;
+} LIBTIFF_4.6.1;

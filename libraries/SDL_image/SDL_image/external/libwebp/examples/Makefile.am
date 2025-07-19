@@ -47,12 +47,13 @@ anim_dump_LDADD += ../imageio/libimageenc.la
 anim_dump_LDADD += $(PNG_LIBS) $(GIF_LIBS) $(TIFF_LIBS) -lm
 
 cwebp_SOURCES  = cwebp.c stopwatch.h
-cwebp_CPPFLAGS  = $(AM_CPPFLAGS)
+cwebp_CPPFLAGS  = $(AM_CPPFLAGS) -I$(top_srcdir)
 cwebp_LDADD  =
 cwebp_LDADD += libexample_util.la
 cwebp_LDADD += ../imageio/libimageio_util.la
 cwebp_LDADD += ../imageio/libimagedec.la
 cwebp_LDADD += ../src/libwebp.la
+cwebp_LDADD += ../sharpyuv/libsharpyuv.la
 cwebp_LDADD += $(JPEG_LIBS) $(PNG_LIBS) $(TIFF_LIBS)
 
 dwebp_SOURCES = dwebp.c stopwatch.h
@@ -92,13 +93,14 @@ webpmux_LDADD += ../src/mux/libwebpmux.la
 webpmux_LDADD += ../src/libwebp.la
 
 img2webp_SOURCES = img2webp.c
-img2webp_CPPFLAGS = $(AM_CPPFLAGS)
+img2webp_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_srcdir)
 img2webp_LDADD  =
 img2webp_LDADD += libexample_util.la
 img2webp_LDADD += ../imageio/libimageio_util.la
 img2webp_LDADD += ../imageio/libimagedec.la
 img2webp_LDADD += ../src/mux/libwebpmux.la
 img2webp_LDADD += ../src/libwebp.la
+img2webp_LDADD += ../sharpyuv/libsharpyuv.la
 img2webp_LDADD += $(PNG_LIBS) $(JPEG_LIBS) $(TIFF_LIBS)
 
 webpinfo_SOURCES = webpinfo.c

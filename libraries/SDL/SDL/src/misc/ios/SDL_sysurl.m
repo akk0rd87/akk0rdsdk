@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -18,12 +18,15 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "SDL_internal.h"
+
+#if defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS)
 
 #include "../SDL_sysurl.h"
 
 #import <UIKit/UIKit.h>
 
-int SDL_SYS_OpenURL(const char *url)
+bool SDL_SYS_OpenURL(const char *url)
 {
     @autoreleasepool {
         NSString *nsstr = [NSString stringWithUTF8String:url];
@@ -31,15 +34,9 @@ int SDL_SYS_OpenURL(const char *url)
         if (![[UIApplication sharedApplication] canOpenURL:nsurl]) {
             return SDL_SetError("No handler registered for this type of URL");
         }
-        if (@available(iOS 10.0, tvOS 10.0, *)) {
-            [[UIApplication sharedApplication] openURL:nsurl options:@{} completionHandler:^(BOOL success) {}];
-        } else {
-            #ifndef SDL_PLATFORM_VISIONOS   /* Fallback is never available in any version of VisionOS (but correct API always is). */
-            [[UIApplication sharedApplication] openURL:nsurl];
-            #endif
-        }
-        return 0;
+        [[UIApplication sharedApplication] openURL:nsurl options:@{} completionHandler:^(BOOL success) {}];
+        return true;
     }
 }
 
-/* vi: set ts=4 sw=4 expandtab: */
+#endif // SDL_PLATFORM_IOS || SDL_PLATFORM_TVOS

@@ -21,7 +21,7 @@
 
 /* This is a GIF image file loading framework */
 
-#include "SDL_image.h"
+#include <SDL3_image/SDL_image.h>
 
 #ifdef LOAD_GIF
 
@@ -44,15 +44,15 @@
    Use SDL_Surface rather than xpaint Image structure
    Define SDL versions of RWSetMsg(), ImageNewCmap() and ImageSetCmap()
 */
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 #define Image           SDL_Surface
-#define RWSetMsg        IMG_SetError
-#define ImageNewCmap(w, h, s)   SDL_CreateRGBSurfaceWithFormat(0, w, h, 0, SDL_PIXELFORMAT_INDEX8)
+#define RWSetMsg        SDL_SetError
+#define ImageNewCmap(w, h, s)   SDL_CreateSurface(w, h, SDL_PIXELFORMAT_INDEX8)
 #define ImageSetCmap(s, i, R, G, B) do { \
-                s->format->palette->colors[i].r = R; \
-                s->format->palette->colors[i].g = G; \
-                s->format->palette->colors[i].b = B; \
+                palette->colors[i].r = R; \
+                palette->colors[i].g = G; \
+                palette->colors[i].b = B; \
             } while (0)
 /* * * * * */
 
@@ -76,7 +76,7 @@
 #define LOCALCOLORMAP   0x80
 #define BitSet(byte, bit)   (((byte) & (bit)) == (bit))
 
-#define ReadOK(file,buffer,len) SDL_RWread(file, buffer, len, 1)
+#define ReadOK(file,buffer,len) (SDL_ReadIO(file, buffer, len) == len)
 
 #define LM_to_uint(a,b)         (((b)<<8)|(a))
 
@@ -127,17 +127,17 @@ typedef struct
     Frame_t *frames;
 } Anim_t;
 
-static int ReadColorMap(SDL_RWops * src, int number,
-            unsigned char buffer[3][MAXCOLORMAPSIZE], int *flag);
-static int DoExtension(SDL_RWops * src, int label, State_t * state);
-static int GetDataBlock(SDL_RWops * src, unsigned char *buf, State_t * state);
-static int GetCode(SDL_RWops * src, int code_size, int flag, State_t * state);
-static int LWZReadByte(SDL_RWops * src, int flag, int input_code_size, State_t * state);
-static Image *ReadImage(SDL_RWops * src, int len, int height, int,
-            unsigned char cmap[3][MAXCOLORMAPSIZE],
-            int gray, int interlace, int ignore, State_t * state);
+static int ReadColorMap(SDL_IOStream * src, int number,
+			unsigned char buffer[3][MAXCOLORMAPSIZE], int *flag);
+static int DoExtension(SDL_IOStream * src, int label, State_t * state);
+static int GetDataBlock(SDL_IOStream * src, unsigned char *buf, State_t * state);
+static int GetCode(SDL_IOStream * src, int code_size, int flag, State_t * state);
+static int LWZReadByte(SDL_IOStream * src, int flag, int input_code_size, State_t * state);
+static Image *ReadImage(SDL_IOStream * src, int len, int height, int,
+			unsigned char cmap[3][MAXCOLORMAPSIZE],
+			int gray, int interlace, int ignore, State_t * state);
 
-static SDL_bool NormalizeFrames(Frame_t *frames, int count)
+static bool NormalizeFrames(Frame_t *frames, int count)
 {
     SDL_Surface *image;
     int i;
@@ -147,16 +147,16 @@ static SDL_bool NormalizeFrames(Frame_t *frames, int count)
     SDL_Rect rect;
 
 
-    if (SDL_HasColorKey(frames[0].image)) {
-        image = SDL_ConvertSurfaceFormat(frames[0].image, SDL_PIXELFORMAT_ARGB8888, 0);
+    if (SDL_SurfaceHasColorKey(frames[0].image)) {
+        image = SDL_ConvertSurface(frames[0].image, SDL_PIXELFORMAT_ARGB8888);
     } else {
-        image = SDL_ConvertSurfaceFormat(frames[0].image, SDL_PIXELFORMAT_RGB888, 0);
+        image = SDL_ConvertSurface(frames[0].image, SDL_PIXELFORMAT_XRGB8888);
     }
     if (!image) {
-        return SDL_FALSE;
+        return false;
     }
 
-    fill = SDL_MapRGBA(image->format, 0, 0, 0, SDL_ALPHA_TRANSPARENT);
+    fill = SDL_MapSurfaceRGBA(image, 0, 0, 0, SDL_ALPHA_TRANSPARENT);
 
     rect.x = 0;
     rect.y = 0;
@@ -166,7 +166,7 @@ static SDL_bool NormalizeFrames(Frame_t *frames, int count)
     for (i = 0; i < count; ++i) {
         switch (lastDispose) {
         case GIF_DISPOSE_RESTORE_BACKGROUND:
-            SDL_FillRect(image, &rect, fill);
+            SDL_FillSurfaceRect(image, &rect, fill);
             break;
         case GIF_DISPOSE_RESTORE_PREVIOUS:
             SDL_BlitSurface(frames[iRestore].image, &rect, image, &rect);
@@ -185,22 +185,23 @@ static SDL_bool NormalizeFrames(Frame_t *frames, int count)
         rect.h = frames[i].image->h;
         SDL_BlitSurface(frames[i].image, NULL, image, &rect);
 
-        SDL_FreeSurface(frames[i].image);
+        SDL_DestroySurface(frames[i].image);
         frames[i].image = SDL_DuplicateSurface(image);
         if (!frames[i].image) {
-            return SDL_FALSE;
+            SDL_DestroySurface( image );
+            return false;
         }
 
         lastDispose = frames[i].disposal;
     }
 
-    SDL_FreeSurface( image );
+    SDL_DestroySurface( image );
 
-    return SDL_TRUE;
+    return true;
 }
 
 static Anim_t *
-IMG_LoadGIF_RW_Internal(SDL_RWops *src, SDL_bool load_anim)
+IMG_LoadGIF_IO_Internal(SDL_IOStream *src, bool load_anim)
 {
     unsigned char buf[16];
     unsigned char c;
@@ -220,7 +221,6 @@ IMG_LoadGIF_RW_Internal(SDL_RWops *src, SDL_bool load_anim)
 
     anim = (Anim_t *)SDL_calloc(1, sizeof(*anim));
     if (!anim) {
-        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -241,7 +241,6 @@ IMG_LoadGIF_RW_Internal(SDL_RWops *src, SDL_bool load_anim)
     }
     state = (State_t *)SDL_calloc(1, sizeof(State_t));
     if (state == NULL) {
-        SDL_OutOfMemory();
         goto done;
     }
     state->Gif89.transparent = -1;
@@ -315,12 +314,11 @@ IMG_LoadGIF_RW_Internal(SDL_RWops *src, SDL_bool load_anim)
 
         if (image) {
             if (state->Gif89.transparent >= 0) {
-                SDL_SetColorKey(image, SDL_TRUE, state->Gif89.transparent);
+                SDL_SetSurfaceColorKey(image, true, state->Gif89.transparent);
             }
 
             frames = (Frame_t *)SDL_realloc(anim->frames, (anim->count + 1) * sizeof(*anim->frames));
             if (!frames) {
-                SDL_OutOfMemory();
                 goto done;
             }
             ++anim->count;
@@ -350,7 +348,7 @@ done:
         if (!NormalizeFrames(anim->frames, anim->count)) {
             int i;
             for (i = 0; i < anim->count; ++i) {
-                SDL_FreeSurface(anim->frames[i].image);
+                SDL_DestroySurface(anim->frames[i].image);
             }
             anim->count = 0;
         }
@@ -365,7 +363,7 @@ done:
 }
 
 static int
-ReadColorMap(SDL_RWops *src, int number,
+ReadColorMap(SDL_IOStream *src, int number,
              unsigned char buffer[3][MAXCOLORMAPSIZE], int *gray)
 {
     int i;
@@ -399,7 +397,7 @@ ReadColorMap(SDL_RWops *src, int number,
 }
 
 static int
-DoExtension(SDL_RWops *src, int label, State_t * state)
+DoExtension(SDL_IOStream *src, int label, State_t * state)
 {
     unsigned char buf[256];
 
@@ -434,7 +432,7 @@ DoExtension(SDL_RWops *src, int label, State_t * state)
 }
 
 static int
-GetDataBlock(SDL_RWops *src, unsigned char *buf, State_t * state)
+GetDataBlock(SDL_IOStream *src, unsigned char *buf, State_t * state)
 {
     unsigned char count;
 
@@ -452,7 +450,7 @@ GetDataBlock(SDL_RWops *src, unsigned char *buf, State_t * state)
 }
 
 static int
-GetCode(SDL_RWops *src, int code_size, int flag, State_t * state)
+GetCode(SDL_IOStream *src, int code_size, int flag, State_t * state)
 {
     int i, j, ret;
     unsigned char count;
@@ -493,7 +491,7 @@ GetCode(SDL_RWops *src, int code_size, int flag, State_t * state)
 }
 
 static int
-LWZReadByte(SDL_RWops *src, int flag, int input_code_size, State_t * state)
+LWZReadByte(SDL_IOStream *src, int flag, int input_code_size, State_t * state)
 {
     int i, code, incode;
 
@@ -611,11 +609,12 @@ LWZReadByte(SDL_RWops *src, int flag, int input_code_size, State_t * state)
 }
 
 static Image *
-ReadImage(SDL_RWops * src, int len, int height, int cmapSize,
+ReadImage(SDL_IOStream * src, int len, int height, int cmapSize,
           unsigned char cmap[3][MAXCOLORMAPSIZE],
           int gray, int interlace, int ignore, State_t * state)
 {
     Image *image;
+    SDL_Palette *palette;
     unsigned char c;
     int i, v;
     int xpos = 0, ypos = 0, pass = 0;
@@ -645,14 +644,18 @@ ReadImage(SDL_RWops * src, int len, int height, int cmapSize,
     if (!image) {
         return NULL;
     }
-    if (!image->pixels) {
-        SDL_FreeSurface(image);
+
+    palette = SDL_CreateSurfacePalette(image);
+    if (!palette) {
         return NULL;
     }
-
-    for (i = 0; i < cmapSize; i++)
-        ImageSetCmap(image, i, cmap[CM_RED][i],
-                     cmap[CM_GREEN][i], cmap[CM_BLUE][i]);
+    if (cmapSize > palette->ncolors) {
+        cmapSize = palette->ncolors;
+    }
+    palette->ncolors = cmapSize;
+    for (i = 0; i < cmapSize; i++) {
+        ImageSetCmap(image, i, cmap[CM_RED][i], cmap[CM_GREEN][i], cmap[CM_BLUE][i]);
+    }
 
     while ((v = LWZReadByte(src, FALSE, c, state)) >= 0) {
         ((Uint8 *)image->pixels)[xpos + ypos * image->pitch] = (Uint8)v;
@@ -703,9 +706,9 @@ ReadImage(SDL_RWops * src, int len, int height, int cmapSize,
 }
 
 /* Load a GIF type animation from an SDL datasource */
-IMG_Animation *IMG_LoadGIFAnimation_RW(SDL_RWops *src)
+IMG_Animation *IMG_LoadGIFAnimation_IO(SDL_IOStream *src)
 {
-    Anim_t *internal = IMG_LoadGIF_RW_Internal(src, SDL_TRUE);
+    Anim_t *internal = IMG_LoadGIF_IO_Internal(src, true);
     if (internal) {
         IMG_Animation *anim = (IMG_Animation *)SDL_malloc(sizeof(*anim));
         if (anim) {
@@ -728,9 +731,6 @@ IMG_Animation *IMG_LoadGIFAnimation_RW(SDL_RWops *src)
                 anim = NULL;
             }
         }
-        if (!anim) {
-            SDL_OutOfMemory();
-        }
         SDL_free(internal->frames);
         SDL_free(internal);
         return anim;
@@ -741,7 +741,7 @@ IMG_Animation *IMG_LoadGIFAnimation_RW(SDL_RWops *src)
 #else
 
 /* Load a GIF type animation from an SDL datasource */
-IMG_Animation *IMG_LoadGIFAnimation_RW(SDL_RWops *src)
+IMG_Animation *IMG_LoadGIFAnimation_IO(SDL_IOStream *src)
 {
     return NULL;
 }
@@ -753,32 +753,34 @@ IMG_Animation *IMG_LoadGIFAnimation_RW(SDL_RWops *src)
 #ifdef LOAD_GIF
 
 /* See if an image is contained in a data source */
-int IMG_isGIF(SDL_RWops *src)
+bool IMG_isGIF(SDL_IOStream *src)
 {
     Sint64 start;
-    int is_GIF;
+    bool is_GIF;
     char magic[6];
 
-    if ( !src )
-        return 0;
-    start = SDL_RWtell(src);
-    is_GIF = 0;
-    if ( SDL_RWread(src, magic, sizeof(magic), 1) ) {
+    if (!src) {
+        return false;
+    }
+
+    start = SDL_TellIO(src);
+    is_GIF = false;
+    if (SDL_ReadIO(src, magic, sizeof(magic)) == sizeof(magic) ) {
         if ( (SDL_strncmp(magic, "GIF", 3) == 0) &&
              ((SDL_memcmp(magic + 3, "87a", 3) == 0) ||
               (SDL_memcmp(magic + 3, "89a", 3) == 0)) ) {
-            is_GIF = 1;
+            is_GIF = true;
         }
     }
-    SDL_RWseek(src, start, RW_SEEK_SET);
-    return(is_GIF);
+    SDL_SeekIO(src, start, SDL_IO_SEEK_SET);
+    return is_GIF;
 }
 
 /* Load a GIF type image from an SDL datasource */
-SDL_Surface *IMG_LoadGIF_RW(SDL_RWops *src)
+SDL_Surface *IMG_LoadGIF_IO(SDL_IOStream *src)
 {
     SDL_Surface *image = NULL;
-    Anim_t *internal = IMG_LoadGIF_RW_Internal(src, SDL_FALSE);
+    Anim_t *internal = IMG_LoadGIF_IO_Internal(src, false);
     if (internal) {
         image = internal->frames[0].image;
         SDL_free(internal->frames);
@@ -788,20 +790,20 @@ SDL_Surface *IMG_LoadGIF_RW(SDL_RWops *src)
 }
 
 #else
-#if _MSC_VER >= 1300
+#if defined(_MSC_VER) && _MSC_VER >= 1300
 #pragma warning(disable : 4100) /* warning C4100: 'op' : unreferenced formal parameter */
 #endif
 
 /* See if an image is contained in a data source */
-int IMG_isGIF(SDL_RWops *src)
+bool IMG_isGIF(SDL_IOStream *src)
 {
-    return(0);
+    return false;
 }
 
 /* Load a GIF type image from an SDL datasource */
-SDL_Surface *IMG_LoadGIF_RW(SDL_RWops *src)
+SDL_Surface *IMG_LoadGIF_IO(SDL_IOStream *src)
 {
-    return(NULL);
+    return NULL;
 }
 
 #endif /* LOAD_GIF */
