@@ -11,14 +11,14 @@
   freely.
 */
 
-#include "SDL_image.h"
+#include <SDL3_image/SDL_image.h>
 
-#include "SDL.h"
-#include "SDL_test.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_test.h>
 
-#if defined(SDL_FILESYSTEM_OS2) || defined(SDL_FILESYSTEM_WINDOWS)
+#if defined(SDL_PLATFORM_OS2) || defined(SDL_PLATFORM_WIN32)
 static const char pathsep[] = "\\";
-#elif defined(SDL_FILESYSTEM_RISCOS)
+#elif defined(SDL_PLATFORM_RISCOS)
 static const char pathsep[] = ".";
 #else
 static const char pathsep[] = "/";
@@ -36,16 +36,16 @@ typedef enum
     TEST_FILE_BUILT
 } TestFileType;
 
-static SDL_bool
-GetStringBoolean(const char *value, SDL_bool default_value)
+static bool
+GetStringBoolean(const char *value, bool default_value)
 {
     if (!value || !*value) {
         return default_value;
     }
     if (*value == '0' || SDL_strcasecmp(value, "false") == 0) {
-        return SDL_FALSE;
+        return false;
     }
-    return SDL_TRUE;
+    return true;
 }
 
 /*
@@ -63,38 +63,27 @@ GetStringBoolean(const char *value, SDL_bool default_value)
 static char *
 GetTestFilename(TestFileType type, const char *file)
 {
-    const char *env;
-    char *base = NULL;
+    const char *base;
     char *path = NULL;
-    SDL_bool needPathSep = SDL_TRUE;
+    bool needPathSep = true;
 
     if (type == TEST_FILE_DIST) {
-        env = SDL_getenv("SDL_TEST_SRCDIR");
+        base = SDL_getenv("SDL_TEST_SRCDIR");
     } else {
-        env = SDL_getenv("SDL_TEST_BUILDDIR");
-    }
-
-    if (env != NULL) {
-        base = SDL_strdup(env);
-        if (base == NULL) {
-            SDL_OutOfMemory();
-            return NULL;
-        }
+        base = SDL_getenv("SDL_TEST_BUILDDIR");
     }
 
     if (base == NULL) {
         base = SDL_GetBasePath();
         /* SDL_GetBasePath() guarantees a trailing path separator */
-        needPathSep = SDL_FALSE;
+        needPathSep = false;
     }
 
     if (base != NULL) {
         size_t len = SDL_strlen(base) + SDL_strlen(pathsep) + SDL_strlen(file) + 1;
 
         path = SDL_malloc(len);
-
         if (path == NULL) {
-            SDL_OutOfMemory();
             return NULL;
         }
 
@@ -103,12 +92,9 @@ GetTestFilename(TestFileType type, const char *file)
         } else {
             SDL_snprintf(path, len, "%s%s", base, file);
         }
-
-        SDL_free(base);
     } else {
         path = SDL_strdup(file);
         if (path == NULL) {
-            SDL_OutOfMemory();
             return NULL;
         }
     }
@@ -126,11 +112,10 @@ typedef struct
     int w;
     int h;
     int tolerance;
-    int initFlag;
-    SDL_bool canLoad;
-    SDL_bool canSave;
-    int (SDLCALL * checkFunction)(SDL_RWops *src);
-    SDL_Surface *(SDLCALL * loadFunction)(SDL_RWops *src);
+    bool canLoad;
+    bool canSave;
+    bool (SDLCALL * checkFunction)(SDL_IOStream *src);
+    SDL_Surface *(SDLCALL * loadFunction)(SDL_IOStream *src);
 } Format;
 
 static const Format formats[] =
@@ -142,15 +127,14 @@ static const Format formats[] =
         23,
         42,
         300,
-        IMG_INIT_AVIF,
 #ifdef LOAD_AVIF
-        SDL_TRUE,
+        true,
 #else
-        SDL_FALSE,
+        false,
 #endif
-        SDL_FALSE,      /* can save */
+        SDL_IMAGE_SAVE_AVIF,
         IMG_isAVIF,
-        IMG_LoadAVIF_RW,
+        IMG_LoadAVIF_IO,
     },
     {
         "BMP",
@@ -159,15 +143,14 @@ static const Format formats[] =
         23,
         42,
         0,              /* lossless */
-        0,              /* no initialization */
 #ifdef LOAD_BMP
-        SDL_TRUE,
+        true,
 #else
-        SDL_FALSE,
+        false,
 #endif
-        SDL_FALSE,      /* can save */
+        false,      /* can save */
         IMG_isBMP,
-        IMG_LoadBMP_RW,
+        IMG_LoadBMP_IO,
     },
     {
         "CUR",
@@ -176,15 +159,14 @@ static const Format formats[] =
         23,
         42,
         0,              /* lossless */
-        0,              /* no initialization */
 #ifdef LOAD_BMP
-        SDL_TRUE,
+        true,
 #else
-        SDL_FALSE,
+        false,
 #endif
-        SDL_FALSE,      /* can save */
+        false,      /* can save */
         IMG_isCUR,
-        IMG_LoadCUR_RW,
+        IMG_LoadCUR_IO,
     },
     {
         "GIF",
@@ -193,15 +175,14 @@ static const Format formats[] =
         23,
         42,
         0,              /* lossless */
-        0,              /* no initialization */
 #if USING_IMAGEIO || defined(LOAD_GIF)
-        SDL_TRUE,
+        true,
 #else
-        SDL_FALSE,
+        false,
 #endif
-        SDL_FALSE,      /* can save */
+        false,      /* can save */
         IMG_isGIF,
-        IMG_LoadGIF_RW,
+        IMG_LoadGIF_IO,
     },
     {
         "ICO",
@@ -210,15 +191,14 @@ static const Format formats[] =
         23,
         42,
         0,              /* lossless */
-        0,              /* no initialization */
 #ifdef LOAD_BMP
-        SDL_TRUE,
+        true,
 #else
-        SDL_FALSE,
+        false,
 #endif
-        SDL_FALSE,      /* can save */
+        false,      /* can save */
         IMG_isICO,
-        IMG_LoadICO_RW,
+        IMG_LoadICO_IO,
     },
     {
         "JPG",
@@ -227,15 +207,14 @@ static const Format formats[] =
         23,
         42,
         100,
-        IMG_INIT_JPG,
 #if (USING_IMAGEIO && defined(JPG_USES_IMAGEIO)) || defined(SDL_IMAGE_USE_WIC_BACKEND) || defined(LOAD_JPG)
-        SDL_TRUE,
+        true,
 #else
-        SDL_FALSE,
+        false,
 #endif
         SDL_IMAGE_SAVE_JPG,
         IMG_isJPG,
-        IMG_LoadJPG_RW,
+        IMG_LoadJPG_IO,
     },
 #if 0 /* Different versions of JXL yield different output images */
     {
@@ -245,15 +224,14 @@ static const Format formats[] =
         23,
         42,
         300,
-        IMG_INIT_JXL,
 #ifdef LOAD_JXL
-        SDL_TRUE,
+        true,
 #else
-        SDL_FALSE,
+        false,
 #endif
-        SDL_FALSE,      /* can save */
+        false,      /* can save */
         IMG_isJXL,
-        IMG_LoadJXL_RW,
+        IMG_LoadJXL_IO,
     },
 #endif
 #if 0
@@ -264,15 +242,14 @@ static const Format formats[] =
         23,
         42,
         0,              /* lossless? */
-        0,              /* no initialization */
 #ifdef LOAD_LBM
-        SDL_TRUE,
+        true,
 #else
-        SDL_FALSE,
+        false,
 #endif
-        SDL_FALSE,      /* can save */
+        false,      /* can save */
         IMG_isLBM,
-        IMG_LoadLBM_RW,
+        IMG_LoadLBM_IO,
     },
 #endif
     {
@@ -282,15 +259,14 @@ static const Format formats[] =
         23,
         42,
         0,              /* lossless? */
-        0,              /* no initialization */
 #ifdef LOAD_PCX
-        SDL_TRUE,
+        true,
 #else
-        SDL_FALSE,
+        false,
 #endif
-        SDL_FALSE,      /* can save */
+        false,      /* can save */
         IMG_isPCX,
-        IMG_LoadPCX_RW,
+        IMG_LoadPCX_IO,
     },
     {
         "PNG",
@@ -299,19 +275,14 @@ static const Format formats[] =
         23,
         42,
         0,              /* lossless */
-        IMG_INIT_PNG,
 #if (USING_IMAGEIO && defined(PNG_USES_IMAGEIO)) || defined(SDL_IMAGE_USE_WIC_BACKEND) || defined(LOAD_PNG)
-        SDL_TRUE,
+        true,
 #else
-        SDL_FALSE,
+        false,
 #endif
-#ifdef SDL_IMAGE_SAVE_PNG
-        SDL_IMAGE_SAVE_PNG ? SDL_TRUE : SDL_FALSE,
-#else
-        SDL_FALSE,
-#endif
+        SDL_IMAGE_SAVE_PNG,
         IMG_isPNG,
-        IMG_LoadPNG_RW,
+        IMG_LoadPNG_IO,
     },
     {
         "PNM",
@@ -320,15 +291,14 @@ static const Format formats[] =
         23,
         42,
         0,              /* lossless */
-        0,              /* no initialization */
 #ifdef LOAD_PNM
-        SDL_TRUE,
+        true,
 #else
-        SDL_FALSE,
+        false,
 #endif
-        SDL_FALSE,      /* can save */
+        false,      /* can save */
         IMG_isPNM,
-        IMG_LoadPNM_RW,
+        IMG_LoadPNM_IO,
     },
     {
         "QOI",
@@ -337,15 +307,14 @@ static const Format formats[] =
         23,
         42,
         0,              /* lossless */
-        0,              /* no initialization */
 #ifdef LOAD_QOI
-        SDL_TRUE,
+        true,
 #else
-        SDL_FALSE,
+        false,
 #endif
-        SDL_FALSE,      /* can save */
+        false,      /* can save */
         IMG_isQOI,
-        IMG_LoadQOI_RW,
+        IMG_LoadQOI_IO,
     },
     {
         "SVG",
@@ -354,15 +323,14 @@ static const Format formats[] =
         32,
         32,
         100,
-        0,              /* no initialization */
 #ifdef LOAD_SVG
-        SDL_TRUE,
+        true,
 #else
-        SDL_FALSE,
+        false,
 #endif
-        SDL_FALSE,      /* can save */
+        false,      /* can save */
         IMG_isSVG,
-        IMG_LoadSVG_RW,
+        IMG_LoadSVG_IO,
     },
     {
         "SVG-sized",
@@ -371,15 +339,14 @@ static const Format formats[] =
         64,
         64,
         100,
-        0,              /* no initialization */
 #ifdef LOAD_SVG
-        SDL_TRUE,
+        true,
 #else
-        SDL_FALSE,
+        false,
 #endif
-        SDL_FALSE,      /* can save */
+        false,      /* can save */
         IMG_isSVG,
-        IMG_LoadSVG_RW,
+        IMG_LoadSVG_IO,
     },
     {
         "SVG-class",
@@ -388,15 +355,14 @@ static const Format formats[] =
         82,
         82,
         0,              /* lossless? */
-        0,              /* no initialization */
 #ifdef LOAD_SVG
-        SDL_TRUE,
+        true,
 #else
-        SDL_FALSE,
+        false,
 #endif
-        SDL_FALSE,      /* can save */
+        false,      /* can save */
         IMG_isSVG,
-        IMG_LoadSVG_RW,
+        IMG_LoadSVG_IO,
     },
     {
         "TGA",
@@ -405,15 +371,14 @@ static const Format formats[] =
         23,
         42,
         0,              /* lossless? */
-        0,              /* no initialization */
 #if USING_IMAGEIO || defined(LOAD_TGA)
-        SDL_TRUE,
+        true,
 #else
-        SDL_FALSE,
+        false,
 #endif
-        SDL_FALSE,      /* can save */
+        false,      /* can save */
         NULL,
-        IMG_LoadTGA_RW,
+        IMG_LoadTGA_IO,
     },
     {
         "TIF",
@@ -422,15 +387,14 @@ static const Format formats[] =
         23,
         42,
         0,              /* lossless */
-        IMG_INIT_TIF,
 #if USING_IMAGEIO || defined(SDL_IMAGE_USE_WIC_BACKEND) || defined(LOAD_TIF)
-        SDL_TRUE,
+        true,
 #else
-        SDL_FALSE,
+        false,
 #endif
-        SDL_FALSE,      /* can save */
+        false,      /* can save */
         IMG_isTIF,
-        IMG_LoadTIF_RW,
+        IMG_LoadTIF_IO,
     },
     {
         "WEBP",
@@ -439,15 +403,14 @@ static const Format formats[] =
         23,
         42,
         0,              /* lossless */
-        IMG_INIT_WEBP,
 #ifdef LOAD_WEBP
-        SDL_TRUE,
+        true,
 #else
-        SDL_FALSE,
+        false,
 #endif
-        SDL_FALSE,      /* can save */
+        false,      /* can save */
         IMG_isWEBP,
-        IMG_LoadWEBP_RW,
+        IMG_LoadWEBP_IO,
     },
     {
         "XCF",
@@ -456,15 +419,14 @@ static const Format formats[] =
         23,
         42,
         0,              /* lossless */
-        0,              /* no initialization */
 #ifdef LOAD_XCF
-        SDL_TRUE,
+        true,
 #else
-        SDL_FALSE,
+        false,
 #endif
-        SDL_FALSE,      /* can save */
+        false,      /* can save */
         IMG_isXCF,
-        IMG_LoadXCF_RW,
+        IMG_LoadXCF_IO,
     },
     {
         "XPM",
@@ -473,15 +435,14 @@ static const Format formats[] =
         23,
         42,
         0,              /* lossless */
-        0,              /* no initialization */
 #ifdef LOAD_XPM
-        SDL_TRUE,
+        true,
 #else
-        SDL_FALSE,
+        false,
 #endif
-        SDL_FALSE,      /* can save */
+        false,      /* can save */
         IMG_isXPM,
-        IMG_LoadXPM_RW,
+        IMG_LoadXPM_IO,
     },
 #if 0
     {
@@ -491,20 +452,19 @@ static const Format formats[] =
         23,
         42,
         0,              /* lossless? */
-        0,              /* no initialization */
 #ifdef LOAD_XV
-        SDL_TRUE,
+        true,
 #else
-        SDL_FALSE,
+        false,
 #endif
-        SDL_FALSE,      /* can save */
+        false,      /* can save */
         IMG_isXV,
-        IMG_LoadXV_RW,
+        IMG_LoadXV_IO,
     },
 #endif
 };
 
-static SDL_bool
+static bool
 StrHasSuffix(const char *str, const char *suffix)
 {
     size_t str_len = SDL_strlen(str);
@@ -517,35 +477,37 @@ StrHasSuffix(const char *str, const char *suffix)
 typedef enum
 {
     LOAD_CONVENIENCE = 0,
-    LOAD_RW,
-    LOAD_TYPED_RW,
+    LOAD_IO,
+    LOAD_TYPED_IO,
     LOAD_FORMAT_SPECIFIC,
     LOAD_SIZED
 } LoadMode;
 
 /* Convert to RGBA for comparison, if necessary */
-static SDL_bool
+static bool
 ConvertToRgba32(SDL_Surface **surface_p)
 {
-    if ((*surface_p)->format->format != SDL_PIXELFORMAT_RGBA32) {
+    if ((*surface_p)->format != SDL_PIXELFORMAT_RGBA32) {
         SDL_Surface *temp;
 
-        temp = SDL_ConvertSurfaceFormat(*surface_p, SDL_PIXELFORMAT_RGBA32, 0);
+        SDL_ClearError();
+        temp = SDL_ConvertSurface(*surface_p, SDL_PIXELFORMAT_RGBA32);
         SDLTest_AssertCheck(temp != NULL,
                             "Converting to RGBA should succeed (%s)",
                             SDL_GetError());
         if (temp == NULL) {
-            return SDL_FALSE;
+            return false;
         }
-        SDL_FreeSurface(*surface_p);
+        SDL_DestroySurface(*surface_p);
         *surface_p = temp;
     }
-    return SDL_TRUE;
+    return true;
 }
 
 static void
 DumpPixels(const char *filename, SDL_Surface *surface)
 {
+    const SDL_Palette *palette = SDL_GetSurfacePalette(surface);
     const unsigned char *pixels = surface->pixels;
     const unsigned char *p;
     size_t w, h, pitch;
@@ -553,21 +515,21 @@ DumpPixels(const char *filename, SDL_Surface *surface)
 
     SDL_Log("%s:\n", filename);
 
-    if (surface->format->palette) {
+    if (palette) {
         size_t n = 0;
 
-        if (surface->format->palette->ncolors >= 0) {
-            n = (size_t) surface->format->palette->ncolors;
+        if (palette->ncolors >= 0) {
+            n = (size_t) palette->ncolors;
         }
 
         SDL_Log("  Palette:\n");
         for (i = 0; i < n; i++) {
             SDL_Log("    RGBA[0x%02x] = %02x%02x%02x%02x\n",
                     (unsigned) i,
-                    surface->format->palette->colors[i].r,
-                    surface->format->palette->colors[i].g,
-                    surface->format->palette->colors[i].b,
-                    surface->format->palette->colors[i].a);
+                    palette->colors[i].r,
+                    palette->colors[i].g,
+                    palette->colors[i].b,
+                    palette->colors[i].a);
         }
     }
 
@@ -596,9 +558,9 @@ DumpPixels(const char *filename, SDL_Surface *surface)
         SDL_Log("    ");
 
         for (i = 0; i < w; i++) {
-            p = pixels + (j * pitch) + (i * surface->format->BytesPerPixel);
+            p = pixels + (j * pitch) + (i * SDL_BYTESPERPIXEL(surface->format));
 
-            switch (surface->format->BitsPerPixel) {
+            switch (SDL_BITSPERPIXEL(surface->format)) {
                 case 1:
                 case 4:
                 case 8:
@@ -637,17 +599,21 @@ FormatLoadTest(const Format *format,
 {
     SDL_Surface *reference = NULL;
     SDL_Surface *surface = NULL;
-    SDL_RWops *src = NULL;
-    char *filename = GetTestFilename(TEST_FILE_DIST, format->sample);
-    char *refFilename = GetTestFilename(TEST_FILE_DIST, format->reference);
-    int initResult = 0;
+    SDL_IOStream *src = NULL;
+    char *filename = NULL;
+    char *refFilename = NULL;
     int diff;
 
+    SDL_ClearError();
+    filename = GetTestFilename(TEST_FILE_DIST, format->sample);
     if (!SDLTest_AssertCheck(filename != NULL,
                              "Building filename should succeed (%s)",
                              SDL_GetError())) {
         goto out;
     }
+
+    SDL_ClearError();
+    refFilename = GetTestFilename(TEST_FILE_DIST, format->reference);
     if (!SDLTest_AssertCheck(refFilename != NULL,
                              "Building ref filename should succeed (%s)",
                              SDL_GetError())) {
@@ -655,6 +621,8 @@ FormatLoadTest(const Format *format,
     }
 
     if (StrHasSuffix(format->reference, ".bmp")) {
+        SDL_ClearError();
+        SDLTest_AssertPass("About to call SDL_LoadBMP(\"%s\")", refFilename);
         reference = SDL_LoadBMP(refFilename);
         if (!SDLTest_AssertCheck(reference != NULL,
                                  "Loading reference should succeed (%s)",
@@ -664,6 +632,8 @@ FormatLoadTest(const Format *format,
     }
     else if (StrHasSuffix (format->reference, ".png")) {
 #ifdef LOAD_PNG
+        SDL_ClearError();
+        SDLTest_AssertPass("About to call IMG_Load(\"%s\")", refFilename);
         reference = IMG_Load(refFilename);
         if (!SDLTest_AssertCheck(reference != NULL,
                                  "Loading reference should succeed (%s)",
@@ -673,20 +643,10 @@ FormatLoadTest(const Format *format,
 #endif
     }
 
-    if (format->initFlag) {
-        initResult = IMG_Init(format->initFlag);
-        if (!SDLTest_AssertCheck(initResult != 0,
-                                 "Initialization should succeed (%s)",
-                                 SDL_GetError())) {
-            goto out;
-        }
-        SDLTest_AssertCheck(initResult & format->initFlag,
-                            "Expected at least bit 0x%x set, got 0x%x",
-                            format->initFlag, initResult);
-    }
-
     if (mode != LOAD_CONVENIENCE) {
-        src = SDL_RWFromFile(filename, "rb");
+        SDL_ClearError();
+        SDLTest_AssertPass("About to call SDL_IOFromFile(\"%s\", \"rb\")", refFilename);
+        src = SDL_IOFromFile(filename, "rb");
         SDLTest_AssertCheck(src != NULL,
                             "Opening %s should succeed (%s)",
                             filename, SDL_GetError());
@@ -694,30 +654,35 @@ FormatLoadTest(const Format *format,
             goto out;
     }
 
+    SDL_ClearError();
     switch (mode) {
         case LOAD_CONVENIENCE:
+            SDLTest_AssertPass("About to call IMG_Load(\"%s\")", filename);
             surface = IMG_Load(filename);
             break;
 
-        case LOAD_RW:
+        case LOAD_IO:
             if (format->checkFunction != NULL) {
-                SDL_RWops *ref_src;
+                SDL_IOStream *ref_src;
                 int check;
 
-                ref_src = SDL_RWFromFile(refFilename, "rb");
+                SDLTest_AssertPass("About to call SDL_IOFromFile(\"%s\", \"rb\")", refFilename);
+                ref_src = SDL_IOFromFile(refFilename, "rb");
                 SDLTest_AssertCheck(ref_src != NULL,
                                     "Opening %s should succeed (%s)",
                                     refFilename, SDL_GetError());
                 if (ref_src != NULL) {
+                    SDLTest_AssertPass("About to call IMG_Is%s(<reference>)", format->name);
                     check = format->checkFunction(ref_src);
                     SDLTest_AssertCheck(!check,
                                         "Should not detect %s as %s -> %d",
                                         refFilename, format->name, check);
-                    SDL_RWclose(ref_src);
+                    SDL_CloseIO(ref_src);
                 }
             }
 
             if (format->checkFunction != NULL) {
+                SDLTest_AssertPass("About to call IMG_Is%s(<src>)", format->name);
                 int check = format->checkFunction(src);
 
                 SDLTest_AssertCheck(check,
@@ -725,22 +690,26 @@ FormatLoadTest(const Format *format,
                                     filename, format->name, check);
             }
 
-            surface = IMG_Load_RW(src, SDL_TRUE);
+            SDL_ClearError();
+            SDLTest_AssertPass("About to call IMG_Load_IO(<src>, true)");
+            surface = IMG_Load_IO(src, true);
             src = NULL;      /* ownership taken */
             break;
 
-        case LOAD_TYPED_RW:
-            surface = IMG_LoadTyped_RW(src, SDL_TRUE, format->name);
+        case LOAD_TYPED_IO:
+            SDLTest_AssertPass("About to call IMG_LoadTyped_IO(<src>, true, \"%s\")", format->name);
+            surface = IMG_LoadTyped_IO(src, true, format->name);
             src = NULL;      /* ownership taken */
             break;
 
         case LOAD_FORMAT_SPECIFIC:
+            SDLTest_AssertPass("About to call IMG_Load%s_IO(<src>)", format->name);
             surface = format->loadFunction(src);
             break;
 
         case LOAD_SIZED:
             if (SDL_strcmp(format->name, "SVG-sized") == 0) {
-                surface = IMG_LoadSizedSVG_RW(src, 64, 64);
+                surface = IMG_LoadSizedSVG_IO(src, 64, 64);
             }
             break;
     }
@@ -757,7 +726,7 @@ FormatLoadTest(const Format *format,
                         "Expected height %d px, got %d",
                         format->h, surface->h);
 
-    if (GetStringBoolean(SDL_getenv("SDL_IMAGE_TEST_DEBUG"), SDL_FALSE)) {
+    if (GetStringBoolean(SDL_getenv("SDL_IMAGE_TEST_DEBUG"), false)) {
         DumpPixels(filename, surface);
     }
 
@@ -768,7 +737,7 @@ FormatLoadTest(const Format *format,
         SDLTest_AssertCheck(diff == 0,
                             "Surface differed from reference by at most %d in %d pixels",
                             format->tolerance, diff);
-        if (diff != 0 || GetStringBoolean(SDL_getenv("SDL_IMAGE_TEST_DEBUG"), SDL_FALSE)) {
+        if (diff != 0 || GetStringBoolean(SDL_getenv("SDL_IMAGE_TEST_DEBUG"), false)) {
             DumpPixels(filename, surface);
             DumpPixels(refFilename, reference);
         }
@@ -776,13 +745,13 @@ FormatLoadTest(const Format *format,
 
 out:
     if (surface != NULL) {
-        SDL_FreeSurface(surface);
+        SDL_DestroySurface(surface);
     }
     if (reference != NULL) {
-        SDL_FreeSurface(reference);
+        SDL_DestroySurface(reference);
     }
     if (src != NULL) {
-        SDL_RWclose(src);
+        SDL_CloseIO(src);
     }
     if (refFilename != NULL) {
         SDL_free(refFilename);
@@ -790,35 +759,34 @@ out:
     if (filename != NULL) {
         SDL_free(filename);
     }
-    if (initResult) {
-        IMG_Quit();
-    }
 }
 
 static void
 FormatSaveTest(const Format *format,
-               SDL_bool rw)
+               bool rw)
 {
-    char *refFilename = GetTestFilename(TEST_FILE_DIST, "sample.bmp");
+    char *refFilename = NULL;
     char filename[64] = { 0 };
     SDL_Surface *reference = NULL;
     SDL_Surface *surface = NULL;
-    SDL_RWops *dest = NULL;
-    int initResult = 0;
+    SDL_IOStream *dest = NULL;
     int diff;
-    int result;
+    bool result;
 
     SDL_snprintf(filename, sizeof(filename),
                  "save%s.%s",
                  rw ? "Rwops" : "",
                  format->name);
 
+    SDL_ClearError();
+    refFilename = GetTestFilename(TEST_FILE_DIST, "sample.bmp");
     if (!SDLTest_AssertCheck(refFilename != NULL,
                              "Building ref filename should succeed (%s)",
                              SDL_GetError())) {
         goto out;
     }
 
+    SDL_ClearError();
     reference = SDL_LoadBMP(refFilename);
     if (!SDLTest_AssertCheck(reference != NULL,
                              "Loading reference should succeed (%s)",
@@ -826,42 +794,41 @@ FormatSaveTest(const Format *format,
         goto out;
     }
 
-    if (format->initFlag) {
-        initResult = IMG_Init(format->initFlag);
-        if (!SDLTest_AssertCheck(initResult != 0,
-                                 "Initialization should succeed (%s)",
-                                 SDL_GetError())) {
-            goto out;
-        }
-        SDLTest_AssertCheck(initResult & format->initFlag,
-                            "Expected at least bit 0x%x set, got 0x%x",
-                            format->initFlag, initResult);
-    }
-
-    if (SDL_strcmp (format->name, "PNG") == 0) {
+    SDL_ClearError();
+    if (SDL_strcmp (format->name, "AVIF") == 0) {
         if (rw) {
-            dest = SDL_RWFromFile(filename, "wb");
-            result = IMG_SavePNG_RW(reference, dest, SDL_FALSE);
-            SDL_RWclose(dest);
+            dest = SDL_IOFromFile(filename, "wb");
+            result = IMG_SaveAVIF_IO(reference, dest, false, 90);
+            SDL_CloseIO(dest);
         } else {
-            result = IMG_SavePNG(reference, filename);
+            result = IMG_SaveAVIF(reference, filename, 90);
         }
     } else if (SDL_strcmp(format->name, "JPG") == 0) {
         if (rw) {
-            dest = SDL_RWFromFile(filename, "wb");
-            result = IMG_SaveJPG_RW(reference, dest, SDL_FALSE, 90);
-            SDL_RWclose(dest);
+            dest = SDL_IOFromFile(filename, "wb");
+            result = IMG_SaveJPG_IO(reference, dest, false, 90);
+            SDL_CloseIO(dest);
         } else {
             result = IMG_SaveJPG(reference, filename, 90);
         }
+    } else if (SDL_strcmp (format->name, "PNG") == 0) {
+        if (rw) {
+            dest = SDL_IOFromFile(filename, "wb");
+            result = IMG_SavePNG_IO(reference, dest, false);
+            SDL_CloseIO(dest);
+        } else {
+            result = IMG_SavePNG(reference, filename);
+        }
     } else {
-        SDLTest_AssertCheck(SDL_FALSE, "How do I save %s?", format->name);
+        SDLTest_AssertCheck(false, "How do I save %s?", format->name);
         goto out;
     }
 
-    SDLTest_AssertCheck(result == 0, "Save %s (%s)", filename, SDL_GetError());
+    SDLTest_AssertCheck(result, "Save %s (%s)", filename, SDL_GetError());
 
     if (format->canLoad) {
+        SDL_ClearError();
+        SDLTest_AssertPass("About to call IMG_Load(\"%s\")", filename);
         surface = IMG_Load(filename);
 
         if (!SDLTest_AssertCheck(surface != NULL,
@@ -883,7 +850,7 @@ FormatSaveTest(const Format *format,
         SDLTest_AssertCheck(diff == 0,
                             "Surface differed from reference by at most %d in %d pixels",
                             format->tolerance, diff);
-        if (diff != 0 || GetStringBoolean(SDL_getenv("SDL_IMAGE_TEST_DEBUG"), SDL_FALSE)) {
+        if (diff != 0 || GetStringBoolean(SDL_getenv("SDL_IMAGE_TEST_DEBUG"), false)) {
             DumpPixels(filename, surface);
             DumpPixels(refFilename, reference);
         }
@@ -891,29 +858,26 @@ FormatSaveTest(const Format *format,
 
 out:
     if (surface != NULL) {
-        SDL_FreeSurface(surface);
+        SDL_DestroySurface(surface);
     }
     if (reference != NULL) {
-        SDL_FreeSurface(reference);
+        SDL_DestroySurface(reference);
     }
     if (refFilename != NULL) {
         SDL_free(refFilename);
-    }
-    if (initResult) {
-        IMG_Quit();
     }
 }
 
 static void
 FormatTest(const Format *format)
 {
-    SDL_bool forced;
+    bool forced;
     char envVar[64] = { 0 };
 
     SDL_snprintf(envVar, sizeof(envVar), "SDL_IMAGE_TEST_REQUIRE_LOAD_%s",
                  format->name);
 
-    forced = GetStringBoolean(SDL_getenv(envVar), SDL_FALSE);
+    forced = GetStringBoolean(SDL_getenv(envVar), false);
     if (forced) {
         SDLTest_AssertCheck(format->canLoad,
                             "%s loading should be enabled", format->name);
@@ -930,10 +894,10 @@ FormatTest(const Format *format)
             if (SDL_strcmp(format->name, "TGA") == 0) {
                 SDLTest_Log("SKIP: Recognising %s by magic number is not supported", format->name);
             } else {
-                FormatLoadTest(format, LOAD_RW);
+                FormatLoadTest(format, LOAD_IO);
             }
 
-            FormatLoadTest(format, LOAD_TYPED_RW);
+            FormatLoadTest(format, LOAD_TYPED_IO);
 
             if (format->loadFunction != NULL) {
                 FormatLoadTest(format, LOAD_FORMAT_SPECIFIC);
@@ -946,7 +910,7 @@ FormatTest(const Format *format)
     SDL_snprintf(envVar, sizeof(envVar), "SDL_IMAGE_TEST_REQUIRE_SAVE_%s",
                  format->name);
 
-    forced = GetStringBoolean(SDL_getenv(envVar), SDL_FALSE);
+    forced = GetStringBoolean(SDL_getenv(envVar), false);
     if (forced) {
         SDLTest_AssertCheck(format->canSave,
                             "%s saving should be enabled", format->name);
@@ -954,17 +918,18 @@ FormatTest(const Format *format)
 
     if (format->canSave || forced) {
         SDLTest_Log("Testing ability to save format %s", format->name);
-        FormatSaveTest(format, SDL_FALSE);
-        FormatSaveTest(format, SDL_TRUE);
+        FormatSaveTest(format, false);
+        FormatSaveTest(format, true);
     } else {
         SDLTest_Log("Saving format %s is not supported", format->name);
     }
 }
 
-static int
+static int SDLCALL
 TestFormats(void *arg)
 {
     size_t i;
+    (void)arg;
 
     for (i = 0; i < SDL_arraysize(formats); i++) {
         FormatTest(&formats[i]);
@@ -992,24 +957,13 @@ static SDLTest_TestSuiteReference *testSuites[] =  {
     NULL
 };
 
-/* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
-static void
-quit(int rc)
-{
-    SDLTest_CommonQuit(state);
-    exit(rc);
-}
-
 int
 main(int argc, char *argv[])
 {
     int result;
-    int testIterations = 1;
-    Uint64 userExecKey = 0;
-    char *userRunSeed = NULL;
-    char *filter = NULL;
     int i, done;
     SDL_Event event;
+    SDLTest_TestSuiteRunner *runner;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
@@ -1017,56 +971,15 @@ main(int argc, char *argv[])
         return 1;
     }
 
-    /* Parse commandline */
-    for (i = 1; i < argc;) {
-        int consumed;
+    runner = SDLTest_CreateTestSuiteRunner(state, testSuites);
 
-        consumed = SDLTest_CommonArg(state, i);
-        if (consumed == 0) {
-            consumed = -1;
-            if (SDL_strcasecmp(argv[i], "--iterations") == 0) {
-                if (argv[i + 1]) {
-                    testIterations = SDL_atoi(argv[i + 1]);
-                    if (testIterations < 1) testIterations = 1;
-                    consumed = 2;
-                }
-            }
-            else if (SDL_strcasecmp(argv[i], "--execKey") == 0) {
-                if (argv[i + 1]) {
-                    SDL_sscanf(argv[i + 1], "%" SDL_PRIu64, &userExecKey);
-                    consumed = 2;
-                }
-            }
-            else if (SDL_strcasecmp(argv[i], "--seed") == 0) {
-                if (argv[i + 1]) {
-                    userRunSeed = SDL_strdup(argv[i + 1]);
-                    consumed = 2;
-                }
-            }
-            else if (SDL_strcasecmp(argv[i], "--filter") == 0) {
-                if (argv[i + 1]) {
-                    filter = SDL_strdup(argv[i + 1]);
-                    consumed = 2;
-                }
-            }
-        }
-        if (consumed < 0) {
-
-#if SDL_VERSION_ATLEAST(2, 0, 10)
-            static const char *options[] = { "[--iterations #]", "[--execKey #]", "[--seed string]", "[--filter suite_name|test_name]", NULL };
-            SDLTest_CommonLogUsage(state, argv[0], options);
-#else
-            SDLTest_CommonUsage(state);
-#endif
-            quit(1);
-        }
-
-        i += consumed;
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return 1;
     }
 
     /* Initialize common state */
     if (!SDLTest_CommonInit(state)) {
-        quit(2);
+        goto failure;
     }
 
     /* Create the windows, initialize the renderers */
@@ -1077,7 +990,7 @@ main(int argc, char *argv[])
     }
 
     /* Call Harness */
-    result = SDLTest_RunSuites(testSuites, (const char *)userRunSeed, userExecKey, (const char *)filter, testIterations);
+    result = SDLTest_ExecuteTestSuiteRunner(runner);
 
     /* Empty event queue */
     done = 0;
@@ -1088,13 +1001,10 @@ main(int argc, char *argv[])
       SDL_Delay(10);
     }
 
-    /* Clean up */
-    SDL_free(userRunSeed);
-    SDL_free(filter);
-
     /* Shutdown everything */
-    quit(result);
-    return(result);
+    SDLTest_CommonQuit(state);
+    return result;
+failure:
+    SDLTest_CommonQuit(state);
+    return 1;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

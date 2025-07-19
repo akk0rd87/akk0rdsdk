@@ -26,6 +26,7 @@
     webpmux -set icc image_profile.icc in.webp -o out_icc_container.webp
     webpmux -set exif image_metadata.exif in.webp -o out_exif_container.webp
     webpmux -set xmp image_metadata.xmp in.webp -o out_xmp_container.webp
+    webpmux -set loop 1 in.webp -o out_looped.webp
 
   Extract relevant data from WebP container file:
     webpmux -get frame n in.webp -o out_frame.webp
@@ -97,6 +98,8 @@ typedef enum {
   FEATURE_ICCP,
   FEATURE_ANMF,
   FEATURE_DURATION,
+  FEATURE_LOOP,
+  FEATURE_BGCOLOR,
   LAST_FEATURE
 } FeatureType;
 
@@ -313,10 +316,12 @@ static void PrintHelp(void) {
 
   printf("\n");
   printf("SET_OPTIONS:\n");
-  printf(" Set color profile/metadata:\n");
-  printf("   icc  file.icc     set ICC profile\n");
-  printf("   exif file.exif    set EXIF metadata\n");
-  printf("   xmp  file.xmp     set XMP metadata\n");
+  printf(" Set color profile/metadata/parameters:\n");
+  printf("   loop LOOP_COUNT            set the loop count\n");
+  printf("   bgcolor BACKGROUND_COLOR   set the animation background color\n");
+  printf("   icc  file.icc              set ICC profile\n");
+  printf("   exif file.exif             set EXIF metadata\n");
+  printf("   xmp  file.xmp              set XMP metadata\n");
   printf("   where:    'file.icc' contains the ICC profile to be set,\n");
   printf("             'file.exif' contains the EXIF metadata to be set\n");
   printf("             'file.xmp' contains the XMP metadata to be set\n");
@@ -324,7 +329,7 @@ static void PrintHelp(void) {
   printf("\n");
   printf("DURATION_OPTIONS:\n");
   printf(" Set duration of selected frames:\n");
-  printf("   duration            set duration for each frames\n");
+  printf("   duration            set duration for all frames\n");
   printf("   duration,frame      set duration of a particular frame\n");
   printf("   duration,start,end  set duration of frames in the\n");
   printf("                        interval [start,end])\n");
@@ -343,7 +348,7 @@ static void PrintHelp(void) {
   printf("\n");
   printf("FRAME_OPTIONS(i):\n");
   printf(" Create animation:\n");
-  printf("   file_i +di+[xi+yi[+mi[bi]]]\n");
+  printf("   file_i +di[+xi+yi[+mi[bi]]]\n");
   printf("   where:    'file_i' is the i'th animation frame (WebP format),\n");
   printf("             'di' is the pause duration before next frame,\n");
   printf("             'xi','yi' specify the image offset for this frame,\n");
@@ -455,7 +460,8 @@ static WebPMux* DuplicateMuxHeader(const WebPMux* const mux) {
     if (err == WEBP_MUX_OK && metadata.size > 0) {
       err = WebPMuxSetChunk(new_mux, kFourccList[i], &metadata, 1);
       if (err != WEBP_MUX_OK) {
-        ERROR_GOTO1("Error transferring metadata in DuplicateMux().", End);
+        ERROR_GOTO1("Error transferring metadata in DuplicateMuxHeader().",
+                    End);
       }
     }
   }
@@ -469,11 +475,11 @@ static WebPMux* DuplicateMuxHeader(const WebPMux* const mux) {
 }
 
 static int ParseFrameArgs(const char* args, WebPMuxFrameInfo* const info) {
-  int dispose_method, dummy;
+  int dispose_method, unused;
   char plus_minus, blend_method;
   const int num_args = sscanf(args, "+%d+%d+%d+%d%c%c+%d", &info->duration,
                               &info->x_offset, &info->y_offset, &dispose_method,
-                              &plus_minus, &blend_method, &dummy);
+                              &plus_minus, &blend_method, &unused);
   switch (num_args) {
     case 1:
       info->x_offset = info->y_offset = 0;  // fall through
@@ -492,7 +498,7 @@ static int ParseFrameArgs(const char* args, WebPMuxFrameInfo* const info) {
 
   WarnAboutOddOffset(info);
 
-  // Note: The sanity of the following conversion is checked by
+  // Note: The validity of the following conversion is checked by
   // WebPMuxPushFrame().
   info->dispose_method = (WebPMuxAnimDispose)dispose_method;
 
@@ -679,7 +685,7 @@ static int ParseCommandLine(Config* config, const W_CHAR** const unicode_argv) {
           ERROR_GOTO1("ERROR: Multiple features specified.\n", ErrParse);
         }
         arg->subtype_ = SUBTYPE_ANMF;
-        arg->filename_ = argv[i + 1];
+        arg->filename_ = wargv[i + 1];
         arg->params_ = argv[i + 2];
         ++feature_arg_index;
         i += 3;
@@ -765,6 +771,20 @@ static int ParseCommandLine(Config* config, const W_CHAR** const unicode_argv) {
                  (config->action_type_ == ACTION_GET)) {
         CHECK_NUM_ARGS_AT_LEAST(2, ErrParse);
         config->type_ = FEATURE_ANMF;
+        arg->params_ = argv[i + 1];
+        ++feature_arg_index;
+        i += 2;
+      } else if (!strcmp(argv[i], "loop") &&
+                 (config->action_type_ == ACTION_SET)) {
+        CHECK_NUM_ARGS_AT_LEAST(2, ErrParse);
+        config->type_ = FEATURE_LOOP;
+        arg->params_ = argv[i + 1];
+        ++feature_arg_index;
+        i += 2;
+      } else if (!strcmp(argv[i], "bgcolor") &&
+                 (config->action_type_ == ACTION_SET)) {
+        CHECK_NUM_ARGS_AT_LEAST(2, ErrParse);
+        config->type_ = FEATURE_BGCOLOR;
         arg->params_ = argv[i + 1];
         ++feature_arg_index;
         i += 2;
@@ -1011,10 +1031,59 @@ static int Process(const Config* config) {
           ok = ExUtilReadFileToWebPData(config->args_[0].filename_, &chunk);
           if (!ok) goto Err2;
           err = WebPMuxSetChunk(mux, kFourccList[config->type_], &chunk, 1);
-          free((void*)chunk.bytes);
+          WebPDataClear(&chunk);
           if (err != WEBP_MUX_OK) {
             ERROR_GOTO3("ERROR (%s): Could not set the %s.\n",
                         ErrorString(err), kDescriptions[config->type_], Err2);
+          }
+          break;
+        }
+        case FEATURE_LOOP: {
+          WebPMuxAnimParams params = { 0xFFFFFFFF, 0 };
+          int parse_error = 0;
+          const int loop_count =
+              ExUtilGetInt(config->args_[0].params_, 10, &parse_error);
+          if (loop_count < 0 || loop_count > 65535 || parse_error) {
+            ERROR_GOTO1("ERROR: Loop count must be in the range 0 to 65535.\n",
+                        Err2);
+          }
+          ok = CreateMux(config->input_, &mux);
+          if (!ok) goto Err2;
+          ok = (WebPMuxGetAnimationParams(mux, &params) == WEBP_MUX_OK);
+          if (!ok) {
+            ERROR_GOTO1("ERROR: input file does not seem to be an animation.\n",
+                        Err2);
+          }
+          params.loop_count = loop_count;
+          err = WebPMuxSetAnimationParams(mux, &params);
+          ok = (err == WEBP_MUX_OK);
+          if (!ok) {
+            ERROR_GOTO2("ERROR (%s): Could not set animation parameters.\n",
+                        ErrorString(err), Err2);
+          }
+          break;
+        }
+        case FEATURE_BGCOLOR: {
+          WebPMuxAnimParams params = { 0xFFFFFFFF, 0 };
+          uint32_t bgcolor;
+          ok = ParseBgcolorArgs(config->args_[0].params_, &bgcolor);
+          if (!ok) {
+            ERROR_GOTO1("ERROR: Could not parse the background color.\n",
+                        Err2);
+          }
+          ok = CreateMux(config->input_, &mux);
+          if (!ok) goto Err2;
+          ok = (WebPMuxGetAnimationParams(mux, &params) == WEBP_MUX_OK);
+          if (!ok) {
+            ERROR_GOTO1("ERROR: input file does not seem to be an animation.\n",
+                        Err2);
+          }
+          params.bgcolor = bgcolor;
+          err = WebPMuxSetAnimationParams(mux, &params);
+          ok = (err == WEBP_MUX_OK);
+          if (!ok) {
+            ERROR_GOTO2("ERROR (%s): Could not set animation parameters.\n",
+                        ErrorString(err), Err2);
           }
           break;
         }
@@ -1045,7 +1114,7 @@ static int Process(const Config* config) {
         int* durations = NULL;
         WebPMux* new_mux = DuplicateMuxHeader(mux);
         if (new_mux == NULL) goto Err2;
-        durations = (int*)malloc((size_t)num_frames * sizeof(*durations));
+        durations = (int*)WebPMalloc((size_t)num_frames * sizeof(*durations));
         if (durations == NULL) goto Err2;
         for (i = 0; i < num_frames; ++i) durations[i] = -1;
 
@@ -1103,7 +1172,7 @@ static int Process(const Config* config) {
         new_mux = NULL;
 
  Err3:
-        free(durations);
+        WebPFree(durations);
         WebPMuxDelete(new_mux);
         if (!ok) goto Err2;
       }

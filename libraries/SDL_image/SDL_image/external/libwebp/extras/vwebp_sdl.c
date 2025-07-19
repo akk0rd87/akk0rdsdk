@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
       fprintf(stderr, "File too large.\n");
       goto Error;
     }
-    ok = WebpToSDL((const char*)webp, (int)webp_size);
+    ok = WebPToSDL((const char*)webp, (int)webp_size);
     free((void*)webp);
     if (!ok) {
       WFPRINTF(stderr, "Error decoding file %s\n", (const W_CHAR*)file);
@@ -92,7 +92,7 @@ int main(int argc, char* argv[]) {
 
 #else  // !WEBP_HAVE_SDL
 
-int main(int argc, const char *argv[]) {
+int main(int argc, const char* argv[]) {
   fprintf(stderr, "SDL support not enabled in %s.\n", argv[0]);
   (void)argc;
   return 0;

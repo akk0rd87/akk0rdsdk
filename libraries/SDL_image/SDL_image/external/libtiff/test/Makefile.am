@@ -44,7 +44,9 @@ EXTRA_DIST = \
 	TiffTest.cmake
 
 # All of the tests to execute via 'make check'
+if TIFF_TESTS
 TESTS = $(check_PROGRAMS) $(TESTSCRIPTS)
+endif
 
 # Tests which are expected to fail
 XFAIL_TESTS =
@@ -53,33 +55,31 @@ XFAIL_TESTS =
 CLEANFILES = test_packbits.tif o-*
 
 if HAVE_JPEG
+if TIFF_TOOLS
 JPEG_DEPENDENT_CHECK_PROG=raw_decode
-JPEG_DEPENDENT_TESTSCRIPTS=\
-	tiff2rgba-quad-tile.jpg.sh \
-	tiff2rgba-ojpeg_zackthecat_subsamp22_single_strip.sh \
-	tiff2rgba-ojpeg_chewey_subsamp21_multi_strip.sh \
-	tiff2rgba-ojpeg_single_strip_no_rowsperstrip.sh
-
+# No tiff2rgba tool anymore and therefore not JPEG_DEPENDENT_TESTSCRIPTS
+JPEG_DEPENDENT_TESTSCRIPTS=
+endif
 else
 JPEG_DEPENDENT_CHECK_PROG=
 JPEG_DEPENDENT_TESTSCRIPTS=
 endif
 
 if BUILD_STATIC
-STATIC_CHECK_PROGS=rational_precision2double
+STATIC_CHECK_PROGS=rational_precision2double test_write_read_tags test_transferfunction_write_read
 endif
 
 # Executable programs which need to be built in order to support tests
+if TIFF_TESTS
 check_PROGRAMS = \
 	ascii_tag long_tag short_tag strip_rw rewrite custom_dir custom_dir_EXIF_231 \
-	defer_strile_loading defer_strile_writing testtypes $(JPEG_DEPENDENT_CHECK_PROG) $(STATIC_CHECK_PROGS)
+	defer_strile_loading defer_strile_writing test_directory test_open_options \
+	test_append_to_strip test_ifd_loop_detection testtypes test_signed_tags $(JPEG_DEPENDENT_CHECK_PROG) $(STATIC_CHECK_PROGS)
+endif
 
 # Test scripts to execute
+if TIFF_TOOLS
 TESTSCRIPTS = \
-	ppm2tiff_pbm.sh \
-	ppm2tiff_pgm.sh \
-	ppm2tiff_ppm.sh \
-	fax2tiff.sh \
 	tiffcp-g3.sh \
 	tiffcp-g3-1d.sh \
 	tiffcp-g3-1d-fill.sh \
@@ -87,74 +87,16 @@ TESTSCRIPTS = \
 	tiffcp-g3-2d-fill.sh \
 	tiffcp-g4.sh \
 	tiffcp-logluv.sh \
-	tiffcp-thumbnail.sh \
 	tiffcp-lzw-compat.sh \
 	tiffcp-lzw-scanline-decode.sh \
 	tiffdump.sh \
 	tiffinfo.sh \
 	tiffcp-split.sh \
 	tiffcp-split-join.sh \
-	tiff2ps-PS1.sh \
-	tiff2ps-PS2.sh \
-	tiff2ps-PS3.sh \
-	tiff2ps-EPS1.sh \
-	tiff2pdf.sh \
-	tiffcrop-doubleflip-logluv-3c-16b.sh \
-	tiffcrop-doubleflip-minisblack-1c-16b.sh \
-	tiffcrop-doubleflip-minisblack-1c-8b.sh \
-	tiffcrop-doubleflip-minisblack-2c-8b-alpha.sh \
-	tiffcrop-doubleflip-miniswhite-1c-1b.sh \
-	tiffcrop-doubleflip-palette-1c-1b.sh \
-	tiffcrop-doubleflip-palette-1c-4b.sh \
-	tiffcrop-doubleflip-palette-1c-8b.sh \
-	tiffcrop-doubleflip-rgb-3c-16b.sh \
-	tiffcrop-doubleflip-rgb-3c-8b.sh \
-	tiffcrop-extract-logluv-3c-16b.sh \
-	tiffcrop-extract-minisblack-1c-16b.sh \
-	tiffcrop-extract-minisblack-1c-8b.sh \
-	tiffcrop-extract-minisblack-2c-8b-alpha.sh \
-	tiffcrop-extract-miniswhite-1c-1b.sh \
-	tiffcrop-extract-palette-1c-1b.sh \
-	tiffcrop-extract-palette-1c-4b.sh \
-	tiffcrop-extract-palette-1c-8b.sh \
-	tiffcrop-extract-rgb-3c-16b.sh \
-	tiffcrop-extract-rgb-3c-8b.sh \
-	tiffcrop-extractz14-logluv-3c-16b.sh \
-	tiffcrop-extractz14-minisblack-1c-16b.sh \
-	tiffcrop-extractz14-minisblack-1c-8b.sh \
-	tiffcrop-extractz14-minisblack-2c-8b-alpha.sh \
-	tiffcrop-extractz14-miniswhite-1c-1b.sh \
-	tiffcrop-extractz14-palette-1c-1b.sh \
-	tiffcrop-extractz14-palette-1c-4b.sh \
-	tiffcrop-extractz14-palette-1c-8b.sh \
-	tiffcrop-extractz14-rgb-3c-16b.sh \
-	tiffcrop-extractz14-rgb-3c-8b.sh \
-	tiffcrop-R90-logluv-3c-16b.sh \
-	tiffcrop-R90-minisblack-1c-16b.sh \
-	tiffcrop-R90-minisblack-1c-8b.sh \
-	tiffcrop-R90-minisblack-2c-8b-alpha.sh \
-	tiffcrop-R90-miniswhite-1c-1b.sh \
-	tiffcrop-R90-palette-1c-1b.sh \
-	tiffcrop-R90-palette-1c-4b.sh \
-	tiffcrop-R90-palette-1c-8b.sh \
-	tiffcrop-R90-rgb-3c-16b.sh \
-	tiffcrop-R90-rgb-3c-8b.sh \
-	tiff2bw-palette-1c-8b.sh \
-	tiff2bw-quad-lzw-compat.sh \
-	tiff2bw-rgb-3c-8b.sh \
-	tiff2rgba-logluv-3c-16b.sh \
-	tiff2rgba-minisblack-1c-16b.sh \
-	tiff2rgba-minisblack-1c-8b.sh \
-	tiff2rgba-minisblack-2c-8b-alpha.sh \
-	tiff2rgba-miniswhite-1c-1b.sh \
-	tiff2rgba-palette-1c-1b.sh \
-	tiff2rgba-palette-1c-4b.sh \
-	tiff2rgba-palette-1c-8b.sh \
-	tiff2rgba-rgb-3c-16b.sh \
-	tiff2rgba-rgb-3c-8b.sh \
-	testfax4.sh \
-	testdeflatelaststripextradata.sh \
 	$(JPEG_DEPENDENT_TESTSCRIPTS)
+else
+TESTSCRIPTS=
+endif
 
 # This list should contain the references files
 # from the 'refs' subdirectory
@@ -164,6 +106,7 @@ REFFILES = \
 	refs/o-tiff2ps-PS2.ps \
 	refs/o-tiff2ps-PS3.ps \
 	refs/o-testfax4.tiff \
+	refs/o-testfax3_bug_513.tiff \
 	refs/o-deflate-last-strip-extra-data.tiff
 
 # This list should contain all of the TIFF files in the 'images'
@@ -188,7 +131,8 @@ TIFFIMAGES = \
 	images/ojpeg_single_strip_no_rowsperstrip.tiff \
 	images/testfax4.tiff \
 	images/deflate-last-strip-extra-data.tiff \
-	images/custom_dir_EXIF_GPS.tiff
+	images/custom_dir_EXIF_GPS.tiff \
+	images/testfax3_bug_513.tiff
 
 PNMIMAGES = \
 	images/minisblack-1c-8b.pgm \
@@ -202,11 +146,21 @@ PNMIMAGES = \
 IMAGES_EXTRA_DIST = \
 	images/README.txt \
 	images/miniswhite-1c-1b.g3 \
+	images/test_float64_predictor2_le_lzw.tif \
+	images/test_float64_predictor2_be_lzw.tif \
+	images/tiff_with_subifd_chain.tif \
+	images/test_ifd_loop_to_self.tif \
+	images/test_ifd_loop_to_first.tif \
+	images/test_two_ifds.tif \
+	images/test_ifd_loop_subifd.tif \
+	images/webp_lossless_rgba_alpha_fully_opaque.tif \
 	$(PNMIMAGES) \
 	$(TIFFIMAGES)
 
 noinst_HEADERS = tifftest.h
 
+test_signed_tags_SOURCES = test_signed_tags.c
+test_signed_tags_LDADD = $(LIBTIFF)
 ascii_tag_SOURCES = ascii_tag.c
 ascii_tag_LDADD = $(LIBTIFF)
 long_tag_SOURCES = long_tag.c check_tag.c
@@ -226,6 +180,14 @@ if BUILD_STATIC
 rational_precision2double_SOURCES = rational_precision2double.c
 rational_precision2double_LDADD = $(LIBTIFF)
 rational_precision2double_LDFLAGS = -static
+
+test_write_read_tags_SOURCES = test_write_read_tags.c
+test_write_read_tags_LDADD = $(LIBTIFF)
+test_write_read_tags_LDFLAGS = -static
+
+test_transferfunction_write_read_SOURCES = test_transferfunction_write_read.c
+test_transferfunction_write_read_LDADD = $(LIBTIFF)
+test_transferfunction_write_read_LDFLAGS = -static
 endif
 
 custom_dir_EXIF_231_SOURCES = custom_dir_EXIF_231.c
@@ -234,6 +196,15 @@ defer_strile_loading_SOURCES = defer_strile_loading.c
 defer_strile_loading_LDADD = $(LIBTIFF)
 defer_strile_writing_SOURCES = defer_strile_writing.c
 defer_strile_writing_LDADD = $(LIBTIFF)
+test_directory_SOURCES = test_directory.c
+test_directory_LDADD = $(LIBTIFF)
+test_open_options_SOURCES = test_open_options.c
+test_open_options_LDADD = $(LIBTIFF)
+test_append_to_strip_SOURCES = test_append_to_strip.c
+test_append_to_strip_LDADD = $(LIBTIFF)
+test_ifd_loop_detection_CFLAGS = -DSOURCE_DIR=\"@srcdir@\"
+test_ifd_loop_detection_SOURCES = test_ifd_loop_detection.c
+test_ifd_loop_detection_LDADD = $(LIBTIFF)
 
 AM_CPPFLAGS = -I$(top_srcdir)/libtiff
 
@@ -258,122 +229,3 @@ memcheck:
 ptrcheck:
 	$(MAKE) MEMCHECK='valgrind --tool=exp-ptrcheck --quiet $(VALGRIND_EXTRA_OPTS)' check
 
-# tiff2bw is pretty lame so currently only the generated scripts
-# tiff2bw-palette-1c-8b.sh, tiff2bw-quad-lzw-compat.sh, and
-# tiff2bw-rgb-3c-8b.sh pass tests.
-generate-tiff2bw-tests:
-	for file in $(TIFFIMAGES) ; \
-	do \
-	base=`basename $$file .tiff` ; \
-	testscript=$(srcdir)/tiff2bw-$$base.sh ; \
-	( \
-	  echo "#!/bin/sh" ; \
-	  echo "# Generated file, master is Makefile.am" ; \
-	  echo ". \$${srcdir:-.}/common.sh" ; \
-	  echo "infile=\"\$$srcdir/$$file\"" ; \
-	  echo "outfile=\"o-tiff2bw-$$base.tiff\"" ; \
-	  echo "f_test_convert \"\$$TIFF2BW\" \$$infile \$$outfile" ; \
-	  echo "f_tiffinfo_validate \$$outfile" ; \
-	) > $$testscript ; \
-	chmod +x $$testscript ; \
-	done
-
-generate-tiff2rgba-tests:
-	for file in $(TIFFIMAGES) ; \
-	do \
-	base=`basename $$file .tiff` ; \
-	testscript=$(srcdir)/tiff2rgba-$$base.sh ; \
-	( \
-	  echo "#!/bin/sh" ; \
-	  echo "# Generated file, master is Makefile.am" ; \
-	  echo ". \$${srcdir:-.}/common.sh" ; \
-	  echo "infile=\"\$$srcdir/$$file\"" ; \
-	  echo "outfile=\"o-tiff2rgba-$$base.tiff\"" ; \
-	  echo "f_test_convert \"\$$TIFF2RGBA\" \$$infile \$$outfile" ; \
-	  echo "f_tiffinfo_validate \$$outfile" ; \
-	) > $$testscript ; \
-	chmod +x $$testscript ; \
-	done
-
-# Test rotations
-generate-tiffcrop-R90-tests:
-	for file in $(TIFFIMAGES) ; \
-	do \
-	base=`basename $$file .tiff` ; \
-	testscript=$(srcdir)/tiffcrop-R90-$$base.sh ; \
-	( \
-	  echo "#!/bin/sh" ; \
-	  echo "# Generated file, master is Makefile.am" ; \
-	  echo ". \$${srcdir:-.}/common.sh" ; \
-	  echo "infile=\"\$$srcdir/$$file\"" ; \
-	  echo "outfile=\"o-tiffcrop-R90-$$base.tiff\"" ; \
-	  echo "f_test_convert \"\$$TIFFCROP -R90\" \$$infile \$$outfile" ; \
-	  echo "f_tiffinfo_validate \$$outfile" ; \
-	) > $$testscript ; \
-	chmod +x $$testscript ; \
-	done
-
-# Test flip (mirror)
-generate-tiffcrop-doubleflip-tests:
-	for file in $(TIFFIMAGES) ; \
-	do \
-	base=`basename $$file .tiff` ; \
-	testscript=$(srcdir)/tiffcrop-doubleflip-$$base.sh ; \
-	( \
-	  echo "#!/bin/sh" ; \
-	  echo "# Generated file, master is Makefile.am" ; \
-	  echo ". \$${srcdir:-.}/common.sh" ; \
-	  echo "infile=\"\$$srcdir/$$file\"" ; \
-	  echo "outfile=\"o-tiffcrop-doubleflip-$$base.tiff\"" ; \
-	  echo "f_test_convert \"\$$TIFFCROP -F both\" \$$infile \$$outfile" ; \
-	  echo "f_tiffinfo_validate \$$outfile" ; \
-	) > $$testscript ; \
-	chmod +x $$testscript ; \
-	done
-
-# Test extracting a section 100 pixels wide and 100 pixels high
-generate-tiffcrop-extract-tests:
-	for file in $(TIFFIMAGES) ; \
-	do \
-	base=`basename $$file .tiff` ; \
-	testscript=$(srcdir)/tiffcrop-extract-$$base.sh ; \
-	( \
-	  echo "#!/bin/sh" ; \
-	  echo "# Generated file, master is Makefile.am" ; \
-	  echo ". \$${srcdir:-.}/common.sh" ; \
-	  echo "infile=\"\$$srcdir/$$file\"" ; \
-	  echo "outfile=\"o-tiffcrop-extract-$$base.tiff\"" ; \
-	  echo "f_test_convert \"\$$TIFFCROP -U px -E top -X 60 -Y 60\" \$$infile \$$outfile" ; \
-	  echo "f_tiffinfo_validate \$$outfile" ; \
-	) > $$testscript ; \
-	chmod +x $$testscript ; \
-	done
-
-# Test extracting the first and fourth quarters from the left side.
-generate-tiffcrop-extractz14-tests:
-	for file in $(TIFFIMAGES) ; \
-	do \
-	base=`basename $$file .tiff` ; \
-	testscript=$(srcdir)/tiffcrop-extractz14-$$base.sh ; \
-	( \
-	  echo "#!/bin/sh" ; \
-	  echo "# Generated file, master is Makefile.am" ; \
-	  echo ". \$${srcdir:-.}/common.sh" ; \
-	  echo "infile=\"\$$srcdir/$$file\"" ; \
-	  echo "outfile=\"o-tiffcrop-extractz14-$$base.tiff\"" ; \
-	  echo "f_test_convert \"\$$TIFFCROP -E left -Z1:4,2:4\" \$$infile \$$outfile" ; \
-	  echo "f_tiffinfo_validate \$$outfile" ; \
-	) > $$testscript ; \
-	chmod +x $$testscript ; \
-	done
-
-generate-tiffcrop-tests: \
-	generate-tiffcrop-R90-tests \
-	generate-tiffcrop-doubleflip-tests \
-	generate-tiffcrop-extract-tests \
-	generate-tiffcrop-extractz14-tests
-
-generate-tests: \
-	generate-tiff2bw-tests \
-	generate-tiff2rgba-tests \
-	generate-tiffcrop-tests

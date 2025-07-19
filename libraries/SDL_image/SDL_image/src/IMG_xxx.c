@@ -21,52 +21,54 @@
 
 /* This is a generic "format not supported" image framework */
 
-#include "SDL_image.h"
+#include <SDL3_image/SDL_image.h>
 
 #ifdef LOAD_XXX
 
 /* See if an image is contained in a data source */
-int IMG_isXXX(SDL_RWops *src)
+/* Remember to declare this procedure in IMG.h . */
+bool IMG_isXXX(SDL_IOStream *src)
 {
     int start;
-    int is_XXX;
+    bool is_XXX;
 
     if (!src) {
-        return 0;
+        return false;
     }
 
-    start = SDL_RWtell(src);
-    is_XXX = 0;
+    start = SDL_TellIO(src);
+    is_XXX = false;
 
     /* Detect the image here */
 
-    SDL_RWseek(src, start, RW_SEEK_SET);
+    SDL_SeekIO(src, start, SDL_IO_SEEK_SET);
     return is_XXX;
 }
 
 /* Load an XXX type image from an SDL datasource */
-SDL_Surface *IMG_LoadXXX_RW(SDL_RWops *src)
+/* Remember to declare this procedure in IMG.h . */
+SDL_Surface *IMG_LoadXXX_IO(SDL_IOStream *src)
 {
     int start;
     const char *error = NULL;
     SDL_Surface *surface = NULL;
 
     if (!src) {
-        /* The error message has been set in SDL_RWFromFile */
+        /* The error message has been set in SDL_IOFromFile */
         return NULL;
     }
 
-    start = SDL_RWtell(src);
+    start = SDL_TellIO(src);
 
     /* Load the image here */
 
     if (error) {
-        SDL_RWseek(src, start, RW_SEEK_SET);
+        SDL_SeekIO(src, start, SDL_IO_SEEK_SET);
         if (surface) {
-            SDL_FreeSurface(surface);
+            SDL_DestroySurface(surface);
             surface = NULL;
         }
-        IMG_SetError("%s", error);
+        SDL_SetError("%s", error);
     }
 
     return surface;
@@ -74,17 +76,17 @@ SDL_Surface *IMG_LoadXXX_RW(SDL_RWops *src)
 
 #else
 
-#if _MSC_VER >= 1300
+#if defined(_MSC_VER) && _MSC_VER >= 1300
 #pragma warning(disable : 4100) /* warning C4100: 'op' : unreferenced formal parameter */
 #endif
 
-int IMG_isXXX(SDL_RWops *src)
+bool IMG_isXXX(SDL_IOStream *src)
 {
     (void) src;
-    return 0;
+    return false;
 }
 
-SDL_Surface *IMG_LoadXXX_RW(SDL_RWops *src)
+SDL_Surface *IMG_LoadXXX_IO(SDL_IOStream *src)
 {
     (void) src;
     return NULL;

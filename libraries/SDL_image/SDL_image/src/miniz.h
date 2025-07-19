@@ -2006,22 +2006,26 @@ static void tdefl_optimize_huffman_table(tdefl_compressor *d, int table_num, int
   } \
 } MZ_MACRO_END
 
-#define TDEFL_RLE_PREV_CODE_SIZE() { if (rle_repeat_count) { \
-  if (rle_repeat_count < 3) { \
-    d->m_huff_count[2][prev_code_size] = (mz_uint16)(d->m_huff_count[2][prev_code_size] + rle_repeat_count); \
-    while (rle_repeat_count--) packed_code_sizes[num_packed_code_sizes++] = prev_code_size; \
-  } else { \
-    d->m_huff_count[2][16] = (mz_uint16)(d->m_huff_count[2][16] + 1); packed_code_sizes[num_packed_code_sizes++] = 16; packed_code_sizes[num_packed_code_sizes++] = (mz_uint8)(rle_repeat_count - 3); \
-} rle_repeat_count = 0; } }
+#define TDEFL_RLE_PREV_CODE_SIZE() do { \
+  if (rle_repeat_count) { \
+    if (rle_repeat_count < 3) { \
+      d->m_huff_count[2][prev_code_size] = (mz_uint16)(d->m_huff_count[2][prev_code_size] + rle_repeat_count); \
+      while (rle_repeat_count--) packed_code_sizes[num_packed_code_sizes++] = prev_code_size; \
+    } else { \
+      d->m_huff_count[2][16] = (mz_uint16)(d->m_huff_count[2][16] + 1); packed_code_sizes[num_packed_code_sizes++] = 16; packed_code_sizes[num_packed_code_sizes++] = (mz_uint8)(rle_repeat_count - 3); \
+  } rle_repeat_count = 0; } \
+} MZ_MACRO_END
 
-#define TDEFL_RLE_ZERO_CODE_SIZE() { if (rle_z_count) { \
-  if (rle_z_count < 3) { \
-    d->m_huff_count[2][0] = (mz_uint16)(d->m_huff_count[2][0] + rle_z_count); while (rle_z_count--) packed_code_sizes[num_packed_code_sizes++] = 0; \
-  } else if (rle_z_count <= 10) { \
-    d->m_huff_count[2][17] = (mz_uint16)(d->m_huff_count[2][17] + 1); packed_code_sizes[num_packed_code_sizes++] = 17; packed_code_sizes[num_packed_code_sizes++] = (mz_uint8)(rle_z_count - 3); \
-  } else { \
-    d->m_huff_count[2][18] = (mz_uint16)(d->m_huff_count[2][18] + 1); packed_code_sizes[num_packed_code_sizes++] = 18; packed_code_sizes[num_packed_code_sizes++] = (mz_uint8)(rle_z_count - 11); \
-} rle_z_count = 0; } }
+#define TDEFL_RLE_ZERO_CODE_SIZE() do { \
+  if (rle_z_count) { \
+    if (rle_z_count < 3) { \
+      d->m_huff_count[2][0] = (mz_uint16)(d->m_huff_count[2][0] + rle_z_count); while (rle_z_count--) packed_code_sizes[num_packed_code_sizes++] = 0; \
+    } else if (rle_z_count <= 10) { \
+      d->m_huff_count[2][17] = (mz_uint16)(d->m_huff_count[2][17] + 1); packed_code_sizes[num_packed_code_sizes++] = 17; packed_code_sizes[num_packed_code_sizes++] = (mz_uint8)(rle_z_count - 3); \
+    } else { \
+      d->m_huff_count[2][18] = (mz_uint16)(d->m_huff_count[2][18] + 1); packed_code_sizes[num_packed_code_sizes++] = 18; packed_code_sizes[num_packed_code_sizes++] = (mz_uint8)(rle_z_count - 11); \
+  } rle_z_count = 0; } \
+} MZ_MACRO_END
 
 static mz_uint8 s_tdefl_packed_code_size_syms_swizzle[] = { 16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15 };
 
@@ -2371,9 +2375,9 @@ static MZ_FORCEINLINE void tdefl_find_match(tdefl_compressor *d, mz_uint lookahe
         if ((!next_probe_pos) || ((dist = (mz_uint16)(lookahead_pos - next_probe_pos)) > max_dist)) return; \
         probe_pos = next_probe_pos & TDEFL_LZ_DICT_SIZE_MASK; \
         if (TDEFL_READ_UNALIGNED_WORD(&d->m_dict[probe_pos + match_len - 1]) == c01) break;
-      TDEFL_PROBE;
-      TDEFL_PROBE;
-      TDEFL_PROBE;
+      TDEFL_PROBE
+      TDEFL_PROBE
+      TDEFL_PROBE
     }
     if (!dist) break;
     q = (const mz_uint16*)(d->m_dict + probe_pos);
@@ -2410,9 +2414,9 @@ static MZ_FORCEINLINE void tdefl_find_match(tdefl_compressor *d, mz_uint lookahe
         if ((!next_probe_pos) || ((dist = (mz_uint16)(lookahead_pos - next_probe_pos)) > max_dist)) return; \
         probe_pos = next_probe_pos & TDEFL_LZ_DICT_SIZE_MASK; \
         if ((d->m_dict[probe_pos + match_len] == c0) && (d->m_dict[probe_pos + match_len - 1] == c1)) break;
-      TDEFL_PROBE;
-      TDEFL_PROBE;
-      TDEFL_PROBE;
+      TDEFL_PROBE
+      TDEFL_PROBE
+      TDEFL_PROBE
     }
     if (!dist) break;
     p = s; q = d->m_dict + probe_pos;

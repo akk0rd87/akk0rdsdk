@@ -60,15 +60,15 @@ static int AllocateFrames(AnimatedImage* const image, uint32_t num_frames) {
       !CheckSizeForOverflow(total_frame_size)) {
     return 0;
   }
-  mem = (uint8_t*)malloc((size_t)total_size);
-  frames = (DecodedFrame*)malloc((size_t)total_frame_size);
+  mem = (uint8_t*)WebPMalloc((size_t)total_size);
+  frames = (DecodedFrame*)WebPMalloc((size_t)total_frame_size);
 
   if (mem == NULL || frames == NULL) {
-    free(mem);
-    free(frames);
+    WebPFree(mem);
+    WebPFree(frames);
     return 0;
   }
-  free(image->raw_mem);
+  WebPFree(image->raw_mem);
   image->num_frames = num_frames;
   image->frames = frames;
   for (i = 0; i < num_frames; ++i) {
@@ -82,8 +82,8 @@ static int AllocateFrames(AnimatedImage* const image, uint32_t num_frames) {
 
 void ClearAnimatedImage(AnimatedImage* const image) {
   if (image != NULL) {
-    free(image->raw_mem);
-    free(image->frames);
+    WebPFree(image->raw_mem);
+    WebPFree(image->frames);
     image->num_frames = 0;
     image->frames = NULL;
     image->raw_mem = NULL;
@@ -165,7 +165,7 @@ static int DumpFrame(const char filename[], const char dump_folder[],
   base_name = (base_name == NULL) ? (const W_CHAR*)filename : base_name + 1;
   max_len = WSTRLEN(dump_folder) + 1 + WSTRLEN(base_name)
           + strlen("_frame_") + strlen(".pam") + 8;
-  file_name = (W_CHAR*)malloc(max_len * sizeof(*file_name));
+  file_name = (W_CHAR*)WebPMalloc(max_len * sizeof(*file_name));
   if (file_name == NULL) goto End;
 
   if (WSNPRINTF(file_name, max_len, "%s/%s_frame_%d.pam",
@@ -197,7 +197,7 @@ static int DumpFrame(const char filename[], const char dump_folder[],
   ok = 1;
  End:
   if (f != NULL) fclose(f);
-  free(file_name);
+  WebPFree(file_name);
   return ok;
 }
 
@@ -241,7 +241,7 @@ static int ReadAnimatedWebP(const char filename[],
   image->bgcolor = anim_info.bgcolor;
 
   // Allocate frames.
-  if (!AllocateFrames(image, anim_info.frame_count)) return 0;
+  if (!AllocateFrames(image, anim_info.frame_count)) goto End;
 
   // Decode frames.
   while (WebPAnimDecoderHasMoreFrames(dec)) {
@@ -405,7 +405,7 @@ static uint32_t GetBackgroundColorGIF(GifFileType* gif) {
     return 0xffffffff;  // Invalid: assume white.
   } else {
     const GifColorType color = color_map->Colors[gif->SBackGroundColor];
-    return (0xff << 24) |
+    return (0xffu << 24) |
            (color.Red << 16) |
            (color.Green << 8) |
            (color.Blue << 0);
@@ -558,7 +558,10 @@ static int ReadAnimatedGIF(const char filename[], AnimatedImage* const image,
     }
   }
   // Allocate frames.
-  AllocateFrames(image, frame_count);
+  if (!AllocateFrames(image, frame_count)) {
+    DGifCloseFile(gif, NULL);
+    return 0;
+  }
 
   canvas_width = image->canvas_width;
   canvas_height = image->canvas_height;
