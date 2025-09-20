@@ -419,7 +419,7 @@ bool AkkordTexture::Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas
     if (RectFromAtlas) {
         srcRect = AkkordFRect(RectFromAtlas->GetX(), RectFromAtlas->GetY(), RectFromAtlas->GetW(), RectFromAtlas->GetH());
     }
-    if (SDL_RenderTexture(CurrentContext.CurrentRenderer, tex.get(), (RectFromAtlas ? &srcRect : nullptr), &tgtRect)) {
+    if (!SDL_RenderTexture(CurrentContext.CurrentRenderer, tex.get(), (RectFromAtlas ? &srcRect : nullptr), &tgtRect)) {
         logError("Error draw image %s", SDL_GetError());
         return false;
     }
@@ -443,7 +443,7 @@ bool AkkordTexture::Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas
         centerPoint.y = Point->GetY();
     }
 
-    if (SDL_RenderTextureRotated(CurrentContext.CurrentRenderer, tex.get(), (RectFromAtlas ? &srcRect : nullptr), &tgtRect, Angle, (Point ? &centerPoint : nullptr), flip) != 0) {
+    if (!SDL_RenderTextureRotated(CurrentContext.CurrentRenderer, tex.get(), (RectFromAtlas ? &srcRect : nullptr), &tgtRect, Angle, (Point ? &centerPoint : nullptr), flip)) {
         logError("Error draw image %s", SDL_GetError());
         return false;
     }
