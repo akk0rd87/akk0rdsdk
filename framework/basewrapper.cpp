@@ -479,9 +479,8 @@ AkkordPoint BWrapper::GetScreenSize()
     return WSize;
 };
 
-bool BWrapper::SetCurrentColor(const AkkordColor& Color)
-{
-    if (SDL_SetRenderDrawColor(CurrentContext.CurrentRenderer, Color.GetR(), Color.GetG(), Color.GetB(), Color.GetA()) == 0) return true;
+bool BWrapper::SetCurrentColor(const AkkordColor& Color) {
+    if (SDL_SetRenderDrawColor(CurrentContext.CurrentRenderer, Color.GetR(), Color.GetG(), Color.GetB(), Color.GetA())) return true;
     logError("Draw error %s", SDL_GetError());
     return false;
 }
@@ -489,14 +488,14 @@ bool BWrapper::SetCurrentColor(const AkkordColor& Color)
 bool BWrapper::DrawRect(const AkkordRect& Rect)
 {
     AkkordFRect fRect(Rect.GetW(), Rect.GetY(), Rect.GetW(), Rect.GetH());
-    if (SDL_RenderRect(CurrentContext.CurrentRenderer, &fRect) == 0) return true;
+    if (SDL_RenderRect(CurrentContext.CurrentRenderer, &fRect)) return true;
     logError("Draw error %s", SDL_GetError());
     return false;
 };
 
 bool BWrapper::DrawFRect(const AkkordFRect& Rect)
 {
-    if (SDL_RenderRect(CurrentContext.CurrentRenderer, &Rect) == 0) return true;
+    if (SDL_RenderRect(CurrentContext.CurrentRenderer, &Rect)) return true;
     logError("Draw error %s", SDL_GetError());
     return false;
 };
@@ -504,39 +503,39 @@ bool BWrapper::DrawFRect(const AkkordFRect& Rect)
 bool BWrapper::FillRect(const AkkordRect& Rect)
 {
     AkkordFRect fRect(Rect.GetW(), Rect.GetY(), Rect.GetW(), Rect.GetH());
-    if (SDL_RenderFillRect(CurrentContext.CurrentRenderer, &fRect) == 0) return true;
+    if (SDL_RenderFillRect(CurrentContext.CurrentRenderer, &fRect)) return true;
     logError("Draw error %s", SDL_GetError());
     return false;
 };
 
 bool BWrapper::FillFRect(const AkkordFRect& Rect) {
-    if (SDL_RenderFillRect(CurrentContext.CurrentRenderer, &Rect) == 0) return true;
+    if (SDL_RenderFillRect(CurrentContext.CurrentRenderer, &Rect)) return true;
     logError("Draw error %s", SDL_GetError());
     return false;
 }
 
 bool BWrapper::DrawRect(const AkkordFRect& Rect) {
-    if (SDL_RenderRect(CurrentContext.CurrentRenderer, &Rect) == 0) return true;
+    if (SDL_RenderRect(CurrentContext.CurrentRenderer, &Rect)) return true;
     logError("Draw error %s", SDL_GetError());
     return false;
 };
 
 bool BWrapper::FillRect(const AkkordFRect& Rect) {
-    if (SDL_RenderFillRect(CurrentContext.CurrentRenderer, &Rect) == 0) return true;
+    if (SDL_RenderFillRect(CurrentContext.CurrentRenderer, &Rect)) return true;
     logError("Draw error %s", SDL_GetError());
     return false;
 };
 
 bool BWrapper::DrawLine(const AkkordPoint& Point1, const AkkordPoint& Point2)
 {
-    if (SDL_RenderLine(CurrentContext.CurrentRenderer, Point1.GetX(), Point1.GetY(), Point2.GetX(), Point2.GetY()) == 0) return true;
+    if (SDL_RenderLine(CurrentContext.CurrentRenderer, Point1.GetX(), Point1.GetY(), Point2.GetX(), Point2.GetY())) return true;
     logError("Draw error %s", SDL_GetError());
     return false;
 };
 
 bool BWrapper::DrawFLine(const AkkordFPoint& Point1, const AkkordFPoint& Point2)
 {
-    if (SDL_RenderLine(CurrentContext.CurrentRenderer, Point1.GetX(), Point1.GetY(), Point2.GetX(), Point2.GetY()) == 0) return true;
+    if (SDL_RenderLine(CurrentContext.CurrentRenderer, Point1.GetX(), Point1.GetY(), Point2.GetX(), Point2.GetY())) return true;
     logError("Draw error %s", SDL_GetError());
     return false;
 };
