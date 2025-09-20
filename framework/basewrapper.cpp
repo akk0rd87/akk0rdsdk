@@ -52,8 +52,7 @@ bool BWrapper::Init(Uint32 flags)
     //if (SDL_SetMemoryFunctions(std::malloc, std::calloc, std::realloc, std::free) != 0)
       //  logError("SDL_SetMemoryFunctions error %s", SDL_GetError());
 
-    if (SDL_Init(flags) != 0)
-    {
+    if (!SDL_Init(flags)) {
         logError("BWrapper::Init: Error %s", SDL_GetError());
         return false;
     }
@@ -308,15 +307,15 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
             switch (TextureType)
             {
             case AkkordTexture::TextureType::BMP:
-                //return std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadBMP_RW(IO.get()), SDL_DestroySurface);
+                return std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadBMP_IO(IO.get()), SDL_DestroySurface);
                 break;
 
             case AkkordTexture::TextureType::PNG:
-                //return std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadPNG_RW(IO.get()), SDL_DestroySurface);
+                return std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadPNG_IO(IO.get()), SDL_DestroySurface);
                 break;
 
             case AkkordTexture::TextureType::JPEG:
-                //return std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadJPG_RW(IO.get()), SDL_DestroySurface);
+                return std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadJPG_IO(IO.get()), SDL_DestroySurface);
                 break;
 
             case AkkordTexture::TextureType::SVG:
