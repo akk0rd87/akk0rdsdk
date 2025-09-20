@@ -320,22 +320,17 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
 
             case AkkordTexture::TextureType::SVG:
             {
-                /*
-                std::unique_ptr<char, void(*)(char*)> data((char*)SDL_LoadFile_RW(IO.get(), nullptr, false), [](char* i) { SDL_free(i); });
+                std::unique_ptr<char, void(*)(char*)> data((char*)SDL_LoadFile_IO(IO.get(), nullptr, false), [](char* i) { SDL_free(i); });
                 if (data) {
                     std::unique_ptr<NSVGimage, void(*)(NSVGimage*)> svg_image(nsvgParse(data.get(), "px", 96.0f), nsvgDelete);
                     if (svg_image) {
                         std::unique_ptr<NSVGrasterizer, void(*)(NSVGrasterizer*)>rasterizer(nsvgCreateRasterizer(), nsvgDeleteRasterizer);
                         if (rasterizer) {
                             std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)> image(
-                                SDL_CreateRGBSurface(SDL_SWSURFACE,
+                                SDL_CreateSurface(
                                     static_cast<int>(svg_image->width * Scale),
                                     static_cast<int>(svg_image->height * Scale),
-                                    32,
-                                    0x000000FF,
-                                    0x0000FF00,
-                                    0x00FF0000,
-                                    0xFF000000),
+                                    SDL_PIXELFORMAT_RGBA4444),
                                 SDL_DestroySurface
                             );
                             if (image) {
@@ -357,7 +352,6 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
                 else {
                     logError("Couldn't parse SVG image %s", SDL_GetError());
                 }
-                */
             }
             break;
 
@@ -402,7 +396,7 @@ bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const B
 
 bool AkkordTexture::SetColorMod(Uint8 R, Uint8 G, Uint8 B)
 {
-    if (SDL_SetTextureColorMod(tex.get(), R, G, B) == 0)
+    if (SDL_SetTextureColorMod(tex.get(), R, G, B))
         return true;
 
     logError("SDL_SetTextureColorMod error: %s", SDL_GetError());
@@ -411,7 +405,7 @@ bool AkkordTexture::SetColorMod(Uint8 R, Uint8 G, Uint8 B)
 
 bool AkkordTexture::SetAlphaMod(Uint8 A)
 {
-    if (SDL_SetTextureAlphaMod(tex.get(), A) == 0)
+    if (SDL_SetTextureAlphaMod(tex.get(), A))
         return true;
 
     logError("SDL_SetTextureAlphaMod error: %s", SDL_GetError());
@@ -425,7 +419,7 @@ bool AkkordTexture::Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas
     if (RectFromAtlas) {
         srcRect = AkkordFRect(RectFromAtlas->GetX(), RectFromAtlas->GetY(), RectFromAtlas->GetW(), RectFromAtlas->GetH());
     }
-    if (SDL_RenderTexture(CurrentContext.CurrentRenderer, tex.get(), (RectFromAtlas ? &srcRect : nullptr), &tgtRect) != 0) {
+    if (SDL_RenderTexture(CurrentContext.CurrentRenderer, tex.get(), (RectFromAtlas ? &srcRect : nullptr), &tgtRect)) {
         logError("Error draw image %s", SDL_GetError());
         return false;
     }
