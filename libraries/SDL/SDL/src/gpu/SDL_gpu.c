@@ -1785,6 +1785,8 @@ SDL_GPURenderPass *SDL_BeginGPURenderPass(
         commandBufferHeader->render_pass.num_color_targets = num_color_targets;
         if (depth_stencil_target_info != NULL) {
             commandBufferHeader->render_pass.depth_stencil_target = depth_stencil_target_info->texture;
+        } else {
+            commandBufferHeader->render_pass.depth_stencil_target = NULL;
         }
     }
 
@@ -2248,13 +2250,13 @@ void SDL_DrawGPUIndexedPrimitivesIndirect(
 void SDL_EndGPURenderPass(
     SDL_GPURenderPass *render_pass)
 {
-    CommandBufferCommonHeader *commandBufferCommonHeader;
-    commandBufferCommonHeader = (CommandBufferCommonHeader *)RENDERPASS_COMMAND_BUFFER;
-
     if (render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
         return;
     }
+
+    CommandBufferCommonHeader *commandBufferCommonHeader;
+    commandBufferCommonHeader = (CommandBufferCommonHeader *)RENDERPASS_COMMAND_BUFFER;
 
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
