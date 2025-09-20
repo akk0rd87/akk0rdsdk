@@ -330,7 +330,7 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
                                 SDL_CreateSurface(
                                     static_cast<int>(svg_image->width * Scale),
                                     static_cast<int>(svg_image->height * Scale),
-                                    SDL_PIXELFORMAT_RGBA32),
+                                    SDL_PIXELFORMAT_ABGR8888),
                                 SDL_DestroySurface
                             );
                             if (image) {
