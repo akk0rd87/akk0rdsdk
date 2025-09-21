@@ -548,13 +548,12 @@ unsigned BWrapper::Str2Num(const char* Str)
     return num;
 }
 
-/*
-BWrapper::KeyCodes BWrapper::DecodeKey(const SDL_Keysym& SDL_Key)
+BWrapper::KeyCodes BWrapper::DecodeKey(SDL_Keycode key)
 {
     //enum struct KeyCodes { Esc, BackSpace, Back, Enter, Tab, Delete, F1,
     // Help, Home, Insert, Find, Copy, PageDown, PageUp, Paste, Pause, PrintScreen, Return, Space, Uknown };
 
-    switch (SDL_Key.sym)
+    switch (key)
     {
     case SDLK_ESCAPE: return KeyCodes::Esc;
     case SDLK_AC_BACK: return KeyCodes::Back;
@@ -645,7 +644,7 @@ BWrapper::KeyCodes BWrapper::DecodeKey(const SDL_Keysym& SDL_Key)
     default: return KeyCodes::Uknown;
     }
 }
-*/
+
 /*
 void BWrapper::MessageBoxSetColorScheme(MessageBoxColorScheme& Scheme)
 {
