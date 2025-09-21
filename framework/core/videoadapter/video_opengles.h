@@ -558,7 +558,17 @@ void VideoAdapter_OPENGLES::DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, co
     if (openGLState.ProgramId != shaderProgram->programId) {
         glUseProgram(shaderProgram->programId); CheckGLESError(); PrintGLESProgamLog(shaderProgram->programId);
     }
-    //SDL_GL_BindTexture(Params.Texture, nullptr, nullptr);
+
+    //GL_ActivateRenderer(nullptr);
+    SDL_PropertiesID props = SDL_GetTextureProperties(Params.Texture);
+    const auto textureId = SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_OPENGL_TEXTURE_NUMBER, 0);
+    //glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, textureId);
+
+#if SDL_HAVE_YUV
+
+#endif
+
     glUniform4f(shaderProgram->font_color, GLfloat(Params.Color->GetR()) / 255.0F, GLfloat(Params.Color->GetG()) / 255.0F, GLfloat(Params.Color->GetB()) / 255.0F, GLfloat(Params.Color->GetA()) / 255.0F); CheckGLESError();
     const GLfloat smoothness = std::min(0.3F, 0.25F / static_cast<GLfloat>(Params.Spread) / Params.Scale * 1.5F) * 850.0F / 255.0F / 3.333F;
     glUniform1f(shaderProgram->smooth, smoothness); CheckGLESError();
@@ -581,7 +591,7 @@ void VideoAdapter_OPENGLES::DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, co
 
     DrawElements(Buffer.UV, Buffer.squareVertices, Buffer.Indices, 2);
     // unbind texture
-    //SDL_GL_UnbindTexture(Params.Texture);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
     if (shaderProgram->programId != openGLState.ProgramId && openGLState.ProgramId > 0) {
         glUseProgram(openGLState.ProgramId); CheckGLESError();
