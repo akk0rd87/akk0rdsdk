@@ -590,7 +590,7 @@ BWrapper::KeyCodes BWrapper::DecodeKey(SDL_Keycode key)
     case SDLK_RIGHTBRACKET: return KeyCodes::RightBraket;
     case SDLK_COMMA:        return KeyCodes::Comma;
     case SDLK_PERIOD:       return KeyCodes::Period;
-    case SDLK_APOSTROPHE:        return KeyCodes::Quote;
+    case SDLK_APOSTROPHE:   return KeyCodes::Quote;
 
     case SDLK_KP_0: return KeyCodes::Numpad0;
     case SDLK_KP_1: return KeyCodes::Numpad1;
