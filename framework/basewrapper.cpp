@@ -3,6 +3,7 @@
 #include "core/platformwrapper/platforms.h"
 #include "core/core_defines.h"
 #include <ctime>
+#include <cassert>
 
 static_assert (!std::numeric_limits<char>::is_signed, "Char data type must be as unsigned char data type. Set compiler flag -funsigned-char for GCC or /J for MSVC");
 
@@ -450,17 +451,10 @@ bool AkkordTexture::Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas
     return true;
 };
 
-AkkordPoint AkkordTexture::GetSize() const
-{    
-    float w, h;
-    if (tex)
-    {
-        SDL_GetTextureSize(tex.get(), &w, &h);
-    }
-    else
-    {
-        logError("AkkordTexture::GetSize():  Texture is empty");
-    }
+AkkordPoint AkkordTexture::GetSize() const {
+    assert(tex);
+    float w {0.0F}, h {0.0F};
+    SDL_GetTextureSize(tex.get(), &w, &h);
     return AkkordPoint(w, h);
 };
 
