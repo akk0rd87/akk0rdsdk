@@ -1,6 +1,7 @@
 #ifndef __AKK0RD_SDK_BASE_BASEWRAPPER_H__
 #define __AKK0RD_SDK_BASE_BASEWRAPPER_H__
 
+#include "SDL3/SDL_main.h"
 #include "framework_defines.h"
 #include "core/locale.h"
 
