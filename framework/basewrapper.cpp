@@ -467,6 +467,12 @@ AkkordPoint BWrapper::GetScreenSize()
     return WSize;
 };
 
+AkkordRect BWrapper::GetWindowSafeArea() {
+    AkkordRect rect;
+    SDL_GetWindowSafeArea(CurrentContext.CurrentWindow, &rect);
+    return rect;
+}
+
 bool BWrapper::SetCurrentColor(const AkkordColor& Color) {
     if (SDL_SetRenderDrawColor(CurrentContext.CurrentRenderer, Color.GetR(), Color.GetG(), Color.GetB(), Color.GetA())) return true;
     logError("Draw error %s", SDL_GetError());

@@ -208,6 +208,7 @@ public:
     static AkkordPoint         GetScreenSize();
     static int                 GetScreenWidth() { return GetScreenSize().x; };
     static int                 GetScreenHeight() { return GetScreenSize().y; };
+    static AkkordRect          GetWindowSafeArea();
 
     // Drawing functions
     static bool                SetCurrentColor(const AkkordColor& Color);
