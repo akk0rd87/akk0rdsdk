@@ -126,6 +126,14 @@ protected:
         return true;
     }
 
+    virtual const char* getTextureIdProperty() const {
+        return SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_NUMBER;
+    }
+
+    virtual const char* getTextureTargetProperty() const {
+        return SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_TARGET_NUMBER;
+    }
+
 private:
     static constexpr const GLchar* SDF_outlineVertexSource =
         "#define SDF_OUTLINE \n"
@@ -559,11 +567,12 @@ void VideoAdapter_OPENGLES::DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, co
         glUseProgram(shaderProgram->programId); CheckGLESError(); PrintGLESProgamLog(shaderProgram->programId);
     }
 
-    //GL_ActivateRenderer(nullptr);
+    //bindTexture(Params.Texture);
     SDL_PropertiesID props = SDL_GetTextureProperties(Params.Texture);
-    const auto textureId = SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_OPENGL_TEXTURE_NUMBER, 0);
-    //glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, textureId);
+    const auto texture_type = SDL_GetNumberProperty(props, getTextureTargetProperty(), 0);
+    const auto textureId = SDL_GetNumberProperty(props, getTextureIdProperty(), 0);
+    glEnable(texture_type);
+    glBindTexture(texture_type, textureId);CheckGLESError();
 
 #if SDL_HAVE_YUV
 
