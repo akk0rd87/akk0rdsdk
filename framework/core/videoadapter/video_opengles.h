@@ -569,10 +569,10 @@ void VideoAdapter_OPENGLES::DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, co
 
     //bindTexture(Params.Texture);
     SDL_PropertiesID props = SDL_GetTextureProperties(Params.Texture);
-    const auto texture_type = SDL_GetNumberProperty(props, getTextureTargetProperty(), 0);
+    const auto textureType = SDL_GetNumberProperty(props, getTextureTargetProperty(), 0);
     const auto textureId = SDL_GetNumberProperty(props, getTextureIdProperty(), 0);
-    glEnable(texture_type);
-    glBindTexture(texture_type, textureId);CheckGLESError();
+    glEnable(textureType);
+    glBindTexture(textureType, textureId);CheckGLESError();
 
 #if SDL_HAVE_YUV
 
@@ -600,7 +600,7 @@ void VideoAdapter_OPENGLES::DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, co
 
     DrawElements(Buffer.UV, Buffer.squareVertices, Buffer.Indices, 2);
     // unbind texture
-    glBindTexture(texture_type, 0); CheckGLESError();
+    glBindTexture(textureType, 0); CheckGLESError();
 
     if (shaderProgram->programId != openGLState.ProgramId && openGLState.ProgramId > 0) {
         glUseProgram(openGLState.ProgramId); CheckGLESError();
