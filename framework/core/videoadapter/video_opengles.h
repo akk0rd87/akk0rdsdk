@@ -600,7 +600,7 @@ void VideoAdapter_OPENGLES::DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, co
 
     DrawElements(Buffer.UV, Buffer.squareVertices, Buffer.Indices, 2);
     // unbind texture
-    glBindTexture(texture_type, 0);;CheckGLESError();
+    glBindTexture(texture_type, 0); CheckGLESError();
 
     if (shaderProgram->programId != openGLState.ProgramId && openGLState.ProgramId > 0) {
         glUseProgram(openGLState.ProgramId); CheckGLESError();
