@@ -536,6 +536,12 @@ std::unique_ptr<VideoBuffer> VideoAdapter_OPENGLES::CreateVideoBuffer() {
 }
 
 void VideoAdapter_OPENGLES::DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, const VideoSDFBufferDrawParams& Params) {
+    { // костыль: вот тут нужно сыграть на побочном эффекте и забиндить текстуру через вызов рисования
+        const AkkordFRect srcrect(0.0F, 0.0F, 0.0F, 0.0F);
+        const AkkordFRect dstrect(0.0F, 0.0F, 0.0F, 0.0F);
+        SDL_RenderTexture(BWrapper::GetActiveRenderer(), Params.Texture, &srcrect, &dstrect);
+    }
+
     BWrapper::FlushRenderer();
     GLESSDFProgram* shaderProgram{ nullptr };
     if (Params.Outline) {
