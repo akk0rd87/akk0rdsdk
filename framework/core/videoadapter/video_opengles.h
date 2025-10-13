@@ -578,7 +578,7 @@ void VideoAdapter_OPENGLES::DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, co
     const auto textureType = SDL_GetNumberProperty(props, getTextureTargetProperty(), 0);
     const auto textureId = SDL_GetNumberProperty(props, getTextureIdProperty(), 0);
     glEnable(textureType);
-    glBindTexture(textureType, textureId);CheckGLESError();
+    glBindTexture(textureType, textureId); CheckGLESError();
 
 #if SDL_HAVE_YUV
 

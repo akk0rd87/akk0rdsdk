@@ -496,7 +496,7 @@ bool BWrapper::DrawFRect(const AkkordFRect& Rect)
 
 bool BWrapper::FillRect(const AkkordRect& Rect)
 {
-    AkkordFRect fRect(Rect.GetW(), Rect.GetY(), Rect.GetW(), Rect.GetH());
+    const AkkordFRect fRect(Rect.GetX(), Rect.GetY(), Rect.GetW(), Rect.GetH());
     if (SDL_RenderFillRect(CurrentContext.CurrentRenderer, &fRect)) return true;
     logError("Draw error %s", SDL_GetError());
     return false;
