@@ -481,7 +481,7 @@ bool BWrapper::SetCurrentColor(const AkkordColor& Color) {
 
 bool BWrapper::DrawRect(const AkkordRect& Rect)
 {
-    AkkordFRect fRect(Rect.GetW(), Rect.GetY(), Rect.GetW(), Rect.GetH());
+    AkkordFRect fRect(Rect.GetX(), Rect.GetY(), Rect.GetW(), Rect.GetH());
     if (SDL_RenderRect(CurrentContext.CurrentRenderer, &fRect)) return true;
     logError("Draw error %s", SDL_GetError());
     return false;
