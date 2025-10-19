@@ -52,6 +52,9 @@ public:
     int GetX() const { return x; };
     int GetY() const { return y; };
 
+    int GetBottomX() const { return x + w; }
+    int GetBottomY() const { return y + h; }
+
     AkkordRect& SetPosition(const AkkordPoint& Position) { x = Position.GetX(); y = Position.GetY(); return *this; };
     AkkordRect& SetPosition(int X, int Y) { x = X; y = Y; return *this; };
     AkkordRect& SetSize(const AkkordPoint& Size) { w = Size.GetX(); h = Size.GetY(); return *this; };
