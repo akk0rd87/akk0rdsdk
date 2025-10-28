@@ -213,7 +213,7 @@ AkkordWindow* BWrapper::CreateRenderWindow(const char* Title, int X, int Y, int 
     return wnd;
 };
 
-AkkordRenderer* BWrapper::CreateRenderer(AkkordWindow* window, int index, Uint32 flags)
+AkkordRenderer* BWrapper::CreateRenderer(AkkordWindow* window)
 {
     auto rnd = SDL_CreateRenderer(window, nullptr); // TODO FIX Nullptr
     if (nullptr == rnd)

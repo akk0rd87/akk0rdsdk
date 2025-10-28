@@ -196,7 +196,7 @@ public:
 
     // Windows and Render functions
     static AkkordWindow* CreateRenderWindow(const char* Title, int X, int Y, int W, int H, Uint32 Flags);
-    static AkkordRenderer* CreateRenderer(AkkordWindow* window, int index, Uint32 flags);
+    static AkkordRenderer* CreateRenderer(AkkordWindow* window);
     static bool                SetActiveWindow(AkkordWindow* Window);
     static bool                SetActiveRenderer(AkkordRenderer* Renderer);
     static AkkordWindow* GetActiveWindow();
