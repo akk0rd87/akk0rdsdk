@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Test app</string>
-    <string name="app_id">100000000000</string>
+    <string translatable="false" name="game_services_project_id">100000000000</string>
 </resources>
