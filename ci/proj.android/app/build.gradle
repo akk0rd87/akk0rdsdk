@@ -39,12 +39,13 @@ android {
             kotlin.srcDir "${akkord_sdk_path}/framework/ads/admob/android/kotlin/"
             kotlin.srcDir "${akkord_sdk_path}/framework/ads/yandex/android/kotlin/"
             kotlin.srcDir "${akkord_sdk_path}/framework/core/platformwrapper/android/billing/"
+            kotlin.srcDir "${akkord_sdk_path}/framework/playservices/google/"
 
             java.srcDir   "${akkord_sdk_path}/libraries/SDL/SDL/android-project/app/src/main/java/org/libsdl/app/"
             java.srcDir   "${akkord_sdk_path}/framework/core/platformwrapper/android/wrapper/javaactivity/"
             java.srcDir   "${akkord_sdk_path}/framework/core/platformwrapper/android/wrapper/utils/"
             java.srcDir   "${akkord_sdk_path}/framework/gdpr/android/java/"
-            java.srcDir   "${akkord_sdk_path}/framework/core/platformwrapper/android/snapshotcoordinator/"
+            java.srcDir   "${akkord_sdk_path}/framework/playservices/google/"
             java.srcDir '../java'
             res.srcDirs = ['../res']
         }
