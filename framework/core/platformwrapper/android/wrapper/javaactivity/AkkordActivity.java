@@ -2,15 +2,11 @@ package org.akkord.lib;
 
 import org.libsdl.app.SDLActivity;
 import android.os.Bundle;
-import android.app.Activity;
 import android.util.Log;
 import com.getkeepsafe.relinker.ReLinker;
-
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
+import org.akkord.lib.Utils;
 
 public class AkkordActivity extends SDLActivity {
-    private static String TAG = "SDL";
 
     public void akkord_loadLibrary(String libraryName) throws UnsatisfiedLinkError, SecurityException, NullPointerException {
 
@@ -20,12 +16,12 @@ public class AkkordActivity extends SDLActivity {
 
         try {
             ReLinker.loadLibrary(this, libraryName);
-            Log.d("SDL", "Relinker library load success: " + libraryName);
+            Log.d(Utils.TAG, "Relinker library load success: " + libraryName);
         }
         catch (final Throwable e) {
             // Fall back
             try {
-                Log.e("SDL", "Relinker load error :" + libraryName + ". " + e.getMessage());
+                Log.e(Utils.TAG, "Relinker load error :" + libraryName + ". " + e.getMessage());
                 System.loadLibrary(libraryName);
             }
             catch (final UnsatisfiedLinkError ule) {
@@ -75,6 +71,6 @@ public class AkkordActivity extends SDLActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        Utils.onActivityStop();
+        org.akkord.lib.Utils.onActivityStop();
     }
 }
