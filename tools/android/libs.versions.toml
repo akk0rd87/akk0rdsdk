@@ -1,6 +1,6 @@
 [versions]
 kotlin                             = '2.1.10'
-firebaseBom                        = "33.16.0"
+firebaseBom                        = "34.5.0"
 rustoreBom                         = "2025.02.01"
 
 [libraries]

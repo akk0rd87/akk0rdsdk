@@ -7,6 +7,7 @@ import com.google.android.gms.games.GamesSignInClient
 import com.google.android.gms.games.PlayGames
 import com.google.android.gms.games.PlayGamesSdk
 import com.google.android.gms.games.SnapshotsClient.DataOrConflict
+import com.google.android.gms.games.leaderboard.LeaderboardVariant
 import com.google.android.gms.games.snapshot.Snapshot
 import com.google.android.gms.games.snapshot.SnapshotMetadata
 import com.google.android.gms.games.snapshot.SnapshotMetadataChange
@@ -20,6 +21,7 @@ private external fun snapshotReceivedCallback(array: ByteArray?, size: Int, wasC
 
 class PlayServicesManager(
     private val activity: Activity,
+    private val useSnapshot: Boolean,
 ) {
     init {
         PlayGamesSdk.initialize(activity)
@@ -27,6 +29,7 @@ class PlayServicesManager(
 
     private val gamesSignInClient: GamesSignInClient = PlayGames.getGamesSignInClient(activity)
     private var initialSnapshotLoadStarted = false
+    private var connected = false
 
     fun loadSnapshot() {
         try {
@@ -220,6 +223,8 @@ class PlayServicesManager(
 
     }
 
+    fun isAuthenticated(): Boolean = connected
+
     fun saveSnapshot(data: ByteArray) {
         Log.d(Utils.TAG, "saveSnapshot: size=${data.size}")
         waitForClosedAndOpen().addOnCompleteListener { task ->
@@ -254,6 +259,18 @@ class PlayServicesManager(
                         }
                     })
             }
+        }
+    }
+
+    fun loadLeaderboardScoreAsync(leaderboardId: String, callback: (Long) -> Boolean) {
+        getLeaderboardsClient().loadCurrentPlayerLeaderboardScore(
+            leaderboardId,
+            LeaderboardVariant.TIME_SPAN_ALL_TIME,
+            LeaderboardVariant.COLLECTION_PUBLIC).addOnCompleteListener { task ->
+                val score  = task.getResult().get()?.rawScore ?: 0L
+                Log.d(Utils.TAG, "Loaded score for $leaderboardId = $score")
+                val result = callback(score)
+                Log.d(Utils.TAG, "Result of loadLeaderboardScoreAsync callback $result")
         }
     }
 
@@ -326,17 +343,24 @@ class PlayServicesManager(
         authTask?.isSuccessful == true && authTask.getResult()?.isAuthenticated == true
 
     private fun onDisconnected() {
+        connected = false
         Log.d(Utils.TAG, "onDisconnected")
         playServicesCallback(NATIVE_SIGN_OUT, 0, 0);
     }
 
     private fun onConnected() {
+        connected = true
         Log.d(Utils.TAG, "onConnected")
         playServicesCallback(NATIVE_SIGN_IN, 0, 0)
 
-        if(!initialSnapshotLoadStarted) {
+        if(useSnapshot && !initialSnapshotLoadStarted) {
             initialSnapshotLoadStarted = true
-            loadSnapshot()
+            try {
+                loadSnapshot()
+            }
+            catch (e: Exception) {
+                Log.e(Utils.TAG, e.toString())
+            }
         }
     }
 
