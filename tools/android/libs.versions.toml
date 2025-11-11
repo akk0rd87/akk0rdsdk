@@ -1,5 +1,5 @@
 [versions]
-kotlin                             = '2.1.10'
+kotlin                             = '2.2.21'
 firebaseBom                        = "34.5.0"
 rustoreBom                         = "2025.02.01"
 
@@ -19,7 +19,7 @@ play-services-games                = "com.google.android.gms:play-services-games
 play-services-auth                 = "com.google.android.gms:play-services-auth:21.4.0"
 play-appset                        = "com.google.android.gms:play-services-appset:16.1.0"
 
-user_messaging_platform            = "com.google.android.ump:user-messaging-platform:3.1.0"
+user_messaging_platform            = "com.google.android.ump:user-messaging-platform:4.0.0"
 yandexadssdk                       = "com.yandex.android:mobileads:7.16.1"
 
 rustore-appreview                  = { module = "ru.rustore.sdk:review" }
@@ -31,8 +31,8 @@ lifecycle-viewmodel-ktx            = "androidx.lifecycle:lifecycle-viewmodel-ktx
 mytarget-sdk                       = "com.my.target:mytarget-sdk:5.27.1"
 
 [plugins]
-android-application                = { id = 'com.android.application', version = '8.11.0' }
-google-services                    = { id = 'com.google.gms.google-services', version = '4.4.2' }
+android-application                = { id = 'com.android.application', version = '8.13.0' }
+google-services                    = { id = 'com.google.gms.google-services', version = '4.4.4' }
 kotlin                             = { id = 'org.jetbrains.kotlin.android', version.ref = 'kotlin' }
 triplet-play-publisher             = { id = 'com.github.triplet.play', version = '3.12.1' }
 
