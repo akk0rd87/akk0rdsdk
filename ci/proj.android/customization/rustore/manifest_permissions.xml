@@ -10,11 +10,11 @@
       </intent-filter>
     </activity>
 
-    <meta-data android:name="akk0rdsdk.rustore.app.scheme"
+    <meta-data android:name="sdk_pay_scheme_value"
                android:value="orgpopapptest"/>
 
     <!-- https://console.rustore.ru/apps/289739455/versions -->
-    <meta-data android:name="akk0rdsdk.rustore.app.id"
+    <meta-data android:name="console_app_id_value"
                android:value="100000000"/>
   </application>
 

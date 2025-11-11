@@ -24,7 +24,7 @@ yandexadssdk                       = "com.yandex.android:mobileads:7.16.1"
 
 rustore-appreview                  = { module = "ru.rustore.sdk:review" }
 rustore-appupdate                  = { module = "ru.rustore.sdk:appupdate" }
-rustore-billing                    = { module = "ru.rustore.sdk:billingclient" }
+rustore-billing                    = { module = "ru.rustore.sdk:pay" }
 
 lifecycle-viewmodel-ktx            = "androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.3"
 
