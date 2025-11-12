@@ -13,6 +13,8 @@
 
 ci/proj.android/app/build
 ci/proj.android/main/lib
+ci/proj.android/local.properties
+ci/proj.android/build/
 
 libraries/SDL/SDL/VisualC/Win32/*
 
