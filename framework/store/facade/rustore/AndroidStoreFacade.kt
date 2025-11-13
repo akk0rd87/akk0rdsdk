@@ -19,9 +19,11 @@ class AndroidStoreFacade {
             InstallStateUpdateListener { state ->
                 when (state.installStatus) {
                     InstallStatus.DOWNLOADED -> {
-                        //updateManager.unregisterListener(this@InstallStateUpdateListener)
-                        // The update is ready to be installed
                         completeDownloading()
+                    }
+
+                    InstallStatus.DOWNLOADING -> {
+                        Log.d(getTag(), "app update ${state.bytesDownloaded} of ${state.totalBytesToDownload} bytes")
                     }
                 }
             }
@@ -40,7 +42,7 @@ class AndroidStoreFacade {
         fun checkAppUpdate() {
             // do not check at the moment
             Log.d(getTag(), "RuStore: checkAppUpdate Not implemented yet")
-            /*
+
             appUpdateManager.getAppUpdateInfo()
                 .addOnSuccessListener { appUpdateInfo ->
                     if (appUpdateInfo.updateAvailability == UpdateAvailability.UPDATE_AVAILABLE) {
@@ -48,7 +50,6 @@ class AndroidStoreFacade {
                         appUpdateManager.startUpdateFlow(appUpdateInfo, getAppUpdateOptions())
                     }
                 }
-            */
         }
 
         @JvmStatic
@@ -60,6 +61,9 @@ class AndroidStoreFacade {
             try {
                 appUpdateManager.unregisterListener(installUpdateListener)
                 appUpdateManager.completeUpdate(getAppUpdateOptions())
+                    .addOnCompletionListener { result ->
+                        Log.d(getTag(), "appUpdateManager: addOnCompletionListener: $result")
+                    }
             }
             catch(e : Exception) {
                 Log.e(getTag(), e.message?:"Unknown exception")
