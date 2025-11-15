@@ -1,7 +1,7 @@
 [versions]
 kotlin                             = '2.2.21'
 firebaseBom                        = "34.5.0"
-rustoreBom                         = "2025.02.01"
+rustoreBom                         = "2025.11.01"
 
 [libraries]
 getkeepsafe-relinker               = "com.getkeepsafe.relinker:relinker:1.4.5"
