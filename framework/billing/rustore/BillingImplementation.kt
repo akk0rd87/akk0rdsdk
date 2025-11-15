@@ -55,19 +55,24 @@ class BillingImplementation(
         }
     }
 
-    fun consumeProductItem(purchaseToken: String, productSKU: String, attemptNumber: Int = 1) {
-        Log.d(getTag(), "consumeProductItem: $purchaseToken, productSKU: $productSKU, attemptNumber: $attemptNumber")
-        getBillingClient().getPurchaseInteractor().confirmTwoStepPurchase(PurchaseId(purchaseToken))
-            .addOnSuccessListener {
-                Log.d(getTag(), "consumeProductItem [OnSuccessListener]: $purchaseToken, productSKU: $productSKU")
-                observer.onPurchaseConsumed(purchaseToken, productSKU)
-            }
-            .addOnFailureListener {
-                Log.d(getTag(), "consumeProductItem [addOnFailureListener]: $purchaseToken, productSKU: $productSKU")
-                if(attemptNumber < 5) {
-                    consumeProductItem(purchaseToken, productSKU, attemptNumber + 1)
+    fun consumeProductItem(purchaseToken: String, productSKU: String) {
+        Log.d(getTag(), "consumeProductItem: $purchaseToken, productSKU: $productSKU")
+
+        getBillingClient().getPurchaseInteractor().getPurchase(PurchaseId(purchaseToken)).addOnSuccessListener { purchase ->
+            when(purchase) {
+                is ProductPurchase -> {
+                    if (ProductPurchaseStatus.CONFIRMED == purchase.status) {
+                        Log.d(getTag(), "consumeProductItem: $purchaseToken, productSKU: $productSKU already confirmed")
+                        observer.onPurchaseConsumed(purchaseToken, productSKU)
+                    }
+                    else {
+                        confirmPurchase(purchaseToken, productSKU, 1)
+                    }
+                }
+                else -> {
                 }
             }
+        }
     }
 
     fun onNewIntent(intent: Intent) {
@@ -76,6 +81,21 @@ class BillingImplementation(
 
     fun queryProductDetails(prodList: Array<String?>?) {
 
+    }
+
+    private fun confirmPurchase(purchaseToken: String, productSKU: String, attemptNumber: Int) {
+        Log.d(getTag(), "confirmPurchase: $purchaseToken, productSKU: $productSKU, attemptNumber: $attemptNumber")
+        getBillingClient().getPurchaseInteractor().confirmTwoStepPurchase(PurchaseId(purchaseToken))
+            .addOnSuccessListener {
+                Log.d(getTag(), "confirmPurchase [OnSuccessListener]: $purchaseToken, productSKU: $productSKU")
+                observer.onPurchaseConsumed(purchaseToken, productSKU)
+            }
+            .addOnFailureListener {
+                Log.d(getTag(), "confirmPurchase [addOnFailureListener]: $purchaseToken, productSKU: $productSKU")
+                if(attemptNumber < 5) {
+                    confirmPurchase(purchaseToken, productSKU, attemptNumber + 1)
+                }
+            }
     }
 
     private fun handlePurchases(purchases: List<Purchase>) {
