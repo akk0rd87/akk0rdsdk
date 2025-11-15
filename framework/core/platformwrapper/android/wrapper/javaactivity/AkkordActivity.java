@@ -37,6 +37,7 @@ public class AkkordActivity extends SDLActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         org.akkord.lib.Utils.Init(this);
+        org.akkord.lib.Utils.checkUpdate();
     }
 
     @Override
@@ -60,12 +61,6 @@ public class AkkordActivity extends SDLActivity {
           //System.loadLibrary(lib);
           akkord_loadLibrary(lib);
        }
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        org.akkord.lib.Utils.checkUpdate();
     }
 
     @Override
