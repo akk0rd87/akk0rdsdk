@@ -2,6 +2,7 @@ package org.akkord.lib
 
 import android.content.Intent
 import android.util.Log
+import com.yandex.mobile.ads.impl.pu
 import ru.rustore.sdk.pay.RuStorePayClient
 import ru.rustore.sdk.pay.model.PreferredPurchaseType
 import ru.rustore.sdk.pay.model.ProductId
@@ -12,6 +13,7 @@ import ru.rustore.sdk.pay.model.ProductPurchaseStatus
 import ru.rustore.sdk.pay.model.ProductType
 import ru.rustore.sdk.pay.model.Purchase
 import ru.rustore.sdk.pay.model.PurchaseId
+import ru.rustore.sdk.pay.model.PurchaseType
 import ru.rustore.sdk.pay.model.Quantity
 
 class BillingImplementation(
@@ -24,20 +26,28 @@ class BillingImplementation(
         observer.onBillingSetupFinished(0)
     }
 
+    fun onNewIntent(intent: Intent) {
+        RuStorePayClient.instance.getIntentInteractor().proceedIntent(intent)
+    }
+
+    fun queryProductDetails(prodList: Array<String?>?) {
+
+    }
+
     fun restorePurchases() {
-        // запрашиваем только те товары, покупка которых требует обработки
+        // запрашиваем CONFIRMED, как уже подтвержденные покупки (для рекламы)
         getBillingClient().getPurchaseInteractor().getPurchases(
             productType = ProductType.NON_CONSUMABLE_PRODUCT,
             purchaseStatus = ProductPurchaseStatus.CONFIRMED,
         ).addOnSuccessListener { purchases ->
-            handlePurchases(purchases)
+            handleRestoredPurchases(purchases)
         }
 
+        // запрашиваем PAID, чтобы перевести в статус CONFIRMED
         getBillingClient().getPurchaseInteractor().getPurchases(
-            productType = ProductType.CONSUMABLE_PRODUCT,
             purchaseStatus = ProductPurchaseStatus.PAID,
         ).addOnSuccessListener { purchases ->
-            handlePurchases(purchases)
+            handleRestoredPurchases(purchases)
         }
     }
 
@@ -51,77 +61,94 @@ class BillingImplementation(
             params = params,
             preferredPurchaseType = PreferredPurchaseType.TWO_STEP,
         ).addOnSuccessListener { paymentResult: ProductPurchaseResult ->
-            observer.onPurchaseQueried(paymentResult.purchaseId.value, paymentResult.productId.value, 0)
+            getBillingClient().getPurchaseInteractor().getPurchase(
+                purchaseId = paymentResult.purchaseId,
+            ).addOnSuccessListener { purchase ->
+                handleCurrentPurchase(purchase)
+            }
         }
+    }
+
+    private fun handleCurrentProductPurchase(productPurchase: ProductPurchase) {
+        when (productPurchase.status) {
+            // если покупка в статусе PAID, ее надо довести до статуса CONFIRMED
+            ProductPurchaseStatus.PAID -> {
+                confirmPurchase(
+                    purchaseId = productPurchase.purchaseId,
+                    productSKU = productPurchase.productId.value,
+                    attemptNumber = 1,
+                )
+            }
+
+            ProductPurchaseStatus.CONFIRMED -> {
+                observer.onPurchaseQueried( // тут шлем callback для всех типов продуктов CONSUMABLE и NON-CONSUMABLE
+                    purchaseToken = productPurchase.purchaseId.value,
+                    productSKU = productPurchase.productId.value,
+                    type = 0,
+                )
+            }
+
+            else -> {
+
+            }
+        }
+    }
+
+    private fun handleCurrentPurchase(purchase: Purchase) {
+        if(purchase is ProductPurchase) {
+            handleCurrentProductPurchase(purchase)
+        }
+    }
+
+    private fun confirmPurchase(purchaseId: PurchaseId, productSKU: String, attemptNumber: Int) {
+        Log.d(getTag(), "confirmPurchase: $purchaseId, productSKU: $productSKU, attemptNumber: $attemptNumber")
+        getBillingClient().getPurchaseInteractor().confirmTwoStepPurchase(purchaseId)
+            .addOnSuccessListener {
+                Log.d(getTag(), "confirmPurchase [OnSuccessListener]: $purchaseId, productSKU: $productSKU")
+                observer.onPurchaseQueried(purchaseId.value, productSKU, 0)
+            }
+            .addOnFailureListener {
+                Log.d(getTag(), "confirmPurchase [addOnFailureListener]: $purchaseId, productSKU: $productSKU")
+                if(attemptNumber < 5) {
+                    confirmPurchase(purchaseId, productSKU, attemptNumber + 1)
+                }
+            }
     }
 
     fun consumeProductItem(purchaseToken: String, productSKU: String) {
         Log.d(getTag(), "consumeProductItem: $purchaseToken, productSKU: $productSKU")
-
-        getBillingClient().getPurchaseInteractor().getPurchase(PurchaseId(purchaseToken)).addOnSuccessListener { purchase ->
-            when(purchase) {
-                is ProductPurchase -> {
-                    if (ProductPurchaseStatus.CONFIRMED == purchase.status) {
-                        Log.d(getTag(), "consumeProductItem: $purchaseToken, productSKU: $productSKU already confirmed")
-                        observer.onPurchaseConsumed(purchaseToken, productSKU)
-                    }
-                    else {
-                        confirmPurchase(purchaseToken, productSKU, 1)
-                    }
-                }
-                else -> {
-                }
-            }
-        }
+        // так как в Rustore нет как такового списания товара, то по умолчанию всегда возвращаем, что товар списан (фиктивно)
+        observer.onPurchaseConsumed(purchaseToken, productSKU)
     }
 
-    fun onNewIntent(intent: Intent) {
-        RuStorePayClient.instance.getIntentInteractor().proceedIntent(intent)
-    }
-
-    fun queryProductDetails(prodList: Array<String?>?) {
-
-    }
-
-    private fun confirmPurchase(purchaseToken: String, productSKU: String, attemptNumber: Int) {
-        Log.d(getTag(), "confirmPurchase: $purchaseToken, productSKU: $productSKU, attemptNumber: $attemptNumber")
-        getBillingClient().getPurchaseInteractor().confirmTwoStepPurchase(PurchaseId(purchaseToken))
-            .addOnSuccessListener {
-                Log.d(getTag(), "confirmPurchase [OnSuccessListener]: $purchaseToken, productSKU: $productSKU")
-                observer.onPurchaseConsumed(purchaseToken, productSKU)
-            }
-            .addOnFailureListener {
-                Log.d(getTag(), "confirmPurchase [addOnFailureListener]: $purchaseToken, productSKU: $productSKU")
-                if(attemptNumber < 5) {
-                    confirmPurchase(purchaseToken, productSKU, attemptNumber + 1)
-                }
-            }
-    }
-
-    private fun handlePurchases(purchases: List<Purchase>) {
+    private fun handleRestoredPurchases(purchases: List<Purchase>) {
         for(purchase in purchases) {
             Log.d(getTag(), "purchase: $purchase")
             if(purchase is ProductPurchase) {
-                handleProductPurchase(purchase)
+                handleRestoredProductPurchase(purchase)
             }
         }
     }
 
-    private fun handleProductPurchase(productPurchase: ProductPurchase) {
+    private fun handleRestoredProductPurchase(productPurchase: ProductPurchase) {
         when (productPurchase.status) {
-            // status PAID может быть только для CONSUMABLE товаров
+            // если покупка в статусе PAID, ее надо довести до статуса CONFIRMED
             ProductPurchaseStatus.PAID -> {
-                if (ProductType.CONSUMABLE_PRODUCT == productPurchase.productType) {
-                    observer.onPurchaseQueried(productPurchase.purchaseId.value, productPurchase.productId.value, 0)
-                }
+                confirmPurchase(
+                    purchaseId = productPurchase.purchaseId,
+                    productSKU = productPurchase.productId.value,
+                    attemptNumber = 1,
+                )
             }
 
-            // статус CONFIRMED может быть для любых товаров, но тут мы обрабатываем только NON_CONSUMABLE
-            // CONFIRMED для CONSUMABLE мы обрабатываем в callback для confirmPurchase в consumeProductItem
-            // тут мы его не обрабатываем, так как тут он может приходить нам многократно при восстановлении покупок, а в consumeProductItem - однократно
+            // здесь шлем callback только для NON-CONSUMABLE продуктов
             ProductPurchaseStatus.CONFIRMED -> {
-                if (ProductType.NON_CONSUMABLE_PRODUCT == productPurchase.productType) {
-                    observer.onPurchaseQueried(productPurchase.purchaseId.value, productPurchase.productId.value, 0)
+                if( ProductType.NON_CONSUMABLE_PRODUCT == productPurchase.productType) {
+                    observer.onPurchaseQueried(
+                        purchaseToken = productPurchase.purchaseId.value,
+                        productSKU = productPurchase.productId.value,
+                        type = 0,
+                    )
                 }
             }
 
