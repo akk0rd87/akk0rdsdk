@@ -8,16 +8,12 @@ open class AkkordComposeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         org.akkord.lib.Utils.Init(this)
-    }
-
-    override fun onStart() {
-        super.onStart()
         org.akkord.lib.Utils.checkUpdate()
     }
 
     override fun onStop() {
         super.onStop()
-        org.akkord.lib.Utils.UnregisterUpdateListener()
+        org.akkord.lib.Utils.onActivityStop()
     }
 
     private fun loadNativeLib(libName : String) {

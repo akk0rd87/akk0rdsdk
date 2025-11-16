@@ -10,7 +10,6 @@ import ru.rustore.sdk.billingclient.model.product.ProductType
 import ru.rustore.sdk.billingclient.model.purchase.PaymentResult
 import ru.rustore.sdk.billingclient.model.purchase.Purchase
 import ru.rustore.sdk.billingclient.model.purchase.PurchaseState
-import ru.rustore.sdk.billingclient.utils.pub.checkPurchasesAvailability
 
 class BillingImplementation(
     val observer: BillingObserver,

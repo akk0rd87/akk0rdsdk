@@ -40,9 +40,6 @@ class AndroidStoreFacade {
 
         @JvmStatic
         fun checkAppUpdate() {
-            // do not check at the moment
-            Log.d(getTag(), "RuStore: checkAppUpdate Not implemented yet")
-
             appUpdateManager.getAppUpdateInfo()
                 .addOnSuccessListener { appUpdateInfo ->
                     if (appUpdateInfo.updateAvailability == UpdateAvailability.UPDATE_AVAILABLE) {
