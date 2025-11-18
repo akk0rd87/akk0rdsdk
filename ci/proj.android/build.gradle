@@ -4,7 +4,7 @@ import org.apache.tools.ant.taskdefs.condition.Os
 buildscript {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
         maven { url 'https://plugins.gradle.org/m2/' }
     }
 }
@@ -19,7 +19,7 @@ plugins {
 allprojects {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
         maven { url = uri("https://artifactory-external.vkpartner.ru/artifactory/maven") }
     }
 }

@@ -158,55 +158,21 @@ android {
     configurations { // https://stackoverflow.com/a/59138342/11195868
         all*.exclude group: 'com.google.guava', module: 'listenablefuture'
     }
-
-    testOptions {
-        managedDevices {
-            devices {
-                pixel2api30 (com.android.build.api.dsl.ManagedVirtualDevice) {
-                    // Use device profiles you typically see in Android Studio.
-                    device = "Pixel 2"
-                    // Use only API levels 27 and higher.
-                    apiLevel = 30
-                    // To include Google services, use "google".
-                    systemImageSource = "aosp-atd"
-                }
-            }
-            groups {
-                phoneAndTablet {
-                    targetDevices.add(devices.pixel2api30)
-                }
-            }
-        }
-    }
 }
 
 androidComponents {
-    def getProjGitHash = { ->
-        def stdout = new ByteArrayOutputStream()
-        exec {
-            commandLine 'git', 'rev-parse', '--short', 'HEAD'
-            standardOutput = stdout
-        }
-        return stdout.toString().trim()
-    }
-
-    def getSDKGitHash = { ->
-        def stdout = new ByteArrayOutputStream()
-        exec {
-            commandLine 'git', '--git-dir', akkord_sdk_path + '/.git', 'rev-parse', '--short', 'HEAD'
-            standardOutput = stdout
-        }
-        return stdout.toString().trim()
-    }
-
-    def projVersionHash = getProjGitHash()
-    def sdkVersionHash  = getSDKGitHash()
+    def projVersionHash = getGitCurrentCommitHash(projectDir.toString())
+    def projBranch      = getGitCurrentBranch(projectDir.toString())
+    def sdkVersionHash  = getGitCurrentCommitHash(akkord_sdk_path)
 
     def release = selector().withBuildType("release")
     onVariants (release) { variant ->
         for (output in variant.outputs) {
             def processedVersionCode = output.versionCode.map { playVersionCode -> "$playVersionCode [$projVersionHash]-[$sdkVersionHash]" }
             output.versionName.set(processedVersionCode)
+
+            def newFilename = "${variant.applicationId.get()}-$projBranch-${projVersionHash}-${sdkVersionHash}-${output.outputFileName.get()}"
+            output.outputFileName.set(newFilename)
         }
     }
 }
