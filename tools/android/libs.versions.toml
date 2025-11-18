@@ -31,7 +31,7 @@ lifecycle-viewmodel-ktx            = "androidx.lifecycle:lifecycle-viewmodel-ktx
 mytarget-sdk                       = "com.my.target:mytarget-sdk:5.27.1"
 
 [plugins]
-android-application                = { id = 'com.android.application', version = '8.13.0' }
+android-application                = { id = 'com.android.application', version = '8.13.1' }
 google-services                    = { id = 'com.google.gms.google-services', version = '4.4.4' }
 kotlin                             = { id = 'org.jetbrains.kotlin.android', version.ref = 'kotlin' }
 triplet-play-publisher             = { id = 'com.github.triplet.play', version = '3.12.1' }
