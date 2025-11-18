@@ -1,6 +1,7 @@
 #include "basewrapper.h"
 #include <jni.h>
 #include "../gdpr_consentpolicymanager.h"
+#include "core/platformwrapper/android/android_wrapper.h"
 
 namespace GDPRConsentPolicy {
     class AndroidGDPRManager : public GDPRConsentPolicy::Manager {
@@ -14,7 +15,7 @@ namespace GDPRConsentPolicy {
         }
     private:
         JNIEnv* getJNIEnv() {
-            return (JNIEnv*)SDL_AndroidGetJNIEnv();
+            return AndroidWrapper::GetJNIEnv();
         }
 
         jclass getGDPRManager() {

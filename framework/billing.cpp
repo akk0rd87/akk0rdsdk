@@ -19,9 +19,10 @@ int BillingManager::GetStatus()
 
 #ifdef __ANDROID__
 #include "core/platformwrapper/android/android_billing.h"
+#include "core/platformwrapper/android/android_wrapper.h"
 
 static JNIEnv* getJNIEnv() {
-    return static_cast<JNIEnv*>(SDL_AndroidGetJNIEnv());
+    return AndroidWrapper::GetJNIEnv();
 }
 
 extern "C" {

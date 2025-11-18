@@ -14,7 +14,7 @@ class AndroidPlatformWrapper : public PlatformWrapper, public MessageBoxCallback
     }
 
     virtual bool vInit() override {
-        wrapper = std::make_unique<AndroidUtilsWrapper>((JNIEnv*)SDL_AndroidGetJNIEnv(), this);
+        wrapper = std::make_unique<AndroidUtilsWrapper>(AndroidWrapper::GetJNIEnv(), this);
         return wrapper ? true : false;
     };
 
@@ -167,4 +167,12 @@ bool AndroidWrapper::AndroidShowToast(const char* Message, BWrapper::AndroidToas
 
 int AndroidWrapper::AndroidGetApiLevel() {
     return androidPlatformWrapper.GetApiLevel();
+};
+
+JNIEnv* AndroidWrapper::GetJNIEnv() {
+    return (JNIEnv*)SDL_AndroidGetJNIEnv();
+};
+
+jobject AndroidWrapper::GetActivity() {
+    return reinterpret_cast<jobject>(SDL_AndroidGetActivity());
 };

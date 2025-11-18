@@ -1,3 +1,5 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
 ext.getMinSdkVersion = {
     def minSdkVersion = 23
     println("minSdkVersion: $minSdkVersion")
@@ -11,7 +13,7 @@ ext.getTargetSdkVersion = {
 }
 
 ext.getCompileSdkVersion = {
-    def compileSdkVersion = 35
+    def compileSdkVersion = 36
     println("compileSdkVersion: $compileSdkVersion")
     return compileSdkVersion
 }
@@ -26,4 +28,40 @@ ext.getGitCurrentCommitHash = { String repoDir ->
 
 ext.getGitCurrentBranch = { String repoDir ->
     return getProjGitParam(repoDir, '--abbrev-ref')
+}
+
+
+ext.runCommand = { def cmd, String workingDir, boolean failOnError = true ->
+    println("Running command: ${cmd} in dir: ${workingDir}")
+
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        cmd = ['cmd.exe', '/c', cmd]
+    }
+    else {
+        cmd = ['sh', '-c', cmd]
+    }
+
+    def process = cmd.execute(null, new File(workingDir))
+
+    // Потоковый вывод stdout
+    Thread.start {
+        process.inputStream.eachLine { line ->
+            println line
+        }
+    }
+
+    // Потоковый вывод stderr
+    Thread.start {
+        process.errorStream.eachLine { line ->
+            System.err.println(line)
+        }
+    }
+
+    int exitCode = process.waitFor()
+
+    if (failOnError && exitCode != 0) {
+        throw new RuntimeException(
+            "Command failed: ${cmd}\nExit: ${exitCode}"
+        )
+    }
 }

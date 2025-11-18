@@ -81,6 +81,7 @@ libraries/SDL_image/SDL_image/VisualC/.vs
 **/.classpath
 **/.project
 **/.settings
+libraries/libharu/out/build/cmake
 libraries/libharu/out/build/x86-Release/.cmake
 libraries/libharu/out/build/x86-Release/.ninja*
 libraries/libharu/out/build/x86-Release/build.ninja
