@@ -15,3 +15,15 @@ ext.getCompileSdkVersion = {
     println("compileSdkVersion: $compileSdkVersion")
     return compileSdkVersion
 }
+
+def getProjGitParam = { String repoDir, String param ->
+    return ["git", "rev-parse", param, "HEAD"].execute(null, new File(repoDir)).text.trim()
+}
+
+ext.getGitCurrentCommitHash = { String repoDir ->
+    return getProjGitParam(repoDir, '--short')
+}
+
+ext.getGitCurrentBranch = { String repoDir ->
+    return getProjGitParam(repoDir, '--abbrev-ref')
+}
