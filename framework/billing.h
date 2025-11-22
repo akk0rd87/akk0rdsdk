@@ -13,7 +13,6 @@ public:
     enum struct OperAction : int { Restored = 0, Bought = 1 };
 
     static bool                             Init(BillingCallbackObserver* Observer);
-    static int                              GetStatus();
     static bool                             QueryProductDetails(const std::vector<std::string>& ProductSKUList);
     static bool                             RestorePurchases();
     static bool                             PurchaseProdItem(const char* ProductSKU);

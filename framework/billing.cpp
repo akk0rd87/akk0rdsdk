@@ -2,7 +2,6 @@
 
 struct BillingContextStruct
 {
-    int BillingStatus = -1;
     decltype(SDL_RegisterEvents(1)) BillingEventCode;
 
 #if (__ANDROID__) || (__WINDOWS__)
@@ -11,11 +10,6 @@ struct BillingContextStruct
 };
 
 static BillingContextStruct BillingContext;
-
-int BillingManager::GetStatus()
-{
-    return BillingContext.BillingStatus;
-};
 
 #ifdef __ANDROID__
 #include "core/platformwrapper/android/android_billing.h"
@@ -26,16 +20,14 @@ static JNIEnv* getJNIEnv() {
 }
 
 extern "C" {
-	JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManagerKt_billingSetupFinished(JNIEnv*, jclass, jint ResponseCode)
+	JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManagerKt_billingSetupFinished(JNIEnv*, jclass)
 	{
-		int Code = (int)ResponseCode;
-		//logDebug("BillingSetupFinished %d", Code);
-		BillingContext.BillingStatus = Code;
+		logDebug("billingSetupFinished");
 	}
 
 	JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManagerKt_billingDisconnected(JNIEnv*, jclass)
 	{
-		//logDebug("BillingDisconnected");
+		logDebug("billingSetupFinished");
 	}
 
 	JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManagerKt_purchaseQueried(JNIEnv* env, jclass, jstring PurchaseToken, jstring ProductCode, jint Type)  /* Type: 0 - restored, 1- bought */

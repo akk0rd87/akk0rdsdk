@@ -4,15 +4,12 @@ import android.content.Intent
 import android.util.Log
 import org.akkord.lib.BillingImplementation
 
-private external fun billingSetupFinished(responseCode: Int)
+private external fun billingSetupFinished()
 private external fun billingDisconnected()
 private external fun purchaseQueried(purchaseToken: String?, productSKU: String?, type: Int)
 private external fun purchaseConsumed(purchaseToken: String?, productSKU: String?)
 
 class BillingManager  {
-    val PURCHASE_RESTORED: Int = 0
-    val PURCHASE_BOUGHT: Int = 1
-
     companion object BillingObserverImpl : BillingObserver {
         const val TAG: String = "SDL"
         private val mBillingImpl by lazy { BillingImplementation(this) }
@@ -77,8 +74,9 @@ class BillingManager  {
             }
         }
 
-        override fun onBillingSetupFinished(responseCode: Int) {
-            billingSetupFinished(responseCode)
+        override fun onBillingSetupFinished() {
+            billingSetupFinished()
+            restorePurchases()
         }
 
         override fun onBillingDisconnected() {

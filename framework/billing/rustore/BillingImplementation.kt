@@ -20,7 +20,7 @@ class BillingImplementation(
         // по умолчанию всегда считаем, что billing есть
         // возможно придется поменять логику, если мы будем использовать этот биллинг в версиях приложений,
         // скачанных вне RuStore
-        observer.onBillingSetupFinished(0)
+        observer.onBillingSetupFinished()
     }
 
     fun restorePurchases() {

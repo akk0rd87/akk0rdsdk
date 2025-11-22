@@ -41,6 +41,8 @@ public class BillingImplementation implements PurchaseHistoryResponseListener, P
                 .enablePendingPurchases(PendingPurchasesParams.newBuilder().enableOneTimeProducts().enablePrepaidPlans().build())
                 .enableAutoServiceReconnection()
                 .build();
+
+        mBillingClient.startConnection(this);
     }
 
     public void onNewIntent(Intent intent) {
@@ -270,9 +272,14 @@ public class BillingImplementation implements PurchaseHistoryResponseListener, P
     @Override
     public void onBillingSetupFinished(@NonNull BillingResult billingResult) {
         try {
-            Log.v(getTag(), "Setup finished. Response: " + DecodeBillingResponse(billingResult.getResponseCode()));
             final int ResponseCode = billingResult.getResponseCode();
-            mBillingObserver.onBillingSetupFinished(ResponseCode);
+            Log.v(getTag(), "Setup finished. Response: " + DecodeBillingResponse(ResponseCode));
+            if (BillingResponseCode.OK == ResponseCode) {
+                mBillingObserver.onBillingSetupFinished();
+            }
+            else {
+                mBillingObserver.onBillingDisconnected();
+            }
         }
         catch(Exception e) {
             Log.v(getTag(), Objects.requireNonNull(e.getMessage()));
