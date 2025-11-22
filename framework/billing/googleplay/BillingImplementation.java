@@ -10,7 +10,6 @@ import com.android.billingclient.api.BillingClient.ProductType;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.PendingPurchasesParams;
 import com.android.billingclient.api.PurchasesResponseListener;
-import com.android.billingclient.api.ProductDetailsResponseListener;
 import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.ConsumeResponseListener;
@@ -23,23 +22,16 @@ import com.android.billingclient.api.AcknowledgePurchaseParams;
 import com.android.billingclient.api.PurchaseHistoryRecord;
 import com.android.billingclient.api.PurchaseHistoryResponseListener;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ArrayBlockingQueue;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import java.util.List;
 
-public class BillingImplementation implements PurchaseHistoryResponseListener, PurchasesUpdatedListener, BillingClientStateListener, PurchasesResponseListener, ProductDetailsResponseListener {
+public class BillingImplementation implements PurchaseHistoryResponseListener, PurchasesUpdatedListener, BillingClientStateListener, PurchasesResponseListener {
     private BillingObserver mBillingObserver = null;
     private BillingClient mBillingClient = null;
 
-    final BlockingQueue<Runnable> runnableQueue = new ArrayBlockingQueue<>(50, true);
-
     private final int PURCHASE_RESTORED = 0;
     private final int PURCHASE_BOUGHT   = 1;
-
-    private final AtomicBoolean billingClientLocked = new AtomicBoolean(false);
 
     public BillingImplementation(BillingObserver observer){
         mBillingObserver = observer;
@@ -47,6 +39,7 @@ public class BillingImplementation implements PurchaseHistoryResponseListener, P
         mBillingClient = BillingClient.newBuilder(getContext())
                 .setListener(this) // PurchasesUpdatedListener
                 .enablePendingPurchases(PendingPurchasesParams.newBuilder().enableOneTimeProducts().enablePrepaidPlans().build())
+                .enableAutoServiceReconnection()
                 .build();
     }
 
@@ -80,43 +73,19 @@ public class BillingImplementation implements PurchaseHistoryResponseListener, P
         return StringCode;
     }
 
-    private void checkBillingConnection() {
-        try {
-            if(mBillingClient.isReady()) {
-                return;
-            }
-
-            if(billingClientLocked.compareAndSet(false, true)) {
-                mBillingClient.startConnection(this);
-            }
-        }
-        catch(Exception e) {
-            Log.v(getTag(), Objects.requireNonNull(e.getMessage()));
-        }
-    }
-
     public void queryProductDetails(final String[] ProdList) {
 
     }
 
     public void restorePurchases() {
         try {
-            Log.v(getTag(), "public static void RestorePurchases()");
-            executeServiceRequest(() -> {
-                try {
-                    Log.v(getTag(), "QueryPurchases get purchasesResult before");
-                    mBillingClient.queryPurchasesAsync(
-                            QueryPurchasesParams.newBuilder().setProductType(ProductType.INAPP).build(),
-                            this
-                    );
-                }
-                catch(Exception e)  {
-                    Log.e(getTag(), Objects.requireNonNull(e.getMessage()));
-                }
-            });
+            mBillingClient.queryPurchasesAsync(
+                QueryPurchasesParams.newBuilder().setProductType(ProductType.INAPP).build(),
+                this
+            );
         }
         catch(Exception e) {
-            Log.e(getTag(), Objects.requireNonNull(e.getMessage()));
+            Log.e(getTag(), e.toString());
         }
     }
 
@@ -127,12 +96,13 @@ public class BillingImplementation implements PurchaseHistoryResponseListener, P
                                                         .setProductId(ProductSKU)
                                                         .build());
 
-            QueryProductDetailsParams params = QueryProductDetailsParams.newBuilder()
+            final QueryProductDetailsParams params = QueryProductDetailsParams.newBuilder()
                 .setProductList(productList)
                 .build();
 
             mBillingClient.queryProductDetailsAsync(params,
-                (billingResult, productDetailsList) -> {
+                (billingResult, queryProductDetailsResult) -> {
+                    final List<ProductDetails> productDetailsList = queryProductDetailsResult.getProductDetailsList();
                     if(BillingResponseCode.OK == billingResult.getResponseCode() && !productDetailsList.isEmpty()) {
                         final List<BillingFlowParams.ProductDetailsParams> productDetailsParamsList =
                             List.of(
@@ -144,12 +114,12 @@ public class BillingImplementation implements PurchaseHistoryResponseListener, P
                                     .build()
                             );
 
-                        BillingFlowParams billingFlowParams = BillingFlowParams.newBuilder()
+                        final BillingFlowParams billingFlowParams = BillingFlowParams.newBuilder()
                             .setProductDetailsParamsList(productDetailsParamsList)
                             .build();
 
                         // Launch the billing flow
-                        BillingResult billingFlowResult = mBillingClient.launchBillingFlow(getContext(), billingFlowParams);
+                        final BillingResult billingFlowResult = mBillingClient.launchBillingFlow(getContext(), billingFlowParams);
                     }
                 }
             );
@@ -161,30 +131,23 @@ public class BillingImplementation implements PurchaseHistoryResponseListener, P
 
     public void consumeProductItem(final String PurchaseToken, final String SKU) {
         try {
-            executeServiceRequest(() -> {
-                try {
-                    Log.v(getTag(), "Consume: " + SKU + " " + PurchaseToken);
-                    mBillingClient.consumeAsync(ConsumeParams.newBuilder().setPurchaseToken(PurchaseToken).build(),
-                        new ConsumeResponseListener() {
-                            @Override
-                            public void onConsumeResponse(@NonNull BillingResult billingResult, @NonNull final String purchaseToken) {
-                                try {
-                                    Log.v(getTag(), "onConsumeResponse Result: " + DecodeBillingResponse(billingResult.getResponseCode()) + " Token:" + purchaseToken + "; " + billingResult.getDebugMessage());
-                                    if (BillingResponseCode.OK == billingResult.getResponseCode()) {
-                                        mBillingObserver.onPurchaseConsumed(purchaseToken, SKU);
-                                    }
-                                }
-                                catch(Exception e) {
-                                    Log.e(getTag(), Objects.requireNonNull(e.getMessage()));
-                                }
+            Log.v(getTag(), "Consume: " + SKU + " " + PurchaseToken);
+            mBillingClient.consumeAsync(ConsumeParams.newBuilder().setPurchaseToken(PurchaseToken).build(),
+                new ConsumeResponseListener() {
+                    @Override
+                    public void onConsumeResponse(@NonNull BillingResult billingResult, @NonNull final String purchaseToken) {
+                        try {
+                            Log.v(getTag(), "onConsumeResponse Result: " + DecodeBillingResponse(billingResult.getResponseCode()) + " Token:" + purchaseToken + "; " + billingResult.getDebugMessage());
+                            if (BillingResponseCode.OK == billingResult.getResponseCode()) {
+                                mBillingObserver.onPurchaseConsumed(purchaseToken, SKU);
                             }
                         }
-                    );
+                        catch(Exception e) {
+                            Log.e(getTag(), Objects.requireNonNull(e.getMessage()));
+                        }
+                    }
                 }
-                catch(Exception e) {
-                    Log.e(getTag(), Objects.requireNonNull(e.getMessage()));
-                }
-            });
+            );
         }
         catch(Exception e) {
             Log.e(getTag(), Objects.requireNonNull(e.getMessage()));
@@ -207,73 +170,19 @@ public class BillingImplementation implements PurchaseHistoryResponseListener, P
 
     private void AcknowledgePurchase(final Purchase purchase) {
         try {
-            executeServiceRequest(() -> {
-                try {
-                    mBillingClient.acknowledgePurchase(AcknowledgePurchaseParams.newBuilder().setPurchaseToken(purchase.getPurchaseToken()).build(),
-                            billingResult -> {
-                                try {
-                                    if (BillingResponseCode.OK == billingResult.getResponseCode()) {
-                                        Log.v(getTag(), "onAcknowledgePurchaseResponse Result: OK");
-                                        PurchaseSKUListQueried(purchase, PURCHASE_BOUGHT);
-                                    }
-                                }
-                                catch(Exception e) {
-                                    Log.e(getTag(), Objects.requireNonNull(e.getMessage()));
-                                }
-                            }
-                    );
-                }
-                catch(Exception e) {
-                    Log.e(getTag(), Objects.requireNonNull(e.getMessage()));
-                }
-            });
-        }
-        catch(Exception e) {
-            Log.e(getTag(), Objects.requireNonNull(e.getMessage()));
-        }
-    }
-
-    private void processRunnableQueue() {
-        try {
-            if((!runnableQueue.isEmpty()) && mBillingClient.isReady()) {
-                Runnable r = new Runnable() {
-                    public void run() {
+            mBillingClient.acknowledgePurchase(AcknowledgePurchaseParams.newBuilder().setPurchaseToken(purchase.getPurchaseToken()).build(),
+                    billingResult -> {
                         try {
-                            // тут тоже можно поставить concurrent проверку, специфичную только для этого процесса
-                            while(!runnableQueue.isEmpty() && mBillingClient.isReady()) {
-                                try {
-                                    Runnable rTask = runnableQueue.take();
-                                    rTask.run();
-                                }
-                                catch(Exception e) {
-                                    Log.e(getTag(), Objects.requireNonNull(e.getMessage()));
-                                }
+                            if (BillingResponseCode.OK == billingResult.getResponseCode()) {
+                                Log.v(getTag(), "onAcknowledgePurchaseResponse Result: OK");
+                                PurchaseSKUListQueried(purchase, PURCHASE_BOUGHT);
                             }
                         }
                         catch(Exception e) {
                             Log.e(getTag(), Objects.requireNonNull(e.getMessage()));
                         }
                     }
-                };
-                r.run();
-            }
-        }
-        catch(Exception e) {
-            Log.v(getTag(), Objects.requireNonNull(e.getMessage()));
-        }
-    }
-
-    private void executeServiceRequest(final Runnable R) {
-        try{
-            Log.v(getTag(), "starting executeServiceRequest");
-            runnableQueue.add(R);
-            if(mBillingClient.isReady()) {
-                processRunnableQueue();
-            }
-            else {
-                checkBillingConnection();
-            }
-            Log.v(getTag(), "after executeServiceRequest");
+            );
         }
         catch(Exception e) {
             Log.e(getTag(), Objects.requireNonNull(e.getMessage()));
@@ -342,13 +251,6 @@ public class BillingImplementation implements PurchaseHistoryResponseListener, P
         }
     }
 
-    ///////////////////////////////////////
-    // ProductDetailsResponseListener Callbacks
-    ///////////////////////////////////////
-    @Override
-    public void onProductDetailsResponse(@NonNull BillingResult billingResult, @NonNull List<ProductDetails> productDetailsList) {
-    }
-
     ////////////////////////////////////
     // PurchaseHistoryResponseListener Callbacks
     ////////////////////////////////////
@@ -369,12 +271,8 @@ public class BillingImplementation implements PurchaseHistoryResponseListener, P
     public void onBillingSetupFinished(@NonNull BillingResult billingResult) {
         try {
             Log.v(getTag(), "Setup finished. Response: " + DecodeBillingResponse(billingResult.getResponseCode()));
-            billingClientLocked.set(false);
-            int ResponseCode = billingResult.getResponseCode();
+            final int ResponseCode = billingResult.getResponseCode();
             mBillingObserver.onBillingSetupFinished(ResponseCode);
-            if(!runnableQueue.isEmpty()) { // тут нужно отпроцессить очередь
-                processRunnableQueue();
-            }
         }
         catch(Exception e) {
             Log.v(getTag(), Objects.requireNonNull(e.getMessage()));
@@ -385,12 +283,7 @@ public class BillingImplementation implements PurchaseHistoryResponseListener, P
     public void onBillingServiceDisconnected() {
         try {
             Log.v(getTag(), "onBillingServiceDisconnected");
-            billingClientLocked.set(false);
             mBillingObserver.onBillingDisconnected();
-            // если очередь непуста, то делаем рестарт connection
-            if(!runnableQueue.isEmpty()) {
-                checkBillingConnection();
-            }
         }
         catch(Exception e) {
             Log.v(getTag(), Objects.requireNonNull(e.getMessage()));
