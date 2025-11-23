@@ -62,8 +62,12 @@ class YandexAdsAdapter {
         }
 
         fun interstitialSetUnitId(id: String) {
-            Log.d(getTag(), "YandexADS: InterstitialSetUnitId")
-            adRequestConfiguration = AdRequestConfiguration.Builder(id).build()
+            try {
+                Log.d(getTag(), "YandexADS: InterstitialSetUnitId")
+                adRequestConfiguration = AdRequestConfiguration.Builder(id).build()
+            } catch (e: Exception) {
+                e.message?.let { Log.e(getTag(), it) }
+            }
         }
 
         private fun destroy() {
@@ -75,16 +79,25 @@ class YandexAdsAdapter {
         }
 
         fun interstitialLoad() {
-            Log.d(getTag(), "YandexADS: InterstitialLoad")
-            destroy()
-            adRequestConfiguration?.let { loader.loadAd(it) }
+            try {
+                Log.d(getTag(), "YandexADS: InterstitialLoad")
+                destroy()
+                adRequestConfiguration?.let { loader.loadAd(it) }
+            } catch (e: Exception) {
+                e.message?.let { Log.e(getTag(), it) }
+            }
         }
 
         fun interstitialShow(): Int {
-            Log.d(getTag(), "YandexADS: InterstitialShow")
-            mInterstitialAd?.setAdEventListener(this)
-            mInterstitialAd?.show(getContext())
-            return 0
+            try {
+                Log.d(getTag(), "YandexADS: InterstitialShow")
+                mInterstitialAd?.setAdEventListener(this)
+                mInterstitialAd?.show(getContext())
+                return 0
+            } catch (e: Exception) {
+                e.message?.let { Log.e(getTag(), it) }
+            }
+            return 1
         }
 
         private fun getInterstitialAdLoader() : InterstitialAdLoader {
@@ -144,14 +157,23 @@ class YandexAdsAdapter {
         }
 
         fun rewardedVideoLoad() {
-            destroy()
-            adRequestConfiguration?.let { loader.loadAd(it) }
+            try {
+                destroy()
+                adRequestConfiguration?.let { loader.loadAd(it) }
+            } catch (e: Exception) {
+                e.message?.let { Log.e(getTag(), it) }
+            }
         }
 
         fun rewardedVideoShow(): Int {
-            mRewardedAd?.setAdEventListener(this)
-            mRewardedAd?.show(getContext())
-            return 0
+            try {
+                mRewardedAd?.setAdEventListener(this)
+                mRewardedAd?.show(getContext())
+                return 0
+            } catch (e: Exception) {
+                e.message?.let { Log.e(getTag(), it) }
+            }
+            return 1
         }
 
         private fun getRewardedAdLoader() : RewardedAdLoader {
