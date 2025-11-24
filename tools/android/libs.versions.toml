@@ -26,8 +26,6 @@ rustore-appreview                  = { module = "ru.rustore.sdk:review" }
 rustore-appupdate                  = { module = "ru.rustore.sdk:appupdate" }
 rustore-billing                    = { module = "ru.rustore.sdk:billingclient" }
 
-lifecycle-viewmodel-ktx            = "androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.3"
-
 mytarget-sdk                       = "com.my.target:mytarget-sdk:5.27.1"
 
 [plugins]
@@ -38,4 +36,4 @@ triplet-play-publisher             = { id = 'com.github.triplet.play', version =
 
 [bundles]
 yandexads                          = ['yandexadssdk']
-rustore-billing                    = ['rustore-billing', 'lifecycle-viewmodel-ktx']
+rustore-billing                    = ['rustore-billing']
