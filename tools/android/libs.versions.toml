@@ -1,6 +1,6 @@
 [versions]
 kotlin                             = '2.2.21'
-firebaseBom                        = "34.5.0"
+firebaseBom                        = "34.6.0"
 rustoreBom                         = "2025.11.01"
 
 [libraries]
@@ -9,6 +9,8 @@ getkeepsafe-relinker               = "com.getkeepsafe.relinker:relinker:1.4.5"
 firebase-bom                       = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 rustore-bom                        = { module = "ru.rustore.sdk:bom", version.ref = "rustoreBom" }
 firebase-analytics                 = { module = "com.google.firebase:firebase-analytics" }
+firebase-crashlytics               = { module = "com.google.firebase:firebase-crashlytics" }
+firebase-crashlytics-ndk           = { module = "com.google.firebase:firebase-crashlytics-ndk" }
 
 admobads                           = "com.google.android.gms:play-services-ads:24.7.0"
 google-play-billing                = "com.android.billingclient:billing:8.1.0"
@@ -31,6 +33,7 @@ mytarget-sdk                       = "com.my.target:mytarget-sdk:5.27.1"
 [plugins]
 android-application                = { id = 'com.android.application', version = '8.13.1' }
 google-services                    = { id = 'com.google.gms.google-services', version = '4.4.4' }
+firebase-crashlytics               = { id = 'com.google.firebase.crashlytics', version = '3.0.6' }
 kotlin                             = { id = 'org.jetbrains.kotlin.android', version.ref = 'kotlin' }
 triplet-play-publisher             = { id = 'com.github.triplet.play', version = '3.12.1' }
 
