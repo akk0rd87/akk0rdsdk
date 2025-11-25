@@ -3,6 +3,7 @@ apply from: "${System.getenv('AKKORD_SDK_HOME')}/tools/android/gradleTools/rusto
 
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.firebase.crashlytics'
 apply plugin: 'com.github.triplet.play'
 apply plugin: 'kotlin-android'
 
@@ -55,6 +56,7 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), file(proGuardParamsDir + 'proguard-rules_release.pro').absolutePath
             ndk { debugSymbolLevel 'FULL' }
+            firebaseCrashlytics { nativeSymbolUploadEnabled true }
         }
         debug {
             minifyEnabled true
@@ -180,6 +182,8 @@ androidComponents {
 dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
+    implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.crashlytics.ndk)
 
     implementation(libs.getkeepsafe.relinker)
     implementation(libs.admobads)
