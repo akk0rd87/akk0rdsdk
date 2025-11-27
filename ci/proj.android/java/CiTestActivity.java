@@ -18,7 +18,7 @@ import org.akkord.lib.Utils;
 import static android.app.PendingIntent.FLAG_IMMUTABLE;
 
 public class CiTestActivity extends AkkordActivity {
-    final private PlayServicesManager mPlayServicesManager = new PlayServicesManager(this, false);
+    private PlayServicesManager mPlayServicesManager;
 
     private long last_XSmall  = 0;
     private long last_Small   = 0;
@@ -29,6 +29,7 @@ public class CiTestActivity extends AkkordActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(null);
+        mPlayServicesManager = new PlayServicesManager(this, false);
     }
 
     @Override
