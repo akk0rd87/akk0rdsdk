@@ -267,10 +267,18 @@ class PlayServicesManager(
             leaderboardId,
             LeaderboardVariant.TIME_SPAN_ALL_TIME,
             LeaderboardVariant.COLLECTION_PUBLIC).addOnCompleteListener { task ->
-                val score  = task.getResult().get()?.rawScore ?: 0L
-                Log.d(Utils.TAG, "Loaded score for $leaderboardId = $score")
-                val result = callback(score)
-                Log.d(Utils.TAG, "Result of loadLeaderboardScoreAsync callback $result")
+                if(task.isSuccessful) {
+                    var score = 0L
+                    try {
+                        score = task.getResult().get()?.rawScore ?: 0L
+                    }
+                    catch(e: Exception) {
+                        Log.d(Utils.TAG, e.toString())
+                    }
+                    Log.d(Utils.TAG, "Loaded score for $leaderboardId = $score")
+                    val result = callback(score)
+                    Log.d(Utils.TAG, "Result of loadLeaderboardScoreAsync callback $result")
+                }
         }
     }
 
