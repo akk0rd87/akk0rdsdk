@@ -12,7 +12,7 @@ firebase-analytics                 = { module = "com.google.firebase:firebase-an
 firebase-crashlytics               = { module = "com.google.firebase:firebase-crashlytics" }
 firebase-crashlytics-ndk           = { module = "com.google.firebase:firebase-crashlytics-ndk" }
 
-admobads                           = "com.google.android.gms:play-services-ads:24.7.0"
+admobads                           = "com.google.android.gms:play-services-ads:24.8.0"
 google-play-billing                = "com.android.billingclient:billing:8.1.0"
 google-play-review                 = "com.google.android.play:review:2.0.2"
 google-app-update                  = "com.google.android.play:app-update:2.1.0"
