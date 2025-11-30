@@ -145,7 +145,11 @@ class YandexAdsAdapter {
         }
 
         fun rewardedVideoSetUnitId(id: String) {
-            adRequestConfiguration = AdRequestConfiguration.Builder(id).build()
+            try {
+                adRequestConfiguration = AdRequestConfiguration.Builder(id).build()
+            } catch (e: Exception) {
+                e.message?.let { Log.e(getTag(), it) }
+            }
         }
 
         private fun destroy() {
