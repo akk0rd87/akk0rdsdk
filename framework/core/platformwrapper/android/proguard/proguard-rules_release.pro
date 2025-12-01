@@ -13,11 +13,6 @@
   public *;
 }
 
-# Временный workaround для падения "Downloader constructor missing"
--keep class yads.** {
-    *;
-}
-
 -assumenosideeffects class android.util.Log {
 public static boolean isLoggable(...);
 public static int d(...);

@@ -12,8 +12,3 @@
 -keep public class org.libsdl.app.** {
   public *;
 }
-
-# Временный workaround для падения "Downloader constructor missing"
--keep class yads.** {
-    *;
-}
