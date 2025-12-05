@@ -22,7 +22,7 @@ play-services-auth                 = "com.google.android.gms:play-services-auth:
 play-appset                        = "com.google.android.gms:play-services-appset:16.1.0"
 
 user_messaging_platform            = "com.google.android.ump:user-messaging-platform:4.0.0"
-yandexadssdk                       = "com.yandex.android:mobileads:7.16.1"
+yandexadssdk                       = "com.yandex.android:mobileads:7.18.0"
 
 rustore-appreview                  = { module = "ru.rustore.sdk:review" }
 rustore-appupdate                  = { module = "ru.rustore.sdk:appupdate" }
