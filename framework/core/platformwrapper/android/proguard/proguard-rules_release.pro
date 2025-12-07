@@ -5,6 +5,10 @@
   public *;
 }
 
+-keep public class * extends org.akkord.lib.AkkordComposeActivity {
+  public *;
+}
+
 -keep public class org.akkord.lib.** {
   public *;
 }
