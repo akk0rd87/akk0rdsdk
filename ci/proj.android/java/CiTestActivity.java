@@ -13,11 +13,12 @@ import java.io.File;
 import java.util.Objects;
 
 import org.akkord.lib.PlayServicesManager;
+import org.akkord.lib.PlayServicesObserver;
 import org.akkord.lib.Utils;
 
 import static android.app.PendingIntent.FLAG_IMMUTABLE;
 
-public class CiTestActivity extends AkkordActivity {
+public class CiTestActivity extends AkkordActivity implements PlayServicesObserver {
     private PlayServicesManager mPlayServicesManager;
 
     private long last_XSmall  = 0;
@@ -29,7 +30,19 @@ public class CiTestActivity extends AkkordActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(null);
-        mPlayServicesManager = new PlayServicesManager(this, false);
+        mPlayServicesManager = new PlayServicesManager(this, false, this);
+    }
+
+    @Override
+    public void onPlayServicesConnected() {
+    }
+
+    @Override
+    public void onPlayServicesDisconnected() {
+    }
+
+    @Override
+    public void onSnapshotReceived(byte[] array, int size) {
     }
 
     @Override

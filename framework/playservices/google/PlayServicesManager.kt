@@ -16,12 +16,10 @@ import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.TaskCompletionSource
 
-private external fun playServicesCallback(eventCode: Int, data1: Int, data2: Int)
-private external fun snapshotReceivedCallback(array: ByteArray?, size: Int, wasConflict: Int)
-
 class PlayServicesManager(
     private val activity: Activity,
     private val useSnapshot: Boolean,
+    private val playServicesObserver: PlayServicesObserver,
 ) {
     init {
         PlayGamesSdk.initialize(activity)
@@ -57,7 +55,7 @@ class PlayServicesManager(
                                         //readSavedGame(snapshot);
                                         val data = snapshot.snapshotContents.readFully()
                                         Log.i(Utils.TAG, "Snapshot loaded. Size: " + data.size)
-                                        snapshotReceivedCallback(data, data.size, wasConflict)
+                                        playServicesObserver.onSnapshotReceived(data, data.size)
                                     } catch (e: Exception) {
                                         Log.e(Utils.TAG, "Error while reading snapshot contents: " + e.message)
                                     }
@@ -353,13 +351,13 @@ class PlayServicesManager(
     private fun onDisconnected() {
         connected = false
         Log.d(Utils.TAG, "onDisconnected")
-        playServicesCallback(NATIVE_SIGN_OUT, 0, 0);
+        playServicesObserver.onPlayServicesDisconnected()
     }
 
     private fun onConnected() {
         connected = true
         Log.d(Utils.TAG, "onConnected")
-        playServicesCallback(NATIVE_SIGN_IN, 0, 0)
+        playServicesObserver.onPlayServicesConnected()
 
         if(useSnapshot && !initialSnapshotLoadStarted) {
             initialSnapshotLoadStarted = true
@@ -378,8 +376,6 @@ class PlayServicesManager(
 
     private companion object {
         const val SAVED_GAME = "default_saved_game"
-        const val NATIVE_SIGN_IN: Int = 1
-        const val NATIVE_SIGN_OUT: Int = 2
         const val RC_UNUSED = 5001
         const val MAX_SNAPSHOT_RESOLVE_RETRIES = 40
     }

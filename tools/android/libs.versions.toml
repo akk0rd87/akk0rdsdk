@@ -36,7 +36,7 @@ google-services                    = { id = 'com.google.gms.google-services', ve
 firebase-crashlytics               = { id = 'com.google.firebase.crashlytics', version = '3.0.6' }
 kotlin                             = { id = 'org.jetbrains.kotlin.android', version.ref = 'kotlin' }
 kotlin-compose                     = { id = 'org.jetbrains.kotlin.plugin.compose', version.ref = 'kotlin' }
-triplet-play-publisher             = { id = 'com.github.triplet.play', version = '3.12.1' }
+triplet-play-publisher             = { id = 'com.github.triplet.play', version = '3.13.0' }
 
 [bundles]
 yandexads                          = ['yandexadssdk']
