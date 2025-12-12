@@ -17,6 +17,11 @@
   public *;
 }
 
+# Keep all native methods (JNI)
+-keepclasseswithmembernames,includedescriptorclasses class * {
+    native <methods>;
+}
+
 -assumenosideeffects class android.util.Log {
 public static boolean isLoggable(...);
 public static int d(...);

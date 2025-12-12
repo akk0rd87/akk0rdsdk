@@ -16,3 +16,8 @@
 -keep public class org.libsdl.app.** {
   public *;
 }
+
+# Keep all native methods (JNI)
+-keepclasseswithmembernames,includedescriptorclasses class * {
+    native <methods>;
+}
