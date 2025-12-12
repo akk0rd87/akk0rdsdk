@@ -43,6 +43,11 @@ class PlayServicesManager(
                     processSnapshotOpenResult(result, 0)
                         .addOnCompleteListener { task ->
                             try {
+                                if (!task.isSuccessful) {
+                                    handleException(task.exception, "loadSnapshot: processSnapshotOpenResult failed")
+                                    return@addOnCompleteListener
+                                }
+
                                 val snapshot = task.getResult()
 
                                 if (snapshot == null) {
@@ -231,6 +236,11 @@ class PlayServicesManager(
                     .addOnCompleteListener(object : OnCompleteListener<Snapshot?> {
                         override fun onComplete(task: Task<Snapshot?>) {
                             try {
+                                if (!task.isSuccessful) {
+                                    handleException(task.exception, "saveSnapshot: processSnapshotOpenResult failed")
+                                    return
+                                }
+
                                 val snapshotToWrite =
                                     task.getResult() ?: // No snapshot available yet; waiting on the user to choose one.
                                     return
