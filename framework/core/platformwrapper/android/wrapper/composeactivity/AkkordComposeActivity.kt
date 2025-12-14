@@ -28,7 +28,6 @@ open class AkkordComposeActivity : ComponentActivity() {
     }
 
     protected fun loadNativeLibs() {
-        loadNativeLib("c++_shared")
         loadNativeLib("main")
     }
 }

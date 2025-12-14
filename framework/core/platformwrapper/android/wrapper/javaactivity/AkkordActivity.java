@@ -43,7 +43,7 @@ public class AkkordActivity extends SDLActivity {
     @Override
     protected String[] getLibraries() {
         return new String[] {
-            "c++_shared",
+            //"c++_shared",
             "SDL2",
             //"SDL2_png",
             //"SDL2_jpeg",
