@@ -40,6 +40,7 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
 {
     static iYandexInterstitial* yandex;
     if (!yandex) {
+        logDebug("Create yandex interstitial class");
         yandex = [[iYandexInterstitial alloc] init];
         [yandex Init];
     }
@@ -52,14 +53,11 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
 };
 
 -(void)SetUintId:(const char* )IDstr {
+    logDebug("Interstitial SetUintId %s", IDstr);
     try {
-        if(self.cfg) {
-            [self.cfg release];
-        }
         NSString *ID = [[NSString alloc] initWithUTF8String:IDstr];
         if(ID) {
             self.cfg = [[YMAAdRequestConfiguration alloc] initWithAdUnitID:ID];
-            [ID release];
         }
     }
     catch (NSException * ex) {
@@ -111,7 +109,7 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
 }
 
 - (void)interstitialAdLoader:(YMAInterstitialAdLoader *)adLoader didFailToLoadWithError:(YMAAdRequestError *)error {
-    logDebug("interstitialAdLoader:didFailToLoadWithError");
+    logDebug("interstitialAdLoader:didFailToLoadWithError: %s", [[error.error localizedDescription] UTF8String]);
     ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToLoad);
 }
 
@@ -122,7 +120,7 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
  @param error Information about the error (for details, see YMAAdErrorCode).
  */
 - (void)interstitialAd:(YMAInterstitialAd *)interstitialAd didFailToShowWithError:(NSError *)error {
-    logDebug("didFailToShowWithError");
+    logDebug("didFailToShowWithError: %s", [[error localizedDescription] UTF8String]);
     ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToShow);
 }
 
@@ -174,6 +172,7 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
 @property(nonatomic, strong) YMARewardedAd *rewardedAd;
 @property(nonatomic, strong) YMARewardedAdLoader *loader;
 @property(nonatomic, strong) YMAAdRequestConfiguration* cfg;
+-(void)Init;
 -(void)SetUintId:(const char* )ID;
 -(void)Load;
 -(void)Show;
@@ -198,14 +197,10 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
 
 -(void)SetUintId:(const char* )IDstr {
     try {
-        if(self.cfg) {
-            [self.cfg release];
-        }
         NSString *ID = [[NSString alloc] initWithUTF8String:IDstr];
         if(ID) {
             logDebug("RewardedVideo SetUintId");
             self.cfg = [[YMAAdRequestConfiguration alloc] initWithAdUnitID:ID];
-            [ID release];
         }
     }
     catch (NSException * ex) {
@@ -267,7 +262,7 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
  @param error Information about the error (for details, see YMAAdErrorCode).
  */
 - (void)rewardedAdLoader:(YMARewardedAdLoader *)adLoader didFailToLoadWithError:(YMAAdRequestError *)error {
-    logDebug("RewardedVideoFailedToLoad");
+    logDebug("RewardedVideoFailedToLoad: %s", [[error.error localizedDescription] UTF8String]);
     ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoFailedToLoad);
 }
 
@@ -289,7 +284,7 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
  @param error Information about the error (for details, see YMAAdErrorCode).
  */
 - (void)rewardedAd:(YMARewardedAd *)rewardedAd didFailToShowWithError:(NSError *)error {
-    logDebug("RewardedVideoFailedToShow");
+    logDebug("RewardedVideoFailedToShow: %s", [[error localizedDescription] UTF8String]);
     ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoFailedToShow);
 }
 
@@ -332,32 +327,46 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
 ads::Yandex::iOSProvider::iOSProvider(std::weak_ptr<ads::ProviderCallback> cbk, ads::Format format) :
 ads::Yandex::Provider (cbk) {
     [YMAMobileAds initializeSDKWithCompletionHandler:^{
+        logDebug("initializeSDKWithCompletionHandler success");
         wasInited = true;
         interstitialStatus = ads::InterstitialStatus::ReadyToLoad;
         rewardedVideoStatus = ads::RewardedVideoStatus::ReadyToLoad;
     }];
+
+    // почему-то сейчас колбек не вызывается, поэтому ставим признак инициализациия явно
+    // формально документация обещает автоматическую инициализацию, при вызове load рекламы
+    // поэтому ставим явно здесь
+    wasInited = true;
+    interstitialStatus = ads::InterstitialStatus::ReadyToLoad;
+    rewardedVideoStatus = ads::RewardedVideoStatus::ReadyToLoad;
 };
 
 void ads::Yandex::iOSProvider::InterstitialSetUnitId(const std::string& unitId) {
+    logDebug("InterstitialSetUnitId %s", unitId.c_str());
     [[iYandexInterstitial defaultInterstitial] SetUintId: unitId.c_str()];
 }
 
 void ads::Yandex::iOSProvider::setRewardedVideoUnit(const char* unitId) {
+    logDebug("setRewardedVideoUnit %s", unitId);
     [[iYandexRewardedVideo defaultRewardedVideo] SetUintId: unitId];
 }
 
 void ads::Yandex::iOSProvider::v_tryLoadInterstitial() {
+    logDebug("v_tryLoadInterstitial");
     [[iYandexInterstitial defaultInterstitial] Load];
 }
 
 void ads::Yandex::iOSProvider::v_tryLoadRewardedVideo() {
+    logDebug("v_tryLoadRewardedVideo");
     [[iYandexRewardedVideo defaultRewardedVideo] Load];
 }
 
 void ads::Yandex::iOSProvider::v_showInterstitial() {
+    logDebug("v_showInterstitial");
     [[iYandexInterstitial defaultInterstitial] Show];
 }
 
 void ads::Yandex::iOSProvider::v_showRewardedVideo() {
+    logDebug("v_showRewardedVideo");
     [[iYandexRewardedVideo defaultRewardedVideo] Show];
 }
