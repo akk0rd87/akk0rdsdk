@@ -26,7 +26,9 @@ class PlayServicesManager(
     }
 
     private val gamesSignInClient: GamesSignInClient = PlayGames.getGamesSignInClient(activity)
+    @Volatile
     private var initialSnapshotLoadStarted = false
+    @Volatile
     private var connected = false
 
     fun loadSnapshot() {

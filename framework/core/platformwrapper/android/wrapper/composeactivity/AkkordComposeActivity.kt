@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import com.getkeepsafe.relinker.ReLinker
 
 open class AkkordComposeActivity : ComponentActivity() {
+    @Volatile
     private var isFirstResume = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
