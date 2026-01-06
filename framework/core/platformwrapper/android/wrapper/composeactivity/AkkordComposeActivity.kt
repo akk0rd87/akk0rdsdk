@@ -9,6 +9,8 @@ open class AkkordComposeActivity : ComponentActivity() {
     private var isFirstResume = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // чтобы приложение не вылетало с ошибкой при пересоздании фрагментов после устройства процесса системой
+        savedInstanceState?.remove("android:fragments")
         super.onCreate(savedInstanceState)
         org.akkord.lib.Utils.Init(this)
         loadNativeLibs()
