@@ -1,6 +1,6 @@
 [versions]
 kotlin                             = '2.2.21'
-firebaseBom                        = "34.6.0"
+firebaseBom                        = "34.8.0"
 rustoreBom                         = "2025.11.01"
 
 [libraries]
@@ -12,13 +12,13 @@ firebase-analytics                 = { module = "com.google.firebase:firebase-an
 firebase-crashlytics               = { module = "com.google.firebase:firebase-crashlytics" }
 firebase-crashlytics-ndk           = { module = "com.google.firebase:firebase-crashlytics-ndk" }
 
-admobads                           = "com.google.android.gms:play-services-ads:24.8.0"
-google-play-billing                = "com.android.billingclient:billing:8.1.0"
+admobads                           = "com.google.android.gms:play-services-ads:24.9.0"
+google-play-billing                = "com.android.billingclient:billing:8.3.0"
 google-play-review                 = "com.google.android.play:review:2.0.2"
 google-app-update                  = "com.google.android.play:app-update:2.1.0"
 
 play-services-games                = "com.google.android.gms:play-services-games-v2:21.0.0"
-play-services-auth                 = "com.google.android.gms:play-services-auth:21.4.0"
+play-services-auth                 = "com.google.android.gms:play-services-auth:21.5.0"
 play-appset                        = "com.google.android.gms:play-services-appset:16.1.0"
 
 user_messaging_platform            = "com.google.android.ump:user-messaging-platform:4.0.0"
@@ -31,12 +31,12 @@ rustore-billing                    = { module = "ru.rustore.sdk:billingclient" }
 mytarget-sdk                       = "com.my.target:mytarget-sdk:5.27.1"
 
 [plugins]
-android-application                = { id = 'com.android.application', version = '8.13.1' }
+android-application                = { id = 'com.android.application', version = '9.0.0' }
 google-services                    = { id = 'com.google.gms.google-services', version = '4.4.4' }
 firebase-crashlytics               = { id = 'com.google.firebase.crashlytics', version = '3.0.6' }
 kotlin                             = { id = 'org.jetbrains.kotlin.android', version.ref = 'kotlin' }
 kotlin-compose                     = { id = 'org.jetbrains.kotlin.plugin.compose', version.ref = 'kotlin' }
-triplet-play-publisher             = { id = 'com.github.triplet.play', version = '3.13.0' }
+triplet-play-publisher             = { id = 'com.github.triplet.play', version = '4.0.0' }
 
 [bundles]
 yandexads                          = ['yandexadssdk']

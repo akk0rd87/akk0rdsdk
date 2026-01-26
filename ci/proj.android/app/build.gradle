@@ -5,7 +5,6 @@ apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
 apply plugin: 'com.github.triplet.play'
-apply plugin: 'kotlin-android'
 
 def akkord_sdk_path        = System.getenv('AKKORD_SDK_HOME')
 def proGuardParamsDir      = System.getenv('AKKORD_SDK_HOME') + "/framework/core/platformwrapper/android/proguard/"
@@ -149,9 +148,6 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8 // yandex ads
         targetCompatibility JavaVersion.VERSION_1_8 // yandex ads
-    }
-    kotlinOptions {
-        jvmTarget = '1.8'
     }
     lint {
         disable 'MobileAdsSdkOutdatedVersion'
