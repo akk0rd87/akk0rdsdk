@@ -5,7 +5,6 @@ import android.util.Log
 import com.google.android.gms.games.AuthenticationResult
 import com.google.android.gms.games.GamesSignInClient
 import com.google.android.gms.games.PlayGames
-import com.google.android.gms.games.PlayGamesSdk
 import com.google.android.gms.games.SnapshotsClient.DataOrConflict
 import com.google.android.gms.games.leaderboard.LeaderboardVariant
 import com.google.android.gms.games.snapshot.Snapshot
@@ -21,10 +20,6 @@ class PlayServicesManager(
     private val useSnapshot: Boolean,
     private val playServicesObserver: PlayServicesObserver,
 ) {
-    init {
-        PlayGamesSdk.initialize(activity)
-    }
-
     private val gamesSignInClient: GamesSignInClient = PlayGames.getGamesSignInClient(activity)
     @Volatile
     private var initialSnapshotLoadStarted = false
