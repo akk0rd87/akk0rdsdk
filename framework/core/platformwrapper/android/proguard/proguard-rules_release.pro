@@ -45,13 +45,3 @@
 # AndroidX Startup
 -keep class androidx.startup.** { *; }
 -keep class * extends androidx.startup.Initializer { *; }
-
--assumenosideeffects class android.util.Log {
-public static boolean isLoggable(...);
-public static int d(...);
-public static int v(...);
-public static int i(...);
-public static int w(...);
-public static int e(...);
-public static int wtf(...);
-}
