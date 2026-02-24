@@ -53,7 +53,7 @@ namespace ads {
             InterstitialStatus& interstitialStatus,
             RewardedVideoStatus& rewardedVideoStatus
         ) :
-            jniEnv(jnienv),
+            javaVM(nullptr),
             adsGlobalRef(nullptr),
             midInterstitialSetUnitId(nullptr),
             midInterstitialLoad(nullptr),
@@ -62,10 +62,31 @@ namespace ads {
             midRewardedVideoLoad(nullptr),
             midRewardedVideoShow(nullptr)
         {
-            JNIEnv* env = getJNIEnv();
+            if (!jnienv) {
+                logError("JNIEnv is null");
+                return;
+            }
+            jnienv->GetJavaVM(&javaVM);
+            JNIEnv* env = jnienv;
+
             {
                 jclass adsClass = env->FindClass(javaClass);
+                if (env->ExceptionCheck()) {
+                    env->ExceptionClear();
+                    logError("Exception during FindClass");
+                    return;
+                }
+                if (!adsClass) {
+                    logError("FindClass returned null");
+                    return;
+                }
                 adsGlobalRef = (jclass)env->NewGlobalRef(adsClass);
+                env->DeleteLocalRef(adsClass);
+                if (env->ExceptionCheck()) {
+                    env->ExceptionClear();
+                    logError("Exception during NewGlobalRef");
+                    return;
+                }
             }
 
             if (!adsGlobalRef) {
@@ -74,6 +95,11 @@ namespace ads {
             }
 
             jmethodID initMethod = env->GetStaticMethodID(adsGlobalRef, "initialize", "()V");
+            if (env->ExceptionCheck()) {
+                env->ExceptionClear();
+                logError("Exception during GetStaticMethodID for initialize");
+                return;
+            }
             if (!initMethod) {
                 logError("Initialize Java method not Found");
                 return;
@@ -83,6 +109,11 @@ namespace ads {
                 const auto interstitialInit = (!(!(format & ads::Format::Interstitial))) ? 1 : 0;
                 const auto rewardedvideoInit = (!(!(format & ads::Format::RewardedVideo))) ? 1 : 0;
                 env->CallStaticVoidMethod(adsGlobalRef, initMethod);
+                if (env->ExceptionCheck()) {
+                    env->ExceptionClear();
+                    logError("Exception during initialize call");
+                    return;
+                }
 
                 if (interstitialInit) {
                     interstitialStatus = ads::InterstitialStatus::ReadyToLoad;
@@ -94,11 +125,35 @@ namespace ads {
             }
 
             midInterstitialSetUnitId = env->GetStaticMethodID(adsGlobalRef, "interstitialSetUnitId", "(Ljava/lang/String;)V");
+            if (env->ExceptionCheck()) {
+                env->ExceptionClear();
+                logError("Exception during GetStaticMethodID for interstitialSetUnitId");
+            }
             midInterstitialLoad = env->GetStaticMethodID(adsGlobalRef, "interstitialLoad", "()V");
+            if (env->ExceptionCheck()) {
+                env->ExceptionClear();
+                logError("Exception during GetStaticMethodID for interstitialLoad");
+            }
             midInterstitialShow = env->GetStaticMethodID(adsGlobalRef, "interstitialShow", "()I");
+            if (env->ExceptionCheck()) {
+                env->ExceptionClear();
+                logError("Exception during GetStaticMethodID for interstitialShow");
+            }
             midRewardedVideoSetUnitId = env->GetStaticMethodID(adsGlobalRef, "rewardedVideoSetUnitId", "(Ljava/lang/String;)V");
+            if (env->ExceptionCheck()) {
+                env->ExceptionClear();
+                logError("Exception during GetStaticMethodID for rewardedVideoSetUnitId");
+            }
             midRewardedVideoLoad = env->GetStaticMethodID(adsGlobalRef, "rewardedVideoLoad", "()V");
+            if (env->ExceptionCheck()) {
+                env->ExceptionClear();
+                logError("Exception during GetStaticMethodID for rewardedVideoLoad");
+            }
             midRewardedVideoShow = env->GetStaticMethodID(adsGlobalRef, "rewardedVideoShow", "()I");
+            if (env->ExceptionCheck()) {
+                env->ExceptionClear();
+                logError("Exception during GetStaticMethodID for rewardedVideoShow");
+            }
 
             if (!midInterstitialSetUnitId) { logError("midInterstitialSetUnitId Java method not found"); }
             if (!midInterstitialLoad) { logError("midInterstitialLoad Java method not found"); }
@@ -108,69 +163,202 @@ namespace ads {
             if (!midRewardedVideoShow) { logError("midRewardedVideoShow Java method not found"); }
         }
 
+        ~AndroidJNIProvider() {
+            if (adsGlobalRef) {
+                auto scopedEnv = getJNIEnv();
+                JNIEnv* env = scopedEnv.get();
+                if (env) {
+                    env->DeleteGlobalRef(adsGlobalRef);
+                    adsGlobalRef = nullptr;
+                }
+            }
+        }
+
         void InterstitialSetUnitId(const std::string& unitId) {
+            if (!adsGlobalRef) {
+                logError("adsGlobalRef is null");
+                return;
+            }
             if (!midInterstitialSetUnitId) {
                 logError("InterstitialSetUnitId Java method not Found");
                 return;
             }
-            JNIEnv* env = getJNIEnv();
+            auto scopedEnv = getJNIEnv();
+            JNIEnv* env = scopedEnv.get();
+            if (!env) {
+                logError("Failed to get JNIEnv");
+                return;
+            }
+
             AndroidJavaUTF8String url_jstring(env, unitId.c_str());
             env->CallStaticVoidMethod(adsGlobalRef, midInterstitialSetUnitId, url_jstring.get());
+            if (env->ExceptionCheck()) {
+                env->ExceptionClear();
+                logError("Exception during interstitialSetUnitId call");
+            }
         }
 
         void setRewardedVideoUnit(const char* unit) {
+            if (!adsGlobalRef) {
+                logError("adsGlobalRef is null");
+                return;
+            }
             if (!midRewardedVideoSetUnitId)
             {
                 logError("rewardedVideoSetUnitId Java method not Found");
                 return;
             }
-            JNIEnv* env = getJNIEnv();
+            auto scopedEnv = getJNIEnv();
+            JNIEnv* env = scopedEnv.get();
+            if (!env) {
+                logError("Failed to get JNIEnv");
+                return;
+            }
+
             AndroidJavaUTF8String url_jstring(env, unit);
             env->CallStaticVoidMethod(adsGlobalRef, midRewardedVideoSetUnitId, url_jstring.get());
+            if (env->ExceptionCheck()) {
+                env->ExceptionClear();
+                logError("Exception during rewardedVideoSetUnitId call");
+            }
             return;
         }
 
         void v_tryLoadInterstitial() {
+            if (!adsGlobalRef) {
+                logError("adsGlobalRef is null");
+                return;
+            }
             if (!midInterstitialLoad) {
                 logError("interstitialLoad Java method not Found");
                 return;
             }
-            JNIEnv* env = getJNIEnv();
+            auto scopedEnv = getJNIEnv();
+            JNIEnv* env = scopedEnv.get();
+            if (!env) {
+                logError("Failed to get JNIEnv");
+                return;
+            }
+
             env->CallStaticVoidMethod(adsGlobalRef, midInterstitialLoad);
+            if (env->ExceptionCheck()) {
+                env->ExceptionClear();
+                logError("Exception during interstitialLoad call");
+            }
         }
 
         void v_tryLoadRewardedVideo() {
+            if (!adsGlobalRef) {
+                logError("adsGlobalRef is null");
+                return;
+            }
             if (!midRewardedVideoLoad) {
                 logError("rewardedVideoLoad Java method not Found");
                 return;
             }
-            JNIEnv* env = getJNIEnv();
+            auto scopedEnv = getJNIEnv();
+            JNIEnv* env = scopedEnv.get();
+            if (!env) {
+                logError("Failed to get JNIEnv");
+                return;
+            }
+
             env->CallStaticVoidMethod(adsGlobalRef, midRewardedVideoLoad);
+            if (env->ExceptionCheck()) {
+                env->ExceptionClear();
+                logError("Exception during rewardedVideoLoad call");
+            }
         }
 
         void v_showInterstitial() {
+            if (!adsGlobalRef) {
+                logError("adsGlobalRef is null");
+                return;
+            }
             if (!midInterstitialShow) {
                 logError("interstitialShow Java method not Found");
                 return;
             }
-            JNIEnv* env = getJNIEnv();
+            auto scopedEnv = getJNIEnv();
+            JNIEnv* env = scopedEnv.get();
+            if (!env) {
+                logError("Failed to get JNIEnv");
+                return;
+            }
+
             env->CallStaticIntMethod(adsGlobalRef, midInterstitialShow);
+            if (env->ExceptionCheck()) {
+                env->ExceptionClear();
+                logError("Exception during interstitialShow call");
+            }
         }
 
         void v_showRewardedVideo() {
+            if (!adsGlobalRef) {
+                logError("adsGlobalRef is null");
+                return;
+            }
             if (!midRewardedVideoShow) {
                 logError("rewardedVideoShow Java method not Found");
                 return;
             }
-            JNIEnv* env = getJNIEnv();
+            auto scopedEnv = getJNIEnv();
+            JNIEnv* env = scopedEnv.get();
+            if (!env) {
+                logError("Failed to get JNIEnv");
+                return;
+            }
+
             env->CallStaticIntMethod(adsGlobalRef, midRewardedVideoShow);
+            if (env->ExceptionCheck()) {
+                env->ExceptionClear();
+                logError("Exception during rewardedVideoShow call");
+            }
         }
 
-        JNIEnv* getJNIEnv() {
-            return jniEnv;
+        struct ScopedJNIEnv {
+            JavaVM* vm;
+            JNIEnv* env;
+            bool needsDetach;
+
+            explicit ScopedJNIEnv(JavaVM* javaVM) : vm(javaVM), env(nullptr), needsDetach(false) {
+                if (!vm) return;
+                jint status = vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6);
+                if (status == JNI_EDETACHED) {
+                    if (vm->AttachCurrentThread(&env, nullptr) == JNI_OK) {
+                        needsDetach = true;
+                    } else {
+                        env = nullptr;
+                    }
+                } else if (status != JNI_OK) {
+                    env = nullptr;
+                }
+            }
+
+            ~ScopedJNIEnv() {
+                if (needsDetach && vm) {
+                    vm->DetachCurrentThread();
+                }
+            }
+
+            ScopedJNIEnv(const ScopedJNIEnv&) = delete;
+            ScopedJNIEnv& operator=(const ScopedJNIEnv&) = delete;
+
+            ScopedJNIEnv(ScopedJNIEnv&& other) noexcept
+                : vm(other.vm), env(other.env), needsDetach(other.needsDetach) {
+                other.needsDetach = false;
+                other.env = nullptr;
+            }
+            ScopedJNIEnv& operator=(ScopedJNIEnv&&) = delete;
+
+            JNIEnv* get() const { return env; }
+        };
+
+        ScopedJNIEnv getJNIEnv() {
+            return ScopedJNIEnv(javaVM);
         }
     private:
-        JNIEnv* jniEnv;
+        JavaVM* javaVM;
         jclass adsGlobalRef;
         jmethodID midInterstitialSetUnitId;
         jmethodID midInterstitialLoad;
