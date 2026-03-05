@@ -322,6 +322,32 @@ class iOSPlatformWrapper : public PlatformWrapper {
             return "unknown";
         }
     }
+
+    virtual AkkordRect vGetWindowSafeArea(AkkordRenderer* CurrentRenderer, AkkordWindow* CurrentWindow) override {
+        @autoreleasepool {
+            UIEdgeInsets insets = UIEdgeInsetsZero;
+
+            if (@available(iOS 11.0, *)) {
+                UIWindow *window = [UIApplication sharedApplication].keyWindow;
+                if (window) {
+                    insets = window.safeAreaInsets;
+                }
+            }
+
+            // Размер берём из рендерера — те же пиксели, что возвращает BWrapper::GetScreenSize()
+            int rendererW = 0, rendererH = 0;
+            SDL_GetRendererOutputSize(CurrentRenderer, &rendererW, &rendererH);
+
+            CGFloat scale = [UIScreen mainScreen].scale;
+
+            int x = (int)(insets.left  * scale);
+            int y = (int)(insets.top   * scale);
+            int w = rendererW - (int)((insets.left + insets.right)  * scale);
+            int h = rendererH - (int)((insets.top  + insets.bottom) * scale);
+
+            return AkkordRect(x, y, w, h);
+        }
+    }
 };
 
 static iOSPlatformWrapper iosPlatformWrapper;

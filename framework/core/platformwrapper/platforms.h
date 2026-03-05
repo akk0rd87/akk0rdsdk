@@ -54,6 +54,7 @@ public:
     bool                     LaunchAppReviewIfAvailable() { return vLaunchAppReviewIfAvailable(); }
     bool                     RequestFlexibleUpdateIfAvailable() { return vRequestFlexibleUpdateIfAvailable(); } // only for Android
 
+    AkkordRect               GetWindowSafeArea(AkkordRenderer* CurrentRenderer, AkkordWindow* CurrentWindow) { return vGetWindowSafeArea(CurrentRenderer, CurrentWindow); }
     virtual ~PlatformWrapper() {}
 
 private:
@@ -72,6 +73,10 @@ private:
     //virtual std::string              vGetInternalDir() = 0;
     virtual std::string              vGetInternalWriteDir() { return "data-ram/"; };
     virtual std::string              vGetInternalAssetsDir() { return "assets/"; };
+    virtual AkkordRect               vGetWindowSafeArea(AkkordRenderer* CurrentRenderer, AkkordWindow* CurrentWindow) {
+        const auto screenSize = BWrapper::GetScreenSize();
+        return AkkordRect(0, 0, screenSize.x, screenSize.y);
+    };
     virtual std::string              vGetAppVersionCode() { return ""; }
     virtual std::string              vGetAppVersionName() { return ""; }
 
