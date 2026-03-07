@@ -13,6 +13,8 @@ public:
     static JNIEnv*           GetJNIEnv();
     static jobject           GetActivity();
 
+    static bool              CallActivityBooleanMethod(const char* methodName);
+
     //Запрещаем создавать экземпляр класса AndroidWrapper
     AndroidWrapper() = delete;
     ~AndroidWrapper() = delete;

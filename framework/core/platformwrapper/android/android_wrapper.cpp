@@ -176,3 +176,20 @@ JNIEnv* AndroidWrapper::GetJNIEnv() {
 jobject AndroidWrapper::GetActivity() {
     return reinterpret_cast<jobject>(SDL_AndroidGetActivity());
 };
+
+bool AndroidWrapper::CallActivityBooleanMethod(const char* methodName) {
+    auto env = GetJNIEnv();
+    auto Activity = GetActivity();
+    jclass clazz(env->GetObjectClass(Activity));
+    jmethodID javaMethod = env->GetMethodID(clazz, methodName, "()Z");
+    if (nullptr == javaMethod) {
+        env->DeleteLocalRef(Activity);
+        env->DeleteLocalRef(clazz);
+        return false;
+    }
+    jboolean result = env->CallBooleanMethod(Activity, javaMethod);
+    env->DeleteLocalRef(Activity);
+    env->DeleteLocalRef(clazz);
+    logDebug("%s %d", methodName, result == JNI_TRUE);
+    return result == JNI_TRUE;
+}
