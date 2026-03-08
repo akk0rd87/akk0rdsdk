@@ -20,7 +20,7 @@ class VKAdsAdapter {
                 Log.d(getTag(), "mInterstitialAd: The ad loaded")
                 adCallbackLocal(EVENT_INTERSTITIAL_LOADED)
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "MyInterstitialCallback.onLoad")
             }
         }
 
@@ -29,7 +29,7 @@ class VKAdsAdapter {
                 Log.d(getTag(), "mInterstitialAd: onNoAd $adRequestError")
                 adCallbackLocal(EVENT_INTERSTITIAL_FAILED_TO_LOAD)
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "MyInterstitialCallback.onNoAd")
             }
         }
 
@@ -38,7 +38,7 @@ class VKAdsAdapter {
                 Log.d(getTag(), "mInterstitialAd: onClick")
                 adCallbackLocal(EVENT_INTERSTITIAL_CLOSED)
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "MyInterstitialCallback.onClick")
             }
         }
 
@@ -47,7 +47,7 @@ class VKAdsAdapter {
                 Log.d(getTag(), "mInterstitialAd: onDismiss")
                 adCallbackLocal(EVENT_INTERSTITIAL_CLOSED)
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "MyInterstitialCallback.onDismiss")
             }
         }
 
@@ -56,7 +56,7 @@ class VKAdsAdapter {
                 Log.d(getTag(), "mInterstitialAd: onVideoCompleted")
                 //adCallbackLocal(EVENT_INTERSTITIAL_CLOSED)
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "MyInterstitialCallback.onVideoCompleted")
             }
         }
 
@@ -65,7 +65,7 @@ class VKAdsAdapter {
                 Log.d(getTag(), "mInterstitialAd: onDisplay")
                 //adCallbackLocal(EVENT_INTERSTITIAL_CLOSED)
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "MyInterstitialCallback.onDisplay")
             }
         }
 
@@ -74,19 +74,19 @@ class VKAdsAdapter {
                 Log.d(getTag(), "mInterstitialAd: onFailedToShow")
                 adCallbackLocal(EVENT_INTERSTITIAL_FAILED_TO_SHOW)
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "MyInterstitialCallback.onFailedToShow")
             }
         }
     }
 
-    private class MyRewardedCallback :  RewardedAd.RewardedAdListener {
+    private class MyRewardedCallback : RewardedAd.RewardedAdListener {
         override fun onLoad(rewardedAd: RewardedAd) {
             try {
                 mRewardedAd = rewardedAd
                 Log.d(getTag(), "MyRewardedCallback: The ad loaded")
                 adCallbackLocal(EVENT_REWARDEDVIDEO_LOADED)
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "MyRewardedCallback.onLoad")
             }
         }
 
@@ -95,7 +95,7 @@ class VKAdsAdapter {
                 Log.d(getTag(), "No ad")
                 adCallbackLocal(EVENT_REWARDEDVIDEO_FAILED_TO_LOAD)
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "MyRewardedCallback.onNoAd")
             }
         }
 
@@ -104,7 +104,7 @@ class VKAdsAdapter {
                 Log.d(getTag(), "onClick")
                 adCallbackLocal(EVENT_REWARDEDVIDEO_CLOSED)
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "MyRewardedCallback.onClick")
             }
         }
 
@@ -113,7 +113,7 @@ class VKAdsAdapter {
                 Log.d(getTag(), "onDismiss")
                 adCallbackLocal(EVENT_REWARDEDVIDEO_CLOSED)
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "MyRewardedCallback.onDismiss")
             }
         }
 
@@ -122,7 +122,7 @@ class VKAdsAdapter {
                 Log.d(getTag(), "onReward")
                 adCallbackLocal(EVENT_REWARDEDVIDEO_REWARDED)
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "MyRewardedCallback.onReward")
             }
         }
 
@@ -131,7 +131,7 @@ class VKAdsAdapter {
                 Log.d(getTag(), "onDisplay")
                 adCallbackLocal(EVENT_REWARDEDVIDEO_STARTED)
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "MyRewardedCallback.onDisplay")
             }
         }
 
@@ -140,7 +140,7 @@ class VKAdsAdapter {
                 Log.d(getTag(), "onFailedToShow")
                 adCallbackLocal(EVENT_REWARDEDVIDEO_FAILED_TO_SHOW)
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "MyRewardedCallback.onFailedToShow")
             }
         }
     }
@@ -183,7 +183,19 @@ class VKAdsAdapter {
             try {
                 adCallback(eventType)
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "adCallbackLocal")
+            } catch (e: UnsatisfiedLinkError) {
+                Utils.handleException(e, "adCallbackLocal")
+            }
+        }
+
+        private fun initCallbackLocal(code: Int) {
+            try {
+                initCallback(code)
+            } catch (e: Exception) {
+                Utils.handleException(e, "initCallbackLocal")
+            } catch (e: UnsatisfiedLinkError) {
+                Utils.handleException(e, "initCallbackLocal")
             }
         }
 
@@ -194,15 +206,16 @@ class VKAdsAdapter {
                 MyTargetManager.initSdk(getContext())
                 if (MyTargetManager.isSdkInitialized()) {
                     Log.d(getTag(), "INIT_SUCCESS")
-                    initCallback(INIT_SUCCESS)
+                    initCallbackLocal(INIT_SUCCESS)
                     mInitializationCompleted = true
                 }
                 else {
                     Log.d(getTag(), "INIT_ERROR")
-                    initCallback(INIT_ERROR)
+                    initCallbackLocal(INIT_ERROR)
                 }
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "initialize")
+                initCallbackLocal(INIT_ERROR)
             }
         }
 
@@ -212,7 +225,7 @@ class VKAdsAdapter {
                 Log.d(getTag(), "VKADS: interstitialSetUnitId: $id")
                 InterstitialUnitID = id.toInt()
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "interstitialSetUnitId")
             }
         }
 
@@ -221,7 +234,7 @@ class VKAdsAdapter {
             try {
                 RewardedVideoUnitID = id.toInt()
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "rewardedVideoSetUnitId")
             }
         }
 
@@ -243,7 +256,7 @@ class VKAdsAdapter {
                     adCallbackLocal(EVENT_INTERSTITIAL_FAILED_TO_LOAD)
                 }
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "interstitialLoad")
             }
         }
 
@@ -264,7 +277,7 @@ class VKAdsAdapter {
                     adCallbackLocal(EVENT_REWARDEDVIDEO_FAILED_TO_LOAD)
                 }
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "rewardedVideoLoad")
             }
         }
 
@@ -276,11 +289,11 @@ class VKAdsAdapter {
                     try {
                         mInterstitialAd?.show(getContext())
                     } catch (e: Exception) {
-                        e.message?.let { Log.e(getTag(), it) }
+                        Utils.handleException(e, "interstitialShow: runOnUiThread")
                     }
                 })
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "interstitialShow")
                 return -1
             }
             return 0
@@ -293,11 +306,11 @@ class VKAdsAdapter {
                     try {
                         mRewardedAd?.show(getContext())
                     } catch (e: Exception) {
-                        e.message?.let { Log.e(getTag(), it) }
+                        Utils.handleException(e, "rewardedVideoShow: runOnUiThread")
                     }
                 })
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "rewardedVideoShow")
                 return -1
             }
             return 0

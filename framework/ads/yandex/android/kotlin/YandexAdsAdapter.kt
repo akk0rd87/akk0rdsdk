@@ -21,6 +21,26 @@ import com.yandex.mobile.ads.rewarded.RewardedAdLoader
 private external fun adCallback(eventType: Int)
 private external fun initCallback(code: Int)
 
+private fun initCallbackLocal(code: Int) {
+    try {
+        initCallback(code)
+    } catch (e: Exception) {
+        Utils.handleException(e, "initCallbackLocal")
+    } catch (e: UnsatisfiedLinkError) {
+        Utils.handleException(e, "initCallbackLocal")
+    }
+}
+
+private fun adCallbackLocal(eventType: Int) {
+    try {
+        adCallback(eventType)
+    } catch (e: Exception) {
+        Utils.handleException(e, "adCallbackLocal")
+    } catch (e: UnsatisfiedLinkError) {
+        Utils.handleException(e, "adCallbackLocal")
+    }
+}
+
 class YandexAdsAdapter {
     private class MyInterstitialManager : InterstitialAdLoadListener, InterstitialAdEventListener {
         private val loader: InterstitialAdLoader by lazy { getInterstitialAdLoader() }
@@ -29,32 +49,32 @@ class YandexAdsAdapter {
 
         override fun onAdLoaded(interstitialAd: InterstitialAd) {
             mInterstitialAd = interstitialAd
-            adCallback(EVENT_INTERSTITIAL_LOADED)
+            adCallbackLocal(EVENT_INTERSTITIAL_LOADED)
             Log.d(getTag(), "YandexADS: onAdLoaded")
         }
 
         override fun onAdFailedToLoad(error: AdRequestError) {
-            adCallback(EVENT_INTERSTITIAL_FAILED_TO_LOAD)
+            adCallbackLocal(EVENT_INTERSTITIAL_FAILED_TO_LOAD)
             Log.d(getTag(), "YandexADS: onAdFailedToLoad")
         }
 
         override fun onAdFailedToShow(adError: AdError) {
-            adCallback(EVENT_INTERSTITIAL_FAILED_TO_SHOW)
+            adCallbackLocal(EVENT_INTERSTITIAL_FAILED_TO_SHOW)
             Log.d(getTag(), "YandexADS: onAdFailedToShow")
         }
 
         override fun onAdShown() {
-            adCallback(EVENT_INTERSTITIAL_CLOSED)
+            adCallbackLocal(EVENT_INTERSTITIAL_CLOSED)
             Log.d(getTag(), "YandexADS: onAdShown")
         }
 
         override fun onAdDismissed() {
-            adCallback(EVENT_INTERSTITIAL_CLOSED)
+            adCallbackLocal(EVENT_INTERSTITIAL_CLOSED)
             Log.d(getTag(), "YandexADS: onAdDismissed")
         }
 
         override fun onAdImpression(impressionData: ImpressionData?) {
-            adCallback(EVENT_INTERSTITIAL_OPENED)
+            adCallbackLocal(EVENT_INTERSTITIAL_OPENED)
             Log.d(getTag(), "YandexADS: onImpression")
         }
 
@@ -66,7 +86,7 @@ class YandexAdsAdapter {
                 Log.d(getTag(), "YandexADS: InterstitialSetUnitId")
                 adRequestConfiguration = AdRequestConfiguration.Builder(id).build()
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "interstitialSetUnitId")
             }
         }
 
@@ -74,7 +94,7 @@ class YandexAdsAdapter {
             try {
                 mInterstitialAd = null
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "destroy")
             }
         }
 
@@ -84,7 +104,7 @@ class YandexAdsAdapter {
                 destroy()
                 adRequestConfiguration?.let { loader.loadAd(it) }
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "interstitialLoad")
             }
         }
 
@@ -95,7 +115,7 @@ class YandexAdsAdapter {
                 mInterstitialAd?.show(getContext())
                 return 0
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "interstitialShow")
             }
             return 1
         }
@@ -114,31 +134,31 @@ class YandexAdsAdapter {
 
         override fun onAdLoaded(rewarded: RewardedAd) {
             mRewardedAd = rewarded
-            adCallback(EVENT_REWARDEDVIDEO_LOADED)
+            adCallbackLocal(EVENT_REWARDEDVIDEO_LOADED)
         }
 
         override fun onRewarded(reward: Reward) {
-            adCallback(EVENT_REWARDEDVIDEO_REWARDED)
+            adCallbackLocal(EVENT_REWARDEDVIDEO_REWARDED)
         }
 
         override fun onAdFailedToLoad(error: AdRequestError) {
-            adCallback(EVENT_REWARDEDVIDEO_FAILED_TO_LOAD)
+            adCallbackLocal(EVENT_REWARDEDVIDEO_FAILED_TO_LOAD)
         }
 
         override fun onAdFailedToShow(adError: AdError) {
-            adCallback(EVENT_REWARDEDVIDEO_FAILED_TO_SHOW)
+            adCallbackLocal(EVENT_REWARDEDVIDEO_FAILED_TO_SHOW)
         }
 
         override fun onAdShown() {
-            adCallback(EVENT_REWARDEDVIDEO_CLOSED)
+            adCallbackLocal(EVENT_REWARDEDVIDEO_CLOSED)
         }
 
         override fun onAdDismissed() {
-            adCallback(EVENT_REWARDEDVIDEO_CLOSED)
+            adCallbackLocal(EVENT_REWARDEDVIDEO_CLOSED)
         }
 
         override fun onAdImpression(impressionData: ImpressionData?) {
-            adCallback(EVENT_REWARDEDVIDEO_OPENED)
+            adCallbackLocal(EVENT_REWARDEDVIDEO_OPENED)
         }
 
         override fun onAdClicked() {
@@ -148,7 +168,7 @@ class YandexAdsAdapter {
             try {
                 adRequestConfiguration = AdRequestConfiguration.Builder(id).build()
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "rewardedVideoSetUnitId")
             }
         }
 
@@ -156,7 +176,7 @@ class YandexAdsAdapter {
             try {
                 mRewardedAd = null
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "destroy")
             }
         }
 
@@ -165,7 +185,7 @@ class YandexAdsAdapter {
                 destroy()
                 adRequestConfiguration?.let { loader.loadAd(it) }
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "rewardedVideoLoad")
             }
         }
 
@@ -175,7 +195,7 @@ class YandexAdsAdapter {
                 mRewardedAd?.show(getContext())
                 return 0
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "rewardedVideoShow")
             }
             return 1
         }
@@ -214,7 +234,7 @@ class YandexAdsAdapter {
         // InitializationListener
         override fun onInitializationCompleted() {
             Log.d(getTag(), "Yandex ads onInitializationCompleted")
-            initCallback(INIT_SUCCESS)
+            initCallbackLocal(INIT_SUCCESS)
         }
 
         ////////////////////////
@@ -225,8 +245,8 @@ class YandexAdsAdapter {
             try {
                 MobileAds.initialize(getContext(), this)
             } catch (e: Exception) {
-                initCallback(INIT_ERROR)
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "initialize")
+                initCallbackLocal(INIT_ERROR)
             }
         }
 
@@ -235,7 +255,7 @@ class YandexAdsAdapter {
             try {
                 intManager.interstitialSetUnitId(id)
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "interstitialSetUnitId")
             }
         }
 
@@ -244,7 +264,7 @@ class YandexAdsAdapter {
             try {
                 rvManager.rewardedVideoSetUnitId(id)
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "rewardedVideoSetUnitId")
             }
         }
 
@@ -253,7 +273,7 @@ class YandexAdsAdapter {
             try {
                 intManager.interstitialLoad()
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "interstitialLoad")
             }
         }
 
@@ -262,7 +282,7 @@ class YandexAdsAdapter {
             try {
                 rvManager.rewardedVideoLoad()
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "rewardedVideoLoad")
             }
         }
 
@@ -272,7 +292,7 @@ class YandexAdsAdapter {
                 intManager.interstitialShow()
                 return 0
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "interstitialShow")
                 return 1
             }
         }
@@ -283,7 +303,7 @@ class YandexAdsAdapter {
                 rvManager.rewardedVideoShow()
                 return 0
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "rewardedVideoShow")
                 return 1
             }
         }

@@ -5,7 +5,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import android.util.Log;
-
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.common.api.Result;
 import com.google.android.gms.common.api.Status;
@@ -24,7 +23,6 @@ import com.google.android.gms.tasks.TaskCompletionSource;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
@@ -218,7 +216,7 @@ public class SnapshotCoordinator {
                   setClosed(snapshot.getMetadata().getUniqueName());
               }
               catch(Exception e) {
-                  Log.e(TAG, Objects.requireNonNull(e.getMessage()));
+                  Utils.handleException(e, "discardAndClose");
               }
           }
         }));
@@ -231,7 +229,7 @@ public class SnapshotCoordinator {
         // if open failed, set the file to closed, otherwise, keep it open.
         if (!task.isSuccessful()) {
           Exception e = task.getException();
-          Log.e(TAG, "Open was not a success for filename " + filename, e);
+          if (e != null) Utils.handleException(e, "open: not successful for " + filename);
           setClosed(filename);
         } else {
           SnapshotsClient.DataOrConflict<Snapshot> result
@@ -244,7 +242,7 @@ public class SnapshotCoordinator {
         }
       }
       catch(Exception e) {
-          Log.e(TAG, Objects.requireNonNull(e.getMessage()));
+          Utils.handleException(e, "createOpenListener");
       }
     };
   }
@@ -330,7 +328,7 @@ public class SnapshotCoordinator {
               setClosed(filename);
             }
             catch(Exception e) {
-                Log.e(TAG, Objects.requireNonNull(e.getMessage()));
+                Utils.handleException(e, "commitAndClose");
             }
           }
         }));
@@ -360,7 +358,7 @@ public class SnapshotCoordinator {
               setClosed(filename);
             }
             catch(Exception e) {
-                Log.e(TAG, Objects.requireNonNull(e.getMessage()));
+                Utils.handleException(e, "delete");
             }
           }
         }));
@@ -381,7 +379,7 @@ public class SnapshotCoordinator {
               }
             }
             catch(Exception e) {
-                Log.e(TAG, Objects.requireNonNull(e.getMessage()));
+                Utils.handleException(e, "resolveConflict");
             }
           }
         }));

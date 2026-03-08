@@ -14,7 +14,6 @@ import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.android.play.core.review.ReviewInfo
 import com.google.android.play.core.review.ReviewManagerFactory
-
 class AndroidStoreFacade {
     companion object {
         private val mAppUpdateManager : AppUpdateManager by lazy { AppUpdateManagerFactory.create(getContext()) }
@@ -40,9 +39,8 @@ class AndroidStoreFacade {
                             Log.d(getTag(), "launchReviewFlow")
                             reviewManager.launchReviewFlow(getContext(), reviewInfo)
                         }
-
                     } catch (e: Exception) {
-                        e.message?.let { Log.e(getTag(), it ) }
+                        Utils.handleException(e, "launchAppReviewIfPossible")
                     }
                 } else {
                     Log.e(getTag(), "requestReviewFlow is NOT Successful")
@@ -65,7 +63,7 @@ class AndroidStoreFacade {
                                 100500
                             )
                         } catch (e: Exception) {
-                            e.message?.let { Log.e(getTag(), it ) }
+                            Utils.handleException(e, "checkAppUpdate: startUpdateFlowForResult")
                         }
                     } else if (appUpdateInfo.installStatus() == InstallStatus.DOWNLOADED) {
                         //CHECK THIS if AppUpdateType.FLEXIBLE, otherwise you can skip
@@ -87,7 +85,7 @@ class AndroidStoreFacade {
                 Log.i(getTag(), "popupSnackbarForCompleteUpdate")
             }
             catch(e: Exception) {
-                e.message?.let { Log.e(getTag(), it ) }
+                Utils.handleException(e, "popupSnackbarForCompleteUpdate")
             }
         }
 
@@ -96,7 +94,7 @@ class AndroidStoreFacade {
                 mAppUpdateManager.unregisterListener(installStateUpdatedListener)
             }
             catch(e: Exception) {
-                e.message?.let { Log.e(getTag(), it ) }
+                Utils.handleException(e, "unRegisterUpdateListener")
             }
         }
 

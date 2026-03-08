@@ -15,6 +15,7 @@ import android.content.res.AssetManager;
 import android.media.AudioManager;
 import android.content.pm.PackageInfo;
 import org.akkord.lib.AndroidStoreFacade;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 public class Utils {
     public  static final String TAG = "SDL";
@@ -22,6 +23,24 @@ public class Utils {
     private static AssetManager AssetMgr = null;
 
     public static native void MessageBoxCallback(int Code, int Result);
+
+    public static void handleException(Throwable e, String details) {
+        if (e == null) return;
+        Log.e(TAG, e.getMessage() + "; Details: " + details);
+        FirebaseCrashlytics.getInstance().recordException(e);
+    }
+
+    private static void MessageBoxCallbackLocal(int Code, int Result) {
+        try {
+            MessageBoxCallback(Code, Result);
+        }
+        catch(Exception e) {
+            handleException(e, "MessageBoxCallbackLocal");
+        }
+        catch (UnsatisfiedLinkError e) {
+            handleException(e, "MessageBoxCallbackLocal");
+        }
+    }
 
     public static void Init(Activity ActivityContext){
         _context = ActivityContext;
@@ -93,7 +112,7 @@ public class Utils {
                             .setMessage(msgMessage)
                             .setPositiveButton(msgButton1, (dialog, which) -> {
                                 Log.v(TAG, "PositiveButton click");
-                                MessageBoxCallback(msgCode, 1);
+                                MessageBoxCallbackLocal(msgCode, 1);
                             });
 
                     builder.setIconAttribute(android.R.attr.alertDialogIcon);
@@ -102,24 +121,24 @@ public class Utils {
                         if (msgButton3 != null && !msgButton3.isEmpty()) {
                             builder.setNeutralButton(msgButton2, (dialog, which) -> {
                                 Log.v(TAG, "NeutralButton click");
-                                MessageBoxCallback(msgCode, 2);
+                                MessageBoxCallbackLocal(msgCode, 2);
                             });
 
                             builder.setNegativeButton(msgButton3, (dialog, which) -> {
                                 Log.v(TAG, "NegativeButton click");
-                                MessageBoxCallback(msgCode, 3);
+                                MessageBoxCallbackLocal(msgCode, 3);
                             });
                         } else {
                             builder.setNegativeButton(msgButton2, (dialog, which) -> {
                                 Log.v(TAG, "NegativeButton click");
-                                MessageBoxCallback(msgCode, 2);
+                                MessageBoxCallbackLocal(msgCode, 2);
                             });
                         }
                     }
 
                     builder.setOnCancelListener(dialog -> {
                         Log.v(TAG, "setOnCancelListener: onCancel");
-                        MessageBoxCallback(msgCode, 0);
+                        MessageBoxCallbackLocal(msgCode, 0);
                     });
 
                     final AlertDialog mAlertDialog = builder.create();

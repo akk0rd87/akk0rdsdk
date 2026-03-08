@@ -46,7 +46,7 @@ class PlayServicesManager(
                         .addOnCompleteListener { task ->
                             try {
                                 if (!task.isSuccessful) {
-                                    handleException(task.exception, "loadSnapshot: processSnapshotOpenResult failed")
+                                    Utils.handleException(task.exception, "loadSnapshot: processSnapshotOpenResult failed")
                                     return@addOnCompleteListener
                                 }
 
@@ -62,7 +62,7 @@ class PlayServicesManager(
                                         //readSavedGame(snapshot);
                                         val data = snapshot.snapshotContents.readFully()
                                         Log.i(Utils.TAG, "Snapshot loaded. Size: " + data.size)
-                                        playServicesObserver.onSnapshotReceived(data, data.size)
+                                        onSnapshotReceived(data)
                                     } catch (e: Exception) {
                                         Log.e(Utils.TAG, "Error while reading snapshot contents: " + e.message)
                                     }
@@ -70,17 +70,17 @@ class PlayServicesManager(
 
                                 SnapshotCoordinator.getInstance().discardAndClose(getSnapshotsClient(), snapshot)
                                     .addOnFailureListener { e ->
-                                        handleException(e, "There was a problem discarding the snapshot!")
+                                        Utils.handleException(e, "There was a problem discarding the snapshot!")
                                     }
                             } catch (e: Exception) {
-                                handleException(e, "processSnapshotOpenResult: addOnCompleteListener")
+                                Utils.handleException(e, "processSnapshotOpenResult: addOnCompleteListener")
                             }
                         }
                 }
             }
         }
         catch(e: Exception) {
-            handleException(e, "loadSnapshot")
+            Utils.handleException(e, "loadSnapshot")
         }
     }
 
@@ -102,12 +102,12 @@ class PlayServicesManager(
                         }
                     }
                     catch(e: Exception) {
-                        handleException(e, "signInSilently: addOnCompleteListener")
+                        Utils.handleException(e, "signInSilently: addOnCompleteListener")
                     }
                 }
         }
         catch(e: Exception) {
-            handleException(e, "signInSilently")
+            Utils.handleException(e, "signInSilently")
         }
     }
 
@@ -127,12 +127,12 @@ class PlayServicesManager(
                         }
                     }
                     catch(e: Exception) {
-                        handleException(e, "startSignInIntent: addOnCompleteListener")
+                        Utils.handleException(e, "startSignInIntent: addOnCompleteListener")
                     }
                 }
         }
         catch(e: Exception) {
-            handleException(e, "startSignInIntent")
+            Utils.handleException(e, "startSignInIntent")
         }
     }
 
@@ -142,7 +142,7 @@ class PlayServicesManager(
             getLeaderboardsClient().submitScore(leaderboardId, value)
         }
         catch(e: Exception) {
-            handleException(e, "submitScore")
+            Utils.handleException(e, "submitScore")
         }
     }
 
@@ -154,12 +154,12 @@ class PlayServicesManager(
                     activity.startActivityForResult(intent, RC_UNUSED)
                 }
                 catch(e: Exception) {
-                    handleException(e, "showLeaderboards: addOnSuccessListener")
+                    Utils.handleException(e, "showLeaderboards: addOnSuccessListener")
                 }
             }
         }
         catch(e: Exception) {
-            handleException(e, "showLeaderboards")
+            Utils.handleException(e, "showLeaderboards")
         }
     }
 
@@ -171,12 +171,12 @@ class PlayServicesManager(
                     activity.startActivityForResult(intent, RC_UNUSED)
                 }
                 catch(e: Exception) {
-                    handleException(e, "showAchievements: addOnSuccessListener")
+                    Utils.handleException(e, "showAchievements: addOnSuccessListener")
                 }
             }
         }
         catch(e: Exception) {
-            handleException(e, "showAchievements")
+            Utils.handleException(e, "showAchievements")
         }
     }
 
@@ -186,7 +186,7 @@ class PlayServicesManager(
             getAchievementsClient().increment(code, value)
         }
         catch(e: Exception) {
-            handleException(e, "incrementAchievement")
+            Utils.handleException(e, "incrementAchievement")
         }
     }
 
@@ -196,7 +196,7 @@ class PlayServicesManager(
             getAchievementsClient().reveal(code)
         }
         catch(e: Exception) {
-            handleException(e, "revealAchievement")
+            Utils.handleException(e, "revealAchievement")
         }
     }
 
@@ -206,7 +206,7 @@ class PlayServicesManager(
             getAchievementsClient().setSteps(code, value)
         }
         catch(e: Exception) {
-            handleException(e, "achievementSetSteps")
+            Utils.handleException(e, "achievementSetSteps")
         }
     }
 
@@ -216,7 +216,7 @@ class PlayServicesManager(
             getAchievementsClient().unlock(code)
         }
         catch(e: Exception) {
-            handleException(e, "unlockAchievement")
+            Utils.handleException(e, "unlockAchievement")
         }
     }
 
@@ -239,7 +239,7 @@ class PlayServicesManager(
                         override fun onComplete(task: Task<Snapshot?>) {
                             try {
                                 if (!task.isSuccessful) {
-                                    handleException(task.exception, "saveSnapshot: processSnapshotOpenResult failed")
+                                    Utils.handleException(task.exception, "saveSnapshot: processSnapshotOpenResult failed")
                                     return
                                 }
 
@@ -257,14 +257,14 @@ class PlayServicesManager(
                                             if (task.isSuccessful) {
                                                 Log.i(Utils.TAG, "Snapshot saved. Size: " + data.size)
                                             } else {
-                                                handleException(task.exception, "write_snapshot_error")
+                                                Utils.handleException(task.exception, "write_snapshot_error")
                                             }
                                         } catch (e: java.lang.Exception) {
-                                            handleException(e, "writeSnapshot: addOnCompleteListener")
+                                            Utils.handleException(e, "writeSnapshot: addOnCompleteListener")
                                         }
                                     }
                             } catch (e: java.lang.Exception) {
-                                handleException(e, "saveSnapshot")
+                                Utils.handleException(e, "saveSnapshot")
                             }
                         }
                     })
@@ -305,7 +305,7 @@ class PlayServicesManager(
             return SnapshotCoordinator.getInstance().commitAndClose(getSnapshotsClient(), snapshot, metadataChange)
         }
         catch(e: Exception) {
-            handleException(e, "writeSnapshot")
+            Utils.handleException(e, "writeSnapshot")
         }
         return null
     }
@@ -346,16 +346,12 @@ class PlayServicesManager(
     private fun waitForClosedAndOpen(): Task<DataOrConflict<Snapshot?>?> =
         SnapshotCoordinator.getInstance()
             .waitForClosed(SAVED_GAME)
-            .addOnFailureListener { e -> handleException(e, "There was a problem waiting for the file to close!") }
+            .addOnFailureListener { e -> Utils.handleException(e, "There was a problem waiting for the file to close!") }
             .continueWithTask<DataOrConflict<Snapshot?>?> {
                 val openTask =
                     SnapshotCoordinator.getInstance().open(getSnapshotsClient(), SAVED_GAME, true)
-                openTask.addOnFailureListener { e -> handleException(e, "error_opening_filename") }
+                openTask.addOnFailureListener { e -> Utils.handleException(e, "error_opening_filename") }
             }
-
-    private fun handleException(exception: java.lang.Exception?, details: String?) {
-        Log.e(Utils.TAG, exception?.message + "; Details: " + details)
-    }
 
     private fun isAuthenticated(authTask: Task<AuthenticationResult?>?) =
         authTask?.isSuccessful == true && authTask.getResult()?.isAuthenticated == true
@@ -363,13 +359,25 @@ class PlayServicesManager(
     private fun onDisconnected() {
         connected = false
         Log.d(Utils.TAG, "onDisconnected")
-        playServicesObserver.onPlayServicesDisconnected()
+        try {
+            playServicesObserver.onPlayServicesDisconnected()
+        } catch(e: Exception) {
+            Utils.handleException(e, "onDisconnected")
+        } catch(e: UnsatisfiedLinkError) {
+            Utils.handleException(e, "onDisconnected")
+        }
     }
 
     private fun onConnected() {
         connected = true
         Log.d(Utils.TAG, "onConnected")
-        playServicesObserver.onPlayServicesConnected()
+        try {
+            playServicesObserver.onPlayServicesConnected()
+        } catch(e: Exception) {
+            Utils.handleException(e, "onConnected")
+        } catch(e: UnsatisfiedLinkError) {
+            Utils.handleException(e, "onConnected")
+        }
 
         if(useSnapshot && !initialSnapshotLoadStarted) {
             initialSnapshotLoadStarted = true
@@ -379,6 +387,17 @@ class PlayServicesManager(
             catch (e: Exception) {
                 Log.e(Utils.TAG, e.toString())
             }
+        }
+    }
+
+    private fun onSnapshotReceived(array: ByteArray) {
+        Log.d(Utils.TAG, "onSnapshotReceived: size=${array.size}")
+        try {
+            playServicesObserver.onSnapshotReceived(array, array.size)
+        } catch(e: Exception) {
+            Utils.handleException(e, "onSnapshotReceived")
+        } catch(e: UnsatisfiedLinkError) {
+            Utils.handleException(e, "onSnapshotReceived")
         }
     }
 
