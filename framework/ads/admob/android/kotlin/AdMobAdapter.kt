@@ -31,7 +31,7 @@ class AdMobAdapter {
                 Log.d(getTag(), "The ad loaded")
                 adCallbackLocal(EVENT_INTERSTITIAL_LOADED)
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "MyInterstitialCallback.onAdLoaded")
             }
         }
 
@@ -42,7 +42,7 @@ class AdMobAdapter {
                 Log.d(getTag(), "The ad failed to load")
                 adCallbackLocal(EVENT_INTERSTITIAL_FAILED_TO_LOAD)
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "MyInterstitialCallback.onAdFailedToLoad")
             }
         }
     }
@@ -55,7 +55,7 @@ class AdMobAdapter {
                 Log.d(getTag(), "The ad was dismissed.")
                 adCallbackLocal(EVENT_INTERSTITIAL_CLOSED)
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "MyInterstitialContentCallback.onAdDismissedFullScreenContent")
             }
         }
 
@@ -66,7 +66,7 @@ class AdMobAdapter {
                 Log.d(getTag(), "The ad failed to show.")
                 adCallbackLocal(EVENT_INTERSTITIAL_FAILED_TO_SHOW)
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "MyInterstitialContentCallback.onAdFailedToShowFullScreenContent")
             }
         }
 
@@ -80,7 +80,7 @@ class AdMobAdapter {
                 adCallbackLocal(EVENT_INTERSTITIAL_CLOSED)
                 Log.d(getTag(), "The ad was shown.")
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "MyInterstitialContentCallback.onAdShowedFullScreenContent")
             }
         }
     }
@@ -93,7 +93,7 @@ class AdMobAdapter {
                 mRewardedAd = null
                 adCallbackLocal(EVENT_REWARDEDVIDEO_FAILED_TO_LOAD)
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "MyRewardedCallback.onAdFailedToLoad")
             }
         }
 
@@ -102,7 +102,7 @@ class AdMobAdapter {
                 mRewardedAd = rewardedAd
                 adCallbackLocal(EVENT_REWARDEDVIDEO_LOADED)
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "MyRewardedCallback.onAdLoaded")
             }
         }
 
@@ -115,7 +115,7 @@ class AdMobAdapter {
                 adCallbackLocal(EVENT_REWARDEDVIDEO_REWARDED)
                 mRewardedAd = null
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "MyRewardedCallback.onUserEarnedReward")
             }
         }
     }
@@ -127,7 +127,7 @@ class AdMobAdapter {
                 mRewardedAd = null
                 adCallbackLocal(EVENT_REWARDEDVIDEO_STARTED)
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "MyRewardedContentCallback.onAdShowedFullScreenContent")
             }
         }
 
@@ -138,7 +138,7 @@ class AdMobAdapter {
                 mRewardedAd = null
                 adCallbackLocal(EVENT_REWARDEDVIDEO_FAILED_TO_SHOW)
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "MyRewardedContentCallback.onAdFailedToShowFullScreenContent")
             }
         }
 
@@ -151,7 +151,7 @@ class AdMobAdapter {
                 Log.d(getTag(), "Ad was dismissed.")
                 adCallbackLocal(EVENT_REWARDEDVIDEO_CLOSED)
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "MyRewardedContentCallback.onAdDismissedFullScreenContent")
             }
         }
     }
@@ -198,15 +198,15 @@ class AdMobAdapter {
                     if (AdapterStatus.State.READY == value.initializationState) {
                         Log.d(getTag(), "Admob: onInitializationComplete: Success")
                         mAdMobInitializationCompleted = true
-                        initCallback(INIT_SUCCESS)
+                        initCallbackLocal(INIT_SUCCESS)
                         return
                     }
                 }
-                initCallback(INIT_ERROR)
+                initCallbackLocal(INIT_ERROR)
                 Log.d(getTag(), "Admob: onInitializationComplete: Error")
             } catch (e: Exception) {
-                initCallback(INIT_ERROR)
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "onInitializationComplete")
+                initCallbackLocal(INIT_ERROR)
             }
         }
 
@@ -214,7 +214,19 @@ class AdMobAdapter {
             try {
                 adCallback(eventType)
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "adCallbackLocal")
+            } catch (e: UnsatisfiedLinkError) {
+                Utils.handleException(e, "adCallbackLocal")
+            }
+        }
+
+        private fun initCallbackLocal(code: Int) {
+            try {
+                initCallback(code)
+            } catch (e: Exception) {
+                Utils.handleException(e, "initCallbackLocal")
+            } catch (e: UnsatisfiedLinkError) {
+                Utils.handleException(e, "initCallbackLocal")
             }
         }
 
@@ -228,8 +240,8 @@ class AdMobAdapter {
                     MobileAds.initialize(getContext(), initializationListener)
                 }
             } catch (e: Exception) {
-                initCallback(INIT_ERROR)
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "initialize")
+                initCallbackLocal(INIT_ERROR)
             }
         }
 
@@ -238,7 +250,7 @@ class AdMobAdapter {
             try {
                 InterstitialUnitID = id
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "interstitialSetUnitId")
             }
         }
 
@@ -247,7 +259,7 @@ class AdMobAdapter {
             try {
                 RewardedVideoUnitID = id
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "rewardedVideoSetUnitId")
             }
         }
 
@@ -268,7 +280,7 @@ class AdMobAdapter {
                                 )
                             }
                         } catch (e: Exception) {
-                            e.message?.let { Log.e(getTag(), it) }
+                            Utils.handleException(e, "interstitialLoad: runOnUiThread")
                         }
                     })
                 } else {
@@ -276,7 +288,7 @@ class AdMobAdapter {
                     adCallbackLocal(EVENT_INTERSTITIAL_FAILED_TO_LOAD)
                 }
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "interstitialLoad")
             }
         }
 
@@ -297,7 +309,7 @@ class AdMobAdapter {
                                 )
                             }
                         } catch (e: Exception) {
-                            e.message?.let { Log.e(getTag(), it) }
+                            Utils.handleException(e, "rewardedVideoLoad: runOnUiThread")
                         }
                     })
                 } else {
@@ -305,7 +317,7 @@ class AdMobAdapter {
                     adCallbackLocal(EVENT_REWARDEDVIDEO_FAILED_TO_LOAD)
                 }
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "rewardedVideoLoad")
             }
         }
 
@@ -317,13 +329,13 @@ class AdMobAdapter {
                         mInterstitialAd?.fullScreenContentCallback = mInterstitialContentCallback
                         mInterstitialAd?.show(getContext())
                     } catch (e: Exception) {
-                        e.message?.let { Log.e(getTag(), it) }
+                        Utils.handleException(e, "interstitialShow: runOnUiThread")
                     }
                 })
 
                 return 0
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "interstitialShow")
                 return -1
             }
         }
@@ -336,13 +348,13 @@ class AdMobAdapter {
                         mRewardedAd?.fullScreenContentCallback = mRewardedContentCallback
                         mRewardedAd?.show(getContext(), mRewardedCallback)
                     } catch (e: Exception) {
-                        e.message?.let { Log.e(getTag(), it) }
+                        Utils.handleException(e, "rewardedVideoShow: runOnUiThread")
                     }
                 })
 
                 return 0
             } catch (e: Exception) {
-                e.message?.let { Log.e(getTag(), it) }
+                Utils.handleException(e, "rewardedVideoShow")
                 return -1
             }
         }

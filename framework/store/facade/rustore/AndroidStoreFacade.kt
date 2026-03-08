@@ -63,7 +63,7 @@ class AndroidStoreFacade {
                     }
             }
             catch(e : Exception) {
-                Log.e(getTag(), e.message?:"Unknown exception")
+                Utils.handleException(e, "completeDownloading")
             }
         }
 

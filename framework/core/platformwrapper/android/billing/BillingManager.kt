@@ -20,7 +20,7 @@ class BillingManager  {
                 mBillingImpl.init()
             }
             catch(e : Exception) {
-                e.message?.let { Log.e(TAG, it) }
+                Utils.handleException(e, "initialize")
             }
         }
 
@@ -30,7 +30,7 @@ class BillingManager  {
                 mBillingImpl.restorePurchases()
             }
             catch(e : Exception) {
-                e.message?.let { Log.e(TAG, it) }
+                Utils.handleException(e, "restorePurchases")
             }
         }
 
@@ -40,7 +40,7 @@ class BillingManager  {
                 mBillingImpl.purchaseProdItem(productSKU)
             }
             catch(e : Exception) {
-                e.message?.let { Log.e(TAG, it) }
+                Utils.handleException(e, "purchaseProdItem")
             }
         }
 
@@ -50,7 +50,7 @@ class BillingManager  {
                 mBillingImpl.consumeProductItem(purchaseToken, productSKU)
             }
             catch(e : Exception) {
-                e.message?.let { Log.e(TAG, it) }
+                Utils.handleException(e, "consumeProductItem")
             }
         }
 
@@ -60,7 +60,7 @@ class BillingManager  {
                 mBillingImpl.queryProductDetails(prodList)
             }
             catch(e : Exception) {
-                e.message?.let { Log.e(TAG, it) }
+                Utils.handleException(e, "queryProductDetails")
             }
         }
 
@@ -70,25 +70,49 @@ class BillingManager  {
                 mBillingImpl.onNewIntent(intent)
             }
             catch(e : Exception) {
-                e.message?.let { Log.e(TAG, it) }
+                Utils.handleException(e, "onNewIntent")
             }
         }
 
         override fun onBillingSetupFinished() {
-            billingSetupFinished()
-            restorePurchases()
+            try {
+                billingSetupFinished()
+                restorePurchases()
+            } catch(e: Exception) {
+                Utils.handleException(e, "onBillingSetupFinished")
+            } catch(e: UnsatisfiedLinkError) {
+                Utils.handleException(e, "onBillingSetupFinished")
+            }
         }
 
         override fun onBillingDisconnected() {
-            billingDisconnected()
+            try {
+                billingDisconnected()
+            } catch(e: Exception) {
+                Utils.handleException(e, "onBillingDisconnected")
+            } catch(e: UnsatisfiedLinkError) {
+                Utils.handleException(e, "onBillingDisconnected")
+            }
         }
 
         override fun onPurchaseQueried(purchaseToken: String?, productSKU: String?, type: Int) {
-            purchaseQueried(purchaseToken, productSKU, type)
+            try {
+                purchaseQueried(purchaseToken, productSKU, type)
+            } catch(e: Exception) {
+                Utils.handleException(e, "onPurchaseQueried")
+            } catch(e: UnsatisfiedLinkError) {
+                Utils.handleException(e, "onPurchaseQueried")
+            }
         }
 
         override fun onPurchaseConsumed(purchaseToken: String?, productSKU: String?) {
-            purchaseConsumed(purchaseToken, productSKU)
+            try {
+                purchaseConsumed(purchaseToken, productSKU)
+            } catch(e: Exception) {
+                Utils.handleException(e, "onPurchaseConsumed")
+            } catch(e: UnsatisfiedLinkError) {
+                Utils.handleException(e, "onPurchaseConsumed")
+            }
         }
     }
 }

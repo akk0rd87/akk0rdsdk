@@ -8,8 +8,6 @@ import com.google.android.ump.ConsentInformation.OnConsentInfoUpdateFailureListe
 import com.google.android.ump.ConsentRequestParameters;
 import com.google.android.ump.ConsentForm.OnConsentFormDismissedListener;
 import com.google.android.ump.UserMessagingPlatform;
-
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class GDPRConsentPolicyManager {
@@ -28,25 +26,35 @@ public class GDPRConsentPolicyManager {
                 return;
             }
 
-            GDPRCallback(GDPR_CONSENT_GATHERED);
+            try {
+                GDPRCallback(GDPR_CONSENT_GATHERED);
+            } catch (UnsatisfiedLinkError e) {
+                Utils.handleException(e, "private_GDPRConsentReceived: GDPRCallback");
+            }
+
             if(null != gdprConsentPolicyObserver) {
                 gdprConsentPolicyObserver.onGDPRConsentGathered();
             }
         }
         catch(Exception e) {
-            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
+            Utils.handleException(e, "private_GDPRConsentReceived");
         }
     }
 
     private static void private_SetPrivacyOptionsRequired() {
         try {
-            GDPRCallback(PRIVACY_OPTIONS_REQUIRED);
+            try {
+                GDPRCallback(PRIVACY_OPTIONS_REQUIRED);
+            } catch (UnsatisfiedLinkError e) {
+                Utils.handleException(e, "private_SetPrivacyOptionsRequired: GDPRCallback");
+            }
+
             if(null != gdprConsentPolicyObserver) {
                 gdprConsentPolicyObserver.setPrivacyOptionsRequired();
             }
         }
         catch(Exception e) {
-            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
+            Utils.handleException(e, "private_SetPrivacyOptionsRequired");
         }
     }
 
@@ -59,11 +67,11 @@ public class GDPRConsentPolicyManager {
             private_Initialize();
         }
         catch(Exception e) {
-            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
+            Utils.handleException(e, "Initialize");
         }
     }
 
-    public static void ShowPrivacyOptionsForm (){
+    public static void ShowPrivacyOptionsForm() {
         try {
             org.akkord.lib.Utils.GetContext().runOnUiThread(() -> {
                 try {
@@ -77,12 +85,12 @@ public class GDPRConsentPolicyManager {
                     );
                 }
                 catch(Exception e) {
-                    Log.e(TAG, Objects.requireNonNull(e.getMessage()));
+                    Utils.handleException(e, "ShowPrivacyOptionsForm: runOnUiThread");
                 }
             });
         }
         catch(Exception e) {
-            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
+            Utils.handleException(e, "ShowPrivacyOptionsForm");
         }
     }
 
