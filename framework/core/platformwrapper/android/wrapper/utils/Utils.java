@@ -15,6 +15,7 @@ import android.content.res.AssetManager;
 import android.media.AudioManager;
 import android.content.pm.PackageInfo;
 import org.akkord.lib.AndroidStoreFacade;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 public class Utils {
@@ -23,6 +24,15 @@ public class Utils {
     private static AssetManager AssetMgr = null;
 
     public static native void MessageBoxCallback(int Code, int Result);
+
+    public static void setFirebaseUserProperty(final String name, final String value) {
+        try {
+            FirebaseAnalytics.getInstance(_context).setUserProperty(name, value);
+        }
+        catch (Exception e) {
+            handleException(e, "setFirebaseUserProperty");
+        }
+    }
 
     public static void handleException(Throwable e, String details) {
         if (e == null) return;
