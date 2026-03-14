@@ -233,6 +233,10 @@ class PlayServicesManager(
     fun saveSnapshot(data: ByteArray) {
         Log.d(Utils.TAG, "saveSnapshot: size=${data.size}")
         waitForClosedAndOpen().addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Utils.handleException(task.exception, "saveSnapshot: waitForClosedAndOpen failed")
+                return@addOnCompleteListener
+            }
             task.result?.let { result ->
                 processSnapshotOpenResult(result, 0)
                     .addOnCompleteListener(object : OnCompleteListener<Snapshot?> {
