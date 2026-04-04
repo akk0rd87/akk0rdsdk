@@ -46,6 +46,10 @@
 -keep class androidx.startup.** { *; }
 -keep class * extends androidx.startup.Initializer { *; }
 
+# AndroidX Lifecycle ReportFragment — prevent R8 obfuscation
+# to fix ClassCastException on process death restoration in AdActivity
+-keep class androidx.lifecycle.ReportFragment { *; }
+
 -assumenosideeffects class android.util.Log {
 public static boolean isLoggable(...);
 public static int d(...);
