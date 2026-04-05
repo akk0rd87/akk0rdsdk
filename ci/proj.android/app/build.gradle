@@ -13,7 +13,7 @@ def minSdkVersionValue    = getMinSdkVersion()
 def targetSdkVersionValue = getTargetSdkVersion()
 
 android {
-    namespace 'org.popapp.citest'
+    namespace = 'org.popapp.citest'
     compileSdkVersion rootProject.ext.compileSdkVersion
     defaultConfig {
         minSdkVersion    minSdkVersionValue
@@ -54,7 +54,7 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), file(proGuardParamsDir + 'proguard-rules_release.pro').absolutePath
-            ndk { debugSymbolLevel 'FULL' }
+            ndk { debugSymbolLevel = 'FULL' }
             firebaseCrashlytics { nativeSymbolUploadEnabled true }
         }
         debug {

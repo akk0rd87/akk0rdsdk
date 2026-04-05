@@ -57,7 +57,7 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), file(proGuardParamsDir + 'proguard-rules_release.pro').absolutePath
-            signingConfig signingConfigs.release
+            signingConfig = signingConfigs.release
         }
     }
     splits {
