@@ -2,7 +2,9 @@
 #ifndef __AKK0RD_SDK_INAPP_BILLING_H__
 #define __AKK0RD_SDK_INAPP_BILLING_H__
 
+#ifndef IOS_SWIFT_BUILD
 #include "basewrapper.h"
+#endif
 #include <functional>
 
 class BillingCallbackObserver;
@@ -18,10 +20,14 @@ public:
     static bool                             PurchaseProdItem(const char* ProductSKU);
     static bool                             ConsumeProductItem(const char* PurchaseToken, const char* ProductSKU);
 
+#ifndef IOS_SWIFT_BUILD
     static decltype(SDL_RegisterEvents(1))  GetEventCode();
 
     static void                             DecodeEvent(const SDL_Event& Event, int& Code, int& Result);
     static void                             PushEvent(int Code, const int Result);
+#else
+    static void                             PushEvent(int Code, const int Result);
+#endif
     static void                             ClearObserver();
 
     //Запрещаем создавать экземпляр класса BillingManager

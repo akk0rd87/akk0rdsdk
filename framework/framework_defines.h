@@ -5,7 +5,10 @@
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
+#ifndef IOS_SWIFT_BUILD
 #include "SDL.h"
+#endif
+
 #include <limits>
 #include <string>
 #include <vector>
@@ -24,8 +27,10 @@ bool VALUE_BETWEEN(T Val, T Begin, T End) {
     return (Begin <= Val && Val <= End ? true : false);
 }
 
+#ifndef IOS_SWIFT_BUILD
 typedef SDL_Window   AkkordWindow;
 typedef SDL_Renderer AkkordRenderer;
+#endif
 
 struct DirContentElement
 {
