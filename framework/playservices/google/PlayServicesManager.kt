@@ -34,7 +34,14 @@ class PlayServicesManager(
     fun loadSnapshot() {
         try {
             Log.d(Utils.TAG, "loadSnapshot")
-            waitForClosedAndOpen().addOnSuccessListener { result ->
+            waitForClosedAndOpen().addOnCompleteListener { openTask ->
+                if (!openTask.isSuccessful) {
+                    // STATUS_SNAPSHOT_CONTENTS_UNAVAILABLE (4002) and similar errors land here.
+                    // SnapshotCoordinator.createOpenListener already called setClosed(), so state is clean.
+                    Utils.handleException(openTask.exception, "loadSnapshot: waitForClosedAndOpen failed")
+                    return@addOnCompleteListener
+                }
+                val result = openTask.result
                 if (result != null) {
                     val wasConflict = (if (result.isConflict) 1 else 0)
 
@@ -66,12 +73,12 @@ class PlayServicesManager(
                                     } catch (e: Exception) {
                                         Log.e(Utils.TAG, "Error while reading snapshot contents: " + e.message)
                                     }
-                                }
 
-                                SnapshotCoordinator.getInstance().discardAndClose(getSnapshotsClient(), snapshot)
-                                    .addOnFailureListener { e ->
-                                        Utils.handleException(e, "There was a problem discarding the snapshot!")
-                                    }
+                                    SnapshotCoordinator.getInstance().discardAndClose(getSnapshotsClient(), snapshot)
+                                        .addOnFailureListener { e ->
+                                            Utils.handleException(e, "There was a problem discarding the snapshot!")
+                                        }
+                                }
                             } catch (e: Exception) {
                                 Utils.handleException(e, "processSnapshotOpenResult: addOnCompleteListener")
                             }
@@ -336,6 +343,24 @@ class PlayServicesManager(
                     override fun then(
                         task: Task<DataOrConflict<Snapshot?>?>
                     ): Task<Snapshot?> {
+                        if (!task.isSuccessful) {
+                            // SNAPSHOT_CONFLICT_MISSING (26576): the conflict was already resolved
+                            // elsewhere (another device/session). Treat as no data — return null
+                            // so the caller skips reading and proceeds to close.
+                            Log.w(Utils.TAG, "resolveConflict failed (conflict may be gone): ${task.exception?.message}")
+                            // IMPORTANT: resolveConflict was called directly on GMS (not through
+                            // SnapshotCoordinator), so the coordinator still considers the file
+                            // "opened". We must call discardAndClose to release the CountDownLatch;
+                            // otherwise the next waitForClosedAndOpen() will deadlock.
+                            SnapshotCoordinator.getInstance()
+                                .discardAndClose(getSnapshotsClient(), resolvedSnapshot)
+                                .addOnFailureListener { e ->
+                                    Utils.handleException(e, "resolveConflict: discardAndClose failed")
+                                }
+                            val source = TaskCompletionSource<Snapshot?>()
+                            source.setResult(null)
+                            return source.getTask()
+                        }
                         // Resolving the conflict may cause another conflict,
                         // so recurse and try another resolution.
                         if (retryCount < MAX_SNAPSHOT_RESOLVE_RETRIES) {
