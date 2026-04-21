@@ -1,6 +1,7 @@
 package org.akkord.lib;
 
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import com.getkeepsafe.relinker.ReLinker
 
@@ -12,6 +13,7 @@ open class AkkordComposeActivity : ComponentActivity() {
         // чтобы приложение не вылетало с ошибкой при пересоздании фрагментов после устройства процесса системой
         savedInstanceState?.remove("android:fragments")
         super.onCreate(savedInstanceState)
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         org.akkord.lib.Utils.Init(this)
         loadNativeLibs()
     }
