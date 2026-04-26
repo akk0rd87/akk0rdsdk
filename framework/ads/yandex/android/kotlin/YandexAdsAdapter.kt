@@ -3,11 +3,14 @@ package org.akkord.lib
 import android.app.Activity
 import android.util.Log
 import com.yandex.mobile.ads.common.AdError
-import com.yandex.mobile.ads.common.AdRequestConfiguration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import com.yandex.mobile.ads.common.AdRequest
 import com.yandex.mobile.ads.common.AdRequestError
 import com.yandex.mobile.ads.common.ImpressionData
 import com.yandex.mobile.ads.common.InitializationListener
-import com.yandex.mobile.ads.common.MobileAds
+import com.yandex.mobile.ads.common.YandexAds
 import com.yandex.mobile.ads.interstitial.InterstitialAd
 import com.yandex.mobile.ads.interstitial.InterstitialAdEventListener
 import com.yandex.mobile.ads.interstitial.InterstitialAdLoadListener
@@ -43,9 +46,9 @@ private fun adCallbackLocal(eventType: Int) {
 
 class YandexAdsAdapter {
     private class MyInterstitialManager : InterstitialAdLoadListener, InterstitialAdEventListener {
-        private val loader: InterstitialAdLoader by lazy { getInterstitialAdLoader() }
+        private val loader: InterstitialAdLoader by lazy { InterstitialAdLoader(getContext()) }
         private var mInterstitialAd: InterstitialAd? = null
-        private var adRequestConfiguration: AdRequestConfiguration? = null
+        private var adRequestConfiguration: AdRequest? = null
 
         override fun onAdLoaded(interstitialAd: InterstitialAd) {
             mInterstitialAd = interstitialAd
@@ -84,7 +87,7 @@ class YandexAdsAdapter {
         fun interstitialSetUnitId(id: String) {
             try {
                 Log.d(getTag(), "YandexADS: InterstitialSetUnitId")
-                adRequestConfiguration = AdRequestConfiguration.Builder(id).build()
+                adRequestConfiguration = AdRequest.Builder(id).build()
             } catch (e: Exception) {
                 Utils.handleException(e, "interstitialSetUnitId")
             }
@@ -102,7 +105,11 @@ class YandexAdsAdapter {
             try {
                 Log.d(getTag(), "YandexADS: InterstitialLoad")
                 destroy()
-                adRequestConfiguration?.let { loader.loadAd(it) }
+                adRequestConfiguration?.let { config ->
+                    CoroutineScope(Dispatchers.Main).launch {
+                        loader.loadAd(config, this@MyInterstitialManager)
+                    }
+                }
             } catch (e: Exception) {
                 Utils.handleException(e, "interstitialLoad")
             }
@@ -119,18 +126,12 @@ class YandexAdsAdapter {
             }
             return 1
         }
-
-        private fun getInterstitialAdLoader() : InterstitialAdLoader {
-            val interstitialAdLoader = InterstitialAdLoader(getContext())
-            interstitialAdLoader.setAdLoadListener(this)
-            return interstitialAdLoader
-        }
     }
 
     private class MyRewardedVideoManager : RewardedAdLoadListener, RewardedAdEventListener {
-        private val loader: RewardedAdLoader by lazy { getRewardedAdLoader() }
+        private val loader: RewardedAdLoader by lazy { RewardedAdLoader(getContext()) }
         private var mRewardedAd: RewardedAd? = null
-        private var adRequestConfiguration: AdRequestConfiguration? = null
+        private var adRequestConfiguration: AdRequest? = null
 
         override fun onAdLoaded(rewarded: RewardedAd) {
             mRewardedAd = rewarded
@@ -166,7 +167,7 @@ class YandexAdsAdapter {
 
         fun rewardedVideoSetUnitId(id: String) {
             try {
-                adRequestConfiguration = AdRequestConfiguration.Builder(id).build()
+                adRequestConfiguration = AdRequest.Builder(id).build()
             } catch (e: Exception) {
                 Utils.handleException(e, "rewardedVideoSetUnitId")
             }
@@ -183,7 +184,11 @@ class YandexAdsAdapter {
         fun rewardedVideoLoad() {
             try {
                 destroy()
-                adRequestConfiguration?.let { loader.loadAd(it) }
+                adRequestConfiguration?.let { config ->
+                    CoroutineScope(Dispatchers.Main).launch {
+                        loader.loadAd(config, this@MyRewardedVideoManager)
+                    }
+                }
             } catch (e: Exception) {
                 Utils.handleException(e, "rewardedVideoLoad")
             }
@@ -198,12 +203,6 @@ class YandexAdsAdapter {
                 Utils.handleException(e, "rewardedVideoShow")
             }
             return 1
-        }
-
-        private fun getRewardedAdLoader() : RewardedAdLoader {
-            val rewardedAdLoader = RewardedAdLoader(getContext())
-            rewardedAdLoader.setAdLoadListener(this)
-            return rewardedAdLoader
         }
     }
 
@@ -243,7 +242,7 @@ class YandexAdsAdapter {
         @JvmStatic
         fun initialize() {
             try {
-                MobileAds.initialize(getContext(), this)
+                YandexAds.initialize(getContext(), this)
             } catch (e: Exception) {
                 Utils.handleException(e, "initialize")
                 initCallbackLocal(INIT_ERROR)
