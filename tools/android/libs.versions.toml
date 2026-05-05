@@ -28,7 +28,7 @@ rustore-appreview                  = { module = "ru.rustore.sdk:review" }
 rustore-appupdate                  = { module = "ru.rustore.sdk:appupdate" }
 rustore-billing                    = { module = "ru.rustore.sdk:billingclient" }
 
-mytarget-sdk                       = "com.my.target:mytarget-sdk:5.27.1"
+mytarget-sdk                       = "com.my.target:mytarget-sdk:5.47.1"
 
 [plugins]
 android-application                = { id = 'com.android.application', version = '9.1.1' }

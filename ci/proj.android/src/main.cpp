@@ -6,6 +6,7 @@
 #include "ads/admanager.h"
 #include "ads/admob/admobfactory.h"
 #include "ads/yandex/yandexadsfactory.h"
+#include "ads/vk/vkadsfactory.h"
 
 bool Init()
 {
@@ -63,6 +64,10 @@ std::shared_ptr<ads::Manager> getAdsManager() {
 
     if (auto yandex = ads::Yandex::createProvider(adsMgr, ads::Format::Interstitial)) {
         adsMgr->addProvider(yandex);
+    }
+
+    if (auto vkAds = ads::VKAds::createProvider(adsMgr, ads::Format::Interstitial)) {
+        adsMgr->addProvider(vkAds);
     }
 
     return adsMgr;
