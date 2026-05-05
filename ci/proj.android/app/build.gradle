@@ -188,6 +188,7 @@ dependencies {
     implementation(libs.play.appset)
     implementation(libs.bundles.yandexads)
     implementation(libs.user.messaging.platform)
+    implementation(libs.mytarget.sdk)
 
     // Store-dependant
     googlePlayImplementation(libs.google.play.review)

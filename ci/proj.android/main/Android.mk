@@ -23,6 +23,7 @@ $(AKKORD_SDK_HOME)/framework/core/platformwrapper/android/android_utils_wrapper.
 $(AKKORD_SDK_HOME)/framework/basewrapper.cpp \
 $(AKKORD_SDK_HOME)/framework/ads/admob/android/admobfactory.cpp \
 $(AKKORD_SDK_HOME)/framework/ads/yandex/android/yandexadsfactory.cpp \
+$(AKKORD_SDK_HOME)/framework/ads/vk/android/vkadsfactory.cpp \
 $(AKKORD_SDK_HOME)/framework/gdpr/android/gdpr_consentpolicymanager_android.cpp \
 $(AKKORD_SDK_HOME)/framework/configmanager.cpp \
 $(AKKORD_SDK_HOME)/framework/core/videoadapter/videoadapter_android.cpp \
