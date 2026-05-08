@@ -31,6 +31,7 @@ class AndroidStoreFacade {
 
         @JvmStatic
         fun launchAppReviewIfPossible() {
+            org.akkord.lib.Utils.logFirebaseEvent("app_review_requested", "store", "ruStore")
             val manager = RuStoreReviewManagerFactory.create(getContext())
             manager.requestReviewFlow().addOnSuccessListener { reviewInfo ->
                 Log.d(getTag(), "RuStore: launchReviewFlow")

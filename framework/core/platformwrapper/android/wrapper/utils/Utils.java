@@ -3,6 +3,7 @@ package org.akkord.lib;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import java.io.File;
 import java.util.Locale;
 import java.util.Objects;
@@ -31,6 +32,17 @@ public class Utils {
         }
         catch (Exception e) {
             handleException(e, "setFirebaseUserProperty");
+        }
+    }
+
+    public static void logFirebaseEvent(final String eventName, final String paramName, final String paramValue) {
+        try {
+            Bundle bundle = new Bundle();
+            bundle.putString(paramName, paramValue);
+            FirebaseAnalytics.getInstance(_context).logEvent(eventName, bundle);
+        }
+        catch (Exception e) {
+            handleException(e, "logFirebaseEvent");
         }
     }
 
