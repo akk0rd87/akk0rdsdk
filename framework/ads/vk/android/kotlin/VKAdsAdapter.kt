@@ -146,6 +146,8 @@ class VKAdsAdapter {
     }
 
     companion object {
+        private const val ADS_SOURCE = "ads_vk"
+
         private val mInterstitialCallback: MyInterstitialCallback by lazy { MyInterstitialCallback() }
         private val mRewardedCallback: MyRewardedCallback by lazy { MyRewardedCallback() }
 
@@ -285,6 +287,7 @@ class VKAdsAdapter {
         fun interstitialShow(): Int {
             Log.d(getTag(), "VKADS: interstitialShow")
             try {
+                Utils.logFirebaseInterstitialShow(ADS_SOURCE, InterstitialUnitID?.toString())
                 getContext().runOnUiThread(Runnable {
                     try {
                         mInterstitialAd?.show(getContext())
@@ -302,6 +305,7 @@ class VKAdsAdapter {
         @JvmStatic
         fun rewardedVideoShow(): Int {
             try {
+                Utils.logFirebaseRewardedVideoShow(ADS_SOURCE, RewardedVideoUnitID?.toString())
                 getContext().runOnUiThread(Runnable {
                     try {
                         mRewardedAd?.show(getContext())

@@ -49,6 +49,7 @@ class YandexAdsAdapter {
         private val loader: InterstitialAdLoader by lazy { InterstitialAdLoader(getContext()) }
         private var mInterstitialAd: InterstitialAd? = null
         private var adRequestConfiguration: AdRequest? = null
+        private var interstitialUnitId: String? = null
 
         override fun onAdLoaded(interstitialAd: InterstitialAd) {
             mInterstitialAd = interstitialAd
@@ -87,6 +88,7 @@ class YandexAdsAdapter {
         fun interstitialSetUnitId(id: String) {
             try {
                 Log.d(getTag(), "YandexADS: InterstitialSetUnitId")
+                interstitialUnitId = id
                 adRequestConfiguration = AdRequest.Builder(id).build()
             } catch (e: Exception) {
                 Utils.handleException(e, "interstitialSetUnitId")
@@ -118,6 +120,7 @@ class YandexAdsAdapter {
         fun interstitialShow(): Int {
             try {
                 Log.d(getTag(), "YandexADS: InterstitialShow")
+                Utils.logFirebaseInterstitialShow(ADS_SOURCE, interstitialUnitId)
                 mInterstitialAd?.setAdEventListener(this)
                 mInterstitialAd?.show(getContext())
                 return 0
@@ -132,6 +135,7 @@ class YandexAdsAdapter {
         private val loader: RewardedAdLoader by lazy { RewardedAdLoader(getContext()) }
         private var mRewardedAd: RewardedAd? = null
         private var adRequestConfiguration: AdRequest? = null
+        private var rewardedVideoUnitId: String? = null
 
         override fun onAdLoaded(rewarded: RewardedAd) {
             mRewardedAd = rewarded
@@ -167,6 +171,7 @@ class YandexAdsAdapter {
 
         fun rewardedVideoSetUnitId(id: String) {
             try {
+                rewardedVideoUnitId = id
                 adRequestConfiguration = AdRequest.Builder(id).build()
             } catch (e: Exception) {
                 Utils.handleException(e, "rewardedVideoSetUnitId")
@@ -196,6 +201,7 @@ class YandexAdsAdapter {
 
         fun rewardedVideoShow(): Int {
             try {
+                Utils.logFirebaseRewardedVideoShow(ADS_SOURCE, rewardedVideoUnitId)
                 mRewardedAd?.setAdEventListener(this)
                 mRewardedAd?.show(getContext())
                 return 0
@@ -207,6 +213,8 @@ class YandexAdsAdapter {
     }
 
     companion object : InitializationListener {
+        private const val ADS_SOURCE = "ads_yandex"
+
         private val intManager: MyInterstitialManager by lazy { MyInterstitialManager() }
         private val rvManager: MyRewardedVideoManager by lazy { MyRewardedVideoManager() }
 

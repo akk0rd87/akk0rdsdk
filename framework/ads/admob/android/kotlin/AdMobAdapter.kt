@@ -157,6 +157,8 @@ class AdMobAdapter {
     }
 
     companion object : OnInitializationCompleteListener {
+        private const val ADS_SOURCE = "ads_admob"
+
         private val mInterstitialCallbackListener: MyInterstitialCallback by lazy { MyInterstitialCallback() }
         private val mInterstitialContentCallback: MyInterstitialContentCallback by lazy { MyInterstitialContentCallback() }
         private val mRewardedCallback: MyRewardedCallback by lazy { MyRewardedCallback() }
@@ -324,6 +326,7 @@ class AdMobAdapter {
         @JvmStatic
         fun interstitialShow(): Int {
             try {
+                Utils.logFirebaseInterstitialShow(ADS_SOURCE, InterstitialUnitID)
                 getContext().runOnUiThread(Runnable {
                     try {
                         mInterstitialAd?.fullScreenContentCallback = mInterstitialContentCallback
@@ -343,6 +346,7 @@ class AdMobAdapter {
         @JvmStatic
         fun rewardedVideoShow(): Int {
             try {
+                Utils.logFirebaseRewardedVideoShow(ADS_SOURCE, RewardedVideoUnitID)
                 getContext().runOnUiThread(Runnable {
                     try {
                         mRewardedAd?.fullScreenContentCallback = mRewardedContentCallback

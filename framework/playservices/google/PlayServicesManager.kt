@@ -156,6 +156,7 @@ class PlayServicesManager(
     fun showLeaderboards() {
         try {
             Log.d(Utils.TAG, "showLeaderboards")
+            Utils.logFirebasePlayServicesAction("show_leaderboards", null)
             getLeaderboardsClient().allLeaderboardsIntent.addOnSuccessListener { intent ->
                 try {
                     activity.startActivityForResult(intent, RC_UNUSED)
@@ -173,6 +174,7 @@ class PlayServicesManager(
     fun showAchievements() {
         try {
             Log.d(Utils.TAG, "showAchievements")
+            Utils.logFirebasePlayServicesAction("show_achievements", null)
             getAchievementsClient().achievementsIntent.addOnSuccessListener { intent ->
                 try {
                     activity.startActivityForResult(intent, RC_UNUSED)
@@ -220,6 +222,7 @@ class PlayServicesManager(
     fun unlockAchievement(code: String) {
         try {
             Log.d(Utils.TAG, "unlockAchievement $code")
+            Utils.logFirebasePlayServicesAction("unlock_achievement", code)
             getAchievementsClient().unlock(code)
         }
         catch(e: Exception) {

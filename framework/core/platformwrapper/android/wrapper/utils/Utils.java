@@ -21,6 +21,8 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 public class Utils {
     public  static final String TAG = "SDL";
+    private static final String FIREBASE_PARAM_SOURCE = "source";
+    private static final String FIREBASE_PARAM_AD_UNIT_ID = "ad_unit_id";
     private static Activity _context = null;
     private static AssetManager AssetMgr = null;
 
@@ -43,6 +45,53 @@ public class Utils {
         }
         catch (Exception e) {
             handleException(e, "logFirebaseEvent");
+        }
+    }
+
+    public static void logFirebaseInterstitialShow(final String providerName, final String interstitialId) {
+        try {
+            Bundle bundle = new Bundle();
+            bundle.putString(FIREBASE_PARAM_SOURCE, providerName);
+            if (interstitialId != null && !interstitialId.isEmpty()) {
+                bundle.putString(FIREBASE_PARAM_AD_UNIT_ID, interstitialId);
+            }
+            FirebaseAnalytics.getInstance(_context).logEvent("interstitial_show", bundle);
+        }
+        catch (Exception e) {
+            handleException(e, "logFirebaseInterstitialShow");
+        }
+    }
+
+    public static void logFirebaseRewardedVideoShow(final String providerName, final String rewardedVideoId) {
+        try {
+            Bundle bundle = new Bundle();
+            bundle.putString(FIREBASE_PARAM_SOURCE, providerName);
+            if (rewardedVideoId != null && !rewardedVideoId.isEmpty()) {
+                bundle.putString(FIREBASE_PARAM_AD_UNIT_ID, rewardedVideoId);
+            }
+            FirebaseAnalytics.getInstance(_context).logEvent("rewarded_video_show", bundle);
+        }
+        catch (Exception e) {
+            handleException(e, "logFirebaseRewardedVideoShow");
+        }
+    }
+
+    public static void logFirebasePlayServicesAction(final String actionName, final String achievementId) {
+        try {
+            final String eventName =
+                (actionName != null && !actionName.isEmpty())
+                    ? actionName
+                    : "play_services_action_unknown";
+
+            Bundle bundle = new Bundle();
+            bundle.putString(FIREBASE_PARAM_SOURCE, "play_services_google");
+            if (achievementId != null && !achievementId.isEmpty()) {
+                bundle.putString("achievement_id", achievementId);
+            }
+            FirebaseAnalytics.getInstance(_context).logEvent(eventName, bundle);
+        }
+        catch (Exception e) {
+            handleException(e, "logFirebasePlayServicesAction");
         }
     }
 
