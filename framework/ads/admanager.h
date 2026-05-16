@@ -132,10 +132,16 @@ namespace ads {
             if (eventListener) {
                 eventListener->onAdEvent(Event);
             }
+
+            if(ads::Event::RewardedVideoRewarded == Event) {
+                // при получении награды от видеорекламы сдвигаем время показа следующей Interstitial рекламы, чтобы не показывать Interstitial рекламу сразу после получения награды
+                lastShowed = std::max(GetSeconds() - (showDelay / 2), lastShowed);
+            }
         };
 
         std::vector<std::shared_ptr<Provider>> providers;
-        timeMS lastShowed, showDelay;
+        timeMS showDelay;
+        mutable timeMS lastShowed;
         EventListener* const eventListener;
     };
 };

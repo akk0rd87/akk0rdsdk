@@ -143,6 +143,9 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
 };
 
 - (void)Load {
+    if(self.UnitID.empty()) {
+        return;
+    }
     if(!ads::AdMob::iOSProvider::wasInited) {
         ads::AdMob::iOSProvider::onAdEvent(ads::Event::RewardedVideoFailedToLoad);
         return;
@@ -229,6 +232,10 @@ void ads::AdMob::iOSProvider::InterstitialSetUnitId(const std::string& unitId) {
 }
 
 void ads::AdMob::iOSProvider::setRewardedVideoUnit(const char* unitId) {
+    if (!unitId || unitId[0] == '\0') {
+        logWarning("setRewardedVideoUnit: empty unitId");
+        return;
+    }
     [[iAdMobRewardedVideo defaultRewardedVideo] SetUintId: unitId];
 }
 

@@ -34,7 +34,7 @@ private fun initCallbackLocal(code: Int) {
     }
 }
 
-private fun adCallbackLocal(eventType: Int) {
+private fun adCallbackLocal(eventType: Int, format: AdFormat) {
     try {
         adCallback(eventType)
     } catch (e: Exception) {
@@ -42,7 +42,17 @@ private fun adCallbackLocal(eventType: Int) {
     } catch (e: UnsatisfiedLinkError) {
         Utils.handleException(e, "adCallbackLocal")
     }
+    try {
+        AdsEventsListener.onAdEvent?.invoke(format, eventType)
+    } catch (e: Exception) {
+        Utils.handleException(e, "adCallbackLocal onAdEvent")
+    } catch (e: UnsatisfiedLinkError) {
+        Utils.handleException(e, "adCallbackLocal onAdEvent")
+    }
 }
+
+private fun interstitialCallbackLocal(eventType: Int) = adCallbackLocal(eventType, AdFormat.Interstitial)
+private fun rewardedVideoCallbackLocal(eventType: Int) = adCallbackLocal(eventType, AdFormat.RewardedVideo)
 
 class YandexAdsAdapter {
     private class MyInterstitialManager : InterstitialAdLoadListener, InterstitialAdEventListener {
@@ -53,32 +63,32 @@ class YandexAdsAdapter {
 
         override fun onAdLoaded(interstitialAd: InterstitialAd) {
             mInterstitialAd = interstitialAd
-            adCallbackLocal(EVENT_INTERSTITIAL_LOADED)
+            interstitialCallbackLocal(EVENT_INTERSTITIAL_LOADED)
             Log.d(getTag(), "YandexADS: onAdLoaded")
         }
 
         override fun onAdFailedToLoad(error: AdRequestError) {
-            adCallbackLocal(EVENT_INTERSTITIAL_FAILED_TO_LOAD)
+            interstitialCallbackLocal(EVENT_INTERSTITIAL_FAILED_TO_LOAD)
             Log.d(getTag(), "YandexADS: onAdFailedToLoad")
         }
 
         override fun onAdFailedToShow(adError: AdError) {
-            adCallbackLocal(EVENT_INTERSTITIAL_FAILED_TO_SHOW)
+            interstitialCallbackLocal(EVENT_INTERSTITIAL_FAILED_TO_SHOW)
             Log.d(getTag(), "YandexADS: onAdFailedToShow")
         }
 
         override fun onAdShown() {
-            adCallbackLocal(EVENT_INTERSTITIAL_CLOSED)
+            interstitialCallbackLocal(EVENT_INTERSTITIAL_CLOSED)
             Log.d(getTag(), "YandexADS: onAdShown")
         }
 
         override fun onAdDismissed() {
-            adCallbackLocal(EVENT_INTERSTITIAL_CLOSED)
+            interstitialCallbackLocal(EVENT_INTERSTITIAL_CLOSED)
             Log.d(getTag(), "YandexADS: onAdDismissed")
         }
 
         override fun onAdImpression(impressionData: ImpressionData?) {
-            adCallbackLocal(EVENT_INTERSTITIAL_OPENED)
+            interstitialCallbackLocal(EVENT_INTERSTITIAL_OPENED)
             Log.d(getTag(), "YandexADS: onImpression")
         }
 
@@ -139,40 +149,49 @@ class YandexAdsAdapter {
 
         override fun onAdLoaded(rewarded: RewardedAd) {
             mRewardedAd = rewarded
-            adCallbackLocal(EVENT_REWARDEDVIDEO_LOADED)
+            rewardedVideoCallbackLocal(EVENT_REWARDEDVIDEO_LOADED)
+            Log.d(getTag(), "YandexADS: onAdLoaded")
         }
 
         override fun onRewarded(reward: Reward) {
-            adCallbackLocal(EVENT_REWARDEDVIDEO_REWARDED)
+            rewardedVideoCallbackLocal(EVENT_REWARDEDVIDEO_REWARDED)
+            Log.d(getTag(), "YandexADS: onRewarded")
         }
 
         override fun onAdFailedToLoad(error: AdRequestError) {
-            adCallbackLocal(EVENT_REWARDEDVIDEO_FAILED_TO_LOAD)
+            rewardedVideoCallbackLocal(EVENT_REWARDEDVIDEO_FAILED_TO_LOAD)
+            Log.d(getTag(), "YandexADS: onAdFailedToLoad")
         }
 
         override fun onAdFailedToShow(adError: AdError) {
-            adCallbackLocal(EVENT_REWARDEDVIDEO_FAILED_TO_SHOW)
+            rewardedVideoCallbackLocal(EVENT_REWARDEDVIDEO_FAILED_TO_SHOW)
+            Log.d(getTag(), "YandexADS: onAdFailedToShow")
         }
 
         override fun onAdShown() {
-            adCallbackLocal(EVENT_REWARDEDVIDEO_CLOSED)
+            rewardedVideoCallbackLocal(EVENT_REWARDEDVIDEO_CLOSED)
+            Log.d(getTag(), "YandexADS: onAdShown")
         }
 
         override fun onAdDismissed() {
-            adCallbackLocal(EVENT_REWARDEDVIDEO_CLOSED)
+            rewardedVideoCallbackLocal(EVENT_REWARDEDVIDEO_CLOSED)
+            Log.d(getTag(), "YandexADS: onAdDismissed")
         }
 
         override fun onAdImpression(impressionData: ImpressionData?) {
-            adCallbackLocal(EVENT_REWARDEDVIDEO_OPENED)
+            rewardedVideoCallbackLocal(EVENT_REWARDEDVIDEO_OPENED)
+            Log.d(getTag(), "YandexADS: onImpression")
         }
 
         override fun onAdClicked() {
+            Log.d(getTag(), "YandexADS: onAdClicked")
         }
 
         fun rewardedVideoSetUnitId(id: String) {
             try {
                 rewardedVideoUnitId = id
                 adRequestConfiguration = AdRequest.Builder(id).build()
+                Log.d(getTag(), "YandexADS: rewardedVideoSetUnitId")
             } catch (e: Exception) {
                 Utils.handleException(e, "rewardedVideoSetUnitId")
             }
@@ -188,6 +207,7 @@ class YandexAdsAdapter {
 
         fun rewardedVideoLoad() {
             try {
+                Log.d(getTag(), "YandexADS: rewardedVideoLoad")
                 destroy()
                 adRequestConfiguration?.let { config ->
                     CoroutineScope(Dispatchers.Main).launch {
@@ -220,23 +240,6 @@ class YandexAdsAdapter {
 
         private const val INIT_SUCCESS = 0
         private const val INIT_ERROR = 1
-
-        private const val EVENT_INTERSTITIAL_LOADED = 1
-        private const val EVENT_INTERSTITIAL_OPENED = 2
-        private const val EVENT_INTERSTITIAL_CLOSED = 3
-        private const val EVENT_INTERSTITIAL_FAILED_TO_LOAD = 4
-        private const val EVENT_INTERSTITIAL_LEFTAPPLICATION = 5
-        private const val EVENT_INTERSTITIAL_FAILED_TO_SHOW = 6
-
-        private const val EVENT_REWARDEDVIDEO_LOADED = 101
-        private const val EVENT_REWARDEDVIDEO_OPENED = 102
-        private const val EVENT_REWARDEDVIDEO_CLOSED = 103
-        private const val EVENT_REWARDEDVIDEO_FAILED_TO_LOAD = 104
-        private const val EVENT_REWARDEDVIDEO_LEFTAPPLICATION = 105
-        private const val EVENT_REWARDEDVIDEO_STARTED = 106
-        private const val EVENT_REWARDEDVIDEO_COMPLETED = 107
-        private const val EVENT_REWARDEDVIDEO_REWARDED = 108
-        private const val EVENT_REWARDEDVIDEO_FAILED_TO_SHOW = 109
 
         // InitializationListener
         override fun onInitializationCompleted() {

@@ -28,8 +28,8 @@ class AdMobAdapter {
         override fun onAdLoaded(interstitialAd: InterstitialAd) {
             try {
                 mInterstitialAd = interstitialAd
-                Log.d(getTag(), "The ad loaded")
-                adCallbackLocal(EVENT_INTERSTITIAL_LOADED)
+                Log.d(getTag(), "AdMob: onAdLoaded")
+                interstitialCallbackLocal(EVENT_INTERSTITIAL_LOADED)
             } catch (e: Exception) {
                 Utils.handleException(e, "MyInterstitialCallback.onAdLoaded")
             }
@@ -39,8 +39,8 @@ class AdMobAdapter {
             try {
                 // Handle the error
                 mInterstitialAd = null
-                Log.d(getTag(), "The ad failed to load")
-                adCallbackLocal(EVENT_INTERSTITIAL_FAILED_TO_LOAD)
+                Log.d(getTag(), "AdMob: onAdFailedToLoad")
+                interstitialCallbackLocal(EVENT_INTERSTITIAL_FAILED_TO_LOAD)
             } catch (e: Exception) {
                 Utils.handleException(e, "MyInterstitialCallback.onAdFailedToLoad")
             }
@@ -52,8 +52,8 @@ class AdMobAdapter {
             try {
                 // Called when fullscreen content is dismissed.
                 mInterstitialAd = null
-                Log.d(getTag(), "The ad was dismissed.")
-                adCallbackLocal(EVENT_INTERSTITIAL_CLOSED)
+                Log.d(getTag(), "AdMob: onAdDismissedFullScreenContent")
+                interstitialCallbackLocal(EVENT_INTERSTITIAL_CLOSED)
             } catch (e: Exception) {
                 Utils.handleException(e, "MyInterstitialContentCallback.onAdDismissedFullScreenContent")
             }
@@ -63,8 +63,8 @@ class AdMobAdapter {
             try {
                 // Called when fullscreen content failed to show.
                 mInterstitialAd = null
-                Log.d(getTag(), "The ad failed to show.")
-                adCallbackLocal(EVENT_INTERSTITIAL_FAILED_TO_SHOW)
+                Log.d(getTag(), "AdMob: onAdFailedToShowFullScreenContent")
+                interstitialCallbackLocal(EVENT_INTERSTITIAL_FAILED_TO_SHOW)
             } catch (e: Exception) {
                 Utils.handleException(e, "MyInterstitialContentCallback.onAdFailedToShowFullScreenContent")
             }
@@ -77,8 +77,8 @@ class AdMobAdapter {
                 // show it a second time.
                 mInterstitialAd = null
                 // тут вызываем Closed, так как обнулили ссылку и можно запращивать новую рекламу
-                adCallbackLocal(EVENT_INTERSTITIAL_CLOSED)
-                Log.d(getTag(), "The ad was shown.")
+                interstitialCallbackLocal(EVENT_INTERSTITIAL_CLOSED)
+                Log.d(getTag(), "AdMob: onAdShowedFullScreenContent")
             } catch (e: Exception) {
                 Utils.handleException(e, "MyInterstitialContentCallback.onAdShowedFullScreenContent")
             }
@@ -89,9 +89,9 @@ class AdMobAdapter {
         override fun onAdFailedToLoad(loadAdError: LoadAdError) {
             try {
                 // Handle the error.
-                Log.d(getTag(), loadAdError.message)
+                Log.d(getTag(), "AdMob: onAdFailedToLoad: ${loadAdError.message}")
                 mRewardedAd = null
-                adCallbackLocal(EVENT_REWARDEDVIDEO_FAILED_TO_LOAD)
+                rewardedVideoCallbackLocal(EVENT_REWARDEDVIDEO_FAILED_TO_LOAD)
             } catch (e: Exception) {
                 Utils.handleException(e, "MyRewardedCallback.onAdFailedToLoad")
             }
@@ -100,7 +100,8 @@ class AdMobAdapter {
         override fun onAdLoaded(rewardedAd: RewardedAd) {
             try {
                 mRewardedAd = rewardedAd
-                adCallbackLocal(EVENT_REWARDEDVIDEO_LOADED)
+                Log.d(getTag(), "AdMob: onAdLoaded")
+                rewardedVideoCallbackLocal(EVENT_REWARDEDVIDEO_LOADED)
             } catch (e: Exception) {
                 Utils.handleException(e, "MyRewardedCallback.onAdLoaded")
             }
@@ -111,8 +112,8 @@ class AdMobAdapter {
         //
         override fun onUserEarnedReward(rewardItem: RewardItem) {
             try {
-                Log.d(getTag(), "The user earned the reward.")
-                adCallbackLocal(EVENT_REWARDEDVIDEO_REWARDED)
+                Log.d(getTag(), "AdMob: onUserEarnedReward")
+                rewardedVideoCallbackLocal(EVENT_REWARDEDVIDEO_REWARDED)
                 mRewardedAd = null
             } catch (e: Exception) {
                 Utils.handleException(e, "MyRewardedCallback.onUserEarnedReward")
@@ -123,9 +124,9 @@ class AdMobAdapter {
     private class MyRewardedContentCallback : FullScreenContentCallback() {
         override fun onAdShowedFullScreenContent() {
             try {
-                Log.d(getTag(), "Ad was shown.")
+                Log.d(getTag(), "AdMob: onAdShowedFullScreenContent")
                 mRewardedAd = null
-                adCallbackLocal(EVENT_REWARDEDVIDEO_STARTED)
+                rewardedVideoCallbackLocal(EVENT_REWARDEDVIDEO_STARTED)
             } catch (e: Exception) {
                 Utils.handleException(e, "MyRewardedContentCallback.onAdShowedFullScreenContent")
             }
@@ -134,9 +135,9 @@ class AdMobAdapter {
         override fun onAdFailedToShowFullScreenContent(adError: AdError) {
             try {
                 // Called when ad fails to show.
-                Log.d(getTag(), "Ad failed to show.")
+                Log.d(getTag(), "AdMob: onAdFailedToShowFullScreenContent")
                 mRewardedAd = null
-                adCallbackLocal(EVENT_REWARDEDVIDEO_FAILED_TO_SHOW)
+                rewardedVideoCallbackLocal(EVENT_REWARDEDVIDEO_FAILED_TO_SHOW)
             } catch (e: Exception) {
                 Utils.handleException(e, "MyRewardedContentCallback.onAdFailedToShowFullScreenContent")
             }
@@ -148,8 +149,8 @@ class AdMobAdapter {
                 // Don't forget to set the ad reference to null so you
                 // don't show the ad a second time.
                 mRewardedAd = null
-                Log.d(getTag(), "Ad was dismissed.")
-                adCallbackLocal(EVENT_REWARDEDVIDEO_CLOSED)
+                Log.d(getTag(), "AdMob: onAdDismissedFullScreenContent")
+                rewardedVideoCallbackLocal(EVENT_REWARDEDVIDEO_CLOSED)
             } catch (e: Exception) {
                 Utils.handleException(e, "MyRewardedContentCallback.onAdDismissedFullScreenContent")
             }
@@ -163,23 +164,6 @@ class AdMobAdapter {
         private val mInterstitialContentCallback: MyInterstitialContentCallback by lazy { MyInterstitialContentCallback() }
         private val mRewardedCallback: MyRewardedCallback by lazy { MyRewardedCallback() }
         private val mRewardedContentCallback: MyRewardedContentCallback by lazy { MyRewardedContentCallback() }
-
-        private const val EVENT_INTERSTITIAL_LOADED = 1
-        private const val EVENT_INTERSTITIAL_OPENED = 2
-        private const val EVENT_INTERSTITIAL_CLOSED = 3
-        private const val EVENT_INTERSTITIAL_FAILED_TO_LOAD = 4
-        private const val EVENT_INTERSTITIAL_LEFTAPPLICATION = 5
-        private const val EVENT_INTERSTITIAL_FAILED_TO_SHOW = 6
-
-        private const val EVENT_REWARDEDVIDEO_LOADED = 101
-        private const val EVENT_REWARDEDVIDEO_OPENED = 102
-        private const val EVENT_REWARDEDVIDEO_CLOSED = 103
-        private const val EVENT_REWARDEDVIDEO_FAILED_TO_LOAD = 104
-        private const val EVENT_REWARDEDVIDEO_LEFTAPPLICATION = 105
-        private const val EVENT_REWARDEDVIDEO_STARTED = 106
-        private const val EVENT_REWARDEDVIDEO_COMPLETED = 107
-        private const val EVENT_REWARDEDVIDEO_REWARDED = 108
-        private const val EVENT_REWARDEDVIDEO_FAILED_TO_SHOW = 109
 
         private const val INIT_SUCCESS = 0
         private const val INIT_ERROR = 1
@@ -198,21 +182,21 @@ class AdMobAdapter {
                 val mp = initializationStatus.adapterStatusMap
                 for ((_, value) in mp) {
                     if (AdapterStatus.State.READY == value.initializationState) {
-                        Log.d(getTag(), "Admob: onInitializationComplete: Success")
+                        Log.d(getTag(), "AdMob: onInitializationComplete: Success")
                         mAdMobInitializationCompleted = true
                         initCallbackLocal(INIT_SUCCESS)
                         return
                     }
                 }
                 initCallbackLocal(INIT_ERROR)
-                Log.d(getTag(), "Admob: onInitializationComplete: Error")
+                Log.d(getTag(), "AdMob: onInitializationComplete: Error")
             } catch (e: Exception) {
                 Utils.handleException(e, "onInitializationComplete")
                 initCallbackLocal(INIT_ERROR)
             }
         }
 
-        private fun adCallbackLocal(eventType: Int) {
+        private fun adCallbackLocal(eventType: Int, format: AdFormat) {
             try {
                 adCallback(eventType)
             } catch (e: Exception) {
@@ -220,7 +204,17 @@ class AdMobAdapter {
             } catch (e: UnsatisfiedLinkError) {
                 Utils.handleException(e, "adCallbackLocal")
             }
+            try {
+                AdsEventsListener.onAdEvent?.invoke(format, eventType)
+            } catch (e: Exception) {
+                Utils.handleException(e, "adCallbackLocal onAdEvent")
+            } catch (e: UnsatisfiedLinkError) {
+                Utils.handleException(e, "adCallbackLocal onAdEvent")
+            }
         }
+
+        private fun interstitialCallbackLocal(eventType: Int) = adCallbackLocal(eventType, AdFormat.Interstitial)
+        private fun rewardedVideoCallbackLocal(eventType: Int) = adCallbackLocal(eventType, AdFormat.RewardedVideo)
 
         private fun initCallbackLocal(code: Int) {
             try {
@@ -235,6 +229,7 @@ class AdMobAdapter {
         @JvmStatic
         fun initialize() {
             try {
+                Log.d(getTag(), "AdMob: initialize")
                 val backgroundScope = CoroutineScope(Dispatchers.IO)
                 val initializationListener = this
                 backgroundScope.launch {
@@ -250,6 +245,7 @@ class AdMobAdapter {
         @JvmStatic
         fun interstitialSetUnitId(id: String) {
             try {
+                Log.d(getTag(), "AdMob: interstitialSetUnitId")
                 InterstitialUnitID = id
             } catch (e: Exception) {
                 Utils.handleException(e, "interstitialSetUnitId")
@@ -259,6 +255,7 @@ class AdMobAdapter {
         @JvmStatic
         fun rewardedVideoSetUnitId(id: String) {
             try {
+                Log.d(getTag(), "AdMob: rewardedVideoSetUnitId")
                 RewardedVideoUnitID = id
             } catch (e: Exception) {
                 Utils.handleException(e, "rewardedVideoSetUnitId")
@@ -268,6 +265,7 @@ class AdMobAdapter {
         @JvmStatic
         fun interstitialLoad() {
             try {
+                Log.d(getTag(), "AdMob: interstitialLoad")
                 mInterstitialAd = null
 
                 if (mAdMobInitializationCompleted) {
@@ -287,7 +285,7 @@ class AdMobAdapter {
                     })
                 } else {
                     // если SDK не проинициализировано, имитируем, как будто загрузка прошла неуспешно
-                    adCallbackLocal(EVENT_INTERSTITIAL_FAILED_TO_LOAD)
+                    interstitialCallbackLocal(EVENT_INTERSTITIAL_FAILED_TO_LOAD)
                 }
             } catch (e: Exception) {
                 Utils.handleException(e, "interstitialLoad")
@@ -297,6 +295,7 @@ class AdMobAdapter {
         @JvmStatic
         fun rewardedVideoLoad() {
             try {
+                Log.d(getTag(), "AdMob: rewardedVideoLoad")
                 mRewardedAd = null
 
                 if (mAdMobInitializationCompleted) {
@@ -316,7 +315,7 @@ class AdMobAdapter {
                     })
                 } else {
                     // если SDK не проинициализировано, имитурем, как будто загрузка прошла неуспешно
-                    adCallbackLocal(EVENT_REWARDEDVIDEO_FAILED_TO_LOAD)
+                    rewardedVideoCallbackLocal(EVENT_REWARDEDVIDEO_FAILED_TO_LOAD)
                 }
             } catch (e: Exception) {
                 Utils.handleException(e, "rewardedVideoLoad")
@@ -326,6 +325,7 @@ class AdMobAdapter {
         @JvmStatic
         fun interstitialShow(): Int {
             try {
+                Log.d(getTag(), "AdMob: interstitialShow")
                 Utils.logFirebaseInterstitialShow(ADS_SOURCE, InterstitialUnitID)
                 getContext().runOnUiThread(Runnable {
                     try {
@@ -346,6 +346,7 @@ class AdMobAdapter {
         @JvmStatic
         fun rewardedVideoShow(): Int {
             try {
+                Log.d(getTag(), "AdMob: rewardedVideoShow")
                 Utils.logFirebaseRewardedVideoShow(ADS_SOURCE, RewardedVideoUnitID)
                 getContext().runOnUiThread(Runnable {
                     try {

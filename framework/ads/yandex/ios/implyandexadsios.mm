@@ -210,7 +210,10 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
 
 - (void)Load {
     logDebug("RewardedVideo Load");
-    if(!ads::Yandex::iOSProvider::wasInited || !self.cfg || !self.loader) {
+    if(!self.cfg) {
+        return;
+    }
+    if(!ads::Yandex::iOSProvider::wasInited || !self.loader) {
         ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoFailedToLoad);
         return;
     }
@@ -347,6 +350,10 @@ void ads::Yandex::iOSProvider::InterstitialSetUnitId(const std::string& unitId) 
 }
 
 void ads::Yandex::iOSProvider::setRewardedVideoUnit(const char* unitId) {
+    if (!unitId || unitId[0] == '\0') {
+        logWarning("setRewardedVideoUnit: empty unitId");
+        return;
+    }
     logDebug("setRewardedVideoUnit %s", unitId);
     [[iYandexRewardedVideo defaultRewardedVideo] SetUintId: unitId];
 }
