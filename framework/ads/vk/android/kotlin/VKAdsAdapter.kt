@@ -120,6 +120,7 @@ class VKAdsAdapter {
         override fun onReward(reward: Reward, rewardedAd: RewardedAd) {
             try {
                 Log.d(getTag(), "onReward")
+                Utils.logFirebaseRewardedVideoRewarded(ADS_SOURCE, RewardedVideoUnitID?.toString())
                 rewardedVideoCallbackLocal(EVENT_REWARDEDVIDEO_REWARDED)
             } catch (e: Exception) {
                 Utils.handleException(e, "MyRewardedCallback.onReward")

@@ -76,6 +76,20 @@ public class Utils {
         }
     }
 
+    public static void logFirebaseRewardedVideoRewarded(final String providerName, final String rewardedVideoId) {
+        try {
+            Bundle bundle = new Bundle();
+            bundle.putString(FIREBASE_PARAM_SOURCE, providerName);
+            if (rewardedVideoId != null && !rewardedVideoId.isEmpty()) {
+                bundle.putString(FIREBASE_PARAM_AD_UNIT_ID, rewardedVideoId);
+            }
+            FirebaseAnalytics.getInstance(_context).logEvent("rewarded_video_rewarded", bundle);
+        }
+        catch (Exception e) {
+            handleException(e, "logFirebaseRewardedVideoRewarded");
+        }
+    }
+
     public static void logFirebasePlayServicesAction(final String actionName, final String achievementId) {
         try {
             final String eventName =

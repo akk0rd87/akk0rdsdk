@@ -154,6 +154,7 @@ class YandexAdsAdapter {
         }
 
         override fun onRewarded(reward: Reward) {
+            Utils.logFirebaseRewardedVideoRewarded(ADS_SOURCE, rewardedVideoUnitId)
             rewardedVideoCallbackLocal(EVENT_REWARDEDVIDEO_REWARDED)
             Log.d(getTag(), "YandexADS: onRewarded")
         }

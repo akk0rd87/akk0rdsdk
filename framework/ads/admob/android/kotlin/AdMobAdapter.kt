@@ -113,6 +113,7 @@ class AdMobAdapter {
         override fun onUserEarnedReward(rewardItem: RewardItem) {
             try {
                 Log.d(getTag(), "AdMob: onUserEarnedReward")
+                Utils.logFirebaseRewardedVideoRewarded(ADS_SOURCE, RewardedVideoUnitID)
                 rewardedVideoCallbackLocal(EVENT_REWARDEDVIDEO_REWARDED)
                 mRewardedAd = null
             } catch (e: Exception) {
