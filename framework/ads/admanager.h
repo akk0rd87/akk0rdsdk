@@ -140,8 +140,8 @@ namespace ads {
         };
 
         std::vector<std::shared_ptr<Provider>> providers;
-        timeMS showDelay;
         mutable timeMS lastShowed;
+        timeMS showDelay;
         EventListener* const eventListener;
     };
 };
