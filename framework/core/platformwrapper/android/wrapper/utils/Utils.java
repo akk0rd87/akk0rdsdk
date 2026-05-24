@@ -25,6 +25,7 @@ public class Utils {
     private static final String FIREBASE_PARAM_AD_UNIT_ID = "ad_unit_id";
     private static Activity _context = null;
     private static AssetManager AssetMgr = null;
+    private static boolean reviewLaunchedThisSession = false;
 
     public static native void MessageBoxCallback(int Code, int Result);
 
@@ -523,6 +524,10 @@ public class Utils {
     }
 
     public static void LaunchAppReviewIfAvailable() {
+        if (reviewLaunchedThisSession) {
+            return;
+        }
+        reviewLaunchedThisSession = true;
         try {
             AndroidStoreFacade.launchAppReviewIfPossible();
         }
