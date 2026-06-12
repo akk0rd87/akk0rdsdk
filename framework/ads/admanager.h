@@ -135,7 +135,7 @@ namespace ads {
 
             if(ads::Event::RewardedVideoRewarded == Event) {
                 // при получении награды от видеорекламы сдвигаем время показа следующей Interstitial рекламы, чтобы не показывать Interstitial рекламу сразу после получения награды
-                lastShowed = std::max(GetSeconds() - (showDelay / 2), lastShowed);
+                lastShowed = GetSeconds();
             }
         };
 
