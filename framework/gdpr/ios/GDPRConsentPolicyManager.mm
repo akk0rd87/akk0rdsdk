@@ -21,7 +21,7 @@ namespace GDPRConsentPolicy {
             // Set tag for under age of consent. NO means users are not under age of consent.
             parameters.tagForUnderAgeOfConsent = NO;
 
-            auto *rootController = [[[[UIApplication sharedApplication]delegate] window] rootViewController];
+            auto *rootController = [UIApplication sharedApplication].keyWindow.rootViewController;
 
             __weak __typeof__(rootController) weakSelf = rootController;
             // Request an update for the consent information.
@@ -64,7 +64,7 @@ namespace GDPRConsentPolicy {
         }
 
         virtual void showPrivacyOptionsForm() override {
-            auto *rootController = [[[[UIApplication sharedApplication]delegate] window] rootViewController];
+            auto *rootController = [UIApplication sharedApplication].keyWindow.rootViewController;
             [UMPConsentForm presentPrivacyOptionsFormFromViewController:rootController
                 completionHandler:^(NSError *_Nullable formError) {
                     if (formError) {
