@@ -420,9 +420,9 @@ public:
 class msgBox
 {
 public:
-    enum struct Action : int { Cancel = 0, Button1 = 1, Button2 = 2, Button3 = 3 };
+    enum struct Action : int { Cancel = 0, Button1 = 1, Button2 = 2, Button3 = 3, Button4 = 4 };
 
-    static void   Show(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2 = nullptr, const char* Button3 = nullptr, Uint32 TimeOutMS = 0);
+    static void   Show(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2 = nullptr, const char* Button3 = nullptr, const char* Button4 = nullptr, Uint32 TimeOutMS = 0);
     static Uint32 GetEventCode();
     static void   DecodeEvent(const SDL_Event& Event, int& Code, msgBox::Action& Action);
 

@@ -845,9 +845,9 @@ Uint32 msgBox::GetEventCode()
     return CurrentContext.MessageBoxEvent;
 }
 
-void msgBox::Show(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS)
+void msgBox::Show(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, const char* Button4, Uint32 TimeOutMS)
 {
-    PlatformWrapper::GetInstance().MessageBoxShow(Code, Title, Message, Button1, Button2, Button3, TimeOutMS);
+    PlatformWrapper::GetInstance().MessageBoxShow(Code, Title, Message, Button1, Button2, Button3, Button4, TimeOutMS);
 }
 
 void msgBox::DecodeEvent(const SDL_Event& Event, int& Code, msgBox::Action& Action)

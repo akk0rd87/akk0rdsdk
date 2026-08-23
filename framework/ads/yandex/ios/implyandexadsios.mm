@@ -1,4 +1,8 @@
-#import <YandexMobileAds/YandexMobileAds.h>
+// YandexMobileAds 8.x no longer ships a public Objective-C umbrella header — only the
+// Swift-generated interop header, which still exposes every YMA* class/protocol used below.
+// That generated header assumes UIKit is already imported (it references UIView,
+// UIViewContentMode, etc. without importing them itself), so UIKit must come first here.
+#import <UIKit/UIKit.h>
 #import <YandexMobileAds/YandexMobileAds-Swift.h>
 #include "implyandexadsios.h"
 #include "basewrapper.h"
@@ -24,10 +28,10 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
 +(iYandexInterstitial*) defaultInterstitial;
 @end
 
-@interface iYandexInterstitial() <YMAInterstitialAdLoaderDelegate, YMAInterstitialAdDelegate>
+@interface iYandexInterstitial() <YMAInterstitialAdDelegate>
 @property(nonatomic, strong) YMAInterstitialAd *interstitial;
 @property(nonatomic, strong) YMAInterstitialAdLoader *loader;
-@property(nonatomic, strong) YMAAdRequestConfiguration* cfg;
+@property(nonatomic, strong) YMAAdRequest* cfg;
 -(void)Init;
 -(void)SetUintId:(const char* )ID;
 -(void)Load;
@@ -49,7 +53,6 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
 
 -(void)Init {
     self.loader = [[YMAInterstitialAdLoader alloc] init];
-    self.loader.delegate = self;
 };
 
 -(void)SetUintId:(const char* )IDstr {
@@ -57,7 +60,12 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
     try {
         NSString *ID = [[NSString alloc] initWithUTF8String:IDstr];
         if(ID) {
-            self.cfg = [[YMAAdRequestConfiguration alloc] initWithAdUnitID:ID];
+            self.cfg = [[YMAAdRequest alloc] initWithAdUnitID:ID
+                                                      targeting:nil
+                                                        adTheme:YMAAdThemeUnspecified
+                                                    biddingData:nil
+                                              headerBiddingData:nil
+                                                     parameters:nil];
         }
     }
     catch (NSException * ex) {
@@ -73,7 +81,21 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
     }
 
     try {
-        [self.loader loadAdWithRequestConfiguration: self.cfg];
+        __weak iYandexInterstitial *weakSelf = self;
+        [self.loader loadAdWith:self.cfg completionHandler:^(YMAInterstitialAd * _Nullable interstitialAd, NSError * _Nullable error) {
+            iYandexInterstitial *strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            if (interstitialAd) {
+                logDebug("interstitialAdLoader:completionHandler didLoad");
+                strongSelf.interstitial = interstitialAd;
+                ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialLoaded);
+                return;
+            }
+            logDebug("interstitialAdLoader:completionHandler didFailToLoadWithError: %s", error ? [[error localizedDescription] UTF8String] : "unknown");
+            ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToLoad);
+        }];
     }
     catch (NSException * ex) {
         ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToLoad);
@@ -97,22 +119,6 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
         ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToLoad);
     }
 };
-
-- (void)interstitialAdLoader:(YMAInterstitialAdLoader *)adLoader didLoad:(YMAInterstitialAd *)interstitialAd {
-    logDebug("interstitialAdLoader:didLoad");
-    if(interstitialAd) {
-        self.interstitial = interstitialAd;
-        ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialLoaded);
-        return;
-    }
-    ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToLoad);
-}
-
-- (void)interstitialAdLoader:(YMAInterstitialAdLoader *)adLoader didFailToLoadWithError:(YMAAdRequestError *)error {
-    logDebug("interstitialAdLoader:didFailToLoadWithError: %s", [[error.error localizedDescription] UTF8String]);
-    ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToLoad);
-}
-
 
 /**
  Notifies that the ad can't be displayed.
@@ -168,10 +174,10 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
 +(iYandexRewardedVideo*) defaultRewardedVideo;
 @end
 
-@interface iYandexRewardedVideo() <YMARewardedAdLoaderDelegate, YMARewardedAdDelegate>
+@interface iYandexRewardedVideo() <YMARewardedAdDelegate>
 @property(nonatomic, strong) YMARewardedAd *rewardedAd;
 @property(nonatomic, strong) YMARewardedAdLoader *loader;
-@property(nonatomic, strong) YMAAdRequestConfiguration* cfg;
+@property(nonatomic, strong) YMAAdRequest* cfg;
 -(void)Init;
 -(void)SetUintId:(const char* )ID;
 -(void)Load;
@@ -192,7 +198,6 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
 
 -(void)Init {
     self.loader = [[YMARewardedAdLoader alloc] init];
-    self.loader.delegate = self;
 };
 
 -(void)SetUintId:(const char* )IDstr {
@@ -200,7 +205,12 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
         NSString *ID = [[NSString alloc] initWithUTF8String:IDstr];
         if(ID) {
             logDebug("RewardedVideo SetUintId");
-            self.cfg = [[YMAAdRequestConfiguration alloc] initWithAdUnitID:ID];
+            self.cfg = [[YMAAdRequest alloc] initWithAdUnitID:ID
+                                                      targeting:nil
+                                                        adTheme:YMAAdThemeUnspecified
+                                                    biddingData:nil
+                                              headerBiddingData:nil
+                                                     parameters:nil];
         }
     }
     catch (NSException * ex) {
@@ -219,7 +229,21 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
     }
 
     try {
-        [self.loader loadAdWithRequestConfiguration: self.cfg];
+        __weak iYandexRewardedVideo *weakSelf = self;
+        [self.loader loadAdWith:self.cfg completionHandler:^(YMARewardedAd * _Nullable rewardedAd, NSError * _Nullable error) {
+            iYandexRewardedVideo *strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            if (rewardedAd) {
+                logDebug("RewardedVideoLoaded");
+                strongSelf.rewardedAd = rewardedAd;
+                ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoLoaded);
+                return;
+            }
+            logDebug("RewardedVideoFailedToLoad: %s", error ? [[error localizedDescription] UTF8String] : "unknown");
+            ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoFailedToLoad);
+        }];
     }
     catch (NSException * ex) {
         ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoFailedToLoad);
@@ -242,31 +266,6 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
     catch (NSException * ex) {
         ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoFailedToShow);
     }
-}
-
-/**
- Notifies that the ad loaded successfully.
- @param adLoader A reference to an object of the YMARewardedAdLoader class that invoked the method.
- @param rewardedAd A reference to an object of the YMARewardedAd class that invoked the method.
- */
-- (void)rewardedAdLoader:(YMARewardedAdLoader *)adLoader didLoad:(YMARewardedAd *)rewardedAdID {
-    logDebug("RewardedVideoLoaded");
-    if(rewardedAdID) {
-        self.rewardedAd = rewardedAdID;
-        ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoLoaded);
-        return;
-    }
-    ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoFailedToLoad);
-}
-
-/**
- Notifies that the ad failed to load.
- @param adLoader A reference to an object of the YMARewardedAdLoader class that invoked the method.
- @param error Information about the error (for details, see YMAAdErrorCode).
- */
-- (void)rewardedAdLoader:(YMARewardedAdLoader *)adLoader didFailToLoadWithError:(YMAAdRequestError *)error {
-    logDebug("RewardedVideoFailedToLoad: %s", [[error.error localizedDescription] UTF8String]);
-    ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoFailedToLoad);
 }
 
 /**
@@ -329,7 +328,8 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
 
 ads::Yandex::iOSProvider::iOSProvider(std::weak_ptr<ads::ProviderCallback> cbk, ads::Format format) :
 ads::Yandex::Provider (cbk) {
-    [YMAMobileAds initializeSDKWithCompletionHandler:^{
+    // YMAMobileAds was renamed to YMAYandexAds in YandexMobileAds 8.x.
+    [YMAYandexAds initializeSDKWithCompletionHandler:^{
         logDebug("initializeSDKWithCompletionHandler success");
         wasInited = true;
         interstitialStatus = ads::InterstitialStatus::ReadyToLoad;

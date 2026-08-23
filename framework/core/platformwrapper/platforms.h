@@ -41,7 +41,7 @@ public:
 
     // Activity functions
     bool                     OpenURL(const char* url) { return vOpenURL(url); };
-    void                     MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS) { return vMessageBoxShow(Code, Title, Message, Button1, Button2, Button3, TimeOutMS); };
+    void                     MessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, const char* Button4, Uint32 TimeOutMS) { return vMessageBoxShow(Code, Title, Message, Button1, Button2, Button3, Button4, TimeOutMS); };
     void                     ShareText(const char* Title, const char* Message) { vShareText(Title, Message); }; // mobile platforms only
     void                     SharePNG(const char* Title, const char* File) { vSharePNG(Title, File); }; // mobile platforms only
     void                     SharePDF(const char* Title, const char* File) { vSharePDF(Title, File); }; // mobile platforms only
@@ -103,8 +103,8 @@ private:
 
     // Activity functions
     virtual bool                     vOpenURL(const char* url) { return 0 == SDL_OpenURL(url); };
-    virtual void                     vMessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS) {
-        SDL_MessageBoxButtonData buttons[3];
+    virtual void                     vMessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, const char* Button4, Uint32 TimeOutMS) {
+        SDL_MessageBoxButtonData buttons[4];
         int buttonCnt = 1;
 
         buttons[0].buttonid = 0;
@@ -127,6 +127,16 @@ private:
             buttons[2].text = Button3;
 
             buttons[1].flags = 0;
+        }
+
+        if (Button4 != nullptr && Button4[0] != '\0')
+        {
+            ++buttonCnt;
+            buttons[3].buttonid = 3;
+            buttons[3].flags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
+            buttons[3].text = Button4;
+
+            buttons[2].flags = 0;
         }
 
         const SDL_MessageBoxColorScheme colorScheme = {
