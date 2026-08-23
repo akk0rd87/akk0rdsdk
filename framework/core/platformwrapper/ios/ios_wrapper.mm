@@ -199,7 +199,7 @@ class iOSPlatformWrapper : public PlatformWrapper {
         }
     };
 
-    virtual void vMessageBoxShow (int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS) override {
+    virtual void vMessageBoxShow (int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, const char* Button4, Uint32 TimeOutMS) override {
         @autoreleasepool {
             NSString *sTitle = [[NSString alloc] initWithUTF8String:Title];
             NSString *sMessage = [[NSString alloc] initWithUTF8String:Message];
@@ -208,8 +208,8 @@ class iOSPlatformWrapper : public PlatformWrapper {
                                                                         message:sMessage
                                                                     preferredStyle:UIAlertControllerStyleAlert];
 
-            bool button2, button3;
-            button2 = button3 = false;
+            bool button2, button3, button4;
+            button2 = button3 = button4 = false;
 
             { // Button 1
                 NSString *sButton1 = [[NSString alloc] initWithUTF8String:Button1];
@@ -226,12 +226,12 @@ class iOSPlatformWrapper : public PlatformWrapper {
             if(Button3 != nullptr && Button3[0] != '\0')
                 button3 = true;
 
+            if(Button4 != nullptr && Button4[0] != '\0')
+                button4 = true;
+
             if(button2)
             {
-                auto button2Style = UIAlertActionStyleCancel;
-
-                if(button3)
-                    button2Style = UIAlertActionStyleDefault;
+                auto button2Style = (button3 || button4) ? UIAlertActionStyleDefault : UIAlertActionStyleCancel;
 
                 {
                     // Button 2
@@ -245,13 +245,26 @@ class iOSPlatformWrapper : public PlatformWrapper {
 
                 if(button3)
                 {
+                    auto button3Style = button4 ? UIAlertActionStyleDefault : UIAlertActionStyleCancel;
+
                     // Button 3
                     NSString *sButton3 = [[NSString alloc] initWithUTF8String:Button3];
-                    UIAlertAction *button3Action = [UIAlertAction actionWithTitle:sButton3 style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+                    UIAlertAction *button3Action = [UIAlertAction actionWithTitle:sButton3 style:button3Style handler:^(UIAlertAction * _Nonnull action) {
                         logDebug("Action 3");
                         CustomEvents::MessageBoxCallback(Code, 3);
                     }];
                     [alert addAction:button3Action];
+
+                    if(button4)
+                    {
+                        // Button 4
+                        NSString *sButton4 = [[NSString alloc] initWithUTF8String:Button4];
+                        UIAlertAction *button4Action = [UIAlertAction actionWithTitle:sButton4 style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+                            logDebug("Action 4");
+                            CustomEvents::MessageBoxCallback(Code, 4);
+                        }];
+                        [alert addAction:button4Action];
+                    }
                 }
             }
 
