@@ -71,7 +71,8 @@ class AndroidPlatformWrapper : public PlatformWrapper, public MessageBoxCallback
         return true;
     };
 
-    virtual void vMessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, Uint32 TimeOutMS) override {
+    virtual void vMessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, const char* Button4, Uint32 TimeOutMS) override {
+        // Button4 пока не поддержан на этом (SDL/JNI) Android-бэкенде — сохраняем существующее поведение с 3 кнопками.
         wrapper->messageBoxShow(Code, Title, Message, Button1, Button2, Button3, TimeOutMS);
     };
 
