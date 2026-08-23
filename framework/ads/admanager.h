@@ -122,6 +122,8 @@ namespace ads {
             }
         }
 
+        void SetEventListener(EventListener* listener) { eventListener = listener; }
+
     private:
         // функция определяет только допустимость показа в соответствии со временем
         bool isInterstitialShowPossible() const {
@@ -142,7 +144,7 @@ namespace ads {
         std::vector<std::shared_ptr<Provider>> providers;
         mutable timeMS lastShowed;
         timeMS showDelay;
-        EventListener* const eventListener;
+        EventListener* eventListener;
     };
 };
 #endif
