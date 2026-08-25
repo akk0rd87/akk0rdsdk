@@ -283,6 +283,25 @@ bool BWrapper::SetWindowSize(int W, int H)
     SDL_SetWindowSize(CurrentContext.CurrentWindow, W, H);
     return true;
 }
+
+bool BWrapper::SetRenderTarget(AkkordTexture& Target)
+{
+    if (SDL_SetRenderTarget(CurrentContext.CurrentRenderer, Target.GetTexture()) != 0) {
+        logError("SetRenderTarget error = %s", SDL_GetError());
+        return false;
+    }
+    return true;
+};
+
+bool BWrapper::ResetRenderTarget()
+{
+    if (SDL_SetRenderTarget(CurrentContext.CurrentRenderer, nullptr) != 0) {
+        logError("ResetRenderTarget error = %s", SDL_GetError());
+        return false;
+    }
+    return true;
+};
+
 bool AkkordTexture::CreateFromSurface(SDL_Surface* Surface)
 {
     tex = std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)>(SDL_CreateTextureFromSurface(CurrentContext.CurrentRenderer, Surface), SDL_DestroyTexture);
@@ -290,6 +309,17 @@ bool AkkordTexture::CreateFromSurface(SDL_Surface* Surface)
         logError("Error create texture from surface %s", SDL_GetError());
         return false;
     }
+    return true;
+};
+
+bool AkkordTexture::CreateRenderTarget(int W, int H)
+{
+    tex = std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)>(SDL_CreateTexture(CurrentContext.CurrentRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, W, H), SDL_DestroyTexture);
+    if (!tex) {
+        logError("Error create render target texture %s", SDL_GetError());
+        return false;
+    }
+    SDL_SetTextureBlendMode(tex.get(), SDL_BLENDMODE_BLEND);
     return true;
 };
 

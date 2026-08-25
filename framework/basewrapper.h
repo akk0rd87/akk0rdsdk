@@ -130,6 +130,8 @@ public:
     bool operator!= (const AkkordColor& Color) const { return Color.ABGRcolor != ABGRcolor; };
 };
 
+class AkkordTexture;
+
 class BWrapper
 {
 public:
@@ -202,6 +204,8 @@ public:
     static bool                RefreshRenderer();
     static bool                FlushRenderer();
     static bool                DestroyRenderer();
+    static bool                SetRenderTarget(AkkordTexture& Target);
+    static bool                ResetRenderTarget();
     static bool                DestroyWindow();
     static bool                SetWindowResizable(bool Resizable);
     static bool                SetWindowSize(int W, int H);
@@ -344,6 +348,7 @@ public:
     bool LoadFromFile(const char* FileName, TextureType Type, const BWrapper::FileSearchPriority SearchPriority = BWrapper::FileSearchPriority::Assets, float Scale = 1.0f);
     bool LoadFromMemory(const char* Buffer, int Size, TextureType Type, float Scale = 1.0f);
     bool CreateFromSurface(SDL_Surface* Surface);
+    bool CreateRenderTarget(int W, int H);
     bool Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas = nullptr) const;
     bool Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas, AkkordTexture::Flip Flip, double Angle, AkkordPoint* Point) const;
     AkkordPoint GetSize() const;
