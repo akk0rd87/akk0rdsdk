@@ -19,17 +19,16 @@ android {
         minSdkVersion    minSdkVersionValue
         targetSdkVersion targetSdkVersionValue
         multiDexEnabled true // yandex ads
+
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_STL=c++_shared"
+            }
+        }
     }
     externalNativeBuild {
-        ndkBuild {
-            // Tells Gradle to find the root ndk-build script in the same
-            // directory as the module's build.gradle file. Gradle requires this
-            // build script to add your ndk-build project as a build dependency and
-            // pull your native sources into your Android project.
-            buildStagingDirectory "../main/lib"
-            path "../main/Android.mk"
-
-            //cppFlags.addAll(["-std=c++11"])
+        cmake {
+            path "../CMakeLists.txt"
         }
     }
     sourceSets {
@@ -85,8 +84,8 @@ android {
             versionCode 1
 
             externalNativeBuild {
-                ndkBuild {
-                    cFlags "-D__ALTERNATIVE_STORE__"
+                cmake {
+                    cppFlags "-D__ALTERNATIVE_STORE__"
                 }
             }
             sourceSets {
@@ -103,8 +102,8 @@ android {
             versionCode 1
 
             externalNativeBuild {
-                ndkBuild {
-                    cFlags "-D__ALTERNATIVE_STORE__"
+                cmake {
+                    cppFlags "-D__ALTERNATIVE_STORE__"
                 }
             }
             sourceSets {
@@ -129,8 +128,8 @@ android {
                 }
             }
             externalNativeBuild {
-                ndkBuild {
-                    cFlags "-D__ALTERNATIVE_STORE__ -D__ALTERNATIVE_STORE_RUSTORE__"
+                cmake {
+                    cppFlags "-D__ALTERNATIVE_STORE__ -D__ALTERNATIVE_STORE_RUSTORE__"
                 }
             }
         }
