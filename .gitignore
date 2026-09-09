@@ -15,6 +15,7 @@ ci/proj.android/app/build
 ci/proj.android/main/lib
 ci/proj.android/local.properties
 ci/proj.android/build/
+ci/proj.android/app/.cxx/
 
 libraries/SDL/SDL/VisualC/Win32/*
 
