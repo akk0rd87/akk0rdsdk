@@ -7,6 +7,7 @@ import com.google.android.gms.games.GamesSignInClient
 import com.google.android.gms.games.PlayGames
 import com.google.android.gms.games.PlayGamesSdk
 import com.google.android.gms.games.SnapshotsClient.DataOrConflict
+import com.google.android.gms.games.achievement.Achievement
 import com.google.android.gms.games.leaderboard.LeaderboardVariant
 import com.google.android.gms.games.snapshot.Snapshot
 import com.google.android.gms.games.snapshot.SnapshotMetadata
@@ -227,6 +228,41 @@ class PlayServicesManager(
         }
         catch(e: Exception) {
             Utils.handleException(e, "unlockAchievement")
+        }
+    }
+
+    /**
+     * Загружает id разблокированных достижений текущего игрока: [forceReload] — с сервера, иначе из кэша Play Games
+     * (кэш может ещё относиться к прежнему аккаунту сразу после его смены). callback вызывается на главном потоке;
+     * null — загрузить не удалось.
+     */
+    fun loadUnlockedAchievements(forceReload: Boolean, callback: (Set<String>?) -> Unit) {
+        try {
+            getAchievementsClient().load(forceReload).addOnCompleteListener { task ->
+                val unlocked = try {
+                    if (task.isSuccessful) {
+                        task.result?.get()?.let { buffer ->
+                            try {
+                                buffer.filter { it.state == Achievement.STATE_UNLOCKED }
+                                    .mapTo(HashSet()) { it.achievementId }
+                            } finally {
+                                buffer.release()
+                            }
+                        }
+                    } else {
+                        Utils.handleException(task.exception, "loadUnlockedAchievements")
+                        null
+                    }
+                } catch (e: Exception) {
+                    Utils.handleException(e, "loadUnlockedAchievements: addOnCompleteListener")
+                    null
+                }
+                Log.d(Utils.TAG, "loadUnlockedAchievements(force=$forceReload): ${unlocked?.size ?: "failed"}")
+                callback(unlocked)
+            }
+        } catch (e: Exception) {
+            Utils.handleException(e, "loadUnlockedAchievements")
+            callback(null)
         }
     }
 
