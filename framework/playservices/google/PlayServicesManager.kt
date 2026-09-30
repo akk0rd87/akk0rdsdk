@@ -8,6 +8,7 @@ import com.google.android.gms.games.PlayGames
 import com.google.android.gms.games.PlayGamesSdk
 import com.google.android.gms.games.SnapshotsClient.DataOrConflict
 import com.google.android.gms.games.leaderboard.LeaderboardVariant
+import com.google.android.gms.games.playergameevent.PlayerGameEvent
 import com.google.android.gms.games.snapshot.Snapshot
 import com.google.android.gms.games.snapshot.SnapshotMetadata
 import com.google.android.gms.games.snapshot.SnapshotMetadataChange
@@ -150,6 +151,42 @@ class PlayServicesManager(
         }
         catch(e: Exception) {
             Utils.handleException(e, "submitScore")
+        }
+    }
+
+    // Game Stats (Gamer Profile): recordGameStatsEvent only buffers the event locally, no
+    // network call happens until uploadGameStatsEvents() is called — call it once after
+    // recording the events for a given update, not after every single recordGameStatsEvent call.
+    // Event/property names are entirely up to the caller (must match the schema declared in
+    // Play Console for that specific game) — this manager stays agnostic to what they mean.
+    fun recordGameStatsEvent(eventName: String, vararg properties: Pair<String, Any>) {
+        try {
+            Log.d(Utils.TAG, "recordGameStatsEvent $eventName ${properties.toMap()}")
+            val builder = PlayerGameEvent.Builder(eventName)
+            properties.forEach { (key, value) ->
+                when (value) {
+                    is Long -> builder.addProperty(key, value)
+                    is Int -> builder.addProperty(key, value.toLong())
+                    is Double -> builder.addProperty(key, value)
+                    is String -> builder.addProperty(key, value)
+                    is Boolean -> builder.addProperty(key, value)
+                    else -> throw IllegalArgumentException("Unsupported Game Stats property type for '$key': ${value::class}")
+                }
+            }
+            getGameStatsClient().recordEvent(builder.build())
+        }
+        catch(e: Exception) {
+            Utils.handleException(e, "recordGameStatsEvent")
+        }
+    }
+
+    fun uploadGameStatsEvents() {
+        try {
+            Log.d(Utils.TAG, "uploadGameStatsEvents")
+            getGameStatsClient().requestEventsUpload()
+        }
+        catch(e: Exception) {
+            Utils.handleException(e, "uploadGameStatsEvents")
         }
     }
 
@@ -436,6 +473,7 @@ class PlayServicesManager(
     private fun getSnapshotsClient() = PlayGames.getSnapshotsClient(activity)
     private fun getLeaderboardsClient() = PlayGames.getLeaderboardsClient(activity)
     private fun getAchievementsClient() = PlayGames.getAchievementsClient(activity);
+    private fun getGameStatsClient() = PlayGames.getGameStatsClient(activity)
 
     private companion object {
         const val SAVED_GAME = "default_saved_game"
