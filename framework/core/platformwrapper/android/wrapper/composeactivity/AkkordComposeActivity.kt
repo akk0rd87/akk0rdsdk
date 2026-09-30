@@ -3,7 +3,6 @@ package org.akkord.lib;
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
-import com.getkeepsafe.relinker.ReLinker
 
 open class AkkordComposeActivity : ComponentActivity() {
     @Volatile
@@ -23,25 +22,21 @@ open class AkkordComposeActivity : ComponentActivity() {
         org.akkord.lib.Utils.onActivityStop()
     }
 
+    /** Проверять ли обновление в сторе при первом onResume; наследник выключает, например, в UI-тестах. */
+    protected open val isUpdateCheckEnabled: Boolean
+        get() = true
+
     override fun onResume() {
         super.onResume()
         if(isFirstResume) {
             isFirstResume = false
-            org.akkord.lib.Utils.checkUpdate()
-        }
-    }
-
-    private fun loadNativeLib(libName : String) {
-        try {
-            ReLinker.loadLibrary(this, libName)
-        } catch (e: Throwable) {
-            System.loadLibrary(libName)
-        } finally {
-            // optional finally block
+            if (isUpdateCheckEnabled) {
+                org.akkord.lib.Utils.checkUpdate()
+            }
         }
     }
 
     protected fun loadNativeLibs() {
-        loadNativeLib("main")
+        System.loadLibrary("main")
     }
 }
