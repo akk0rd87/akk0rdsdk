@@ -14,6 +14,9 @@ class BillingImplementation(
     fun purchaseProdItem(productSKU: String) {
     }
 
+    fun purchaseSubscription(productSKU: String) {
+    }
+
     fun consumeProductItem(purchaseToken: String, productSKU: String) {
     }
 
@@ -21,5 +24,8 @@ class BillingImplementation(
     }
 
     fun queryProductDetails(prodList: Array<String?>?) {
+    }
+
+    fun querySubscriptionProducts(prodList: Array<String>) {
     }
 }
