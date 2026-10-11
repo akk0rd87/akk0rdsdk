@@ -79,6 +79,15 @@ public class BillingImplementation implements PurchaseHistoryResponseListener, P
 
     }
 
+    // Подписки в Google Play пока не поддерживаются
+    public void querySubscriptionProducts(final String[] ProdList) {
+
+    }
+
+    public void purchaseSubscription(final String ProductSKU) {
+
+    }
+
     public void restorePurchases() {
         try {
             mBillingClient.queryPurchasesAsync(
@@ -88,6 +97,7 @@ public class BillingImplementation implements PurchaseHistoryResponseListener, P
         }
         catch(Exception e) {
             Log.e(getTag(), e.toString());
+            mBillingObserver.onPurchasesQueryFinished(false);
         }
     }
 
@@ -234,6 +244,9 @@ public class BillingImplementation implements PurchaseHistoryResponseListener, P
     public void onQueryPurchasesResponse(@NonNull BillingResult billingResult, @NonNull List<Purchase> purchases) {
         try {
             checkPurchases(billingResult, purchases);
+            // Только здесь, не в onPurchasesUpdated: туда приходит не полный список покупок.
+            // Неподтверждённые покупки дойдут до наблюдателя позже, после AcknowledgePurchase
+            mBillingObserver.onPurchasesQueryFinished(BillingResponseCode.OK == billingResult.getResponseCode());
         }
         catch(Exception e) {
             Log.e(getTag(), Objects.requireNonNull(e.getMessage()));
