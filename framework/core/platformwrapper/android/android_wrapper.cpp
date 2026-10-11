@@ -1,9 +1,41 @@
 #include <dirent.h>
+#include <algorithm>
+#include <mutex>
 #include "android_wrapper.h"
 #include "../platforms.h"
 #include "customevents.h"
 #include "basewrapper.h"
 #include "android_utils_wrapper.h"
+
+// Отступы безопасной области в пикселях surface; пишутся из UI-потока Android, читаются из потока SDL
+struct SafeAreaInsets {
+    int left{ 0 }, top{ 0 }, right{ 0 }, bottom{ 0 };
+};
+static std::mutex     safeAreaInsetsMutex;
+static SafeAreaInsets safeAreaInsets;
+
+extern "C" {
+    JNIEXPORT void JNICALL Java_org_akkord_lib_AkkordActivity_nativeSafeAreaInsetsChanged(JNIEnv*, jclass, jint Left, jint Top, jint Right, jint Bottom)
+    {
+        {
+            const std::lock_guard<std::mutex> lock(safeAreaInsetsMutex);
+            safeAreaInsets.left = Left;
+            safeAreaInsets.top = Top;
+            safeAreaInsets.right = Right;
+            safeAreaInsets.bottom = Bottom;
+        }
+
+        // Размер окна при этом может не меняться, поэтому будим цикл событий приложения сами
+        if (auto window = BWrapper::GetActiveWindow()) {
+            SDL_Event sdl_Event;
+            SDL_zero(sdl_Event);
+            sdl_Event.type = SDL_WINDOWEVENT;
+            sdl_Event.window.windowID = SDL_GetWindowID(window);
+            sdl_Event.window.event = SDL_WINDOWEVENT_EXPOSED;
+            SDL_PushEvent(&sdl_Event);
+        }
+    };
+}
 
 class AndroidPlatformWrapper : public PlatformWrapper, public MessageBoxCallback {
     std::unique_ptr<AndroidUtilsWrapper> wrapper;
@@ -106,6 +138,26 @@ class AndroidPlatformWrapper : public PlatformWrapper, public MessageBoxCallback
 
     virtual bool vOpenURL(const char* url) override {
         return wrapper->openURL(url);
+    }
+
+    virtual AkkordRect vGetWindowSafeArea(AkkordRenderer* CurrentRenderer, AkkordWindow* CurrentWindow) override {
+        SafeAreaInsets insets;
+        {
+            const std::lock_guard<std::mutex> lock(safeAreaInsetsMutex);
+            insets = safeAreaInsets;
+        }
+
+        // Размер берём из рендерера — те же пиксели, что возвращает BWrapper::GetScreenSize()
+        int rendererW = 0, rendererH = 0;
+        SDL_GetRendererOutputSize(CurrentRenderer, &rendererW, &rendererH);
+
+        // при повороте размер рендерера и insets могут на кадр разойтись
+        const int w = rendererW - insets.left - insets.right;
+        const int h = rendererH - insets.top - insets.bottom;
+        if (w <= 0 || h <= 0) {
+            return AkkordRect(0, 0, rendererW, rendererH);
+        }
+        return AkkordRect(insets.left, insets.top, w, h);
     }
 
 public:

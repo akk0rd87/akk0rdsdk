@@ -1,12 +1,22 @@
 package org.akkord.lib;
 
 import org.libsdl.app.SDLActivity;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.DisplayCutout;
+import android.view.View;
+import android.view.WindowInsets;
 import com.getkeepsafe.relinker.ReLinker;
 import org.akkord.lib.Utils;
 
 public class AkkordActivity extends SDLActivity {
+
+    // Отступы безопасной области относительно SDL surface, в пикселях
+    private static native void nativeSafeAreaInsetsChanged(int left, int top, int right, int bottom);
+
+    private final int[] mSurfaceLocation = new int[2];
+    private int mSafeInsetLeft = -1, mSafeInsetTop = -1, mSafeInsetRight = -1, mSafeInsetBottom = -1;
 
     public void akkord_loadLibrary(String libraryName) throws UnsatisfiedLinkError, SecurityException, NullPointerException {
 
@@ -38,6 +48,87 @@ public class AkkordActivity extends SDLActivity {
         super.onCreate(savedInstanceState);
         org.akkord.lib.Utils.Init(this);
         org.akkord.lib.Utils.checkUpdate();
+        setupSafeAreaTracking();
+    }
+
+    private void setupSafeAreaTracking() {
+        if (mBrokenLibraries || mSurface == null) {
+            return;
+        }
+
+        final View decorView = getWindow().getDecorView();
+        decorView.setOnApplyWindowInsetsListener((v, insets) -> {
+            // layout с новыми insets ещё не выполнен, поэтому пересчитываем после него
+            v.post(this::updateSafeAreaInsets);
+            return v.onApplyWindowInsets(insets);
+        });
+        mSurface.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> updateSafeAreaInsets());
+        decorView.requestApplyInsets();
+    }
+
+    // Считаем геометрически: на сколько системные insets окна перекрывают surface.
+    // Так результат верен и в edge-to-edge (targetSdk 36+), и когда система сама уже отодвинула контент от панелей.
+    private void updateSafeAreaInsets() {
+        final View surface = mSurface;
+        if (surface == null || mBrokenLibraries) {
+            return;
+        }
+
+        final WindowInsets insets = surface.getRootWindowInsets();
+        if (insets == null || surface.getWidth() <= 0 || surface.getHeight() <= 0) {
+            return;
+        }
+
+        int wndLeft, wndTop, wndRight, wndBottom;
+        if (Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */) {
+            final android.graphics.Insets bars = insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
+            wndLeft = bars.left;
+            wndTop = bars.top;
+            wndRight = bars.right;
+            wndBottom = bars.bottom;
+        } else {
+            wndLeft = insets.getSystemWindowInsetLeft();
+            wndTop = insets.getSystemWindowInsetTop();
+            wndRight = insets.getSystemWindowInsetRight();
+            wndBottom = insets.getSystemWindowInsetBottom();
+            if (Build.VERSION.SDK_INT >= 28 /* Android 9 (P) */) {
+                final DisplayCutout cutout = insets.getDisplayCutout();
+                if (cutout != null) {
+                    wndLeft = Math.max(wndLeft, cutout.getSafeInsetLeft());
+                    wndTop = Math.max(wndTop, cutout.getSafeInsetTop());
+                    wndRight = Math.max(wndRight, cutout.getSafeInsetRight());
+                    wndBottom = Math.max(wndBottom, cutout.getSafeInsetBottom());
+                }
+            }
+        }
+
+        final View root = surface.getRootView();
+        surface.getLocationInWindow(mSurfaceLocation);
+        final int surfaceLeft = mSurfaceLocation[0];
+        final int surfaceTop = mSurfaceLocation[1];
+        final int surfaceRight = surfaceLeft + surface.getWidth();
+        final int surfaceBottom = surfaceTop + surface.getHeight();
+
+        final int left = Math.max(0, wndLeft - surfaceLeft);
+        final int top = Math.max(0, wndTop - surfaceTop);
+        final int right = Math.max(0, surfaceRight - (root.getWidth() - wndRight));
+        final int bottom = Math.max(0, surfaceBottom - (root.getHeight() - wndBottom));
+
+        if (left == mSafeInsetLeft && top == mSafeInsetTop && right == mSafeInsetRight && bottom == mSafeInsetBottom) {
+            return;
+        }
+
+        try {
+            nativeSafeAreaInsetsChanged(left, top, right, bottom);
+            mSafeInsetLeft = left;
+            mSafeInsetTop = top;
+            mSafeInsetRight = right;
+            mSafeInsetBottom = bottom;
+            Log.d(Utils.TAG, "Safe area insets: left=" + left + " top=" + top + " right=" + right + " bottom=" + bottom);
+        }
+        catch (final UnsatisfiedLinkError e) {
+            Log.e(Utils.TAG, "nativeSafeAreaInsetsChanged error: " + e.getMessage());
+        }
     }
 
     @Override
