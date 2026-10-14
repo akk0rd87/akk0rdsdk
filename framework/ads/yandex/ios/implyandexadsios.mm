@@ -4,9 +4,18 @@
 // UIViewContentMode, etc. without importing them itself), so UIKit must come first here.
 #import <UIKit/UIKit.h>
 #import <YandexMobileAds/YandexMobileAds-Swift.h>
+#include <cstdio>
 #include "implyandexadsios.h"
-#include "basewrapper.h"
-#include "core/platformwrapper/ios/ios_wrapper.h"
+#include "core/platformwrapper/ios/ios_rootviewcontroller.h"
+
+// Без basewrapper.h и SDL, чтобы файл собирался и в приложениях на SwiftUI. Отладочный вывод — под тем же
+// флагом, на котором основан BWrapper::IsReleaseBuild(); предупреждения печатаются всегда.
+#ifdef __AKK0RD_SDK_DEBUG_MACRO__
+#define yandexLog(fmt, ...) std::fprintf(stderr, "[Yandex] " fmt "\n", ##__VA_ARGS__)
+#else
+#define yandexLog(fmt, ...)
+#endif
+#define yandexWarning(fmt, ...) std::fprintf(stderr, "[Yandex][Warning] " fmt "\n", ##__VA_ARGS__)
 
 /*
 https://yandex.ru/support2/mobile-ads/ru/dev/ios
@@ -44,7 +53,7 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
 {
     static iYandexInterstitial* yandex;
     if (!yandex) {
-        logDebug("Create yandex interstitial class");
+        yandexLog("Create yandex interstitial class");
         yandex = [[iYandexInterstitial alloc] init];
         [yandex Init];
     }
@@ -56,7 +65,7 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
 };
 
 -(void)SetUintId:(const char* )IDstr {
-    logDebug("Interstitial SetUintId %s", IDstr);
+    yandexLog("Interstitial SetUintId %s", IDstr);
     try {
         NSString *ID = [[NSString alloc] initWithUTF8String:IDstr];
         if(ID) {
@@ -69,12 +78,12 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
         }
     }
     catch (NSException * ex) {
-        logDebug("Interstitial SetUintId error");
+        yandexLog("Interstitial SetUintId error");
     }
 };
 
 - (void)Load {
-    logDebug("Interstitial Load");
+    yandexLog("Interstitial Load");
     if(!ads::Yandex::iOSProvider::wasInited || !self.cfg || !self.loader) {
         ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToLoad);
         return;
@@ -88,12 +97,12 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
                 return;
             }
             if (interstitialAd) {
-                logDebug("interstitialAdLoader:completionHandler didLoad");
+                yandexLog("interstitialAdLoader:completionHandler didLoad");
                 strongSelf.interstitial = interstitialAd;
                 ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialLoaded);
                 return;
             }
-            logDebug("interstitialAdLoader:completionHandler didFailToLoadWithError: %s", error ? [[error localizedDescription] UTF8String] : "unknown");
+            yandexLog("interstitialAdLoader:completionHandler didFailToLoadWithError: %s", error ? [[error localizedDescription] UTF8String] : "unknown");
             ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToLoad);
         }];
     }
@@ -103,10 +112,10 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
 }
 
 -(void)Show {
-    logDebug("Interstitial Show");
+    yandexLog("Interstitial Show");
     try {
         if (ads::Yandex::iOSProvider::wasInited && self.interstitial) {
-            auto controller = iosWrapper::getRootViewController();
+            auto controller = akkordRootViewController();
             if(controller) {
                 self.interstitial.delegate = self;
                 [self.interstitial showFromViewController:controller];
@@ -126,7 +135,7 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
  @param error Information about the error (for details, see YMAAdErrorCode).
  */
 - (void)interstitialAd:(YMAInterstitialAd *)interstitialAd didFailToShowWithError:(NSError *)error {
-    logDebug("didFailToShowWithError: %s", [[error localizedDescription] UTF8String]);
+    yandexLog("didFailToShowWithError: %s", [[error localizedDescription] UTF8String]);
     ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToShow);
 }
 
@@ -135,7 +144,7 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
  @param interstitialAd A reference to an object of the YMAInterstitialAd class that invoked the method.
  */
 - (void)interstitialAdDidShow:(YMAInterstitialAd *)interstitialAd {
-    logDebug("interstitialAdDidShow");
+    yandexLog("interstitialAdDidShow");
     ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialOpened);
 }
 
@@ -144,7 +153,7 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
  @param interstitialAd A reference to an object of the YMAInterstitialAd class that invoked the method.
  */
 - (void)interstitialAdDidDismiss:(YMAInterstitialAd *)interstitialAd {
-    logDebug("interstitialAdDidDismiss");
+    yandexLog("interstitialAdDidDismiss");
     ads::Yandex::iOSProvider::onAdEvent(ads::Event::InterstitialClosed);
 }
 
@@ -153,7 +162,7 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
  @param interstitialAd A reference to an object of the YMAInterstitialAd class that invoked the method.
  */
 - (void)interstitialAdDidClick:(YMAInterstitialAd *)interstitialAd {
-    logDebug("interstitialAdDidClick");
+    yandexLog("interstitialAdDidClick");
 }
 
 /**
@@ -163,7 +172,7 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
  */
 - (void)interstitialAd:(YMAInterstitialAd *)interstitialAd
 didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
-    logDebug("didTrackImpressionWithData");
+    yandexLog("didTrackImpressionWithData");
 }
 @end
 
@@ -204,7 +213,7 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
     try {
         NSString *ID = [[NSString alloc] initWithUTF8String:IDstr];
         if(ID) {
-            logDebug("RewardedVideo SetUintId");
+            yandexLog("RewardedVideo SetUintId");
             self.cfg = [[YMAAdRequest alloc] initWithAdUnitID:ID
                                                       targeting:nil
                                                         adTheme:YMAAdThemeUnspecified
@@ -214,12 +223,12 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
         }
     }
     catch (NSException * ex) {
-        logDebug("RewardedVideo SetUintId error");
+        yandexLog("RewardedVideo SetUintId error");
     }
 };
 
 - (void)Load {
-    logDebug("RewardedVideo Load");
+    yandexLog("RewardedVideo Load");
     if(!self.cfg) {
         return;
     }
@@ -236,12 +245,12 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
                 return;
             }
             if (rewardedAd) {
-                logDebug("RewardedVideoLoaded");
+                yandexLog("RewardedVideoLoaded");
                 strongSelf.rewardedAd = rewardedAd;
                 ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoLoaded);
                 return;
             }
-            logDebug("RewardedVideoFailedToLoad: %s", error ? [[error localizedDescription] UTF8String] : "unknown");
+            yandexLog("RewardedVideoFailedToLoad: %s", error ? [[error localizedDescription] UTF8String] : "unknown");
             ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoFailedToLoad);
         }];
     }
@@ -251,10 +260,10 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
 }
 
 -(void)Show {
-    logDebug("RewardedVideo Show");
+    yandexLog("RewardedVideo Show");
     try {
         if(ads::Yandex::iOSProvider::wasInited && self.rewardedAd) {
-            auto controller = iosWrapper::getRootViewController();
+            auto controller = akkordRootViewController();
             if(controller) {
                 self.rewardedAd.delegate = self;
                 [self.rewardedAd showFromViewController : controller];
@@ -274,7 +283,7 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
  @param reward Reward given to the user.
  */
 - (void)rewardedAd:(YMARewardedAd *)rewardedAd didReward:(id<YMAReward>)reward {
-    logDebug("RewardedVideoRewarded");
+    yandexLog("RewardedVideoRewarded");
     ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoRewarded);
 }
 
@@ -286,7 +295,7 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
  @param error Information about the error (for details, see YMAAdErrorCode).
  */
 - (void)rewardedAd:(YMARewardedAd *)rewardedAd didFailToShowWithError:(NSError *)error {
-    logDebug("RewardedVideoFailedToShow: %s", [[error localizedDescription] UTF8String]);
+    yandexLog("RewardedVideoFailedToShow: %s", [[error localizedDescription] UTF8String]);
     ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoFailedToShow);
 }
 
@@ -295,7 +304,7 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
  @param rewardedAd A reference to an object of the YMARewardedAd class that invoked the method.
  */
 - (void)rewardedAdDidShow:(YMARewardedAd *)rewardedAd {
-    logDebug("RewardedVideoOpened");
+    yandexLog("RewardedVideoOpened");
     ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoOpened);
 }
 
@@ -304,7 +313,7 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
  @param rewardedAd A reference to an object of the YMARewardedAd class that invoked the method.
  */
 - (void)rewardedAdDidDismiss:(YMARewardedAd *)rewardedAd {
-    logDebug("RewardedVideoClosed");
+    yandexLog("RewardedVideoClosed");
     ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoClosed);
 }
 
@@ -313,7 +322,7 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
  @param rewardedAd A reference to an object of the YMARewardedAd class that invoked the method.
  */
 - (void)rewardedAdDidClick:(YMARewardedAd *)rewardedAd {
-    logDebug("rewardedAdDidClick");
+    yandexLog("rewardedAdDidClick");
 }
 
 /**
@@ -322,7 +331,7 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
  @param impressionData Ad impression-level revenue data.
  */
 - (void)rewardedAd:(YMARewardedAd *)rewardedAd didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
-    logDebug("didTrackImpressionWithData");
+    yandexLog("didTrackImpressionWithData");
 }
 @end
 
@@ -330,7 +339,7 @@ ads::Yandex::iOSProvider::iOSProvider(std::weak_ptr<ads::ProviderCallback> cbk, 
 ads::Yandex::Provider (cbk) {
     // YMAMobileAds was renamed to YMAYandexAds in YandexMobileAds 8.x.
     [YMAYandexAds initializeSDKWithCompletionHandler:^{
-        logDebug("initializeSDKWithCompletionHandler success");
+        yandexLog("initializeSDKWithCompletionHandler success");
         wasInited = true;
         interstitialStatus = ads::InterstitialStatus::ReadyToLoad;
         rewardedVideoStatus = ads::RewardedVideoStatus::ReadyToLoad;
@@ -345,35 +354,35 @@ ads::Yandex::Provider (cbk) {
 };
 
 void ads::Yandex::iOSProvider::InterstitialSetUnitId(const std::string& unitId) {
-    logDebug("InterstitialSetUnitId %s", unitId.c_str());
+    yandexLog("InterstitialSetUnitId %s", unitId.c_str());
     [[iYandexInterstitial defaultInterstitial] SetUintId: unitId.c_str()];
 }
 
 void ads::Yandex::iOSProvider::setRewardedVideoUnit(const char* unitId) {
     if (!unitId || unitId[0] == '\0') {
-        logWarning("setRewardedVideoUnit: empty unitId");
+        yandexWarning("setRewardedVideoUnit: empty unitId");
         return;
     }
-    logDebug("setRewardedVideoUnit %s", unitId);
+    yandexLog("setRewardedVideoUnit %s", unitId);
     [[iYandexRewardedVideo defaultRewardedVideo] SetUintId: unitId];
 }
 
 void ads::Yandex::iOSProvider::v_tryLoadInterstitial() {
-    logDebug("v_tryLoadInterstitial");
+    yandexLog("v_tryLoadInterstitial");
     [[iYandexInterstitial defaultInterstitial] Load];
 }
 
 void ads::Yandex::iOSProvider::v_tryLoadRewardedVideo() {
-    logDebug("v_tryLoadRewardedVideo");
+    yandexLog("v_tryLoadRewardedVideo");
     [[iYandexRewardedVideo defaultRewardedVideo] Load];
 }
 
 void ads::Yandex::iOSProvider::v_showInterstitial() {
-    logDebug("v_showInterstitial");
+    yandexLog("v_showInterstitial");
     [[iYandexInterstitial defaultInterstitial] Show];
 }
 
 void ads::Yandex::iOSProvider::v_showRewardedVideo() {
-    logDebug("v_showRewardedVideo");
+    yandexLog("v_showRewardedVideo");
     [[iYandexRewardedVideo defaultRewardedVideo] Show];
 }
