@@ -22,6 +22,24 @@ namespace GDPRConsentPolicy {
             // Set tag for under age of consent. NO means users are not under age of consent.
             parameters.tagForUnderAgeOfConsent = NO;
 
+#if defined(DEBUG)
+            // Проверка формы согласия на устройстве не из ЕЭЗ (только в отладочной сборке), аргументами запуска:
+            //   -UMPDebugTestDeviceId <id>  — устройство считается находящимся в ЕЭЗ; id печатает в журнал сам UMP
+            //                                 («To enable debug mode for this device, set: ...»)
+            //   -UMPResetConsent YES        — забыть прежний ответ, чтобы форма показалась снова
+            NSUserDefaults *arguments = NSUserDefaults.standardUserDefaults;
+            NSString *testDeviceId = [arguments stringForKey:@"UMPDebugTestDeviceId"];
+            if (testDeviceId.length > 0) {
+                UMPDebugSettings *debugSettings = [[UMPDebugSettings alloc] init];
+                debugSettings.testDeviceIdentifiers = @[testDeviceId];
+                debugSettings.geography = UMPDebugGeographyEEA;
+                parameters.debugSettings = debugSettings;
+            }
+            if ([arguments boolForKey:@"UMPResetConsent"]) {
+                [UMPConsentInformation.sharedInstance reset];
+            }
+#endif
+
             // Request an update for the consent information.
             [UMPConsentInformation.sharedInstance
                 requestConsentInfoUpdateWithParameters:parameters
