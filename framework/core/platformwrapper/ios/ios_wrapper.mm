@@ -1,5 +1,6 @@
 #include "basewrapper.h"
 #include "ios_wrapper.h"
+#include "ios_rootviewcontroller.h"
 #include "../platforms.h"
 #include "../../core_defines.h"
 #include "customevents.h"
@@ -9,7 +10,7 @@
 #import <StoreKit/StoreKit.h>
 
 UIViewController* iosWrapper::getRootViewController() {
-    return [UIApplication sharedApplication].keyWindow.rootViewController;
+    return akkordRootViewController();
 }
 
 void iosWrapper::showViewOverRootViewController(UIActivityViewController *activityVC) {

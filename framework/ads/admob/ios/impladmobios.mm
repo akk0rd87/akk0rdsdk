@@ -1,7 +1,14 @@
 #import <GoogleMobileAds/GoogleMobileAds.h>
 #include "impladmobios.h"
-#include "basewrapper.h"
-#include "core/platformwrapper/ios/ios_wrapper.h"
+#include "core/platformwrapper/ios/ios_rootviewcontroller.h"
+
+// Без basewrapper.h и SDL, чтобы файл собирался и в приложениях на SwiftUI. Отладочный вывод — под тем же
+// флагом, на котором основан BWrapper::IsReleaseBuild().
+#ifdef __AKK0RD_SDK_DEBUG_MACRO__
+#define admobLog(...) NSLog(__VA_ARGS__)
+#else
+#define admobLog(...)
+#endif
 
 std::weak_ptr<ads::AdMob::iOSProvider> ads::AdMob::iOSProvider::staticProvider;
 bool                                   ads::AdMob::iOSProvider::wasInited = false;
@@ -57,14 +64,11 @@ bool                                   ads::AdMob::iOSProvider::wasInited = fals
                                     request:request
                             completionHandler:^(GADInterstitialAd *ad, NSError *error) {
             if (error) {
-                logDebug("InterstitialLoad load error");
-                if (!BWrapper::IsReleaseBuild()) {
-                    NSLog(@"Failed to load interstitial ad with error: %@", [error localizedDescription]);
-                }
+                admobLog(@"Failed to load interstitial ad with error: %@", [error localizedDescription]);
                 ads::AdMob::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToLoad);
             }
             else {
-                logDebug("InterstitialLoad load success");
+                admobLog(@"InterstitialLoad load success");
                 self.interstitial = ad;
                 self.interstitial.fullScreenContentDelegate = self;
                 ads::AdMob::iOSProvider::onAdEvent(ads::Event::InterstitialLoaded);
@@ -75,7 +79,7 @@ bool                                   ads::AdMob::iOSProvider::wasInited = fals
 
 -(void)Show {
     if (ads::AdMob::iOSProvider::wasInited && self.interstitial) {
-        auto controller = iosWrapper::getRootViewController();
+        auto controller = akkordRootViewController();
         if(controller) {
             if ([self.interstitial canPresentFromRootViewController :controller error:nil]) {
                 [self.interstitial presentFromRootViewController:controller];
@@ -89,23 +93,23 @@ bool                                   ads::AdMob::iOSProvider::wasInited = fals
 /// Tells the delegate that the ad failed to present full screen content.
 - (void)ad:(nonnull id<GADFullScreenPresentingAd>)ad
 didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
-    logDebug("Ad did fail to present full screen content.");
+    admobLog(@"Ad did fail to present full screen content.");
     ads::AdMob::iOSProvider::onAdEvent(ads::Event::InterstitialFailedToShow);
 }
 
 /// Tells the delegate that the ad presented full screen content.
 - (void)adDidPresentFullScreenContent:(nonnull id<GADFullScreenPresentingAd>)ad {
-    logDebug("Ad did present full screen content.");
+    admobLog(@"Ad did present full screen content.");
 }
 
 /// Tells the delegate that the ad dismissed full screen content.
 - (void)adDidDismissFullScreenContent:(nonnull id<GADFullScreenPresentingAd>)ad {
-    logDebug("Ad did dismiss full screen content.");
+    admobLog(@"Ad did dismiss full screen content.");
     ads::AdMob::iOSProvider::onAdEvent(ads::Event::InterstitialClosed);
 }
 
 - (void)adDidRecordImpression:(nonnull id<GADFullScreenPresentingAd>)ad {
-    logDebug("adDidRecordImpression");
+    admobLog(@"adDidRecordImpression");
 }
 @end
 
@@ -164,11 +168,11 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
                         request:request
             completionHandler:^(GADRewardedAd *ad, NSError *error) {
                 if (error) {
-                    logDebug("Rewarded failed load");
+                    admobLog(@"Rewarded failed load");
                     ads::AdMob::iOSProvider::onAdEvent(ads::Event::RewardedVideoFailedToLoad);
                 }
                 else {
-                    logDebug("Rewarded success load");
+                    admobLog(@"Rewarded success load");
                     self.rewardedAd = ad;
                     self.rewardedAd.fullScreenContentDelegate = self;
                     ads::AdMob::iOSProvider::onAdEvent(ads::Event::RewardedVideoLoaded);
@@ -179,12 +183,12 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
 
 -(void)Show {
     if(ads::AdMob::iOSProvider::wasInited && self.rewardedAd) {
-        auto controller = iosWrapper::getRootViewController();
+        auto controller = akkordRootViewController();
         if(controller) {
             if([self.rewardedAd canPresentFromRootViewController:controller error:nil]) {
                 [self.rewardedAd presentFromRootViewController:controller
                                     userDidEarnRewardHandler:^ {
-                    logDebug("Rewarded");
+                    admobLog(@"Rewarded");
                     ads::AdMob::iOSProvider::onAdEvent(ads::Event::RewardedVideoRewarded);
                 }];
                 return;
@@ -197,23 +201,23 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
 /// Tells the delegate that the ad failed to present full screen content.
 - (void)ad:(nonnull id<GADFullScreenPresentingAd>)ad
 didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
-    logDebug("Ad did fail to present full screen content.");
+    admobLog(@"Ad did fail to present full screen content.");
     ads::AdMob::iOSProvider::onAdEvent(ads::Event::RewardedVideoFailedToShow);
 }
 
 /// Tells the delegate that the ad presented full screen content.
 - (void)adDidPresentFullScreenContent:(nonnull id<GADFullScreenPresentingAd>)ad {
-    logDebug("Ad did present full screen content.");
+    admobLog(@"Ad did present full screen content.");
 }
 
 /// Tells the delegate that the ad dismissed full screen content.
 - (void)adDidDismissFullScreenContent:(nonnull id<GADFullScreenPresentingAd>)ad {
-    logDebug("Ad did dismiss full screen content.");
+    admobLog(@"Ad did dismiss full screen content.");
     ads::AdMob::iOSProvider::onAdEvent(ads::Event::RewardedVideoClosed);
 }
 
 - (void)adDidRecordImpression:(nonnull id<GADFullScreenPresentingAd>)ad {
-    logDebug("adDidRecordImpression");
+    admobLog(@"adDidRecordImpression");
 }
 @end
 
@@ -233,7 +237,7 @@ void ads::AdMob::iOSProvider::InterstitialSetUnitId(const std::string& unitId) {
 
 void ads::AdMob::iOSProvider::setRewardedVideoUnit(const char* unitId) {
     if (!unitId || unitId[0] == '\0') {
-        logWarning("setRewardedVideoUnit: empty unitId");
+        NSLog(@"[AdMob] setRewardedVideoUnit: empty unitId");
         return;
     }
     [[iAdMobRewardedVideo defaultRewardedVideo] SetUintId: unitId];

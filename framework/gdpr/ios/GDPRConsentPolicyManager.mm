@@ -1,6 +1,7 @@
 #include <atomic>
 #include <UserMessagingPlatform/UserMessagingPlatform.h>
 #include "../gdpr_consentpolicymanager.h"
+#include "core/platformwrapper/ios/ios_rootviewcontroller.h"
 
 namespace GDPRConsentPolicy {
     class iOSGDPRManager : public GDPRConsentPolicy::Manager {
@@ -21,9 +22,6 @@ namespace GDPRConsentPolicy {
             // Set tag for under age of consent. NO means users are not under age of consent.
             parameters.tagForUnderAgeOfConsent = NO;
 
-            auto *rootController = [[[[UIApplication sharedApplication]delegate] window] rootViewController];
-
-            __weak __typeof__(rootController) weakSelf = rootController;
             // Request an update for the consent information.
             [UMPConsentInformation.sharedInstance
                 requestConsentInfoUpdateWithParameters:parameters
@@ -34,12 +32,31 @@ namespace GDPRConsentPolicy {
                             return;
                         }
 
-                        __strong __typeof__(rootController) strongSelf = weakSelf;
-                        if (!strongSelf) {
+                        void (^afterFormHandling)(void) = ^{
+                            // Consent has been gathered.
+                            if (UMPConsentInformation.sharedInstance.canRequestAds) {
+                                sendCallback();
+                            }
+
+                            if(isPrivacyOptionsRequired()) {
+                                setPrivacyOptionsRequired();
+                            }
+                        };
+
+                        // Looked up here (not captured when requestConsent() was called) because
+                        // this completion fires after a network round trip; on SwiftUI's
+                        // scene-based lifecycle, requestConsent() typically runs from
+                        // application(_:didFinishLaunchingWithOptions:), before any window
+                        // exists, so a value captured up front would still be nil here.
+                        UIViewController *rootController = akkordRootViewController();
+                        if (!rootController) {
+                            // No form to present without a root view controller, but ads can
+                            // still be unlocked if one isn't actually required.
+                            afterFormHandling();
                             return;
                         }
 
-                        [UMPConsentForm loadAndPresentIfRequiredFromViewController:strongSelf
+                        [UMPConsentForm loadAndPresentIfRequiredFromViewController:rootController
                             completionHandler:^(NSError *loadAndPresentError) {
                                 if (loadAndPresentError) {
                                     // Consent gathering failed.
@@ -47,14 +64,7 @@ namespace GDPRConsentPolicy {
                                     return;
                                 }
 
-                                // Consent has been gathered.
-                                if (UMPConsentInformation.sharedInstance.canRequestAds) {
-                                    sendCallback();
-                                }
-
-                                if(isPrivacyOptionsRequired()) {
-                                    setPrivacyOptionsRequired();
-                                }
+                                afterFormHandling();
                             }];
                     }];
 
@@ -64,7 +74,7 @@ namespace GDPRConsentPolicy {
         }
 
         virtual void showPrivacyOptionsForm() override {
-            auto *rootController = [[[[UIApplication sharedApplication]delegate] window] rootViewController];
+            auto *rootController = akkordRootViewController();
             [UMPConsentForm presentPrivacyOptionsFormFromViewController:rootController
                 completionHandler:^(NSError *_Nullable formError) {
                     if (formError) {
