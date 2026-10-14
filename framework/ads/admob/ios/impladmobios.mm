@@ -1,6 +1,7 @@
 #import <GoogleMobileAds/GoogleMobileAds.h>
 #include "impladmobios.h"
 #include "core/platformwrapper/ios/ios_rootviewcontroller.h"
+#include "firebase/analytics/ios/iosadanalytics.h"
 
 // Без basewrapper.h и SDL, чтобы файл собирался и в приложениях на SwiftUI. Отладочный вывод — под тем же
 // флагом, на котором основан BWrapper::IsReleaseBuild().
@@ -9,6 +10,9 @@
 #else
 #define admobLog(...)
 #endif
+
+// Источник в событиях аналитики, как ADS_SOURCE в Android AdMobAdapter
+static NSString* const admobAnalyticsSource = @"ads_admob";
 
 std::weak_ptr<ads::AdMob::iOSProvider> ads::AdMob::iOSProvider::staticProvider;
 bool                                   ads::AdMob::iOSProvider::wasInited = false;
@@ -78,6 +82,8 @@ bool                                   ads::AdMob::iOSProvider::wasInited = fals
 }
 
 -(void)Show {
+    // Как в Android: показ засчитывается в момент запроса
+    Firebase::Analytics::iOS::LogInterstitialShow(admobAnalyticsSource, self.UnitID);
     if (ads::AdMob::iOSProvider::wasInited && self.interstitial) {
         auto controller = akkordRootViewController();
         if(controller) {
@@ -182,6 +188,7 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
 }
 
 -(void)Show {
+    Firebase::Analytics::iOS::LogRewardedVideoShow(admobAnalyticsSource, self.UnitID);
     if(ads::AdMob::iOSProvider::wasInited && self.rewardedAd) {
         auto controller = akkordRootViewController();
         if(controller) {
@@ -189,6 +196,7 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
                 [self.rewardedAd presentFromRootViewController:controller
                                     userDidEarnRewardHandler:^ {
                     admobLog(@"Rewarded");
+                    Firebase::Analytics::iOS::LogRewardedVideoRewarded(admobAnalyticsSource, self.UnitID);
                     ads::AdMob::iOSProvider::onAdEvent(ads::Event::RewardedVideoRewarded);
                 }];
                 return;

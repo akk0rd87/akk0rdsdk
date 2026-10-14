@@ -7,6 +7,7 @@
 #include <cstdio>
 #include "implyandexadsios.h"
 #include "core/platformwrapper/ios/ios_rootviewcontroller.h"
+#include "firebase/analytics/ios/iosadanalytics.h"
 
 // Без basewrapper.h и SDL, чтобы файл собирался и в приложениях на SwiftUI. Отладочный вывод — под тем же
 // флагом, на котором основан BWrapper::IsReleaseBuild(); предупреждения печатаются всегда.
@@ -16,6 +17,9 @@
 #define yandexLog(fmt, ...)
 #endif
 #define yandexWarning(fmt, ...) std::fprintf(stderr, "[Yandex][Warning] " fmt "\n", ##__VA_ARGS__)
+
+// Источник в событиях аналитики, как ADS_SOURCE в Android YandexAdsAdapter
+static NSString* const yandexAnalyticsSource = @"ads_yandex";
 
 /*
 https://yandex.ru/support2/mobile-ads/ru/dev/ios
@@ -41,6 +45,7 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
 @property(nonatomic, strong) YMAInterstitialAd *interstitial;
 @property(nonatomic, strong) YMAInterstitialAdLoader *loader;
 @property(nonatomic, strong) YMAAdRequest* cfg;
+@property(nonatomic)         std::string   UnitID;
 -(void)Init;
 -(void)SetUintId:(const char* )ID;
 -(void)Load;
@@ -69,6 +74,7 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
     try {
         NSString *ID = [[NSString alloc] initWithUTF8String:IDstr];
         if(ID) {
+            self.UnitID = IDstr;
             self.cfg = [[YMAAdRequest alloc] initWithAdUnitID:ID
                                                       targeting:nil
                                                         adTheme:YMAAdThemeUnspecified
@@ -113,6 +119,8 @@ bool                                    ads::Yandex::iOSProvider::wasInited = fa
 
 -(void)Show {
     yandexLog("Interstitial Show");
+    // Как в Android: показ засчитывается в момент запроса
+    Firebase::Analytics::iOS::LogInterstitialShow(yandexAnalyticsSource, self.UnitID);
     try {
         if (ads::Yandex::iOSProvider::wasInited && self.interstitial) {
             auto controller = akkordRootViewController();
@@ -187,6 +195,7 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
 @property(nonatomic, strong) YMARewardedAd *rewardedAd;
 @property(nonatomic, strong) YMARewardedAdLoader *loader;
 @property(nonatomic, strong) YMAAdRequest* cfg;
+@property(nonatomic)         std::string   UnitID;
 -(void)Init;
 -(void)SetUintId:(const char* )ID;
 -(void)Load;
@@ -213,6 +222,7 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
     try {
         NSString *ID = [[NSString alloc] initWithUTF8String:IDstr];
         if(ID) {
+            self.UnitID = IDstr;
             yandexLog("RewardedVideo SetUintId");
             self.cfg = [[YMAAdRequest alloc] initWithAdUnitID:ID
                                                       targeting:nil
@@ -261,6 +271,7 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
 
 -(void)Show {
     yandexLog("RewardedVideo Show");
+    Firebase::Analytics::iOS::LogRewardedVideoShow(yandexAnalyticsSource, self.UnitID);
     try {
         if(ads::Yandex::iOSProvider::wasInited && self.rewardedAd) {
             auto controller = akkordRootViewController();
@@ -284,6 +295,7 @@ didTrackImpressionWithData:(nullable id<YMAImpressionData>)impressionData {
  */
 - (void)rewardedAd:(YMARewardedAd *)rewardedAd didReward:(id<YMAReward>)reward {
     yandexLog("RewardedVideoRewarded");
+    Firebase::Analytics::iOS::LogRewardedVideoRewarded(yandexAnalyticsSource, self.UnitID);
     ads::Yandex::iOSProvider::onAdEvent(ads::Event::RewardedVideoRewarded);
 }
 
