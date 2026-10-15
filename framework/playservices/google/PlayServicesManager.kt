@@ -27,10 +27,18 @@ class PlayServicesManager(
     }
 
     private val gamesSignInClient: GamesSignInClient = PlayGames.getGamesSignInClient(activity)
+    // Загрузка снапшота идёт или прошла. Сбрасывается, если загрузка не удалась: тогда её повторит следующий
+    // onConnected (signInSilently вызывается в onResume, то есть при каждом возврате в приложение). Пока снапшот
+    // не загружен, ядро его не сохраняет, чтобы не затереть облако данными без решений с других устройств.
     @Volatile
     private var initialSnapshotLoadStarted = false
     @Volatile
     private var connected = false
+
+    private fun onSnapshotLoadFailed() {
+        Log.d(Utils.TAG, "loadSnapshot failed, will retry on the next connect")
+        initialSnapshotLoadStarted = false
+    }
 
     fun loadSnapshot() {
         try {
@@ -40,6 +48,7 @@ class PlayServicesManager(
                     // STATUS_SNAPSHOT_CONTENTS_UNAVAILABLE (4002) and similar errors land here.
                     // SnapshotCoordinator.createOpenListener already called setClosed(), so state is clean.
                     Utils.handleException(openTask.exception, "loadSnapshot: waitForClosedAndOpen failed")
+                    onSnapshotLoadFailed()
                     return@addOnCompleteListener
                 }
                 val result = openTask.result
@@ -55,6 +64,7 @@ class PlayServicesManager(
                             try {
                                 if (!task.isSuccessful) {
                                     Utils.handleException(task.exception, "loadSnapshot: processSnapshotOpenResult failed")
+                                    onSnapshotLoadFailed()
                                     return@addOnCompleteListener
                                 }
 
@@ -73,6 +83,7 @@ class PlayServicesManager(
                                         onSnapshotReceived(data)
                                     } catch (e: Exception) {
                                         Log.e(Utils.TAG, "Error while reading snapshot contents: " + e.message)
+                                        onSnapshotLoadFailed()
                                     }
 
                                     SnapshotCoordinator.getInstance().discardAndClose(getSnapshotsClient(), snapshot)
@@ -82,13 +93,17 @@ class PlayServicesManager(
                                 }
                             } catch (e: Exception) {
                                 Utils.handleException(e, "processSnapshotOpenResult: addOnCompleteListener")
+                                onSnapshotLoadFailed()
                             }
                         }
+                } else {
+                    onSnapshotLoadFailed()
                 }
             }
         }
         catch(e: Exception) {
             Utils.handleException(e, "loadSnapshot")
+            onSnapshotLoadFailed()
         }
     }
 
