@@ -4,8 +4,10 @@
 # для проектов, у которых Podfile ещё читает переменные окружения AKKORSDK_POD_*.
 # Версии в кавычках: без них YAML прочитает 13.0 как число.
 
-ios_deployment_target: "13.0"
+# Не ниже, чем требует самый требовательный pod: YandexMobileAds 8.6.0 — iOS 15.0. Сборку с этими версиями
+# проверяет CI (ci/proj.ios, задача build-ios).
+ios_deployment_target: "15.0"
 
 pods:
-  Google-Mobile-Ads-SDK: "13.8.0"
+  Google-Mobile-Ads-SDK: "13.11.0"
   YandexMobileAds: "8.6.0"

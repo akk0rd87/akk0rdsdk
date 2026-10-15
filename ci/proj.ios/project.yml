@@ -1,0 +1,136 @@
+# CI-проект: пустые iOS-приложения с теми же зависимостями Akkord SDK, что у iOS-приложений на нём.
+# Проверяет, что код SDK компилируется и линкуется с версиями pod'ов из tools/ios/pods.yml.
+#
+#   CiTest    — как SwiftUI-приложения (proj.ios_swift в JCross): провайдеры рекламы AdMob и Yandex, GDPR (UMP),
+#               Firebase, libharu. Собирается для симулятора и устройства.
+#   CiTestSDL — как SDL-приложения (proj.ios в JCross): то же плюс ios_wrapper, ios_billing, videoadapter_ios,
+#               basewrapper и менеджер рекламы; main — общий с Android CI (ci/proj.android/src/main.cpp).
+#               SDL2 и SDL2_image собираются из исходников SDK скриптом build_sdl.sh (для каждой платформы).
+#
+#   export AKKORD_SDK_HOME=<корень SDK>
+#   cd ci/proj.ios && ./generate.sh
+#   xcodebuild build -workspace CiTest.xcworkspace -scheme CiTest -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO
+#   ./build_sdl.sh iphonesimulator
+#   xcodebuild build -workspace CiTest.xcworkspace -scheme CiTestSDL -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO
+name: CiTest
+options:
+  bundleIdPrefix: org.akkord
+  # ios_deployment_target из tools/ios/pods.yml (generate.sh): минимальная iOS приложений на SDK
+  deploymentTarget:
+    iOS: "${AKKORD_IOS_DEPLOYMENT_TARGET}"
+targets:
+  CiTest:
+    type: application
+    platform: iOS
+    sources:
+      - path: src
+      # Тот же набор исходников SDK, что в proj.ios_swift/project.yml JCross
+      - path: ${AKKORD_SDK_HOME}/framework/gdpr/ios/GDPRConsentPolicyManager.mm
+        buildPhase: sources
+      - path: ${AKKORD_SDK_HOME}/framework/firebase/analytics/ios/iosfirebaseanalytics.mm
+        buildPhase: sources
+      - path: ${AKKORD_SDK_HOME}/framework/configmanager.cpp
+        buildPhase: sources
+      - path: ${AKKORD_SDK_HOME}/framework/ads/admob/ios/impladmobios.mm
+        buildPhase: sources
+      - path: ${AKKORD_SDK_HOME}/framework/ads/admob/ios/admobfactory.cpp
+        buildPhase: sources
+      - path: ${AKKORD_SDK_HOME}/framework/ads/yandex/ios/implyandexadsios.mm
+        buildPhase: sources
+      - path: ${AKKORD_SDK_HOME}/framework/ads/yandex/ios/yandexadsfactory.cpp
+        buildPhase: sources
+      - path: ${AKKORD_SDK_HOME}/libraries/libharu/src
+        includes:
+          - "hpdf*.c"
+        buildPhase: sources
+    info:
+      path: Generated/Info.plist
+      properties:
+        # Тестовые идентификаторы Google: приложение в CI не запускается, но AdMob требует ключ в Info.plist
+        GADApplicationIdentifier: ca-app-pub-3940256099942544~1458002511
+        UILaunchScreen: {}
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: org.akkord.citest
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: "1"
+        AKKORD_SDK_HOME: ${AKKORD_SDK_HOME}
+        HEADER_SEARCH_PATHS: $(AKKORD_SDK_HOME)/framework $(AKKORD_SDK_HOME)/libraries $(AKKORD_SDK_HOME)/libraries/libharu/out/build/iOS/include $(AKKORD_SDK_HOME)/libraries/libharu/include $(AKKORD_SDK_HOME)/libraries/libharu/src $(inherited)
+        CLANG_CXX_LANGUAGE_STANDARD: c++17
+        CLANG_ENABLE_MODULES: "YES"
+        ENABLE_BITCODE: "NO"
+        TARGETED_DEVICE_FAMILY: "1,2"
+
+  CiTestSDL:
+    type: application
+    platform: iOS
+    sources:
+      - path: ../proj.android/src/main.cpp
+        buildPhase: sources
+      # Тот же набор исходников SDK, что в proj.ios (code.xcfilelist) в JCross
+      - path: ${AKKORD_SDK_HOME}/framework/gdpr/ios/GDPRConsentPolicyManager.mm
+        buildPhase: sources
+      - path: ${AKKORD_SDK_HOME}/framework/firebase/analytics/ios/iosfirebaseanalytics.mm
+        buildPhase: sources
+      - path: ${AKKORD_SDK_HOME}/framework/ads/admob/ios/impladmobios.mm
+        buildPhase: sources
+      - path: ${AKKORD_SDK_HOME}/framework/ads/admob/ios/admobfactory.cpp
+        buildPhase: sources
+      - path: ${AKKORD_SDK_HOME}/framework/ads/yandex/ios/implyandexadsios.mm
+        buildPhase: sources
+      - path: ${AKKORD_SDK_HOME}/framework/ads/yandex/ios/yandexadsfactory.cpp
+        buildPhase: sources
+      - path: ${AKKORD_SDK_HOME}/framework/core/platformwrapper/ios/ios_billing.mm
+        buildPhase: sources
+      - path: ${AKKORD_SDK_HOME}/framework/core/platformwrapper/ios/ios_wrapper.mm
+        buildPhase: sources
+      - path: ${AKKORD_SDK_HOME}/framework/core/videoadapter/videoadapter_ios.mm
+        buildPhase: sources
+      - path: ${AKKORD_SDK_HOME}/framework/basewrapper.cpp
+        buildPhase: sources
+      - path: ${AKKORD_SDK_HOME}/framework/billing.cpp
+        buildPhase: sources
+      - path: ${AKKORD_SDK_HOME}/framework/atlasmanager.cpp
+        buildPhase: sources
+      - path: ${AKKORD_SDK_HOME}/framework/videodriver.cpp
+        buildPhase: sources
+      - path: ${AKKORD_SDK_HOME}/framework/configmanager.cpp
+        buildPhase: sources
+      - path: ${AKKORD_SDK_HOME}/framework/adrandomizer.cpp
+        buildPhase: sources
+    dependencies:
+      - sdk: AVFoundation.framework
+      - sdk: AudioToolbox.framework
+      - sdk: CoreAudio.framework
+      - sdk: CoreBluetooth.framework
+      - sdk: CoreGraphics.framework
+      - sdk: CoreServices.framework
+      - sdk: CoreHaptics.framework
+      - sdk: CoreMotion.framework
+      - sdk: GameController.framework
+      - sdk: ImageIO.framework
+      - sdk: Metal.framework
+      - sdk: OpenGLES.framework
+      - sdk: QuartzCore.framework
+      - sdk: StoreKit.framework
+      - sdk: UIKit.framework
+    info:
+      path: Generated/InfoSDL.plist
+      properties:
+        GADApplicationIdentifier: ca-app-pub-3940256099942544~1458002511
+        UILaunchScreen: {}
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: org.akkord.citestsdl
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: "1"
+        AKKORD_SDK_HOME: ${AKKORD_SDK_HOME}
+        HEADER_SEARCH_PATHS: $(AKKORD_SDK_HOME)/framework $(AKKORD_SDK_HOME)/libraries $(AKKORD_SDK_HOME)/libraries/SDL/SDL/include $(AKKORD_SDK_HOME)/libraries/SDL_image/SDL_image/include $(inherited)
+        CLANG_CXX_LANGUAGE_STANDARD: c++17
+        GCC_CHAR_IS_UNSIGNED_CHAR: "YES"
+        CLANG_ENABLE_MODULES: "YES"
+        ENABLE_BITCODE: "NO"
+        # libSDL2.a и libSDL2_image.a для текущей платформы собирает build_sdl.sh
+        LIBRARY_SEARCH_PATHS: $(SRCROOT)/build/sdl/$(PLATFORM_NAME) $(inherited)
+        OTHER_LDFLAGS: $(inherited) -ObjC -lSDL2 -lSDL2_image
+        TARGETED_DEVICE_FAMILY: "1,2"
