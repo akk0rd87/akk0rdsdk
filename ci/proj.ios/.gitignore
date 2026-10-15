@@ -4,3 +4,4 @@ Pods/
 Podfile.lock
 Generated/
 build/
+build.log

@@ -57,6 +57,7 @@ targets:
         AKKORD_SDK_HOME: ${AKKORD_SDK_HOME}
         HEADER_SEARCH_PATHS: $(AKKORD_SDK_HOME)/framework $(AKKORD_SDK_HOME)/libraries $(AKKORD_SDK_HOME)/libraries/libharu/out/build/iOS/include $(AKKORD_SDK_HOME)/libraries/libharu/include $(AKKORD_SDK_HOME)/libraries/libharu/src $(inherited)
         CLANG_CXX_LANGUAGE_STANDARD: c++17
+        SWIFT_VERSION: "5.0"
         CLANG_ENABLE_MODULES: "YES"
         ENABLE_BITCODE: "NO"
         TARGETED_DEVICE_FAMILY: "1,2"
@@ -66,6 +67,8 @@ targets:
     platform: iOS
     sources:
       - path: ../proj.android/src/main.cpp
+        buildPhase: sources
+      - path: src/SwiftRuntime.swift
         buildPhase: sources
       # Тот же набор исходников SDK, что в proj.ios (code.xcfilelist) в JCross
       - path: ${AKKORD_SDK_HOME}/framework/gdpr/ios/GDPRConsentPolicyManager.mm
@@ -127,6 +130,7 @@ targets:
         AKKORD_SDK_HOME: ${AKKORD_SDK_HOME}
         HEADER_SEARCH_PATHS: $(AKKORD_SDK_HOME)/framework $(AKKORD_SDK_HOME)/libraries $(AKKORD_SDK_HOME)/libraries/SDL/SDL/include $(AKKORD_SDK_HOME)/libraries/SDL_image/SDL_image/include $(inherited)
         CLANG_CXX_LANGUAGE_STANDARD: c++17
+        SWIFT_VERSION: "5.0"
         GCC_CHAR_IS_UNSIGNED_CHAR: "YES"
         CLANG_ENABLE_MODULES: "YES"
         ENABLE_BITCODE: "NO"
