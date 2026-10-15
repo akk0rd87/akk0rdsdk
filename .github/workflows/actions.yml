@@ -57,6 +57,18 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
+      # Самый новый установленный Xcode: готовые бинарники pod'ов (YandexMobileAds 8.6) собраны Swift из Xcode 26
+      # и не линкуются более старым (в Xcode 16 нет swift_coroFrameAlloc)
+      - name: Select Xcode
+        run: |
+          ls -d /Applications/Xcode_*.app
+          xcode=$(ls -d /Applications/Xcode_*.app | sort -V | tail -n 1)
+          sudo xcode-select -s "$xcode"
+          xcodebuild -version
+          case "$(xcodebuild -version | head -n 1)" in
+            "Xcode 2"[6-9]*) ;;
+            *) echo "::error::Xcode 26 or newer is required by the pods (installed: $(xcodebuild -version | head -n 1))"; exit 1 ;;
+          esac
       - name: Install XcodeGen
         run: brew install xcodegen
       - name: Generate project and install pods
