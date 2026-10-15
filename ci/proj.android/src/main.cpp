@@ -6,7 +6,9 @@
 #include "ads/admanager.h"
 #include "ads/admob/admobfactory.h"
 #include "ads/yandex/yandexadsfactory.h"
+#if defined(__ANDROID__) // VK Ads есть только на Android; этот же файл собирает iOS SDL-цель ci/proj.ios
 #include "ads/vk/vkadsfactory.h"
+#endif
 
 bool Init()
 {
@@ -66,9 +68,11 @@ std::shared_ptr<ads::Manager> getAdsManager() {
         adsMgr->addProvider(yandex);
     }
 
+#if defined(__ANDROID__)
     if (auto vkAds = ads::VKAds::createProvider(adsMgr, ads::Format::Interstitial)) {
         adsMgr->addProvider(vkAds);
     }
+#endif
 
     return adsMgr;
 }

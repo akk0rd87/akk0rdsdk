@@ -50,3 +50,60 @@ jobs:
           chmod +x ci/proj.android/gradlew
           export AKKORD_SDK_HOME=${GITHUB_WORKSPACE}
           ci/proj.android/gradlew --no-daemon app:assembleRuStoreRelease -p ci/proj.android
+
+  # Пустые iOS-приложения с зависимостями приложений на SDK (ci/proj.ios): CiTest — как SwiftUI-приложения,
+  # CiTestSDL — как SDL-приложения; код SDK компилируется и линкуется с pod'ами из tools/ios/pods.yml
+  build-ios:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      # Самый новый установленный Xcode: готовые бинарники pod'ов (YandexMobileAds 8.6) собраны Swift из Xcode 26
+      # и не линкуются более старым (в Xcode 16 нет swift_coroFrameAlloc)
+      - name: Select Xcode
+        run: |
+          ls -d /Applications/Xcode_*.app
+          xcode=$(ls -d /Applications/Xcode_*.app | sort -V | tail -n 1)
+          sudo xcode-select -s "$xcode"
+          xcodebuild -version
+          case "$(xcodebuild -version | head -n 1)" in
+            "Xcode 2"[6-9]*) ;;
+            *) echo "::error::Xcode 26 or newer is required by the pods (installed: $(xcodebuild -version | head -n 1))"; exit 1 ;;
+          esac
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate project and install pods
+        working-directory: ci/proj.ios
+        run: |
+          export AKKORD_SDK_HOME=${GITHUB_WORKSPACE}
+          ./generate.sh
+      - name: Build for simulator
+        working-directory: ci/proj.ios
+        run: |
+          xcodebuild build -workspace CiTest.xcworkspace -scheme CiTest -configuration Release \
+            -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO > build.log 2>&1 \
+            || { grep -E 'error:|Undefined symbols|ld: ' -A 6 build.log | head -n 80; tail -n 20 build.log; exit 1; }
+      - name: Build for device
+        working-directory: ci/proj.ios
+        run: |
+          xcodebuild build -workspace CiTest.xcworkspace -scheme CiTest -configuration Release \
+            -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO > build.log 2>&1 \
+            || { grep -E 'error:|Undefined symbols|ld: ' -A 6 build.log | head -n 80; tail -n 20 build.log; exit 1; }
+      # SDL2 и SDL2_image — из исходников SDK, а не предсобранные libSDL2*.a из git
+      - name: Build SDL libraries
+        working-directory: ci/proj.ios
+        run: |
+          export AKKORD_SDK_HOME=${GITHUB_WORKSPACE}
+          ./build_sdl.sh iphonesimulator
+          ./build_sdl.sh iphoneos
+      - name: Build SDL app for simulator
+        working-directory: ci/proj.ios
+        run: |
+          xcodebuild build -workspace CiTest.xcworkspace -scheme CiTestSDL -configuration Release \
+            -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO > build.log 2>&1 \
+            || { grep -E 'error:|Undefined symbols|ld: ' -A 6 build.log | head -n 80; tail -n 20 build.log; exit 1; }
+      - name: Build SDL app for device
+        working-directory: ci/proj.ios
+        run: |
+          xcodebuild build -workspace CiTest.xcworkspace -scheme CiTestSDL -configuration Release \
+            -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO > build.log 2>&1 \
+            || { grep -E 'error:|Undefined symbols|ld: ' -A 6 build.log | head -n 80; tail -n 20 build.log; exit 1; }

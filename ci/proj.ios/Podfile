@@ -1,0 +1,28 @@
+require 'yaml'
+
+# Версии — из tools/ios/pods.yml, как у приложений на SDK (proj.ios_swift/Podfile в JCross)
+akkord_sdk_home = ENV['AKKORD_SDK_HOME'].to_s
+raise 'AKKORD_SDK_HOME is not set' if akkord_sdk_home.empty?
+akkord = YAML.load_file(File.join(akkord_sdk_home, 'tools', 'ios', 'pods.yml'))
+akkord_pods = akkord.fetch('pods')
+
+platform :ios, akkord.fetch('ios_deployment_target')
+
+def akkord_sdk_pods(akkord_pods)
+  pod 'Google-Mobile-Ads-SDK', akkord_pods.fetch('Google-Mobile-Ads-SDK')
+  pod 'YandexMobileAds',       akkord_pods.fetch('YandexMobileAds')
+  pod 'Firebase/AnalyticsWithoutAdIdSupport'
+  pod 'Firebase/Crashlytics'
+end
+
+use_frameworks!
+
+# Как SwiftUI-приложения (proj.ios_swift в JCross)
+target 'CiTest' do
+  akkord_sdk_pods(akkord_pods)
+end
+
+# Как SDL-приложения (proj.ios в JCross)
+target 'CiTestSDL' do
+  akkord_sdk_pods(akkord_pods)
+end
