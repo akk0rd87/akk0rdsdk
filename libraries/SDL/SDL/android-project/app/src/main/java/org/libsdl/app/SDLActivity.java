@@ -38,6 +38,8 @@ import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
@@ -734,6 +736,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
     protected static boolean mFullscreenModeActive;
 
+    // Akkord: контент рисуется под системными панелями и в оконном режиме (edge-to-edge)
+    protected static boolean mEdgeToEdge;
+
     /**
      * This method is called by SDL if SDL did not handle a message itself.
      * This happens if a received message contains an unsupported command.
@@ -771,7 +776,24 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                 if (Build.VERSION.SDK_INT >= 19 /* Android 4.4 (KITKAT) */) {
                     if (context instanceof Activity) {
                         Window window = ((Activity) context).getWindow();
-                        if (window != null) {
+                        if (window != null && Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */) {
+                            // Akkord: SYSTEM_UI_FLAG_*, FLAG_FULLSCREEN и cutout SHORT_EDGES устарели (targetSdk 35+)
+                            final boolean fullscreen = (msg.obj instanceof Integer) && ((Integer) msg.obj != 0);
+                            final WindowInsetsController controller = window.getInsetsController();
+                            window.setDecorFitsSystemWindows(!fullscreen && !SDLActivity.mEdgeToEdge);
+                            if (controller != null) {
+                                if (fullscreen) {
+                                    controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+                                    controller.hide(WindowInsets.Type.systemBars());
+                                } else {
+                                    controller.show(WindowInsets.Type.systemBars());
+                                }
+                            }
+                            SDLActivity.mFullscreenModeActive = fullscreen;
+                            final WindowManager.LayoutParams attrs = window.getAttributes();
+                            attrs.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
+                            window.setAttributes(attrs);
+                        } else if (window != null) {
                             if ((msg.obj instanceof Integer) && ((Integer) msg.obj != 0)) {
                                 int flags = View.SYSTEM_UI_FLAG_FULLSCREEN |
                                         View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
@@ -785,6 +807,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                                 SDLActivity.mFullscreenModeActive = true;
                             } else {
                                 int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_VISIBLE;
+                                if (SDLActivity.mEdgeToEdge) {
+                                    flags |= View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
+                                }
                                 window.getDecorView().setSystemUiVisibility(flags);
                                 window.addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
                                 window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -1637,7 +1662,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     };
 
     public void onSystemUiVisibilityChange(int visibility) {
-        if (SDLActivity.mFullscreenModeActive && ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0 || (visibility & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0)) {
+        // Akkord: на Android 11+ панели прячет WindowInsetsController (BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE)
+        if (Build.VERSION.SDK_INT < 30 && SDLActivity.mFullscreenModeActive && ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0 || (visibility & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0)) {
 
             Handler handler = getWindow().getDecorView().getHandler();
             if (handler != null) {

@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.DisplayCutout;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowInsets;
 import com.getkeepsafe.relinker.ReLinker;
 import org.akkord.lib.Utils;
@@ -43,12 +44,35 @@ public class AkkordActivity extends SDLActivity {
         }
     }
 
+    // Edge-to-edge обязателен для targetSdk 36 на Android 16+; включаем его на всех версиях, чтобы раскладка была одинаковой.
+    // Приложение, не учитывающее safe area, может переопределить и вернуть false (на Android 15+ система всё равно включит edge-to-edge).
+    protected boolean isEdgeToEdgeEnabled() {
+        return true;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        mEdgeToEdge = isEdgeToEdgeEnabled();
         super.onCreate(savedInstanceState);
+        if (mEdgeToEdge) {
+            enableEdgeToEdge();
+        }
         org.akkord.lib.Utils.Init(this);
         org.akkord.lib.Utils.checkUpdate();
         setupSafeAreaTracking();
+    }
+
+    // Прозрачность панелей задаётся темой приложения (statusBarColor / navigationBarColor).
+    // SDL повторяет эту настройку в setWindowStyle, здесь — чтобы первый кадр уже был edge-to-edge.
+    private void enableEdgeToEdge() {
+        final Window window = getWindow();
+        if (Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */) {
+            window.setDecorFitsSystemWindows(false);
+        } else {
+            window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+        }
     }
 
     private void setupSafeAreaTracking() {
