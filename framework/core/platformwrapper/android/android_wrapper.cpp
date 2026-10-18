@@ -140,6 +140,10 @@ class AndroidPlatformWrapper : public PlatformWrapper, public MessageBoxCallback
         return wrapper->openURL(url);
     }
 
+    virtual void vSetSystemBarsAppearance(bool LightStatusBar, bool LightNavigationBar) override {
+        wrapper->setSystemBarsAppearance(LightStatusBar, LightNavigationBar);
+    }
+
     virtual AkkordRect vGetWindowSafeArea(AkkordRenderer* CurrentRenderer, AkkordWindow* CurrentWindow) override {
         SafeAreaInsets insets;
         {

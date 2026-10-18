@@ -42,6 +42,7 @@ public:
         AndroidWrapperState.midLaunchAppReviewIfAvailable = getJavaStaticMethod(jniEnv, AndroidWrapperState.UtilsClass, "LaunchAppReviewIfAvailable", "()V", true);
         AndroidWrapperState.midRequestFlexibleUpdateIfAvailable = getJavaStaticMethod(jniEnv, AndroidWrapperState.UtilsClass, "RequestFlexibleUpdateIfAvailable", "()V", true);
         AndroidWrapperState.midOpenURL = getJavaStaticMethod(jniEnv, AndroidWrapperState.UtilsClass, "openURL", "(Ljava/lang/String;)V", true);
+        AndroidWrapperState.midSetSystemBarsAppearance = getJavaStaticMethod(jniEnv, AndroidWrapperState.UtilsClass, "setSystemBarsAppearance", "(ZZ)V", true);
 
         AndroidWrapperState.midGetAppVersionCode = getJavaStaticMethod(jniEnv, AndroidWrapperState.UtilsClass, "GetAppVersionCode", "()Ljava/lang/String;", true);
         AndroidWrapperState.midGetAppVersionName = getJavaStaticMethod(jniEnv, AndroidWrapperState.UtilsClass, "GetAppVersionName", "()Ljava/lang/String;", true);
@@ -304,6 +305,15 @@ public:
         return true;
     }
 
+    void setSystemBarsAppearance(bool LightStatusBar, bool LightNavigationBar) {
+        if (!AndroidWrapperState.midSetSystemBarsAppearance) {
+            logError("AndroidWrapper::setSystemBarsAppearance Java method not Found");
+            return;
+        }
+        jniEnv->CallStaticVoidMethod(AndroidWrapperState.UtilsClass, AndroidWrapperState.midSetSystemBarsAppearance,
+            LightStatusBar ? JNI_TRUE : JNI_FALSE, LightNavigationBar ? JNI_TRUE : JNI_FALSE);
+    }
+
     static void onMessageboxCallback(int Code, int Result);
 private:
     struct {
@@ -323,6 +333,7 @@ private:
         jmethodID midGetAppVersionCode{ nullptr };
         jmethodID midGetAppVersionName{ nullptr };
         jmethodID midOpenURL{ nullptr };
+        jmethodID midSetSystemBarsAppearance{ nullptr };
 
         std::string sLanguage;
         //std::string sInternalDir;

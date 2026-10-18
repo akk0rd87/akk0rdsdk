@@ -209,6 +209,8 @@ public:
     static int                 GetScreenWidth() { return GetScreenSize().x; };
     static int                 GetScreenHeight() { return GetScreenSize().y; };
     static AkkordRect          GetWindowSafeArea();
+    // Цвет значков системных панелей: true — фон под панелью светлый, значки тёмные (only for Android)
+    static void                SetSystemBarsAppearance(bool LightStatusBar, bool LightNavigationBar);
 
     // Drawing functions
     static bool                SetCurrentColor(const AkkordColor& Color);

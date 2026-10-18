@@ -810,6 +810,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                                 if (SDLActivity.mEdgeToEdge) {
                                     flags |= View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
                                 }
+                                // Akkord: цвет значков панелей задаёт приложение (Utils.setSystemBarsAppearance), не сбрасываем его
+                                flags |= window.getDecorView().getSystemUiVisibility() & (View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
                                 window.getDecorView().setSystemUiVisibility(flags);
                                 window.addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
                                 window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
