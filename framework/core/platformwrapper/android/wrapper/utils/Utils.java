@@ -367,6 +367,11 @@ public class Utils {
             _context.runOnUiThread(() -> {
                 try {
                     final Window window = _context.getWindow();
+                    // приложение само подбирает цвет значков под свой фон, поэтому системная подложка
+                    // под 3-кнопочной навигацией не нужна: панель приложения видна до края экрана
+                    if (Build.VERSION.SDK_INT >= 29 /* Android 10 (Q) */) {
+                        window.setNavigationBarContrastEnforced(false);
+                    }
                     if (Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */) {
                         final WindowInsetsController controller = window.getInsetsController();
                         if (controller != null) {

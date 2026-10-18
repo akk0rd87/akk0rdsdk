@@ -69,7 +69,10 @@ public class AkkordActivity extends SDLActivity {
         if (Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */) {
             window.setDecorFitsSystemWindows(false);
         } else {
-            window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            // сохраняем флаги темы (windowLightStatusBar и т.п.)
+            final View decorView = window.getDecorView();
+            decorView.setSystemUiVisibility(decorView.getSystemUiVisibility()
+                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                     | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                     | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
         }
