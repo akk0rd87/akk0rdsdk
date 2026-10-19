@@ -144,6 +144,27 @@ class AndroidPlatformWrapper : public PlatformWrapper, public MessageBoxCallback
         wrapper->setSystemBarsAppearance(LightStatusBar, LightNavigationBar);
     }
 
+    // запоминаем режим для следующего запуска: AkkordActivity применит его до первого кадра
+    virtual void vOnWindowFullscreenChanged(bool Fullscreen) override {
+        wrapper->setFullscreenPreference(Fullscreen);
+
+        // SDL не вызывает setWindowStyle, если по его флагам режим не меняется, а при старте AkkordActivity
+        // уже могла применить режим из прошлого запуска — применяем явно, повторный вызов безвреден
+        auto env = AndroidWrapper::GetJNIEnv();
+        auto activity = AndroidWrapper::GetActivity();
+        jclass clazz = env->GetObjectClass(activity);
+        jmethodID setWindowStyle = env->GetStaticMethodID(clazz, "setWindowStyle", "(Z)V");
+        if (setWindowStyle) {
+            env->CallStaticVoidMethod(clazz, setWindowStyle, Fullscreen ? JNI_TRUE : JNI_FALSE);
+        }
+        else {
+            env->ExceptionClear();
+            logError("setWindowStyle Java method not Found");
+        }
+        env->DeleteLocalRef(clazz);
+        env->DeleteLocalRef(activity);
+    }
+
     virtual AkkordRect vGetWindowSafeArea(AkkordRenderer* CurrentRenderer, AkkordWindow* CurrentWindow) override {
         SafeAreaInsets insets;
         {

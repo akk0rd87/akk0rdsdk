@@ -255,6 +255,21 @@ bool BWrapper::SetWindowResizable(bool Resizable)
     return true;
 }
 
+bool BWrapper::SetWindowFullscreen(bool Fullscreen)
+{
+    if (SDL_SetWindowFullscreen(CurrentContext.CurrentWindow, Fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0) != 0) {
+        logError("SetWindowFullscreen error = %s", SDL_GetError());
+        return false;
+    }
+    PlatformWrapper::GetInstance().OnWindowFullscreenChanged(Fullscreen);
+    return true;
+}
+
+bool BWrapper::IsWindowFullscreen()
+{
+    return (SDL_GetWindowFlags(CurrentContext.CurrentWindow) & SDL_WINDOW_FULLSCREEN) != 0;
+}
+
 bool BWrapper::DestroyRenderer()
 {
     CurrentContext.DestroyRenderer();

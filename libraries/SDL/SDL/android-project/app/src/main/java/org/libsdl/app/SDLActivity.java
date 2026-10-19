@@ -416,7 +416,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
         setContentView(mLayout);
 
-        setWindowStyle(false);
+        // Akkord: режим, запомненный приложением (AkkordActivity), а не всегда оконный — иначе при старте панели мелькают
+        setWindowStyle(SDLActivity.mFullscreenModeActive);
 
         getWindow().getDecorView().setOnSystemUiVisibilityChangeListener(this);
 
@@ -779,6 +780,13 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                         if (window != null && Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */) {
                             // Akkord: SYSTEM_UI_FLAG_*, FLAG_FULLSCREEN и cutout SHORT_EDGES устарели (targetSdk 35+)
                             final boolean fullscreen = (msg.obj instanceof Integer) && ((Integer) msg.obj != 0);
+                            // атрибуты окна — до setSystemBarsBehavior: на Android 11 setAttributes сбрасывает поведение панелей
+                            // на «показывать по касанию»
+                            final WindowManager.LayoutParams attrs = window.getAttributes();
+                            if (attrs.layoutInDisplayCutoutMode != WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS) {
+                                attrs.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
+                                window.setAttributes(attrs);
+                            }
                             final WindowInsetsController controller = window.getInsetsController();
                             window.setDecorFitsSystemWindows(!fullscreen && !SDLActivity.mEdgeToEdge);
                             if (controller != null) {
@@ -790,9 +798,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                                 }
                             }
                             SDLActivity.mFullscreenModeActive = fullscreen;
-                            final WindowManager.LayoutParams attrs = window.getAttributes();
-                            attrs.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
-                            window.setAttributes(attrs);
                         } else if (window != null) {
                             if ((msg.obj instanceof Integer) && ((Integer) msg.obj != 0)) {
                                 int flags = View.SYSTEM_UI_FLAG_FULLSCREEN |

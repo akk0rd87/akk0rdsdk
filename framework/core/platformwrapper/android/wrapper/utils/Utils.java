@@ -361,6 +361,29 @@ public class Utils {
         }
     }
 
+    // Полноэкранный режим запоминается здесь, а не в конфиге приложения: AkkordActivity читает его в onCreate, до запуска игры
+    private static final String PREFS_NAME = "akkord";
+    private static final String PREF_FULLSCREEN = "fullscreen";
+
+    public static boolean getFullscreenPreference(Context context) {
+        try {
+            return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getBoolean(PREF_FULLSCREEN, false);
+        }
+        catch(Exception e) {
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
+            return false;
+        }
+    }
+
+    public static void setFullscreenPreference(final boolean fullscreen) {
+        try {
+            _context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit().putBoolean(PREF_FULLSCREEN, fullscreen).apply();
+        }
+        catch(Exception e) {
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
+        }
+    }
+
     // Цвет значков системных панелей: light* — фон под панелью светлый, значки тёмные
     public static void setSystemBarsAppearance(final boolean lightStatusBar, final boolean lightNavigationBar) {
         try {
