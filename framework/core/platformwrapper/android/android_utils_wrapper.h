@@ -44,6 +44,7 @@ public:
         AndroidWrapperState.midOpenURL = getJavaStaticMethod(jniEnv, AndroidWrapperState.UtilsClass, "openURL", "(Ljava/lang/String;)V", true);
         AndroidWrapperState.midSetSystemBarsAppearance = getJavaStaticMethod(jniEnv, AndroidWrapperState.UtilsClass, "setSystemBarsAppearance", "(ZZ)V", true);
         AndroidWrapperState.midSetFullscreenPreference = getJavaStaticMethod(jniEnv, AndroidWrapperState.UtilsClass, "setFullscreenPreference", "(Z)V", true);
+        AndroidWrapperState.midIsFullscreen = getJavaStaticMethod(jniEnv, AndroidWrapperState.UtilsClass, "isFullscreen", "()Z", true);
 
         AndroidWrapperState.midGetAppVersionCode = getJavaStaticMethod(jniEnv, AndroidWrapperState.UtilsClass, "GetAppVersionCode", "()Ljava/lang/String;", true);
         AndroidWrapperState.midGetAppVersionName = getJavaStaticMethod(jniEnv, AndroidWrapperState.UtilsClass, "GetAppVersionName", "()Ljava/lang/String;", true);
@@ -323,6 +324,14 @@ public:
         jniEnv->CallStaticVoidMethod(AndroidWrapperState.UtilsClass, AndroidWrapperState.midSetFullscreenPreference, Fullscreen ? JNI_TRUE : JNI_FALSE);
     }
 
+    bool isFullscreen() {
+        if (!AndroidWrapperState.midIsFullscreen) {
+            logError("AndroidWrapper::isFullscreen Java method not Found");
+            return false;
+        }
+        return jniEnv->CallStaticBooleanMethod(AndroidWrapperState.UtilsClass, AndroidWrapperState.midIsFullscreen) == JNI_TRUE;
+    }
+
     static void onMessageboxCallback(int Code, int Result);
 private:
     struct {
@@ -344,6 +353,7 @@ private:
         jmethodID midOpenURL{ nullptr };
         jmethodID midSetSystemBarsAppearance{ nullptr };
         jmethodID midSetFullscreenPreference{ nullptr };
+        jmethodID midIsFullscreen{ nullptr };
 
         std::string sLanguage;
         //std::string sInternalDir;

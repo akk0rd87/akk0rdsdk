@@ -206,7 +206,7 @@ public:
     static bool                SetWindowResizable(bool Resizable);
     // Полноэкранный режим без перезапуска: на Android скрывает системные панели (immersive, показываются свайпом),
     // при выключении — edge-to-edge с видимыми панелями. Размер окна не меняется, меняется safe area.
-    // На Android по умолчанию (пока приложение не выбирало режим) — полноэкранный
+    // Выбор хранит SDK (на Android — между запусками), по умолчанию — полноэкранный. IsWindowFullscreen — выбранный режим
     static bool                SetWindowFullscreen(bool Fullscreen);
     static bool                IsWindowFullscreen();
     static bool                SetWindowSize(int W, int H);

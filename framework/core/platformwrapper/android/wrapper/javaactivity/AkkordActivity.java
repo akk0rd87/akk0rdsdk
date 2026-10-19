@@ -181,11 +181,6 @@ public class AkkordActivity extends SDLActivity {
         }
     }
 
-    // текущий режим окна для BWrapper::IsWindowFullscreen: при старте он уже применён здесь, а флаги окна SDL ещё нет
-    public static boolean isFullscreenModeActive() {
-        return mFullscreenModeActive;
-    }
-
     // то же, что делает SDL в setWindowStyle(true), но сразу, без очереди сообщений
     private void hideSystemBars() {
         final Window window = getWindow();

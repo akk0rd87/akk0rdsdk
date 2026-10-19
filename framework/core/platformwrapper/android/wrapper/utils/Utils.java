@@ -361,8 +361,8 @@ public class Utils {
         }
     }
 
-    // Полноэкранный режим запоминается здесь, а не в конфиге приложения: AkkordActivity читает его в onCreate, до запуска игры.
-    // Пока выбора нет — приложение запускается в полноэкранном режиме
+    // Полноэкранный режим хранится только здесь, приложению свой ключ в конфиге не нужен: AkkordActivity читает его
+    // в onCreate, до запуска игры, а игра — через BWrapper::IsWindowFullscreen. Пока выбора нет — полноэкранный режим
     private static final String PREFS_NAME = "akkord";
     private static final String PREF_FULLSCREEN = "fullscreen";
 
@@ -374,6 +374,12 @@ public class Utils {
             Log.e(TAG, Objects.requireNonNull(e.getMessage()));
             return true;
         }
+    }
+
+    // выбранный режим для BWrapper::IsWindowFullscreen; apply() обновляет значение в памяти сразу, поэтому сразу после
+    // setFullscreenPreference здесь уже новый режим, хотя окно переключается асинхронно
+    public static boolean isFullscreen() {
+        return getFullscreenPreference(_context);
     }
 
     public static void setFullscreenPreference(final boolean fullscreen) {
