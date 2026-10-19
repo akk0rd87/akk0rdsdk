@@ -115,7 +115,11 @@ public class AkkordActivity extends SDLActivity {
 
         int wndLeft, wndTop, wndRight, wndBottom;
         if (Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */) {
-            final android.graphics.Insets bars = insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
+            // В полноэкранном режиме панели скрыты, а показываются поверх игры: по свайпу и пока сверху чужое окно
+            // (обновление, Play Games, «Поделиться»), которое само управляет панелями. Их отступ не учитываем —
+            // иначе вёрстка на это время сужается и потом расширяется обратно. Остаётся только вырез
+            final int types = mFullscreenModeActive ? WindowInsets.Type.displayCutout() : WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout();
+            final android.graphics.Insets bars = insets.getInsets(types);
             wndLeft = bars.left;
             wndTop = bars.top;
             wndRight = bars.right;
