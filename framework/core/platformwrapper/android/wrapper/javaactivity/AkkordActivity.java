@@ -6,7 +6,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.DisplayCutout;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import com.getkeepsafe.relinker.ReLinker;
 import org.akkord.lib.Utils;
 
@@ -43,12 +45,44 @@ public class AkkordActivity extends SDLActivity {
         }
     }
 
+    // Edge-to-edge обязателен для targetSdk 36 на Android 16+; включаем его на всех версиях, чтобы раскладка была одинаковой.
+    // Приложение, не учитывающее safe area, может переопределить и вернуть false (на Android 15+ система всё равно включит edge-to-edge).
+    protected boolean isEdgeToEdgeEnabled() {
+        return true;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        mEdgeToEdge = isEdgeToEdgeEnabled();
+        // полноэкранный режим, выбранный в прошлый раз (BWrapper::SetWindowFullscreen): применяем до первого кадра,
+        // чтобы при старте панели не мелькали и раскладка игры не прыгала
+        mFullscreenModeActive = org.akkord.lib.Utils.getFullscreenPreference(this);
         super.onCreate(savedInstanceState);
+        if (mEdgeToEdge) {
+            enableEdgeToEdge();
+        }
+        if (mFullscreenModeActive) {
+            hideSystemBars();
+        }
         org.akkord.lib.Utils.Init(this);
         org.akkord.lib.Utils.checkUpdate();
         setupSafeAreaTracking();
+    }
+
+    // Прозрачность панелей задаётся темой приложения (statusBarColor / navigationBarColor).
+    // SDL повторяет эту настройку в setWindowStyle, здесь — чтобы первый кадр уже был edge-to-edge.
+    private void enableEdgeToEdge() {
+        final Window window = getWindow();
+        if (Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */) {
+            window.setDecorFitsSystemWindows(false);
+        } else {
+            // сохраняем флаги темы (windowLightStatusBar и т.п.)
+            final View decorView = window.getDecorView();
+            decorView.setSystemUiVisibility(decorView.getSystemUiVisibility()
+                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+        }
     }
 
     private void setupSafeAreaTracking() {
@@ -86,11 +120,17 @@ public class AkkordActivity extends SDLActivity {
             wndTop = bars.top;
             wndRight = bars.right;
             wndBottom = bars.bottom;
+        } else if (mFullscreenModeActive) {
+            // панели скрыты и по свайпу появляются поверх игры; а с SYSTEM_UI_FLAG_LAYOUT_STABLE система
+            // всё равно отдаёт отступ под скрытую панель навигации — остаётся только вырез (ниже)
+            wndLeft = wndTop = wndRight = wndBottom = 0;
         } else {
             wndLeft = insets.getSystemWindowInsetLeft();
             wndTop = insets.getSystemWindowInsetTop();
             wndRight = insets.getSystemWindowInsetRight();
             wndBottom = insets.getSystemWindowInsetBottom();
+        }
+        if (Build.VERSION.SDK_INT < 30) {
             if (Build.VERSION.SDK_INT >= 28 /* Android 9 (P) */) {
                 final DisplayCutout cutout = insets.getDisplayCutout();
                 if (cutout != null) {
@@ -128,6 +168,36 @@ public class AkkordActivity extends SDLActivity {
         }
         catch (final UnsatisfiedLinkError e) {
             Log.e(Utils.TAG, "nativeSafeAreaInsetsChanged error: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        // После рекламы, диалогов и сворачивания система может снова показать панели — прячем их, если игра в полноэкранном режиме.
+        // До Android 11 это делает сам SDL (rehideSystemUi)
+        if (hasFocus && mFullscreenModeActive && Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */) {
+            hideSystemBars();
+        }
+    }
+
+    // то же, что делает SDL в setWindowStyle(true), но сразу, без очереди сообщений
+    private void hideSystemBars() {
+        final Window window = getWindow();
+        if (Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */) {
+            window.setDecorFitsSystemWindows(false);
+            final WindowInsetsController controller = window.getInsetsController();
+            if (controller != null) {
+                controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+                controller.hide(WindowInsets.Type.systemBars());
+            }
+        } else {
+            window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
         }
     }
 

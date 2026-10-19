@@ -3,7 +3,11 @@ package org.akkord.lib;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowInsetsController;
 import java.io.File;
 import java.util.Locale;
 import java.util.Objects;
@@ -351,6 +355,79 @@ public class Utils {
     public static void openCurrentAppGooglePlayURL() {
         try {
             openGooglePlayURL(_context.getPackageName());
+        }
+        catch(Exception e) {
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
+        }
+    }
+
+    // Полноэкранный режим хранится только здесь, приложению свой ключ в конфиге не нужен: AkkordActivity читает его
+    // в onCreate, до запуска игры, а игра — через BWrapper::IsWindowFullscreen. Пока выбора нет — полноэкранный режим
+    private static final String PREFS_NAME = "akkord";
+    private static final String PREF_FULLSCREEN = "fullscreen";
+
+    public static boolean getFullscreenPreference(Context context) {
+        try {
+            return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getBoolean(PREF_FULLSCREEN, true);
+        }
+        catch(Exception e) {
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
+            return true;
+        }
+    }
+
+    // выбранный режим для BWrapper::IsWindowFullscreen; apply() обновляет значение в памяти сразу, поэтому сразу после
+    // setFullscreenPreference здесь уже новый режим, хотя окно переключается асинхронно
+    public static boolean isFullscreen() {
+        return getFullscreenPreference(_context);
+    }
+
+    public static void setFullscreenPreference(final boolean fullscreen) {
+        try {
+            _context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit().putBoolean(PREF_FULLSCREEN, fullscreen).apply();
+        }
+        catch(Exception e) {
+            Log.e(TAG, Objects.requireNonNull(e.getMessage()));
+        }
+    }
+
+    // Цвет значков системных панелей: light* — фон под панелью светлый, значки тёмные
+    public static void setSystemBarsAppearance(final boolean lightStatusBar, final boolean lightNavigationBar) {
+        try {
+            _context.runOnUiThread(() -> {
+                try {
+                    final Window window = _context.getWindow();
+                    // приложение само подбирает цвет значков под свой фон, поэтому системная подложка
+                    // под 3-кнопочной навигацией не нужна: панель приложения видна до края экрана
+                    if (Build.VERSION.SDK_INT >= 29 /* Android 10 (Q) */) {
+                        window.setNavigationBarContrastEnforced(false);
+                    }
+                    if (Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */) {
+                        final WindowInsetsController controller = window.getInsetsController();
+                        if (controller != null) {
+                            final int mask = WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS | WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS;
+                            controller.setSystemBarsAppearance(
+                                (lightStatusBar ? WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS : 0)
+                                    | (lightNavigationBar ? WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS : 0),
+                                mask);
+                        }
+                    } else {
+                        final View decorView = window.getDecorView();
+                        int flags = decorView.getSystemUiVisibility() & ~(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+                        if (lightStatusBar) {
+                            flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+                        }
+                        // до Android 10 под кнопками навигации непрозрачная подложка темы, а не фон приложения
+                        if (lightNavigationBar && Build.VERSION.SDK_INT >= 29 /* Android 10 (Q) */) {
+                            flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+                        }
+                        decorView.setSystemUiVisibility(flags);
+                    }
+                }
+                catch(Exception e) {
+                    Log.e(TAG, Objects.requireNonNull(e.getMessage()));
+                }
+            });
         }
         catch(Exception e) {
             Log.e(TAG, Objects.requireNonNull(e.getMessage()));

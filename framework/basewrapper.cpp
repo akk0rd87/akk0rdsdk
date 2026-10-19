@@ -255,6 +255,21 @@ bool BWrapper::SetWindowResizable(bool Resizable)
     return true;
 }
 
+bool BWrapper::SetWindowFullscreen(bool Fullscreen)
+{
+    if (SDL_SetWindowFullscreen(CurrentContext.CurrentWindow, Fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0) != 0) {
+        logError("SetWindowFullscreen error = %s", SDL_GetError());
+        return false;
+    }
+    PlatformWrapper::GetInstance().OnWindowFullscreenChanged(Fullscreen);
+    return true;
+}
+
+bool BWrapper::IsWindowFullscreen()
+{
+    return PlatformWrapper::GetInstance().IsWindowFullscreen(CurrentContext.CurrentWindow);
+}
+
 bool BWrapper::DestroyRenderer()
 {
     CurrentContext.DestroyRenderer();
@@ -463,6 +478,10 @@ AkkordPoint BWrapper::GetScreenSize()
 
 AkkordRect BWrapper::GetWindowSafeArea() {
     return PlatformWrapper::GetInstance().GetWindowSafeArea(CurrentContext.CurrentRenderer, CurrentContext.CurrentWindow);
+}
+
+void BWrapper::SetSystemBarsAppearance(bool LightStatusBar, bool LightNavigationBar) {
+    PlatformWrapper::GetInstance().SetSystemBarsAppearance(LightStatusBar, LightNavigationBar);
 }
 
 bool BWrapper::SetCurrentColor(const AkkordColor& Color)

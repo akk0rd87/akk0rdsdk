@@ -204,11 +204,18 @@ public:
     static bool                DestroyRenderer();
     static bool                DestroyWindow();
     static bool                SetWindowResizable(bool Resizable);
+    // Полноэкранный режим без перезапуска: на Android скрывает системные панели (immersive, показываются свайпом),
+    // при выключении — edge-to-edge с видимыми панелями. Размер окна не меняется, меняется safe area.
+    // Выбор хранит SDK (на Android — между запусками), по умолчанию — полноэкранный. IsWindowFullscreen — выбранный режим
+    static bool                SetWindowFullscreen(bool Fullscreen);
+    static bool                IsWindowFullscreen();
     static bool                SetWindowSize(int W, int H);
     static AkkordPoint         GetScreenSize();
     static int                 GetScreenWidth() { return GetScreenSize().x; };
     static int                 GetScreenHeight() { return GetScreenSize().y; };
     static AkkordRect          GetWindowSafeArea();
+    // Цвет значков системных панелей: true — фон под панелью светлый, значки тёмные (only for Android)
+    static void                SetSystemBarsAppearance(bool LightStatusBar, bool LightNavigationBar);
 
     // Drawing functions
     static bool                SetCurrentColor(const AkkordColor& Color);

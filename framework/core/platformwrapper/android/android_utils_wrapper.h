@@ -42,6 +42,9 @@ public:
         AndroidWrapperState.midLaunchAppReviewIfAvailable = getJavaStaticMethod(jniEnv, AndroidWrapperState.UtilsClass, "LaunchAppReviewIfAvailable", "()V", true);
         AndroidWrapperState.midRequestFlexibleUpdateIfAvailable = getJavaStaticMethod(jniEnv, AndroidWrapperState.UtilsClass, "RequestFlexibleUpdateIfAvailable", "()V", true);
         AndroidWrapperState.midOpenURL = getJavaStaticMethod(jniEnv, AndroidWrapperState.UtilsClass, "openURL", "(Ljava/lang/String;)V", true);
+        AndroidWrapperState.midSetSystemBarsAppearance = getJavaStaticMethod(jniEnv, AndroidWrapperState.UtilsClass, "setSystemBarsAppearance", "(ZZ)V", true);
+        AndroidWrapperState.midSetFullscreenPreference = getJavaStaticMethod(jniEnv, AndroidWrapperState.UtilsClass, "setFullscreenPreference", "(Z)V", true);
+        AndroidWrapperState.midIsFullscreen = getJavaStaticMethod(jniEnv, AndroidWrapperState.UtilsClass, "isFullscreen", "()Z", true);
 
         AndroidWrapperState.midGetAppVersionCode = getJavaStaticMethod(jniEnv, AndroidWrapperState.UtilsClass, "GetAppVersionCode", "()Ljava/lang/String;", true);
         AndroidWrapperState.midGetAppVersionName = getJavaStaticMethod(jniEnv, AndroidWrapperState.UtilsClass, "GetAppVersionName", "()Ljava/lang/String;", true);
@@ -304,6 +307,31 @@ public:
         return true;
     }
 
+    void setSystemBarsAppearance(bool LightStatusBar, bool LightNavigationBar) {
+        if (!AndroidWrapperState.midSetSystemBarsAppearance) {
+            logError("AndroidWrapper::setSystemBarsAppearance Java method not Found");
+            return;
+        }
+        jniEnv->CallStaticVoidMethod(AndroidWrapperState.UtilsClass, AndroidWrapperState.midSetSystemBarsAppearance,
+            LightStatusBar ? JNI_TRUE : JNI_FALSE, LightNavigationBar ? JNI_TRUE : JNI_FALSE);
+    }
+
+    void setFullscreenPreference(bool Fullscreen) {
+        if (!AndroidWrapperState.midSetFullscreenPreference) {
+            logError("AndroidWrapper::setFullscreenPreference Java method not Found");
+            return;
+        }
+        jniEnv->CallStaticVoidMethod(AndroidWrapperState.UtilsClass, AndroidWrapperState.midSetFullscreenPreference, Fullscreen ? JNI_TRUE : JNI_FALSE);
+    }
+
+    bool isFullscreen() {
+        if (!AndroidWrapperState.midIsFullscreen) {
+            logError("AndroidWrapper::isFullscreen Java method not Found");
+            return false;
+        }
+        return jniEnv->CallStaticBooleanMethod(AndroidWrapperState.UtilsClass, AndroidWrapperState.midIsFullscreen) == JNI_TRUE;
+    }
+
     static void onMessageboxCallback(int Code, int Result);
 private:
     struct {
@@ -323,6 +351,9 @@ private:
         jmethodID midGetAppVersionCode{ nullptr };
         jmethodID midGetAppVersionName{ nullptr };
         jmethodID midOpenURL{ nullptr };
+        jmethodID midSetSystemBarsAppearance{ nullptr };
+        jmethodID midSetFullscreenPreference{ nullptr };
+        jmethodID midIsFullscreen{ nullptr };
 
         std::string sLanguage;
         //std::string sInternalDir;
