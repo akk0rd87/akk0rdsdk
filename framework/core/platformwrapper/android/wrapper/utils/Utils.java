@@ -361,17 +361,18 @@ public class Utils {
         }
     }
 
-    // Полноэкранный режим запоминается здесь, а не в конфиге приложения: AkkordActivity читает его в onCreate, до запуска игры
+    // Полноэкранный режим запоминается здесь, а не в конфиге приложения: AkkordActivity читает его в onCreate, до запуска игры.
+    // Пока выбора нет — приложение запускается в полноэкранном режиме
     private static final String PREFS_NAME = "akkord";
     private static final String PREF_FULLSCREEN = "fullscreen";
 
     public static boolean getFullscreenPreference(Context context) {
         try {
-            return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getBoolean(PREF_FULLSCREEN, false);
+            return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getBoolean(PREF_FULLSCREEN, true);
         }
         catch(Exception e) {
             Log.e(TAG, Objects.requireNonNull(e.getMessage()));
-            return false;
+            return true;
         }
     }
 

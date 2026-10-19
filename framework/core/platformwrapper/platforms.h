@@ -57,6 +57,7 @@ public:
     AkkordRect               GetWindowSafeArea(AkkordRenderer* CurrentRenderer, AkkordWindow* CurrentWindow) { return vGetWindowSafeArea(CurrentRenderer, CurrentWindow); }
     void                     SetSystemBarsAppearance(bool LightStatusBar, bool LightNavigationBar) { vSetSystemBarsAppearance(LightStatusBar, LightNavigationBar); } // only for Android
     void                     OnWindowFullscreenChanged(bool Fullscreen) { vOnWindowFullscreenChanged(Fullscreen); } // only for Android
+    bool                     IsWindowFullscreen(AkkordWindow* CurrentWindow) { return vIsWindowFullscreen(CurrentWindow); }
     virtual ~PlatformWrapper() {}
 
 private:
@@ -197,6 +198,9 @@ private:
     virtual bool                     vRequestFlexibleUpdateIfAvailable() { return false; }
     virtual void                     vSetSystemBarsAppearance(bool LightStatusBar, bool LightNavigationBar) {}
     virtual void                     vOnWindowFullscreenChanged(bool Fullscreen) {}
+    virtual bool                     vIsWindowFullscreen(AkkordWindow* CurrentWindow) {
+        return (SDL_GetWindowFlags(CurrentWindow) & SDL_WINDOW_FULLSCREEN) != 0;
+    }
 
     void FormatDir(std::string& Dir) {
         if (Dir.back() != '/' && Dir.back() != '\\') {

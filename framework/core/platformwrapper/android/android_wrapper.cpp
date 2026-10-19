@@ -144,6 +144,25 @@ class AndroidPlatformWrapper : public PlatformWrapper, public MessageBoxCallback
         wrapper->setSystemBarsAppearance(LightStatusBar, LightNavigationBar);
     }
 
+    // Режим знает AkkordActivity: он применяется в onCreate, до того как SDL выставит флаги окна
+    virtual bool vIsWindowFullscreen(AkkordWindow* CurrentWindow) override {
+        auto env = AndroidWrapper::GetJNIEnv();
+        auto activity = AndroidWrapper::GetActivity();
+        jclass clazz = env->GetObjectClass(activity);
+        jmethodID isFullscreen = env->GetStaticMethodID(clazz, "isFullscreenModeActive", "()Z");
+        bool result;
+        if (isFullscreen) {
+            result = env->CallStaticBooleanMethod(clazz, isFullscreen) == JNI_TRUE;
+        }
+        else {
+            env->ExceptionClear();
+            result = (SDL_GetWindowFlags(CurrentWindow) & SDL_WINDOW_FULLSCREEN) != 0;
+        }
+        env->DeleteLocalRef(clazz);
+        env->DeleteLocalRef(activity);
+        return result;
+    }
+
     // запоминаем режим для следующего запуска: AkkordActivity применит его до первого кадра
     virtual void vOnWindowFullscreenChanged(bool Fullscreen) override {
         wrapper->setFullscreenPreference(Fullscreen);

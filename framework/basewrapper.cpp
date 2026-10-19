@@ -267,7 +267,7 @@ bool BWrapper::SetWindowFullscreen(bool Fullscreen)
 
 bool BWrapper::IsWindowFullscreen()
 {
-    return (SDL_GetWindowFlags(CurrentContext.CurrentWindow) & SDL_WINDOW_FULLSCREEN) != 0;
+    return PlatformWrapper::GetInstance().IsWindowFullscreen(CurrentContext.CurrentWindow);
 }
 
 bool BWrapper::DestroyRenderer()
