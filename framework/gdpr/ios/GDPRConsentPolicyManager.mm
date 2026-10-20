@@ -1,5 +1,6 @@
 #include <atomic>
 #include <UserMessagingPlatform/UserMessagingPlatform.h>
+#import <AppTrackingTransparency/AppTrackingTransparency.h>
 #include "../gdpr_consentpolicymanager.h"
 #include "core/platformwrapper/ios/ios_rootviewcontroller.h"
 
@@ -12,6 +13,52 @@ namespace GDPRConsentPolicy {
             if(!callBackSent.exchange(true)) {
                 onGDPRConsentGathered();
             }
+        }
+
+        // Окно ATT показывается до инициализации рекламы (до сбора данных для трекинга).
+        // Запрос, сделанный не в активном состоянии приложения (например, во время запуска или пока
+        // закрывается форма UMP), система молча отбрасывает: окна нет, ответ сразу NotDetermined.
+        // Поэтому ждём UIApplicationStateActive и повторяем запрос, если окно так и не появилось.
+        void requestTrackingAuthorizationIfNeeded(void (^completion)(void), int attemptsLeft = 3) {
+            if (!completion) {
+                return;
+            }
+
+            if (@available(iOS 14, *)) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (ATTrackingManager.trackingAuthorizationStatus != ATTrackingManagerAuthorizationStatusNotDetermined
+                        || attemptsLeft <= 0) {
+                        completion();
+                        return;
+                    }
+
+                    if (UIApplication.sharedApplication.applicationState != UIApplicationStateActive) {
+                        __block id observer = [NSNotificationCenter.defaultCenter
+                            addObserverForName:UIApplicationDidBecomeActiveNotification
+                                        object:nil
+                                         queue:NSOperationQueue.mainQueue
+                                    usingBlock:^(__unused NSNotification *note) {
+                                        [NSNotificationCenter.defaultCenter removeObserver:observer];
+                                        requestTrackingAuthorizationIfNeeded(completion, attemptsLeft);
+                                    }];
+                        return;
+                    }
+
+                    [ATTrackingManager requestTrackingAuthorizationWithCompletionHandler:^(ATTrackingManagerAuthorizationStatus status) {
+                        if (status == ATTrackingManagerAuthorizationStatusNotDetermined) {
+                            // окно не показалось — повторим чуть позже
+                            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                                requestTrackingAuthorizationIfNeeded(completion, attemptsLeft - 1);
+                            });
+                            return;
+                        }
+                        completion();
+                    }];
+                });
+                return;
+            }
+
+            completion();
         }
 
         virtual void requestConsent() override {
@@ -51,9 +98,10 @@ namespace GDPRConsentPolicy {
                         }
 
                         void (^afterFormHandling)(void) = ^{
-                            // Consent has been gathered.
                             if (UMPConsentInformation.sharedInstance.canRequestAds) {
-                                sendCallback();
+                                requestTrackingAuthorizationIfNeeded(^{
+                                    sendCallback();
+                                });
                             }
 
                             if(isPrivacyOptionsRequired()) {
@@ -86,8 +134,12 @@ namespace GDPRConsentPolicy {
                             }];
                     }];
 
+            // Согласие уже получено при прошлом запуске: реклама не ждёт сети (и работает без неё),
+            // но всё равно только после ответа на ATT.
             if (UMPConsentInformation.sharedInstance.canRequestAds) {
-                sendCallback();
+                requestTrackingAuthorizationIfNeeded(^{
+                    sendCallback();
+                });
             }
         }
 
