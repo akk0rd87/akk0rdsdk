@@ -34,14 +34,15 @@ def getProfile(app_bundle_name):
         return 1
 
     # READ PROFILES BY APP BUNDLE ID
-    URL = "https://api.appstoreconnect.apple.com/v1/bundleIds/" + appBundleId + "/profiles?fields[profiles]=profileState,bundleId,uuid,name,profileType,profileContent,expirationDate"
+    URL = "https://api.appstoreconnect.apple.com/v1/bundleIds/" + appBundleId + "/profiles?fields[profiles]=profileState,bundleId,uuid,name,profileType,profileContent,expirationDate,createdDate"
     data = getJson(URL)
     # print(data)
 
     class Profile:
-        def __init__(self, name, expirationDate, uuid, profileContent):
+        def __init__(self, name, expirationDate, createdDate, uuid, profileContent):
             self.name = name
             self.expirationDate = expirationDate
+            self.createdDate = createdDate
             self.uuid = uuid
             self.profileContent = profileContent
 
@@ -58,10 +59,12 @@ def getProfile(app_bundle_name):
             print(f"profile uuid : {attrs['uuid']}")
             print(f"profile expirationDate : {attrs['expirationDate']}")
 
-            profile = Profile(attrs['name'], attrs['expirationDate'], attrs['uuid'], attrs['profileContent'])
+            profile = Profile(attrs['name'], attrs['expirationDate'], attrs.get('createdDate') or '', attrs['uuid'], attrs['profileContent'])
             profiles.append(profile)
 
-    sorted_profiles_desc = sorted(profiles, key=lambda x: x.expirationDate, reverse=True)
+    # Профили с одним сертификатом истекают одновременно; при равном сроке берём самый новый —
+    # перевыпущенный, например, после добавления возможности App ID
+    sorted_profiles_desc = sorted(profiles, key=lambda x: (x.expirationDate, x.createdDate), reverse=True)
 
     for p in sorted_profiles_desc:
         print("Choose profile for saving: ")
