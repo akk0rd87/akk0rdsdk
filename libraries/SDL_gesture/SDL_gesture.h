@@ -754,7 +754,9 @@ static void GestureProcessEvent(const SDL_Event *event)
     float dtheta;
     float dDist;
 
-    if (event->type == SDL_EVENT_FINGER_MOTION || event->type == SDL_EVENT_FINGER_DOWN || event->type == SDL_EVENT_FINGER_UP) {
+    /* Akkord: SDL_EVENT_FINGER_CANCELED тоже — иначе ветка для него ниже недостижима, отмененный палец (iOS
+       отменяет касания системными жестами) остается в numDownFingers, и движение одним пальцем дает MULTIGESTURE */
+    if (event->type == SDL_EVENT_FINGER_MOTION || event->type == SDL_EVENT_FINGER_DOWN || event->type == SDL_EVENT_FINGER_UP || event->type == SDL_EVENT_FINGER_CANCELED) {
         GestureTouch *inTouch = GestureGetTouch(event->tfinger.touchID);
 
         if (inTouch == NULL) {  /* we maybe didn't see this one before. */
