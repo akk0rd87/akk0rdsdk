@@ -41,6 +41,10 @@ SDL_PROC(void, glDrawElements, (GLenum, GLsizei, GLenum, const GLvoid*))
 class VideoBuffer_OPENGLES;
 class VideoAdapter_OPENGLES : public VideoAdapter {
 public:
+    // Индексы GLushort адресуют не больше 65536 вершин: буфер рисуется кусками по MaxQuadsPerDraw символов,
+    // индексы в каждом куске считаются от его первой вершины
+    static constexpr unsigned MaxQuadsPerDraw = 16384; // 16384 * 4 вершины = 65536
+
     virtual std::unique_ptr<VideoBuffer> CreateVideoBuffer() override; // forward declaration
 
     ~VideoAdapter_OPENGLES() {
@@ -364,11 +368,11 @@ gl_FragColor = result_color; \
         return true;
     }
 
-    template <class UVBuffer, class squareVerticesBuffer, class IndicesBuffer>
-    void DrawElements(const UVBuffer& UV, const squareVerticesBuffer& squareVertices, const IndicesBuffer& Indices, GLint UVElementLogicalSize) {
-        glVertexAttribPointer(Attributes::SDF_ATTRIB_POSITION, static_cast<GLint>(2), static_cast<GLenum>(GL_FLOAT), static_cast<GLboolean>(GL_FALSE), static_cast<GLsizei>(0), &squareVertices.front()); CheckGLESError();
-        glVertexAttribPointer(Attributes::SDF_ATTRIB_UV, UVElementLogicalSize, static_cast<GLenum>(GL_FLOAT), static_cast<GLboolean>(GL_FALSE), static_cast<GLsizei>(0), &UV.front()); CheckGLESError();
-        glDrawElements(static_cast<GLenum>(GL_TRIANGLES), static_cast<GLsizei>(Indices.size()), static_cast<GLenum>(GL_UNSIGNED_SHORT), &Indices.front()); CheckGLESError();
+    // указатели — на первую вершину рисуемого куска; индексы считаются от нее
+    void DrawElements(const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLsizei IndicesCount, GLint UVElementLogicalSize) {
+        glVertexAttribPointer(Attributes::SDF_ATTRIB_POSITION, static_cast<GLint>(2), static_cast<GLenum>(GL_FLOAT), static_cast<GLboolean>(GL_FALSE), static_cast<GLsizei>(0), squareVertices); CheckGLESError();
+        glVertexAttribPointer(Attributes::SDF_ATTRIB_UV, UVElementLogicalSize, static_cast<GLenum>(GL_FLOAT), static_cast<GLboolean>(GL_FALSE), static_cast<GLsizei>(0), UV); CheckGLESError();
+        glDrawElements(static_cast<GLenum>(GL_TRIANGLES), IndicesCount, static_cast<GLenum>(GL_UNSIGNED_SHORT), Indices); CheckGLESError();
     }
 
     void DrawLinearGradientRect(const AkkordRect& Rect, const AkkordColor& X0Y0, const AkkordColor& X1Y0, const AkkordColor& X1Y1, const AkkordColor& X0Y1) override {
@@ -415,7 +419,7 @@ gl_FragColor = result_color; \
             glUseProgram(LinearGradientProgram.programId); CheckGLESError(); PrintGLESProgamLog(LinearGradientProgram.programId);
         }
 
-        DrawElements(UV, squareVertices, Indices, 4);
+        DrawElements(UV.data(), squareVertices.data(), Indices.data(), static_cast<GLsizei>(Indices.size()), 4);
 
         if (LinearGradientProgram.programId != openGLState.ProgramId && openGLState.ProgramId > 0) {
             glUseProgram(openGLState.ProgramId); CheckGLESError();
@@ -525,7 +529,8 @@ public:
                 Dest.w, Dest.y
             });
 
-        const decltype(Indices)::value_type PointsCnt0 = static_cast<decltype(Indices)::value_type>((Indices.size() / 6) * 4);
+        // номер первой вершины символа внутри его куска (см. VideoAdapter_OPENGLES::MaxQuadsPerDraw)
+        const decltype(Indices)::value_type PointsCnt0 = static_cast<decltype(Indices)::value_type>(((Indices.size() / 6) % VideoAdapter_OPENGLES::MaxQuadsPerDraw) * 4);
         const decltype(PointsCnt0) PointsCnt1 = PointsCnt0 + 1;
         const decltype(PointsCnt0) PointsCnt2 = PointsCnt0 + 2;
         const decltype(PointsCnt0) PointsCnt3 = PointsCnt0 + 3;
@@ -620,7 +625,13 @@ void VideoAdapter_OPENGLES::DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, co
         }
     }
 
-    DrawElements(Buffer.UV, Buffer.squareVertices, Buffer.Indices, 2);
+    // кусками по MaxQuadsPerDraw символов: 4 вершины (по 2 float координат и UV) и 6 индексов на символ
+    const size_t quadsCount = Buffer.Indices.size() / 6;
+    for (size_t firstQuad = 0; firstQuad < quadsCount; firstQuad += MaxQuadsPerDraw) {
+        const size_t chunkQuads = std::min<size_t>(MaxQuadsPerDraw, quadsCount - firstQuad);
+        DrawElements(Buffer.UV.data() + firstQuad * 8, Buffer.squareVertices.data() + firstQuad * 8,
+            Buffer.Indices.data() + firstQuad * 6, static_cast<GLsizei>(chunkQuads * 6), 2);
+    }
     // unbind texture
     glBindTexture(GL_TEXTURE_2D, 0); CheckGLESError();
 
