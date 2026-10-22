@@ -1,3 +1,5 @@
+// до basewrapper.h: реализация SDL_gesture.h находится внутри его include guard
+#define SDL_GESTURE_IMPLEMENTATION
 #include "basewrapper.h"
 #include "core/platformwrapper/platforms.h"
 #include "core/core_defines.h"
@@ -55,6 +57,10 @@ bool BWrapper::Init(Uint32 flags)
     {
         logError("BWrapper::Init: Error %s", SDL_GetError());
         return false;
+    }
+
+    if (Gesture_Init() != 0) {
+        logError("BWrapper::Init: Gesture_Init error %s", SDL_GetError());
     }
 
     SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
@@ -782,6 +788,7 @@ int BWrapper::GetDisplayDPI(int DisplayIndex, float* Ddpi, float* Hdpi, float* V
 
 void BWrapper::Quit()
 {
+    Gesture_Quit();
     SDL_Quit();
     //atexit(SDL_Quit);
 }

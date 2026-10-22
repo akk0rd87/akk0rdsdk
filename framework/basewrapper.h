@@ -3,6 +3,9 @@
 
 #include "framework_defines.h"
 #include "core/locale.h"
+// В SDL3 нет SDL_MULTIGESTURE: событие GESTURE_MULTIGESTURE (Gesture_MultiGestureEvent) с теми же полями, что и в SDL2.
+// Реализация собирается в basewrapper.cpp, Gesture_Init вызывает BWrapper::Init
+#include "../libraries/SDL_gesture/SDL_gesture.h"
 
 class AkkordPoint : public SDL_Point
 {
