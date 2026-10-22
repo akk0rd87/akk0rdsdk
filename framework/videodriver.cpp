@@ -653,9 +653,10 @@ bool VideoDriver::Init(const VideoDriver::Feature Features) {
 };
 
 void VideoDriver::ShutDown() {
-    //if (videoAdapter) {
-    //    videoAdapter.reset();
-    //}
+    // до уничтожения рендерера: GPU-бэкенд освобождает шейдер и SDL_GPURenderState
+    if (videoAdapter) {
+        videoAdapter->ShutDown();
+    }
 };
 
 bool VideoDriver::DrawLinearGradientRect(const AkkordRect& Rect, const AkkordColor& X0Y0, const AkkordColor& X1Y0, const AkkordColor& X1Y1, const AkkordColor& X0Y1) {

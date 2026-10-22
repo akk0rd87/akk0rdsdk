@@ -3,6 +3,7 @@
 #include "basewrapper.h"
 #include "core/platformwrapper/platforms.h"
 #include "core/core_defines.h"
+#include "core/videoadapter/video_gpu_formats.h"
 #include <ctime>
 
 static_assert (!std::numeric_limits<char>::is_signed, "Char data type must be as unsigned char data type. Set compiler flag -funsigned-char for GCC or /J for MSVC");
@@ -226,7 +227,18 @@ AkkordWindow* BWrapper::CreateRenderWindow(const char* Title, int X, int Y, int 
 
 AkkordRenderer* BWrapper::CreateRenderer(AkkordWindow* window, const char* DriverName)
 {
-    auto rnd = SDL_CreateRenderer(window, DriverName);
+    const auto props = SDL_CreateProperties();
+    SDL_SetPointerProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, window);
+    if (DriverName) {
+        SDL_SetStringProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING, DriverName);
+    }
+    // для GPU-рендерера: форматы, в которых есть SDF-шейдер, — SDL выберет устройство, которое их понимает
+    // (только DXIL — Direct3D 12). Остальные рендереры эти свойства не читают
+    SDL_SetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_SPIRV_BOOLEAN, AKKORD_SDK_GPU_SHADERS_SPIRV);
+    SDL_SetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_DXIL_BOOLEAN, AKKORD_SDK_GPU_SHADERS_DXIL);
+    SDL_SetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_MSL_BOOLEAN, AKKORD_SDK_GPU_SHADERS_MSL);
+    auto rnd = SDL_CreateRendererWithProperties(props);
+    SDL_DestroyProperties(props);
     if (nullptr == rnd)
         logError("CreateRenderer error = %s", SDL_GetError());
     else

@@ -606,7 +606,7 @@ void VideoAdapter_OPENGLES::DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, co
         return;
     }
     glUniform4f(shaderProgram->font_color, GLfloat(Params.Color->GetR()) / 255.0F, GLfloat(Params.Color->GetG()) / 255.0F, GLfloat(Params.Color->GetB()) / 255.0F, GLfloat(Params.Color->GetA()) / 255.0F); CheckGLESError();
-    const GLfloat smoothness = std::min(0.3F, 0.25F / static_cast<GLfloat>(Params.Spread) / Params.Scale * 1.5F) * 850.0F / 255.0F / 3.333F;
+    const GLfloat smoothness = Params.GetSmoothness();
     glUniform1f(shaderProgram->smooth, smoothness); CheckGLESError();
 
     if (Params.Outline) {
@@ -618,7 +618,7 @@ void VideoAdapter_OPENGLES::DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, co
         }
 
         if (shaderProgram->border >= 0) {
-            glUniform1f(shaderProgram->border, Params.Border / 6.666F); CheckGLESError();
+            glUniform1f(shaderProgram->border, Params.GetShaderBorder()); CheckGLESError();
         }
         else {
             logError("shaderProgram->border error %d", shaderProgram->border);
