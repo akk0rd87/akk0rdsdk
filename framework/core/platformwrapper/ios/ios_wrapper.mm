@@ -350,7 +350,7 @@ class iOSPlatformWrapper : public PlatformWrapper {
 
             // Размер берём из рендерера — те же пиксели, что возвращает BWrapper::GetScreenSize()
             int rendererW = 0, rendererH = 0;
-            SDL_GetRendererOutputSize(CurrentRenderer, &rendererW, &rendererH);
+            SDL_GetCurrentRenderOutputSize(CurrentRenderer, &rendererW, &rendererH);
 
             CGFloat scale = [UIScreen mainScreen].scale;
 

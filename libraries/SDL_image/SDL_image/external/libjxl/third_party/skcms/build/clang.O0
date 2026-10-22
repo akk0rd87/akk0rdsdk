@@ -1,3 +1,0 @@
-mode          = .O0
-extra_cflags  = -O0
-include build/clang

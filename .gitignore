@@ -88,3 +88,4 @@ libraries/libharu/out/build/x86-Release/.ninja*
 libraries/libharu/out/build/x86-Release/build.ninja
 libraries/libharu/out/build/x86-Release/VSInheritEnvironments.txt
 /libraries/libharu/out/build/cmake/include/hpdf_config.h
+ci/proj.win32/build/

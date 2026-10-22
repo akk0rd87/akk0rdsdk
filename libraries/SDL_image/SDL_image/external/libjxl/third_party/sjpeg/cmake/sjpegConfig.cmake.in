@@ -1,3 +1,0 @@
-@PACKAGE_INIT@
-
-set(sjpeg_LIBRARIES "sjpeg")

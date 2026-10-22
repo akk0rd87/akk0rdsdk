@@ -1,3 +1,0 @@
-mode         = .nofp16
-extra_cflags = -march=armv8.2a+fp16
-include build/android

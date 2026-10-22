@@ -29,9 +29,8 @@ extern "C" {
         if (auto window = BWrapper::GetActiveWindow()) {
             SDL_Event sdl_Event;
             SDL_zero(sdl_Event);
-            sdl_Event.type = SDL_WINDOWEVENT;
+            sdl_Event.type = SDL_EVENT_WINDOW_EXPOSED;
             sdl_Event.window.windowID = SDL_GetWindowID(window);
-            sdl_Event.window.event = SDL_WINDOWEVENT_EXPOSED;
             SDL_PushEvent(&sdl_Event);
         }
     };
@@ -179,7 +178,7 @@ class AndroidPlatformWrapper : public PlatformWrapper, public MessageBoxCallback
 
         // Размер берём из рендерера — те же пиксели, что возвращает BWrapper::GetScreenSize()
         int rendererW = 0, rendererH = 0;
-        SDL_GetRendererOutputSize(CurrentRenderer, &rendererW, &rendererH);
+        SDL_GetCurrentRenderOutputSize(CurrentRenderer, &rendererW, &rendererH);
 
         // при повороте размер рендерера и insets могут на кадр разойтись
         const int w = rendererW - insets.left - insets.right;
@@ -253,11 +252,11 @@ int AndroidWrapper::AndroidGetApiLevel() {
 };
 
 JNIEnv* AndroidWrapper::GetJNIEnv() {
-    return (JNIEnv*)SDL_AndroidGetJNIEnv();
+    return (JNIEnv*)SDL_GetAndroidJNIEnv();
 };
 
 jobject AndroidWrapper::GetActivity() {
-    return reinterpret_cast<jobject>(SDL_AndroidGetActivity());
+    return reinterpret_cast<jobject>(SDL_GetAndroidActivity());
 };
 
 bool AndroidWrapper::CallActivityBooleanMethod(const char* methodName) {

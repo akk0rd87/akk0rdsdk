@@ -25,7 +25,7 @@
 #endif
 
 //-----------------------------------------------------------------------------
-// Purpose: Steam Controller models 
+// Purpose: Steam Controller models
 // WARNING: DO NOT RENUMBER EXISTING VALUES - STORED IN A DATABASE
 //-----------------------------------------------------------------------------
 typedef enum
@@ -37,7 +37,9 @@ typedef enum
 	k_eControllerType_UnknownSteamController = 1,
 	k_eControllerType_SteamController = 2,
 	k_eControllerType_SteamControllerV2 = 3,
-	k_eControllerType_SteamDeck = 4,
+	k_eControllerType_SteamControllerNeptune = 4,
+
+	k_eControllerType_SteamControllerTriton = 10,
 
 	// Other Controllers
 	k_eControllerType_UnknownNonSteamController = 30,
@@ -56,7 +58,11 @@ typedef enum
 	k_eControllerType_MobileTouch = 43,
 	k_eControllerType_XInputSwitchController = 44,  // Client-side only, used to mark Nintendo Switch style controllers as using XInput instead of the Nintendo Switch protocol
 	k_eControllerType_PS5Controller = 45,
-	k_eControllerType_XInputPS4Controller = 46,     // Client-side only, used to mark DualShock 4 style controllers using XInput instead of the DualShock 4 controller protocol
+	k_eControllerType_XBoxEliteController = 46,
+	k_eControllerType_XInputPS4Controller = 47,     // Client-side only, used to mark DualShock 4 style controllers using XInput instead of the DualShock 4 controller protocol
+	k_eControllerType_PS5EdgeController = 48,
+	k_eControllerType_HoriSteamController = 49,
+	k_eControllerType_8BitDoController = 50,
 	k_eControllerType_LastController,			// Don't add game controllers below this enumeration - this enumeration can change value
 
 	// Keyboards and Mice
@@ -76,5 +82,3 @@ extern EControllerType GuessControllerType( int nVID, int nPID );
 extern const char *GuessControllerName( int nVID, int nPID );
 
 #endif // CONTROLLER_TYPE_H
-
-/* vi: set ts=4 sw=4 noexpandtab: */
