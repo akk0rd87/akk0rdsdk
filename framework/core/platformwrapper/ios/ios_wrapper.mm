@@ -1,3 +1,4 @@
+#include <cmath>
 #include "basewrapper.h"
 #include "ios_wrapper.h"
 #include "ios_rootviewcontroller.h"
@@ -337,30 +338,32 @@ class iOSPlatformWrapper : public PlatformWrapper {
         }
     }
 
+    // Safe area окна игры от SDL3 (safeAreaInsets его UIView) вместо UIApplication.keyWindow:
+    // keyWindow устарел с iOS 13 и при нескольких сценах может оказаться не тем окном
     virtual AkkordRect vGetWindowSafeArea(AkkordRenderer* CurrentRenderer, AkkordWindow* CurrentWindow) override {
-        @autoreleasepool {
-            UIEdgeInsets insets = UIEdgeInsetsZero;
+        // Размер берём из рендерера — те же пиксели, что возвращает BWrapper::GetScreenSize()
+        int rendererW = 0, rendererH = 0;
+        SDL_GetCurrentRenderOutputSize(CurrentRenderer, &rendererW, &rendererH);
 
-            if (@available(iOS 11.0, *)) {
-                UIWindow *window = [UIApplication sharedApplication].keyWindow;
-                if (window) {
-                    insets = window.safeAreaInsets;
-                }
-            }
-
-            // Размер берём из рендерера — те же пиксели, что возвращает BWrapper::GetScreenSize()
-            int rendererW = 0, rendererH = 0;
-            SDL_GetCurrentRenderOutputSize(CurrentRenderer, &rendererW, &rendererH);
-
-            CGFloat scale = [UIScreen mainScreen].scale;
-
-            int x = (int)(insets.left  * scale);
-            int y = (int)(insets.top   * scale);
-            int w = rendererW - (int)((insets.left + insets.right)  * scale);
-            int h = rendererH - (int)((insets.top  + insets.bottom) * scale);
-
-            return AkkordRect(x, y, w, h);
+        // SDL_GetWindowSafeArea — в координатах окна (точках), рендерер — в пикселях
+        SDL_Rect area;
+        int windowW = 0, windowH = 0;
+        if (!SDL_GetWindowSafeArea(CurrentWindow, &area) || !SDL_GetWindowSize(CurrentWindow, &windowW, &windowH) || windowW <= 0 || windowH <= 0) {
+            logError("SDL_GetWindowSafeArea error: %s", SDL_GetError());
+            return AkkordRect(0, 0, rendererW, rendererH);
         }
+        const float scaleX = static_cast<float>(rendererW) / static_cast<float>(windowW);
+        const float scaleY = static_cast<float>(rendererH) / static_cast<float>(windowH);
+
+        // края округляем внутрь безопасной области
+        const int left   = static_cast<int>(std::ceil(area.x * scaleX));
+        const int top    = static_cast<int>(std::ceil(area.y * scaleY));
+        const int right  = static_cast<int>(std::floor((area.x + area.w) * scaleX));
+        const int bottom = static_cast<int>(std::floor((area.y + area.h) * scaleY));
+        if (right <= left || bottom <= top) {
+            return AkkordRect(0, 0, rendererW, rendererH);
+        }
+        return AkkordRect(left, top, right - left, bottom - top);
     }
 };
 
