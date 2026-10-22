@@ -2,7 +2,7 @@
 #define __AKK0RD_SDK_VIDEOADAPTER_OPENGLES_H__
 
 #include <cstring>
-#include "SDL_opengles2.h"
+#include <SDL3/SDL_opengles2.h>
 #include "video_interface.h"
 #include <array>
 
@@ -430,6 +430,44 @@ gl_FragColor = result_color; \
         }
     }
 
+    // В SDL3 нет SDL_GL_BindTexture: номер GL-текстуры берется из свойств текстуры (у рендереров opengles2 и opengl они разные).
+    // Кэш состояния SDL сбрасывает SDL_FlushRenderer, поэтому после своих GL-вызовов SDL сам заново привяжет свои текстуры
+    bool BindTexture(SDL_Texture* Texture) {
+        const auto props = SDL_GetTextureProperties(Texture);
+        auto textureId = SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_NUMBER, 0);
+        auto target = SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_TARGET_NUMBER, GL_TEXTURE_2D);
+        if (!textureId) {
+            textureId = SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_OPENGL_TEXTURE_NUMBER, 0);
+            target = SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_OPENGL_TEXTURE_TARGET_NUMBER, GL_TEXTURE_2D);
+        }
+        if (!textureId) {
+            logError("Texture is not an OpenGL texture (renderer %s)", SDL_GetRendererName(SDL_GetRendererFromTexture(Texture)));
+            return false;
+        }
+        // шейдеры используют sampler2D с нормализованными координатами
+        if (target != GL_TEXTURE_2D) {
+            logError("Unsupported texture target 0x%x", static_cast<unsigned>(target));
+            return false;
+        }
+        glActiveTexture(GL_TEXTURE0); CheckGLESError();
+        glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(textureId)); CheckGLESError();
+        return true;
+    }
+
+    void RestoreOpenGLState(const OpenGLState& openGLState, GLuint UsedProgramId) {
+        if (UsedProgramId != static_cast<GLuint>(openGLState.ProgramId) && openGLState.ProgramId > 0) {
+            glUseProgram(openGLState.ProgramId); CheckGLESError();
+        }
+
+        { // возвращаем все исходное состояние
+            // в рамках обработки SDF мы включили эти атрибуты. Возвращаем их в исходное состояние
+            if (openGLState.attr_0_enabled == GL_FALSE) { glDisableVertexAttribArray(static_cast<GLuint>(0)); CheckGLESError(); }
+            if (openGLState.attr_1_enabled == GL_FALSE) { glDisableVertexAttribArray(static_cast<GLuint>(1)); CheckGLESError(); }
+
+            if (openGLState.attr_2_enabled != GL_FALSE) { glEnableVertexAttribArray(static_cast<GLuint>(2)); CheckGLESError(); }
+        }
+    }
+
     friend class VideoBuffer_OPENGLES;
     void DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, const VideoSDFBufferDrawParams& Params);
 };
@@ -558,7 +596,10 @@ void VideoAdapter_OPENGLES::DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, co
     if (openGLState.ProgramId != shaderProgram->programId) {
         glUseProgram(shaderProgram->programId); CheckGLESError(); PrintGLESProgamLog(shaderProgram->programId);
     }
-    SDL_GL_BindTexture(Params.Texture, nullptr, nullptr);
+    if (!BindTexture(Params.Texture)) {
+        RestoreOpenGLState(openGLState, shaderProgram->programId);
+        return;
+    }
     glUniform4f(shaderProgram->font_color, GLfloat(Params.Color->GetR()) / 255.0F, GLfloat(Params.Color->GetG()) / 255.0F, GLfloat(Params.Color->GetB()) / 255.0F, GLfloat(Params.Color->GetA()) / 255.0F); CheckGLESError();
     const GLfloat smoothness = std::min(0.3F, 0.25F / static_cast<GLfloat>(Params.Spread) / Params.Scale * 1.5F) * 850.0F / 255.0F / 3.333F;
     glUniform1f(shaderProgram->smooth, smoothness); CheckGLESError();
@@ -581,19 +622,9 @@ void VideoAdapter_OPENGLES::DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, co
 
     DrawElements(Buffer.UV, Buffer.squareVertices, Buffer.Indices, 2);
     // unbind texture
-    SDL_GL_UnbindTexture(Params.Texture);
+    glBindTexture(GL_TEXTURE_2D, 0); CheckGLESError();
 
-    if (shaderProgram->programId != openGLState.ProgramId && openGLState.ProgramId > 0) {
-        glUseProgram(openGLState.ProgramId); CheckGLESError();
-    }
-
-    { // возвращаем все исходное состояние
-        // в рамках обработки SDF мы включили эти атрибуты. Возвращаем их в исходное состояние
-        if (openGLState.attr_0_enabled == GL_FALSE) { glDisableVertexAttribArray(static_cast<GLuint>(0)); CheckGLESError(); }
-        if (openGLState.attr_1_enabled == GL_FALSE) { glDisableVertexAttribArray(static_cast<GLuint>(1)); CheckGLESError(); }
-
-        if (openGLState.attr_2_enabled != GL_FALSE) { glEnableVertexAttribArray(static_cast<GLuint>(2)); CheckGLESError(); }
-    }
+    RestoreOpenGLState(openGLState, shaderProgram->programId);
 };
 
 #undef CheckGLESError
