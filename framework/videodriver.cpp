@@ -11,23 +11,37 @@ https://github.com/libgdx/libgdx/wiki/Hiero
 */
 
 // https://habrahabr.ru/post/282191/
+// Недопустимый байт или оборванная последовательность (строка обрезана посреди символа) дают U+FFFD;
+// байты продолжения проверяются, поэтому чтение не уходит дальше завершающего '\0'
 static inline unsigned int UTF2Unicode(const /*unsigned*/ char* txt, unsigned& i) {
-    unsigned int a = txt[i++];
+    constexpr unsigned int replacementChar{ 0xFFFD };
+    unsigned int a = static_cast<unsigned char>(txt[i++]);
     if ((a & 0x80) == 0)return a;
+
+    unsigned int continuationBytes;
     if ((a & 0xE0) == 0xC0) {
-        a = (a & 0x1F) << 6;
-        a |= txt[i++] & 0x3F;
+        a &= 0x1F;
+        continuationBytes = 1;
     }
     else if ((a & 0xF0) == 0xE0) {
-        a = (a & 0xF) << 12;
-        a |= (txt[i++] & 0x3F) << 6;
-        a |= txt[i++] & 0x3F;
+        a &= 0x0F;
+        continuationBytes = 2;
     }
     else if ((a & 0xF8) == 0xF0) {
-        a = (a & 0x7) << 18;
-        a |= (a & 0x3F) << 12;
-        a |= (txt[i++] & 0x3F) << 6;
-        a |= txt[i++] & 0x3F;
+        a &= 0x07;
+        continuationBytes = 3;
+    }
+    else { // байт продолжения без начала символа
+        return replacementChar;
+    }
+
+    for (; continuationBytes > 0; --continuationBytes) {
+        const unsigned int c = static_cast<unsigned char>(txt[i]);
+        if ((c & 0xC0) != 0x80) { // '\0' и начало следующего символа не пропускаем
+            return replacementChar;
+        }
+        a = (a << 6) | (c & 0x3F);
+        ++i;
     }
     return a;
 };
@@ -274,6 +288,7 @@ bool SDFFont::ParseFontMap(myStream& fonsStream)
 bool SDFFont::LoadCharMapFromMemory(const char* Buffer, int Size)
 {
     CharsMap.clear();
+    MissingChars.clear();
     MyStream ms(Buffer, Size);
     return ParseFontMap(ms);
 };
@@ -281,6 +296,7 @@ bool SDFFont::LoadCharMapFromMemory(const char* Buffer, int Size)
 bool SDFFont::ParseFNTFile(const char* FNTFile, BWrapper::FileSearchPriority SearchPriority)
 {
     CharsMap.clear();
+    MissingChars.clear();
     FileReader fr;
     if (fr.Open(FNTFile, SearchPriority))
     {
@@ -318,7 +334,7 @@ std::pair<float, float> SDFFontBuffer::GetTextSizeByLine(const char* Text, float
     if (Text != nullptr) {
         unsigned i{ 0 }, linesCount{ 0 };;
         float localPointX{ 0.0F };
-        SDFFont::SDFCharInfo charParams;
+        SDFFont::SDFCharInfo charParams{};
         while (true) {
             const auto a = UTF2Unicode(Text, i);
             switch (a) {
@@ -339,8 +355,9 @@ std::pair<float, float> SDFFontBuffer::GetTextSizeByLine(const char* Text, float
                 break;
 
             default:
-                sdfFont->GetCharInfo(a, charParams);
-                localPointX += ParamScaleX * (charParams.xoffset + charParams.xadvance);
+                if (sdfFont->GetCharInfo(a, charParams)) { // символа нет в шрифте — пропускаем
+                    localPointX += ParamScaleX * (charParams.xoffset + charParams.xadvance);
+                }
                 break;
             }
         }
@@ -383,7 +400,7 @@ AkkordPoint SDFFontBuffer::DrawText(float X, float Y, const char* Text) {
         float x_start, x_current, y_current{ Y };
         unsigned i{ 0 }, line{ 0 };
 
-        SDFFont::SDFCharInfo charParams;
+        SDFFont::SDFCharInfo charParams{};
 
         switch (alignV)
         {
@@ -433,7 +450,9 @@ AkkordPoint SDFFontBuffer::DrawText(float X, float Y, const char* Text) {
                 break;
 
             default:
-                sdfFont->GetCharInfo(a, charParams);
+                if (!sdfFont->GetCharInfo(a, charParams)) { // символа нет в шрифте — пропускаем, как и при расчете размера
+                    break;
+                }
                 x_current += scaleX * charParams.xoffset;
 
                 srcRect.x = charParams.x;
@@ -463,6 +482,19 @@ AkkordPoint SDFFontBuffer::DrawText(float X, float Y, const char* Text) {
 void SDFFontBuffer::WrapText(const char* Text, float ScaleMutiplier, std::string& ResultString, float& UsedScale, AkkordPoint& Size)
 {
     UsedScale = scaleX;
+    if (nullptr == Text) {
+        Text = "";
+    }
+
+    // без области переноса (SetRect не вызван: rectW = rectH = -1) или с множителем не из (0, 1)
+    // подбор масштаба ниже никогда не закончится — текст возвращается без переноса
+    if (rectW <= 0.0F || rectH <= 0.0F || !(0.0F < ScaleMutiplier && ScaleMutiplier < 1.0F)) {
+        logError("WrapText: invalid rect %.1fx%.1f or scale multiplier %f", rectW, rectH, ScaleMutiplier);
+        ResultString = Text;
+        Size = GetTextSize(Text);
+        return;
+    }
+
     const auto font_line_height = sdfFont->GetLineHeight();
     const char* textPtr{ Text };
 
@@ -482,7 +514,7 @@ void SDFFontBuffer::WrapText(const char* Text, float ScaleMutiplier, std::string
 
     // лямбда для определения размера слова в единицах шрифта
     auto GetWordSize = [](SDFFont* sdfFont, const char* Word) {
-        SDFFont::SDFCharInfo charParams;
+        SDFFont::SDFCharInfo charParams{};
         float xSize{ 0.0F };
         unsigned int i{ 0 };
         while (1) {
@@ -490,16 +522,17 @@ void SDFFontBuffer::WrapText(const char* Text, float ScaleMutiplier, std::string
             if (!a) {
                 break;
             }
-            sdfFont->GetCharInfo(a, charParams);
-            xSize += charParams.xadvance;
-            xSize += charParams.xoffset;
+            if (sdfFont->GetCharInfo(a, charParams)) { // символа нет в шрифте — пропускаем, как и при рисовании
+                xSize += charParams.xadvance;
+                xSize += charParams.xoffset;
+            }
         };
         return xSize;
     };
 
     unsigned lines_cnt = 0;
     float x_pos = 0, max_line_len = 0;
-    SDFFont::SDFCharInfo charParams;
+    SDFFont::SDFCharInfo charParams{};
 
     // сначала пробегаем по всем словам, и делаем так, чтобы каждое слово было меньше ширины выделенного под текст прямоугольника
     while (1) {
@@ -529,8 +562,7 @@ repeat_again:
     textPtr = Text;
     lines_cnt = 0;
     max_line_len = x_pos = 0.0F;
-    sdfFont->GetCharInfo(32 /* space */, charParams);
-    const auto space_len = UsedScale * (charParams.xoffset + charParams.xadvance);
+    const auto space_len = sdfFont->GetCharInfo(32 /* space */, charParams) ? UsedScale * (charParams.xoffset + charParams.xadvance) : 0.0F;
     while (1) {
         GetNextWord(SharedPool.strObject);
         const auto xSize = UsedScale * GetWordSize(sdfFont, SharedPool.strObject.c_str());

@@ -2,6 +2,7 @@
 #define __AKK0RD_SDK_VIDEODRIVER_H__
 
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <cmath>
 #include "basewrapper.h"
@@ -123,6 +124,7 @@ public:
 
     void Clear() {
         CharsMap.clear();
+        MissingChars.clear();
         FontAtlas.Clear();
     };
 
@@ -139,6 +141,7 @@ private:
     float LineHeight = 0.0F, ScaleW = 0.0F, ScaleH = 0.0F;
     unsigned int Spread = 0;
     std::unordered_map<unsigned, SDFFont::SDFCharInfo> CharsMap;
+    mutable std::unordered_set<unsigned> MissingChars; // символы, об отсутствии которых уже записано в лог
 
     template <class fntStream>
     bool ParseFontMap(fntStream& fonsStream);
@@ -146,13 +149,16 @@ private:
     float GetAtlasW() const { return ScaleW; };
     float GetAtlasH() const { return ScaleH; };
 
+    // false — символа нет в шрифте: ci не меняется, вызывающий код такой символ пропускает
     bool GetCharInfo(unsigned Code, SDFFont::SDFCharInfo& ci) const {
         const auto res = CharsMap.find(Code);
         if (res != CharsMap.end()) {
             ci = res->second;
             return true;
         }
-        logError("Char with id=%u not found", Code);
+        if (MissingChars.insert(Code).second) { // в лог — один раз на символ, а не в каждом кадре
+            logError("Char with id=%u not found", Code);
+        }
         return false;
     };
     float GetLineHeight() const { return LineHeight; };
