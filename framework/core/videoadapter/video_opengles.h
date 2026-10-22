@@ -419,6 +419,7 @@ gl_FragColor = result_color; \
             glUseProgram(LinearGradientProgram.programId); CheckGLESError(); PrintGLESProgamLog(LinearGradientProgram.programId);
         }
 
+        EnableBlend();
         DrawElements(UV.data(), squareVertices.data(), Indices.data(), static_cast<GLsizei>(Indices.size()), 4);
 
         if (LinearGradientProgram.programId != openGLState.ProgramId && openGLState.ProgramId > 0) {
@@ -456,6 +457,15 @@ gl_FragColor = result_color; \
         glActiveTexture(GL_TEXTURE0); CheckGLESError();
         glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(textureId)); CheckGLESError();
         return true;
+    }
+
+    // Смешивание как у SDL_BLENDMODE_BLEND. SDL включает его только перед своими командами, поэтому сразу после
+    // SDL_RenderClear или спрайта без смешивания оно бывает выключено — и прямоугольники символов закрашивались целиком.
+    // Восстанавливать не нужно: FlushRenderer сбросил кэш SDL, и следующая команда SDL выставит смешивание сама
+    void EnableBlend() {
+        glEnable(GL_BLEND); CheckGLESError();
+        glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD); CheckGLESError();
+        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA); CheckGLESError();
     }
 
     void RestoreOpenGLState(const OpenGLState& openGLState, GLuint UsedProgramId) {
@@ -625,6 +635,7 @@ void VideoAdapter_OPENGLES::DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, co
         }
     }
 
+    EnableBlend();
     // кусками по MaxQuadsPerDraw символов: 4 вершины (по 2 float координат и UV) и 6 индексов на символ
     const size_t quadsCount = Buffer.Indices.size() / 6;
     for (size_t firstQuad = 0; firstQuad < quadsCount; firstQuad += MaxQuadsPerDraw) {
