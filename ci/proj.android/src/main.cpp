@@ -27,6 +27,10 @@ bool Init()
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
         break;
 
+    case BWrapper::OS::iOS: // на iOS — GPU-рендерер SDL3 (Metal); в симуляторе он не создается — OpenGL ES
+        SDL_SetHint(SDL_HINT_RENDER_DRIVER, "gpu,opengles2");
+        break;
+
     default: // на всем остальном работаем на openGLES 2.0
         SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengles2");
         break;
