@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Сборка шейдеров GPU-бэкенда (video_gpu.h) в заголовки с массивами байтов, как в SDL (src/render/gpu/shaders).
-#   shadercross (SDL_shadercross) — SPIR-V, MSL и DXIL;
+#   shadercross (SDL_shadercross, сборка из исходников с вендорными зависимостями) — SPIR-V, MSL и DXIL;
 #   без него — только DXIL через dxc (на Windows — из Windows SDK).
 # Какие форматы собраны, video_gpu_formats.h определяет по наличию заголовков.
 

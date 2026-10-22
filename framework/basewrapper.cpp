@@ -233,7 +233,7 @@ AkkordRenderer* BWrapper::CreateRenderer(AkkordWindow* window, const char* Drive
         SDL_SetStringProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING, DriverName);
     }
     // для GPU-рендерера: форматы, в которых есть SDF-шейдер, — SDL выберет устройство, которое их понимает
-    // (только DXIL — Direct3D 12). Остальные рендереры эти свойства не читают
+    // (DXIL — Direct3D 12, MSL — Metal, SPIR-V — Vulkan). Остальные рендереры эти свойства не читают
     SDL_SetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_SPIRV_BOOLEAN, AKKORD_SDK_GPU_SHADERS_SPIRV);
     SDL_SetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_DXIL_BOOLEAN, AKKORD_SDK_GPU_SHADERS_DXIL);
     SDL_SetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_MSL_BOOLEAN, AKKORD_SDK_GPU_SHADERS_MSL);
