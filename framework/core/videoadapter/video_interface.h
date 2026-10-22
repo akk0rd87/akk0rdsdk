@@ -2,7 +2,7 @@
 #define __AKK0RD_SDK_VIDEOADAPTER_INTERFACE_H__
 #include <memory>
 #include "basewrapper.h"
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 using VideoFloatRect = AkkordFRect;
 struct VideoBufferAppendParams {
@@ -22,6 +22,10 @@ struct VideoSDFBufferDrawParams {
     float Scale;
     float Border;
     int Spread;
+
+    // параметры шейдера — общие для всех бэкендов, чтобы текст выглядел одинаково
+    float GetSmoothness() const { return std::min(0.3F, 0.25F / static_cast<float>(Spread) / Scale * 1.5F) * 850.0F / 255.0F / 3.333F; }
+    float GetShaderBorder() const { return Border / 6.666F; }
 };
 
 class VideoBuffer {
@@ -39,6 +43,7 @@ public:
 
     virtual void PreInit() = 0;
     virtual void PostInit() = 0;
+    virtual void ShutDown() {}; // до уничтожения рендерера
     virtual void InitSDFPlain() = 0;
     virtual void InitSDFOutline() = 0;
     virtual void InitGradient() = 0;

@@ -1,12 +1,13 @@
 /* Contributed by Piotr Usewicz (https://github.com/pusewicz) */
 
-import SDL2
+import SDL3
 
-guard SDL_Init(Uint32(SDL_INIT_VIDEO)) == 0 else {
+guard SDL_Init(SDL_INIT_VIDEO) else {
   fatalError("SDL_Init error: \(String(cString: SDL_GetError()))")
 }
 
-var sdlVersion = SDL_version()
-SDL_GetVersion(&sdlVersion)
+var sdlVersion = SDL_GetVersion()
 
-print("SDL version: \(sdlVersion.major).\(sdlVersion.minor).\(sdlVersion.patch)")
+print("SDL version: \(sdlVersion)")
+
+SDL_Quit()

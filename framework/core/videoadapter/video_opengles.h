@@ -2,7 +2,7 @@
 #define __AKK0RD_SDK_VIDEOADAPTER_OPENGLES_H__
 
 #include <cstring>
-#include "SDL_opengles2.h"
+#include <SDL3/SDL_opengles2.h>
 #include "video_interface.h"
 #include <array>
 
@@ -41,6 +41,10 @@ SDL_PROC(void, glDrawElements, (GLenum, GLsizei, GLenum, const GLvoid*))
 class VideoBuffer_OPENGLES;
 class VideoAdapter_OPENGLES : public VideoAdapter {
 public:
+    // Индексы GLushort адресуют не больше 65536 вершин: буфер рисуется кусками по MaxQuadsPerDraw символов,
+    // индексы в каждом куске считаются от его первой вершины
+    static constexpr unsigned MaxQuadsPerDraw = 16384; // 16384 * 4 вершины = 65536
+
     virtual std::unique_ptr<VideoBuffer> CreateVideoBuffer() override; // forward declaration
 
     ~VideoAdapter_OPENGLES() {
@@ -364,11 +368,11 @@ gl_FragColor = result_color; \
         return true;
     }
 
-    template <class UVBuffer, class squareVerticesBuffer, class IndicesBuffer>
-    void DrawElements(const UVBuffer& UV, const squareVerticesBuffer& squareVertices, const IndicesBuffer& Indices, GLint UVElementLogicalSize) {
-        glVertexAttribPointer(Attributes::SDF_ATTRIB_POSITION, static_cast<GLint>(2), static_cast<GLenum>(GL_FLOAT), static_cast<GLboolean>(GL_FALSE), static_cast<GLsizei>(0), &squareVertices.front()); CheckGLESError();
-        glVertexAttribPointer(Attributes::SDF_ATTRIB_UV, UVElementLogicalSize, static_cast<GLenum>(GL_FLOAT), static_cast<GLboolean>(GL_FALSE), static_cast<GLsizei>(0), &UV.front()); CheckGLESError();
-        glDrawElements(static_cast<GLenum>(GL_TRIANGLES), static_cast<GLsizei>(Indices.size()), static_cast<GLenum>(GL_UNSIGNED_SHORT), &Indices.front()); CheckGLESError();
+    // указатели — на первую вершину рисуемого куска; индексы считаются от нее
+    void DrawElements(const GLfloat* UV, const GLfloat* squareVertices, const GLushort* Indices, GLsizei IndicesCount, GLint UVElementLogicalSize) {
+        glVertexAttribPointer(Attributes::SDF_ATTRIB_POSITION, static_cast<GLint>(2), static_cast<GLenum>(GL_FLOAT), static_cast<GLboolean>(GL_FALSE), static_cast<GLsizei>(0), squareVertices); CheckGLESError();
+        glVertexAttribPointer(Attributes::SDF_ATTRIB_UV, UVElementLogicalSize, static_cast<GLenum>(GL_FLOAT), static_cast<GLboolean>(GL_FALSE), static_cast<GLsizei>(0), UV); CheckGLESError();
+        glDrawElements(static_cast<GLenum>(GL_TRIANGLES), IndicesCount, static_cast<GLenum>(GL_UNSIGNED_SHORT), Indices); CheckGLESError();
     }
 
     void DrawLinearGradientRect(const AkkordRect& Rect, const AkkordColor& X0Y0, const AkkordColor& X1Y0, const AkkordColor& X1Y1, const AkkordColor& X0Y1) override {
@@ -415,7 +419,8 @@ gl_FragColor = result_color; \
             glUseProgram(LinearGradientProgram.programId); CheckGLESError(); PrintGLESProgamLog(LinearGradientProgram.programId);
         }
 
-        DrawElements(UV, squareVertices, Indices, 4);
+        EnableBlend();
+        DrawElements(UV.data(), squareVertices.data(), Indices.data(), static_cast<GLsizei>(Indices.size()), 4);
 
         if (LinearGradientProgram.programId != openGLState.ProgramId && openGLState.ProgramId > 0) {
             glUseProgram(openGLState.ProgramId); CheckGLESError();
@@ -423,6 +428,53 @@ gl_FragColor = result_color; \
 
         { // возвращаем все исходное состояние
           // в рамках обработки градиента мы включили эти атрибуты. Возвращаем их в исходное состояние
+            if (openGLState.attr_0_enabled == GL_FALSE) { glDisableVertexAttribArray(static_cast<GLuint>(0)); CheckGLESError(); }
+            if (openGLState.attr_1_enabled == GL_FALSE) { glDisableVertexAttribArray(static_cast<GLuint>(1)); CheckGLESError(); }
+
+            if (openGLState.attr_2_enabled != GL_FALSE) { glEnableVertexAttribArray(static_cast<GLuint>(2)); CheckGLESError(); }
+        }
+    }
+
+    // В SDL3 нет SDL_GL_BindTexture: номер GL-текстуры берется из свойств текстуры (у рендереров opengles2 и opengl они разные).
+    // Кэш состояния SDL сбрасывает SDL_FlushRenderer, поэтому после своих GL-вызовов SDL сам заново привяжет свои текстуры
+    bool BindTexture(SDL_Texture* Texture) {
+        const auto props = SDL_GetTextureProperties(Texture);
+        auto textureId = SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_NUMBER, 0);
+        auto target = SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_TARGET_NUMBER, GL_TEXTURE_2D);
+        if (!textureId) {
+            textureId = SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_OPENGL_TEXTURE_NUMBER, 0);
+            target = SDL_GetNumberProperty(props, SDL_PROP_TEXTURE_OPENGL_TEXTURE_TARGET_NUMBER, GL_TEXTURE_2D);
+        }
+        if (!textureId) {
+            logError("Texture is not an OpenGL texture (renderer %s)", SDL_GetRendererName(SDL_GetRendererFromTexture(Texture)));
+            return false;
+        }
+        // шейдеры используют sampler2D с нормализованными координатами
+        if (target != GL_TEXTURE_2D) {
+            logError("Unsupported texture target 0x%x", static_cast<unsigned>(target));
+            return false;
+        }
+        glActiveTexture(GL_TEXTURE0); CheckGLESError();
+        glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(textureId)); CheckGLESError();
+        return true;
+    }
+
+    // Смешивание как у SDL_BLENDMODE_BLEND. SDL включает его только перед своими командами, поэтому сразу после
+    // SDL_RenderClear или спрайта без смешивания оно бывает выключено — и прямоугольники символов закрашивались целиком.
+    // Восстанавливать не нужно: FlushRenderer сбросил кэш SDL, и следующая команда SDL выставит смешивание сама
+    void EnableBlend() {
+        glEnable(GL_BLEND); CheckGLESError();
+        glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD); CheckGLESError();
+        glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA); CheckGLESError();
+    }
+
+    void RestoreOpenGLState(const OpenGLState& openGLState, GLuint UsedProgramId) {
+        if (UsedProgramId != static_cast<GLuint>(openGLState.ProgramId) && openGLState.ProgramId > 0) {
+            glUseProgram(openGLState.ProgramId); CheckGLESError();
+        }
+
+        { // возвращаем все исходное состояние
+            // в рамках обработки SDF мы включили эти атрибуты. Возвращаем их в исходное состояние
             if (openGLState.attr_0_enabled == GL_FALSE) { glDisableVertexAttribArray(static_cast<GLuint>(0)); CheckGLESError(); }
             if (openGLState.attr_1_enabled == GL_FALSE) { glDisableVertexAttribArray(static_cast<GLuint>(1)); CheckGLESError(); }
 
@@ -487,7 +539,8 @@ public:
                 Dest.w, Dest.y
             });
 
-        const decltype(Indices)::value_type PointsCnt0 = static_cast<decltype(Indices)::value_type>((Indices.size() / 6) * 4);
+        // номер первой вершины символа внутри его куска (см. VideoAdapter_OPENGLES::MaxQuadsPerDraw)
+        const decltype(Indices)::value_type PointsCnt0 = static_cast<decltype(Indices)::value_type>(((Indices.size() / 6) % VideoAdapter_OPENGLES::MaxQuadsPerDraw) * 4);
         const decltype(PointsCnt0) PointsCnt1 = PointsCnt0 + 1;
         const decltype(PointsCnt0) PointsCnt2 = PointsCnt0 + 2;
         const decltype(PointsCnt0) PointsCnt3 = PointsCnt0 + 3;
@@ -558,9 +611,12 @@ void VideoAdapter_OPENGLES::DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, co
     if (openGLState.ProgramId != shaderProgram->programId) {
         glUseProgram(shaderProgram->programId); CheckGLESError(); PrintGLESProgamLog(shaderProgram->programId);
     }
-    SDL_GL_BindTexture(Params.Texture, nullptr, nullptr);
+    if (!BindTexture(Params.Texture)) {
+        RestoreOpenGLState(openGLState, shaderProgram->programId);
+        return;
+    }
     glUniform4f(shaderProgram->font_color, GLfloat(Params.Color->GetR()) / 255.0F, GLfloat(Params.Color->GetG()) / 255.0F, GLfloat(Params.Color->GetB()) / 255.0F, GLfloat(Params.Color->GetA()) / 255.0F); CheckGLESError();
-    const GLfloat smoothness = std::min(0.3F, 0.25F / static_cast<GLfloat>(Params.Spread) / Params.Scale * 1.5F) * 850.0F / 255.0F / 3.333F;
+    const GLfloat smoothness = Params.GetSmoothness();
     glUniform1f(shaderProgram->smooth, smoothness); CheckGLESError();
 
     if (Params.Outline) {
@@ -572,28 +628,25 @@ void VideoAdapter_OPENGLES::DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, co
         }
 
         if (shaderProgram->border >= 0) {
-            glUniform1f(shaderProgram->border, Params.Border / 6.666F); CheckGLESError();
+            glUniform1f(shaderProgram->border, Params.GetShaderBorder()); CheckGLESError();
         }
         else {
             logError("shaderProgram->border error %d", shaderProgram->border);
         }
     }
 
-    DrawElements(Buffer.UV, Buffer.squareVertices, Buffer.Indices, 2);
+    EnableBlend();
+    // кусками по MaxQuadsPerDraw символов: 4 вершины (по 2 float координат и UV) и 6 индексов на символ
+    const size_t quadsCount = Buffer.Indices.size() / 6;
+    for (size_t firstQuad = 0; firstQuad < quadsCount; firstQuad += MaxQuadsPerDraw) {
+        const size_t chunkQuads = std::min<size_t>(MaxQuadsPerDraw, quadsCount - firstQuad);
+        DrawElements(Buffer.UV.data() + firstQuad * 8, Buffer.squareVertices.data() + firstQuad * 8,
+            Buffer.Indices.data() + firstQuad * 6, static_cast<GLsizei>(chunkQuads * 6), 2);
+    }
     // unbind texture
-    SDL_GL_UnbindTexture(Params.Texture);
+    glBindTexture(GL_TEXTURE_2D, 0); CheckGLESError();
 
-    if (shaderProgram->programId != openGLState.ProgramId && openGLState.ProgramId > 0) {
-        glUseProgram(openGLState.ProgramId); CheckGLESError();
-    }
-
-    { // возвращаем все исходное состояние
-        // в рамках обработки SDF мы включили эти атрибуты. Возвращаем их в исходное состояние
-        if (openGLState.attr_0_enabled == GL_FALSE) { glDisableVertexAttribArray(static_cast<GLuint>(0)); CheckGLESError(); }
-        if (openGLState.attr_1_enabled == GL_FALSE) { glDisableVertexAttribArray(static_cast<GLuint>(1)); CheckGLESError(); }
-
-        if (openGLState.attr_2_enabled != GL_FALSE) { glEnableVertexAttribArray(static_cast<GLuint>(2)); CheckGLESError(); }
-    }
+    RestoreOpenGLState(openGLState, shaderProgram->programId);
 };
 
 #undef CheckGLESError

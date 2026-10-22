@@ -1,3 +1,0 @@
-mode         = .native
-extra_cflags = -march=native
-include build/clang

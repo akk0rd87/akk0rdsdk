@@ -1,3 +1,0 @@
-mode         = .vfpv2
-extra_cflags = -mfpu=vfpv2
-include build/android-arm

@@ -17,7 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: cmake -S libraries/SDL/SDL -B libraries/SDL/SDL/build && cmake --build libraries/SDL/SDL/build
+      # на runner нет dev-пакетов X11/Wayland, без которых SDL3 не конфигурируется; проверяем только сборку исходников SDL
+      - run: cmake -S libraries/SDL/SDL -B libraries/SDL/SDL/build -DSDL_UNIX_CONSOLE_BUILD=ON && cmake --build libraries/SDL/SDL/build
 
   build-googlePlay:
     runs-on: ubuntu-latest
@@ -81,29 +82,23 @@ jobs:
         run: |
           xcodebuild build -workspace CiTest.xcworkspace -scheme CiTest -configuration Release \
             -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO > build.log 2>&1 \
-            || { grep -E 'error:|Undefined symbols|ld: ' -A 6 build.log | head -n 80; tail -n 20 build.log; exit 1; }
+            || { grep -E 'error:|Undefined symbols|ld: |CMake Error|PhaseScriptExecution' -A 6 build.log | head -n 80; tail -n 20 build.log; exit 1; }
       - name: Build for device
         working-directory: ci/proj.ios
         run: |
           xcodebuild build -workspace CiTest.xcworkspace -scheme CiTest -configuration Release \
             -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO > build.log 2>&1 \
-            || { grep -E 'error:|Undefined symbols|ld: ' -A 6 build.log | head -n 80; tail -n 20 build.log; exit 1; }
-      # SDL2 и SDL2_image — из исходников SDK, а не предсобранные libSDL2*.a из git
-      - name: Build SDL libraries
-        working-directory: ci/proj.ios
-        run: |
-          export AKKORD_SDK_HOME=${GITHUB_WORKSPACE}
-          ./build_sdl.sh iphonesimulator
-          ./build_sdl.sh iphoneos
+            || { grep -E 'error:|Undefined symbols|ld: |CMake Error|PhaseScriptExecution' -A 6 build.log | head -n 80; tail -n 20 build.log; exit 1; }
+      # SDL3 собирается из исходников SDK таргетом SDL3 проекта (tools/ios/akkord_sdl.yml, CMake)
       - name: Build SDL app for simulator
         working-directory: ci/proj.ios
         run: |
           xcodebuild build -workspace CiTest.xcworkspace -scheme CiTestSDL -configuration Release \
             -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO > build.log 2>&1 \
-            || { grep -E 'error:|Undefined symbols|ld: ' -A 6 build.log | head -n 80; tail -n 20 build.log; exit 1; }
+            || { grep -E 'error:|Undefined symbols|ld: |CMake Error|PhaseScriptExecution' -A 6 build.log | head -n 80; tail -n 20 build.log; exit 1; }
       - name: Build SDL app for device
         working-directory: ci/proj.ios
         run: |
           xcodebuild build -workspace CiTest.xcworkspace -scheme CiTestSDL -configuration Release \
             -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO > build.log 2>&1 \
-            || { grep -E 'error:|Undefined symbols|ld: ' -A 6 build.log | head -n 80; tail -n 20 build.log; exit 1; }
+            || { grep -E 'error:|Undefined symbols|ld: |CMake Error|PhaseScriptExecution' -A 6 build.log | head -n 80; tail -n 20 build.log; exit 1; }

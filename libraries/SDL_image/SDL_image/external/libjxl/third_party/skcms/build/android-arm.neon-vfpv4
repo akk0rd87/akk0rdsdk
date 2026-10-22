@@ -1,3 +1,0 @@
-mode         = .neon-vfpv4
-extra_cflags = -mfpu=neon-vfpv4
-include build/android-arm

@@ -1,6 +1,0 @@
-mode          = .msan
-extra_cflags  = -fsanitize=memory
-extra_ldflags = -fsanitize=memory
-include build/clang
-
-disabled = (uname | grep -qv Linux)

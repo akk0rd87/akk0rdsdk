@@ -30,6 +30,7 @@ target_link_libraries(
 
 include_directories(
   ../framework
+  ../libraries/SDL/SDL/include # заголовки SDL3 для touchtracker.h (без библиотеки: Sync в тестах не вызывается)
   src
 )
 

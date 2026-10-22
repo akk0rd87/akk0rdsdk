@@ -105,19 +105,19 @@ private:
     virtual bool                     vGetDirContent(const char* Dir, DirContentElementArray& ArrayList) = 0;
 
     // Activity functions
-    virtual bool                     vOpenURL(const char* url) { return 0 == SDL_OpenURL(url); };
+    virtual bool                     vOpenURL(const char* url) { return SDL_OpenURL(url); };
     virtual void                     vMessageBoxShow(int Code, const char* Title, const char* Message, const char* Button1, const char* Button2, const char* Button3, const char* Button4, Uint32 TimeOutMS) {
         SDL_MessageBoxButtonData buttons[4];
         int buttonCnt = 1;
 
-        buttons[0].buttonid = 0;
+        buttons[0].buttonID = 0;
         buttons[0].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
         buttons[0].text = Button1;
 
         if (Button2 != nullptr && Button2[0] != '\0')
         {
             ++buttonCnt;
-            buttons[1].buttonid = 1;
+            buttons[1].buttonID = 1;
             buttons[1].flags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
             buttons[1].text = Button2;
         }
@@ -125,7 +125,7 @@ private:
         if (Button3 != nullptr && Button3[0] != '\0')
         {
             ++buttonCnt;
-            buttons[2].buttonid = 2;
+            buttons[2].buttonID = 2;
             buttons[2].flags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
             buttons[2].text = Button3;
 
@@ -135,7 +135,7 @@ private:
         if (Button4 != nullptr && Button4[0] != '\0')
         {
             ++buttonCnt;
-            buttons[3].buttonid = 3;
+            buttons[3].buttonID = 3;
             buttons[3].flags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
             buttons[3].text = Button4;
 
@@ -172,7 +172,7 @@ private:
 
         int buttonid;
 
-        if (SDL_ShowMessageBox(&messageboxdata, &buttonid) < 0) {
+        if (!SDL_ShowMessageBox(&messageboxdata, &buttonid)) {
             logError("error displaying message box");
             return;
         }

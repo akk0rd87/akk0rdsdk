@@ -1,4 +1,0 @@
-mode          = .analyze
-extra_cflags  = /analyze /RTCcsu /guard:cf
-extra_ldflags = /guard:cf
-include build/msvs

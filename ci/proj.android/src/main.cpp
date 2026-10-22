@@ -1,3 +1,5 @@
+#include <array>
+#include <SDL3/SDL_main.h> // в SDL3 подключается явно, в файле с main(): точка входа на Android/iOS и WinMain на Windows
 #include "basewrapper.h"
 #include "videodriver.h"
 #include "billing.h"
@@ -12,6 +14,11 @@
 
 bool Init()
 {
+#if defined(SDL_PLATFORM_WINDOWS)
+    // без подключенной консоли (вывод перенаправлен в файл, CI) SDL пишет лог только в отладчик
+    SDL_SetLogOutputFunction([](void*, int, SDL_LogPriority, const char* message) { fprintf(stderr, "%s\n", message); fflush(stderr); }, nullptr);
+#endif
+
     switch (BWrapper::GetDeviceOS())
     {
     case BWrapper::OS::Windows: // для винды работаем на openGL 2.1
@@ -20,21 +27,23 @@ bool Init()
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
         break;
 
+    case BWrapper::OS::iOS: // на iOS — GPU-рендерер SDL3 (Metal); в симуляторе он не создается — OpenGL ES
+        SDL_SetHint(SDL_HINT_RENDER_DRIVER, "gpu,opengles2");
+        break;
+
     default: // на всем остальном работаем на openGLES 2.0
         SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengles2");
         break;
     }
 
-    SDL_SetHint(SDL_HINT_RENDER_BATCHING, "1");
     SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
-    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 
     if (!BWrapper::Init(SDL_INIT_VIDEO)) {
         logError("Init Error");
         return false;
     }
 
-    auto Window = BWrapper::CreateRenderWindow("JCross Nonograms", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | (BWrapper::GetDeviceOS() == BWrapper::OS::Windows ? 0 : SDL_WINDOW_BORDERLESS));
+    auto Window = BWrapper::CreateRenderWindow("JCross Nonograms", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY | (BWrapper::GetDeviceOS() == BWrapper::OS::Windows ? 0 : SDL_WINDOW_BORDERLESS));
     if (!Window) {
         logError("Window Create Error %s", SDL_GetError());
         return false;
@@ -42,13 +51,14 @@ bool Init()
 
     BWrapper::SetActiveWindow(Window);
 
-    auto Renderer = BWrapper::CreateRenderer(Window, -1, SDL_RENDERER_ACCELERATED);
+    auto Renderer = BWrapper::CreateRenderer(Window);
     if (!Renderer) {
         logError("Renderer Create Error %s", SDL_GetError());
         return false;
     }
 
     BWrapper::SetActiveRenderer(Renderer);
+    SDL_SetDefaultTextureScaleMode(Renderer, SDL_SCALEMODE_LINEAR); // вместо SDL_HINT_RENDER_SCALE_QUALITY = "1"
     SDL_SetRenderDrawBlendMode(Renderer, SDL_BLENDMODE_BLEND);
     VideoDriver::Init(VideoDriver::Feature::SDF);
     BWrapper::SetLogPriority(BWrapper::LogPriority::Debug);
@@ -118,16 +128,16 @@ int main(int, char**) {
             do {
                 switch (event.type)
                 {
-                case SDL_MULTIGESTURE:
+                case SDL_EVENT_FINGER_MOTION: // SDL_MULTIGESTURE в SDL3 нет
                 {
-                    const auto eventCount = SDL_PeepEvents(&eventList.front(), eventList.size(), SDL_GETEVENT, SDL_MULTIGESTURE, SDL_MULTIGESTURE);
+                    const auto eventCount = SDL_PeepEvents(&eventList.front(), static_cast<int>(eventList.size()), SDL_GETEVENT, SDL_EVENT_FINGER_MOTION, SDL_EVENT_FINGER_MOTION);
                     if (eventCount > 0) { // may be negative
                         adsMgr->tryLoadInterstitial();
                     }
                 }
                 break;
 
-                case SDL_MOUSEWHEEL:
+                case SDL_EVENT_MOUSE_WHEEL:
                     adsMgr->showInterstitialIfAvailable();
                     break;
 

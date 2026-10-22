@@ -27,21 +27,17 @@ set(SOURCES
     $ENV{AKKORD_SDK_HOME}/framework/gdpr/android/gdpr_consentpolicymanager_android.cpp
 )
 
-add_subdirectory("$ENV{AKKORD_SDK_HOME}/libraries/SDL/SDL"             "${CMAKE_BINARY_DIR}/SDL")
-add_subdirectory("$ENV{AKKORD_SDK_HOME}/libraries/SDL_image/SDL_image" "${CMAKE_BINARY_DIR}/SDL_image")
+add_subdirectory("$ENV{AKKORD_SDK_HOME}/libraries/SDL/SDL" "${CMAKE_BINARY_DIR}/SDL")
 
 include_directories(
     ./src
     $ENV{AKKORD_SDK_HOME}/framework/
     $ENV{AKKORD_SDK_HOME}/libraries/SDL/SDL/include
-    $ENV{AKKORD_SDK_HOME}/libraries/SDL_image/SDL_image/include
 )
 
 target_sources(${TARGET_NAME} PRIVATE ${SOURCES})
 target_link_libraries(${TARGET_NAME}
-    PRIVATE SDL2::SDL2
-    PRIVATE SDL2::SDL2main
-    PRIVATE SDL2_image::SDL2_image
+    PRIVATE SDL3::SDL3
     PRIVATE GLESv2
     PRIVATE android
 )

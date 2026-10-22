@@ -1,9 +1,0 @@
-cc     = gcc
-cxx    = g++
-cflags = -fdiagnostics-color -Wall -Wextra -ffp-contract=off -fstack-usage
-out    = out/gcc$mode
-
-include build/local
-include build/common
-
-disabled = (uname | grep -qv Linux)

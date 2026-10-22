@@ -13,8 +13,10 @@
   public *;
 }
 
--keep public class org.libsdl.app.** {
-  public *;
+# SDL3 регистрирует свои native-методы (RegisterNatives) при загрузке libSDL3.so, в том числе package-private:
+# если R8 удалит хотя бы один, приложение падает при старте. Поэтому сохраняем все члены, а не только public
+-keep class org.libsdl.app.** {
+  *;
 }
 
 # Keep all native methods (JNI)

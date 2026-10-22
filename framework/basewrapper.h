@@ -3,6 +3,9 @@
 
 #include "framework_defines.h"
 #include "core/locale.h"
+// В SDL3 нет SDL_MULTIGESTURE: событие GESTURE_MULTIGESTURE (Gesture_MultiGestureEvent) с теми же полями, что и в SDL2.
+// Реализация собирается в basewrapper.cpp, Gesture_Init вызывает BWrapper::Init
+#include "../libraries/SDL_gesture/SDL_gesture.h"
 
 class AkkordPoint : public SDL_Point
 {
@@ -189,11 +192,12 @@ public:
     // System init-quit functions
     static bool                Init(Uint32 flags);
     static void                Quit();
-    static int                 GetCPUCount() { return SDL_GetCPUCount(); };
+    static int                 GetCPUCount() { return SDL_GetNumLogicalCPUCores(); };
 
     // Windows and Render functions
-    static AkkordWindow* CreateRenderWindow(const char* Title, int X, int Y, int W, int H, Uint32 Flags);
-    static AkkordRenderer* CreateRenderer(AkkordWindow* window, int index, Uint32 flags);
+    static AkkordWindow* CreateRenderWindow(const char* Title, int X, int Y, int W, int H, SDL_WindowFlags Flags);
+    // DriverName: "opengl", "opengles2", "metal", "gpu"...; nullptr — SDL выбирает сам (с учетом SDL_HINT_RENDER_DRIVER)
+    static AkkordRenderer* CreateRenderer(AkkordWindow* window, const char* DriverName = nullptr);
     static bool                SetActiveWindow(AkkordWindow* Window);
     static bool                SetActiveRenderer(AkkordRenderer* Renderer);
     static AkkordWindow* GetActiveWindow();
@@ -238,6 +242,8 @@ public:
     static bool                DrawFLine(const AkkordFPoint& Point1, const AkkordFPoint& Point2);
     static bool                DrawFLine(float P1X, float P1Y, float P2X, float P2Y) { return DrawFLine(AkkordFPoint(P1X, P1Y), AkkordFPoint(P2X, P2Y)); };
     static bool                IsPointInRect(const AkkordPoint& Point, const AkkordRect& Rect) { return (Rect.x <= Point.x && Point.x <= Rect.x + Rect.w) && (Rect.y <= Point.y && Point.y <= Rect.y + Rect.h); };
+    // В SDL3 нет SDL_GetDisplayDPI: DPI оценивается по масштабу дисплея (96 dpi на Windows, 160 dpi на мобильных при масштабе 1.0).
+    // Возвращает 0 при успехе, -1 при ошибке (как SDL_GetDisplayDPI в SDL2)
     static int                 GetDisplayDPI(int DisplayIndex, float* Ddpi, float* Hdpi, float* Vdpi);
 
     // Working with files
@@ -263,12 +269,12 @@ public:
     static unsigned            Str2Num(const char* Str);
 
     // Event-handling functions
-    static BWrapper::KeyCodes  DecodeKey(const SDL_Keysym& SDL_Key);
+    static BWrapper::KeyCodes  DecodeKey(SDL_Keycode Key);
 
     // Logging and debugging functions
     static void                Log(BWrapper::LogPriority Priority, const char* File, const char* Function, unsigned Line, SDL_PRINTF_FORMAT_STRING const char* Fmt, ...);
     static LogParamsStruct* GetLogParams();
-    static void                SetLogPriority(BWrapper::LogPriority Priority) { SDL_LogPriority sev = (SDL_LogPriority)Priority; SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, sev); };
+    static void                SetLogPriority(BWrapper::LogPriority Priority) { SDL_LogPriority sev = (SDL_LogPriority)Priority; SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, sev); };
     static bool                PrintDirContent(const char* Path, BWrapper::LogPriority Priority = BWrapper::LogPriority::Debug, bool Recursive = false);
 
     // Random functions
@@ -284,7 +290,7 @@ public:
 
     // Datetime functions
     static time_t              GetTimeSeconds(); // https://ru.wikipedia.org/wiki/Time.h
-    static Uint32              GetTicks() { return SDL_GetTicks(); }; // Returns an unsigned 32 - bit value representing the number of milliseconds since the SDL library initialized
+    static Uint32              GetTicks() { return static_cast<Uint32>(SDL_GetTicks()); }; // Returns an unsigned 32 - bit value representing the number of milliseconds since the SDL library initialized
 
     // Thread functions
     static void                Sleep(unsigned MilliSeconds) { SDL_Delay(MilliSeconds); };
@@ -308,7 +314,7 @@ public:
 
     static constexpr BWrapper::OS GetDeviceOS()
     {
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
         return BWrapper::OS::iOS;
 #endif
 
@@ -316,7 +322,7 @@ public:
         return BWrapper::OS::AndroidOS;
 #endif
 
-#ifdef __WINDOWS__
+#ifdef SDL_PLATFORM_WINDOWS
         return  BWrapper::OS::Windows;
 #endif
 
@@ -447,7 +453,7 @@ class WAVPlayer
     Uint32 wav_length = 0;      // length of our sample
     Uint8* wav_buffer = nullptr;      // buffer containing our audio file
     SDL_AudioSpec wav_spec; // the specs of our piece of music
-    SDL_AudioDeviceID deviceId = 0;
+    SDL_AudioStream* stream = nullptr; // поток на устройстве вывода по умолчанию
 
 public:
     bool LoadFromFile(const char* FileName, const BWrapper::FileSearchPriority SearchPriority = BWrapper::FileSearchPriority::Assets);
@@ -455,7 +461,7 @@ public:
     bool Play();
     void Clear();
 
-    WAVPlayer() :wav_length(0), wav_buffer(nullptr), deviceId(0) {};
+    WAVPlayer() :wav_length(0), wav_buffer(nullptr), stream(nullptr) {};
     ~WAVPlayer() { Clear(); };
 
     WAVPlayer(const WAVPlayer& rhs) = delete; // Копирующий: конструктор

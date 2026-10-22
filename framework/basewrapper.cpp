@@ -1,7 +1,9 @@
+// до basewrapper.h: реализация SDL_gesture.h находится внутри его include guard
+#define SDL_GESTURE_IMPLEMENTATION
 #include "basewrapper.h"
-#include "SDL_image.h"
 #include "core/platformwrapper/platforms.h"
 #include "core/core_defines.h"
+#include "core/videoadapter/video_gpu_formats.h"
 #include <ctime>
 
 static_assert (!std::numeric_limits<char>::is_signed, "Char data type must be as unsigned char data type. Set compiler flag -funsigned-char for GCC or /J for MSVC");
@@ -52,10 +54,14 @@ bool BWrapper::Init(Uint32 flags)
     //if (SDL_SetMemoryFunctions(std::malloc, std::calloc, std::realloc, std::free) != 0)
       //  logError("SDL_SetMemoryFunctions error %s", SDL_GetError());
 
-    if (SDL_Init(flags) != 0)
+    if (!SDL_Init(flags))
     {
         logError("BWrapper::Init: Error %s", SDL_GetError());
         return false;
+    }
+
+    if (Gesture_Init() != 0) {
+        logError("BWrapper::Init: Gesture_Init error %s", SDL_GetError());
     }
 
     SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
@@ -205,19 +211,38 @@ bool BWrapper::FileRename(const char* OldName, const char* NewName)
 /////////
 ////////////////////////////////
 
-AkkordWindow* BWrapper::CreateRenderWindow(const char* Title, int X, int Y, int W, int H, Uint32 Flags)
+AkkordWindow* BWrapper::CreateRenderWindow(const char* Title, int X, int Y, int W, int H, SDL_WindowFlags Flags)
 {
-    auto wnd = SDL_CreateWindow(Title, X, Y, W, H, Flags/* SDL_WINDOW_SHOWN*/);
-    if (nullptr == wnd)
+    auto wnd = SDL_CreateWindow(Title, W, H, Flags);
+    if (nullptr == wnd) {
         logError("CreateWindow error = %s", SDL_GetError());
+        return nullptr;
+    }
+    // в SDL3 позиция задается отдельно; SDL_WINDOWPOS_UNDEFINED оставляет выбор за системой
+    if (!SDL_WINDOWPOS_ISUNDEFINED(X) || !SDL_WINDOWPOS_ISUNDEFINED(Y)) {
+        SDL_SetWindowPosition(wnd, X, Y);
+    }
     return wnd;
 };
 
-AkkordRenderer* BWrapper::CreateRenderer(AkkordWindow* window, int index, Uint32 flags)
+AkkordRenderer* BWrapper::CreateRenderer(AkkordWindow* window, const char* DriverName)
 {
-    auto rnd = SDL_CreateRenderer(window, index, flags);
+    const auto props = SDL_CreateProperties();
+    SDL_SetPointerProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, window);
+    if (DriverName) {
+        SDL_SetStringProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING, DriverName);
+    }
+    // для GPU-рендерера: форматы, в которых есть SDF-шейдер, — SDL выберет устройство, которое их понимает
+    // (DXIL — Direct3D 12, MSL — Metal, SPIR-V — Vulkan). Остальные рендереры эти свойства не читают
+    SDL_SetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_SPIRV_BOOLEAN, AKKORD_SDK_GPU_SHADERS_SPIRV);
+    SDL_SetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_DXIL_BOOLEAN, AKKORD_SDK_GPU_SHADERS_DXIL);
+    SDL_SetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_MSL_BOOLEAN, AKKORD_SDK_GPU_SHADERS_MSL);
+    auto rnd = SDL_CreateRendererWithProperties(props);
+    SDL_DestroyProperties(props);
     if (nullptr == rnd)
         logError("CreateRenderer error = %s", SDL_GetError());
+    else
+        logDebug("Renderer: %s", SDL_GetRendererName(rnd));
     return rnd;
 };
 
@@ -251,13 +276,14 @@ bool BWrapper::ClearRenderer()
 
 bool BWrapper::SetWindowResizable(bool Resizable)
 {
-    SDL_SetWindowResizable(CurrentContext.CurrentWindow, true == Resizable ? SDL_TRUE : SDL_FALSE);
+    SDL_SetWindowResizable(CurrentContext.CurrentWindow, true == Resizable ? true : false);
     return true;
 }
 
 bool BWrapper::SetWindowFullscreen(bool Fullscreen)
 {
-    if (SDL_SetWindowFullscreen(CurrentContext.CurrentWindow, Fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0) != 0) {
+    // в SDL3 без SDL_SetWindowFullscreenMode окно уходит в desktop fullscreen (аналог SDL_WINDOW_FULLSCREEN_DESKTOP)
+    if (!SDL_SetWindowFullscreen(CurrentContext.CurrentWindow, Fullscreen)) {
         logError("SetWindowFullscreen error = %s", SDL_GetError());
         return false;
     }
@@ -283,7 +309,7 @@ bool BWrapper::RefreshRenderer()
 };
 
 bool BWrapper::FlushRenderer() {
-    SDL_RenderFlush(CurrentContext.CurrentRenderer);
+    SDL_FlushRenderer(CurrentContext.CurrentRenderer);
     return true;
 };
 
@@ -315,50 +341,49 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
         return false;
     }
 
-    std::unique_ptr<SDL_RWops, void(*)(SDL_RWops*)>io(SDL_RWFromMem((void*)Buffer, Size), [](SDL_RWops* i) {SDL_RWclose(i); });
+    std::unique_ptr<SDL_IOStream, void(*)(SDL_IOStream*)>io(SDL_IOFromMem((void*)Buffer, Size), [](SDL_IOStream* i) {SDL_CloseIO(i); });
     bool result = false;
 
     if (io) {
         auto image = [](decltype(io)& IO, AkkordTexture::TextureType TextureType, float Scale) {
             switch (TextureType)
             {
+            // IO закрывает unique_ptr, поэтому closeio = false
             case AkkordTexture::TextureType::BMP:
-                return std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadBMP_RW(IO.get()), SDL_FreeSurface);
+                return std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(SDL_LoadBMP_IO(IO.get(), false), SDL_DestroySurface);
                 break;
 
             case AkkordTexture::TextureType::PNG:
-                return std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadPNG_RW(IO.get()), SDL_FreeSurface);
+                return std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(SDL_LoadPNG_IO(IO.get(), false), SDL_DestroySurface);
                 break;
 
             case AkkordTexture::TextureType::JPEG:
-                return std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(IMG_LoadJPG_RW(IO.get()), SDL_FreeSurface);
+                // SDL3 без SDL_image не грузит JPEG
+                logError("JPEG images are not supported");
                 break;
 
             case AkkordTexture::TextureType::SVG:
             {
-                std::unique_ptr<char, void(*)(char*)> data((char*)SDL_LoadFile_RW(IO.get(), nullptr, SDL_FALSE), [](char* i) { SDL_free(i); });
+                std::unique_ptr<char, void(*)(char*)> data((char*)SDL_LoadFile_IO(IO.get(), nullptr, false), [](char* i) { SDL_free(i); });
                 if (data) {
                     std::unique_ptr<NSVGimage, void(*)(NSVGimage*)> svg_image(nsvgParse(data.get(), "px", 96.0f), nsvgDelete);
                     if (svg_image) {
                         std::unique_ptr<NSVGrasterizer, void(*)(NSVGrasterizer*)>rasterizer(nsvgCreateRasterizer(), nsvgDeleteRasterizer);
                         if (rasterizer) {
+                            // nanosvg пишет байты в порядке R, G, B, A
                             std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)> image(
-                                SDL_CreateRGBSurface(SDL_SWSURFACE,
+                                SDL_CreateSurface(
                                     static_cast<int>(svg_image->width * Scale),
                                     static_cast<int>(svg_image->height * Scale),
-                                    32,
-                                    0x000000FF,
-                                    0x0000FF00,
-                                    0x00FF0000,
-                                    0xFF000000),
-                                SDL_FreeSurface
+                                    SDL_PIXELFORMAT_RGBA32),
+                                SDL_DestroySurface
                             );
                             if (image) {
                                 nsvgRasterize(rasterizer.get(), svg_image.get(), 0.0f, 0.0f, Scale, static_cast<unsigned char*>(image->pixels), image->w, image->h, image->pitch);
                                 return image;
                             }
                             else {
-                                logError("Couldn't create SDL_CreateRGBSurface %s", SDL_GetError());
+                                logError("Couldn't create SDL_CreateSurface %s", SDL_GetError());
                             }
                         }
                         else {
@@ -379,14 +404,14 @@ bool AkkordTexture::LoadFromMemory(const char* Buffer, int Size, TextureType Typ
                 logError("Invalid texture type");
                 break;
             }
-            return std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(nullptr, SDL_FreeSurface);
+            return std::unique_ptr<SDL_Surface, void(*)(SDL_Surface*)>(nullptr, SDL_DestroySurface);
         }(io, Type, Scale);
 
         if (image) {
             result = this->CreateFromSurface(image.get());
         }
         else {
-            logError("Error load Image SDL_RWFromMem error=%s", SDL_GetError());
+            logError("Error load Image SDL_IOFromMem error=%s", SDL_GetError());
         }
     }
 
@@ -416,7 +441,7 @@ bool AkkordTexture::LoadFromFile(const char* FileName, TextureType Type, const B
 
 bool AkkordTexture::SetColorMod(Uint8 R, Uint8 G, Uint8 B)
 {
-    if (SDL_SetTextureColorMod(tex.get(), R, G, B) == 0)
+    if (SDL_SetTextureColorMod(tex.get(), R, G, B))
         return true;
 
     logError("SDL_SetTextureColorMod error: %s", SDL_GetError());
@@ -425,7 +450,7 @@ bool AkkordTexture::SetColorMod(Uint8 R, Uint8 G, Uint8 B)
 
 bool AkkordTexture::SetAlphaMod(Uint8 A)
 {
-    if (SDL_SetTextureAlphaMod(tex.get(), A) == 0)
+    if (SDL_SetTextureAlphaMod(tex.get(), A))
         return true;
 
     logError("SDL_SetTextureAlphaMod error: %s", SDL_GetError());
@@ -434,7 +459,14 @@ bool AkkordTexture::SetAlphaMod(Uint8 A)
 
 bool AkkordTexture::Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas) const
 {
-    if (SDL_RenderCopy(CurrentContext.CurrentRenderer, tex.get(), RectFromAtlas, &Rect) != 0) {
+    // в SDL3 функции рисования принимают только float-прямоугольники
+    SDL_FRect tgtRect, srcRect;
+    SDL_RectToFRect(&Rect, &tgtRect);
+    if (RectFromAtlas) {
+        SDL_RectToFRect(RectFromAtlas, &srcRect);
+    }
+
+    if (!SDL_RenderTexture(CurrentContext.CurrentRenderer, tex.get(), (RectFromAtlas ? &srcRect : nullptr), &tgtRect)) {
         logError("Error draw image %s", SDL_GetError());
         return false;
     }
@@ -444,9 +476,21 @@ bool AkkordTexture::Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas
 bool AkkordTexture::Draw(const AkkordRect& Rect, const AkkordRect* RectFromAtlas, AkkordTexture::Flip Flip, double Angle, AkkordPoint* Point) const
 {
     // converting Flip
-    const auto flip = static_cast<SDL_RendererFlip>(Flip);
+    const auto flip = static_cast<SDL_FlipMode>(Flip);
 
-    if (SDL_RenderCopyEx(CurrentContext.CurrentRenderer, tex.get(), RectFromAtlas, &Rect, Angle, Point, flip) != 0) {
+    SDL_FRect tgtRect, srcRect;
+    SDL_RectToFRect(&Rect, &tgtRect);
+    if (RectFromAtlas) {
+        SDL_RectToFRect(RectFromAtlas, &srcRect);
+    }
+
+    SDL_FPoint centerPoint;
+    if (Point) {
+        centerPoint.x = static_cast<float>(Point->GetX());
+        centerPoint.y = static_cast<float>(Point->GetY());
+    }
+
+    if (!SDL_RenderTextureRotated(CurrentContext.CurrentRenderer, tex.get(), (RectFromAtlas ? &srcRect : nullptr), &tgtRect, Angle, (Point ? &centerPoint : nullptr), flip)) {
         logError("Error draw image %s", SDL_GetError());
         return false;
     }
@@ -458,7 +502,8 @@ AkkordPoint AkkordTexture::GetSize() const
     AkkordPoint Point(-1, -1);
     if (tex)
     {
-        SDL_QueryTexture(tex.get(), nullptr, nullptr, &Point.x, &Point.y);
+        Point.x = tex->w;
+        Point.y = tex->h;
     }
     else
     {
@@ -472,7 +517,7 @@ AkkordPoint BWrapper::GetScreenSize()
     AkkordPoint WSize;
     //SDL_GetWindowSize(CurrentContext.CurrentWindow, &WSize.x, &WSize.y);
     //SDL_GL_GetDrawableSize(CurrentContext.CurrentWindow, &WSize.x, &WSize.y);
-    SDL_GetRendererOutputSize(CurrentContext.CurrentRenderer, &WSize.x, &WSize.y);
+    SDL_GetCurrentRenderOutputSize(CurrentContext.CurrentRenderer, &WSize.x, &WSize.y);
     return WSize;
 };
 
@@ -486,60 +531,64 @@ void BWrapper::SetSystemBarsAppearance(bool LightStatusBar, bool LightNavigation
 
 bool BWrapper::SetCurrentColor(const AkkordColor& Color)
 {
-    if (SDL_SetRenderDrawColor(CurrentContext.CurrentRenderer, Color.GetR(), Color.GetG(), Color.GetB(), Color.GetA()) == 0) return true;
+    if (SDL_SetRenderDrawColor(CurrentContext.CurrentRenderer, Color.GetR(), Color.GetG(), Color.GetB(), Color.GetA())) return true;
     logError("Draw error %s", SDL_GetError());
     return false;
 }
 
 bool BWrapper::DrawRect(const AkkordRect& Rect)
 {
-    if (SDL_RenderDrawRect(CurrentContext.CurrentRenderer, &Rect) == 0) return true;
+    SDL_FRect fRect;
+    SDL_RectToFRect(&Rect, &fRect);
+    if (SDL_RenderRect(CurrentContext.CurrentRenderer, &fRect)) return true;
     logError("Draw error %s", SDL_GetError());
     return false;
 };
 
 bool BWrapper::DrawFRect(const AkkordFRect& Rect)
 {
-    if (SDL_RenderDrawRectF(CurrentContext.CurrentRenderer, &Rect) == 0) return true;
+    if (SDL_RenderRect(CurrentContext.CurrentRenderer, &Rect)) return true;
     logError("Draw error %s", SDL_GetError());
     return false;
 };
 
 bool BWrapper::FillRect(const AkkordRect& Rect)
 {
-    if (SDL_RenderFillRect(CurrentContext.CurrentRenderer, &Rect) == 0) return true;
+    SDL_FRect fRect;
+    SDL_RectToFRect(&Rect, &fRect);
+    if (SDL_RenderFillRect(CurrentContext.CurrentRenderer, &fRect)) return true;
     logError("Draw error %s", SDL_GetError());
     return false;
 };
 
 bool BWrapper::FillFRect(const AkkordFRect& Rect) {
-    if (SDL_RenderFillRectF(CurrentContext.CurrentRenderer, &Rect) == 0) return true;
+    if (SDL_RenderFillRect(CurrentContext.CurrentRenderer, &Rect)) return true;
     logError("Draw error %s", SDL_GetError());
     return false;
 }
 
 bool BWrapper::DrawRect(const AkkordFRect& Rect) {
-    if (SDL_RenderDrawRectF(CurrentContext.CurrentRenderer, &Rect) == 0) return true;
+    if (SDL_RenderRect(CurrentContext.CurrentRenderer, &Rect)) return true;
     logError("Draw error %s", SDL_GetError());
     return false;
 };
 
 bool BWrapper::FillRect(const AkkordFRect& Rect) {
-    if (SDL_RenderFillRectF(CurrentContext.CurrentRenderer, &Rect) == 0) return true;
+    if (SDL_RenderFillRect(CurrentContext.CurrentRenderer, &Rect)) return true;
     logError("Draw error %s", SDL_GetError());
     return false;
 };
 
 bool BWrapper::DrawLine(const AkkordPoint& Point1, const AkkordPoint& Point2)
 {
-    if (SDL_RenderDrawLine(CurrentContext.CurrentRenderer, Point1.GetX(), Point1.GetY(), Point2.GetX(), Point2.GetY()) == 0) return true;
+    if (SDL_RenderLine(CurrentContext.CurrentRenderer, static_cast<float>(Point1.GetX()), static_cast<float>(Point1.GetY()), static_cast<float>(Point2.GetX()), static_cast<float>(Point2.GetY()))) return true;
     logError("Draw error %s", SDL_GetError());
     return false;
 };
 
 bool BWrapper::DrawFLine(const AkkordFPoint& Point1, const AkkordFPoint& Point2)
 {
-    if (SDL_RenderDrawLineF(CurrentContext.CurrentRenderer, Point1.GetX(), Point1.GetY(), Point2.GetX(), Point2.GetY()) == 0) return true;
+    if (SDL_RenderLine(CurrentContext.CurrentRenderer, Point1.GetX(), Point1.GetY(), Point2.GetX(), Point2.GetY())) return true;
     logError("Draw error %s", SDL_GetError());
     return false;
 };
@@ -558,12 +607,12 @@ unsigned BWrapper::Str2Num(const char* Str)
     return num;
 }
 
-BWrapper::KeyCodes BWrapper::DecodeKey(const SDL_Keysym& SDL_Key)
+BWrapper::KeyCodes BWrapper::DecodeKey(SDL_Keycode Key)
 {
     //enum struct KeyCodes { Esc, BackSpace, Back, Enter, Tab, Delete, F1,
     // Help, Home, Insert, Find, Copy, PageDown, PageUp, Paste, Pause, PrintScreen, Return, Space, Uknown };
 
-    switch (SDL_Key.sym)
+    switch (Key)
     {
     case SDLK_ESCAPE: return KeyCodes::Esc;
     case SDLK_AC_BACK: return KeyCodes::Back;
@@ -600,7 +649,7 @@ BWrapper::KeyCodes BWrapper::DecodeKey(const SDL_Keysym& SDL_Key)
     case SDLK_RIGHTBRACKET: return KeyCodes::RightBraket;
     case SDLK_COMMA:        return KeyCodes::Comma;
     case SDLK_PERIOD:       return KeyCodes::Period;
-    case SDLK_QUOTE:        return KeyCodes::Quote;
+    case SDLK_APOSTROPHE:   return KeyCodes::Quote;
 
     case SDLK_KP_0: return KeyCodes::Numpad0;
     case SDLK_KP_1: return KeyCodes::Numpad1;
@@ -624,32 +673,32 @@ BWrapper::KeyCodes BWrapper::DecodeKey(const SDL_Keysym& SDL_Key)
     case SDLK_8: return KeyCodes::N8;
     case SDLK_9: return KeyCodes::N9;
 
-    case SDLK_a: return KeyCodes::A;
-    case SDLK_b: return KeyCodes::B;
-    case SDLK_c: return KeyCodes::C;
-    case SDLK_d: return KeyCodes::D;
-    case SDLK_e: return KeyCodes::E;
-    case SDLK_f: return KeyCodes::F;
-    case SDLK_g: return KeyCodes::G;
-    case SDLK_h: return KeyCodes::H;
-    case SDLK_i: return KeyCodes::I;
-    case SDLK_j: return KeyCodes::J;
-    case SDLK_k: return KeyCodes::K;
-    case SDLK_l: return KeyCodes::L;
-    case SDLK_m: return KeyCodes::M;
-    case SDLK_n: return KeyCodes::N;
-    case SDLK_o: return KeyCodes::O;
-    case SDLK_p: return KeyCodes::P;
-    case SDLK_q: return KeyCodes::Q;
-    case SDLK_r: return KeyCodes::R;
-    case SDLK_s: return KeyCodes::S;
-    case SDLK_t: return KeyCodes::T;
-    case SDLK_u: return KeyCodes::U;
-    case SDLK_v: return KeyCodes::V;
-    case SDLK_w: return KeyCodes::W;
-    case SDLK_x: return KeyCodes::X;
-    case SDLK_y: return KeyCodes::Y;
-    case SDLK_z: return KeyCodes::Z;
+    case SDLK_A: return KeyCodes::A;
+    case SDLK_B: return KeyCodes::B;
+    case SDLK_C: return KeyCodes::C;
+    case SDLK_D: return KeyCodes::D;
+    case SDLK_E: return KeyCodes::E;
+    case SDLK_F: return KeyCodes::F;
+    case SDLK_G: return KeyCodes::G;
+    case SDLK_H: return KeyCodes::H;
+    case SDLK_I: return KeyCodes::I;
+    case SDLK_J: return KeyCodes::J;
+    case SDLK_K: return KeyCodes::K;
+    case SDLK_L: return KeyCodes::L;
+    case SDLK_M: return KeyCodes::M;
+    case SDLK_N: return KeyCodes::N;
+    case SDLK_O: return KeyCodes::O;
+    case SDLK_P: return KeyCodes::P;
+    case SDLK_Q: return KeyCodes::Q;
+    case SDLK_R: return KeyCodes::R;
+    case SDLK_S: return KeyCodes::S;
+    case SDLK_T: return KeyCodes::T;
+    case SDLK_U: return KeyCodes::U;
+    case SDLK_V: return KeyCodes::V;
+    case SDLK_W: return KeyCodes::W;
+    case SDLK_X: return KeyCodes::X;
+    case SDLK_Y: return KeyCodes::Y;
+    case SDLK_Z: return KeyCodes::Z;
 
     default: return KeyCodes::Uknown;
     }
@@ -716,15 +765,44 @@ void BWrapper::MessageBoxSetColorScheme(MessageBoxColorScheme& Scheme)
 
 int BWrapper::GetDisplayDPI(int DisplayIndex, float* Ddpi, float* Hdpi, float* Vdpi)
 {
-    return SDL_GetDisplayDPI(DisplayIndex, Ddpi, Hdpi, Vdpi);
+    // DPI при масштабе 1.0: так считают сами системы (Windows — 96, Android — mdpi 160, iOS — 1x 160)
+    constexpr float baseDPI = (BWrapper::GetDeviceOS() == BWrapper::OS::Windows ? 96.0F : 160.0F);
+
+    // в SDL3 дисплеи адресуются по SDL_DisplayID, а не по индексу
+    int count = 0;
+    std::unique_ptr<SDL_DisplayID, void(*)(void*)> displays(SDL_GetDisplays(&count), SDL_free);
+    if (!displays || DisplayIndex < 0 || DisplayIndex >= count) {
+        logError("GetDisplayDPI: display %d not found: %s", DisplayIndex, SDL_GetError());
+        return -1;
+    }
+    const auto displayId = displays.get()[DisplayIndex];
+
+    // у окна на этом дисплее берем полный масштаб (плотность пикселей * масштаб контента): на iOS масштаб контента всегда 1.0,
+    // а Retina-множитель — это плотность пикселей окна
+    float scale = 0.0F;
+    if (CurrentContext.CurrentWindow && SDL_GetDisplayForWindow(CurrentContext.CurrentWindow) == displayId) {
+        scale = SDL_GetWindowDisplayScale(CurrentContext.CurrentWindow);
+    }
+    if (scale <= 0.0F) {
+        scale = SDL_GetDisplayContentScale(displayId);
+    }
+    if (scale <= 0.0F) {
+        logError("GetDisplayDPI: display scale error: %s", SDL_GetError());
+        return -1;
+    }
+
+    const float dpi = baseDPI * scale;
+    if (Ddpi) *Ddpi = dpi;
+    if (Hdpi) *Hdpi = dpi;
+    if (Vdpi) *Vdpi = dpi;
+    return 0;
 }
 
 void BWrapper::Quit()
 {
-    IMG_Quit();
+    Gesture_Quit();
     SDL_Quit();
     //atexit(SDL_Quit);
-    //atexit(IMG_Quit);
 }
 
 bool BWrapper::OpenURL(const char* url)
@@ -914,14 +992,10 @@ decltype(time(nullptr)) BWrapper::GetTimeSeconds()
 
 std::string BWrapper::GetSDKVersionInfo()
 {
-    std::string VersionString;
-    SDL_version version;
-    SDL_VERSION(&version);
-    VersionString = std::string("Compiled version: ") + std::to_string(version.major) + "." + std::to_string(version.minor) + "." + std::to_string(version.patch) + "; ";
-
-    SDL_GetVersion(&version);
-    VersionString += std::string("Linked version: ") + std::to_string(version.major) + "." + std::to_string(version.minor) + "." + std::to_string(version.patch);
-    return VersionString;
+    const auto versionToString = [](int Version) {
+        return std::to_string(SDL_VERSIONNUM_MAJOR(Version)) + "." + std::to_string(SDL_VERSIONNUM_MINOR(Version)) + "." + std::to_string(SDL_VERSIONNUM_MICRO(Version));
+    };
+    return std::string("Compiled version: ") + versionToString(SDL_VERSION) + "; Linked version: " + versionToString(SDL_GetVersion());
 }
 
 bool BWrapper::DirExists(const char* Dir)
@@ -1065,15 +1139,15 @@ void WAVPlayer::Clear()
 {
     this->wav_length = 0;
 
-    if (this->deviceId)
+    if (this->stream)
     {
-        SDL_CloseAudioDevice(this->deviceId);
-        this->deviceId = 0;
+        SDL_DestroyAudioStream(this->stream); // закрывает и устройство, открытое SDL_OpenAudioDeviceStream
+        this->stream = nullptr;
     }
 
     if (this->wav_buffer)
     {
-        SDL_FreeWAV(this->wav_buffer);
+        SDL_free(this->wav_buffer);
         this->wav_buffer = nullptr;
     }
 };
@@ -1089,23 +1163,28 @@ bool WAVPlayer::LoadFromMemory(const char* Buffer, int Size)
     }
 
     bool result = true;
-    auto io = SDL_RWFromMem((void*)Buffer, Size);
+    auto io = SDL_IOFromMem((void*)Buffer, Size);
     if (!io)
     {
-        logError("Error read SDL_RWFromMem %s", SDL_GetError());
+        logError("Error read SDL_IOFromMem %s", SDL_GetError());
         return false;
     }
     SDL_zero(this->wav_spec);
 
-    if (SDL_LoadWAV_RW(io, 1, &this->wav_spec, &this->wav_buffer, &this->wav_length) == nullptr)
+    if (!SDL_LoadWAV_IO(io, true, &this->wav_spec, &this->wav_buffer, &this->wav_length))
     {
-        logError("error SDL_LoadWAV_RW %s", SDL_GetError());
+        logError("error SDL_LoadWAV_IO %s", SDL_GetError());
         result = false;
     }
     else
     {
-        this->deviceId = SDL_OpenAudioDevice(nullptr, 0, &this->wav_spec, nullptr, 0);
-        //logDebug("deviceId = %d", deviceId);
+        // поток создается на паузе; данные поток сам конвертирует в формат устройства
+        this->stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &this->wav_spec, nullptr, nullptr);
+        if (!this->stream)
+        {
+            logError("error SDL_OpenAudioDeviceStream %s", SDL_GetError());
+            result = false;
+        }
     }
     return result;
 };
@@ -1130,11 +1209,16 @@ bool WAVPlayer::LoadFromFile(const char* FileName, const BWrapper::FileSearchPri
 
 bool WAVPlayer::Play()
 {
-    if (this->wav_length)
+    if (this->wav_length && this->stream)
     {
         //logDebug("Play audio");
-        SDL_QueueAudio(this->deviceId, this->wav_buffer, this->wav_length);
-        SDL_PauseAudioDevice(this->deviceId, 0);
+        // как SDL_QueueAudio в SDL2: повторный Play ставит звук в очередь после текущего
+        if (!SDL_PutAudioStreamData(this->stream, this->wav_buffer, static_cast<int>(this->wav_length)))
+        {
+            logError("error SDL_PutAudioStreamData %s", SDL_GetError());
+            return false;
+        }
+        SDL_ResumeAudioStreamDevice(this->stream);
         return true;
     }
     logError("Error play wav: wav_length = 0");
