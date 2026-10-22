@@ -16,6 +16,10 @@ aggregateTargets:
   # SDL3 из исходников SDK: libraries/SDL/ios/build_sdl3.sh (CMake, без OpenGL ES) для платформы текущей сборки,
   # в build/sdl/<платформа> приложения. Повторная сборка — инкрементальная
   SDL3:
+    # Xcode передает настройки сборки скрипту через окружение: без этой настройки AKKORD_SDK_HOME есть в скрипте,
+    # только если задан в окружении самого xcodebuild (в CI на шаге сборки его нет)
+    settings:
+      AKKORD_SDK_HOME: ${AKKORD_SDK_HOME}
     buildScripts:
       - name: Build SDL3
         basedOnDependencyAnalysis: false

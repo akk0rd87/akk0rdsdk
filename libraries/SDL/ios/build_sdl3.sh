@@ -38,7 +38,7 @@ cmake -S "$root/libraries/SDL/SDL" -B "$out/cmake" -G Xcode \
     -DSDL_SHARED=OFF \
     -DSDL_STATIC=ON \
     -DSDL_TEST_LIBRARY=OFF \
-    -DSDL_OPENGLES="$opengles" > "$out/cmake.log"
+    -DSDL_OPENGLES="$opengles" > "$out/cmake.log" 2>&1 || { cat "$out/cmake.log" >&2; exit 1; }
 cmake --build "$out/cmake" --config Release -- -quiet ONLY_ACTIVE_ARCH=NO
 cmake --install "$out/cmake" --config Release > /dev/null
 
