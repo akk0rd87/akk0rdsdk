@@ -1,0 +1,88 @@
+# XcodeGen: общее для iOS-приложений на SDL и Akkord SDK (ci/proj.ios — CiTestSDL, proj.ios игр).
+# Подключается из project.yml приложения:
+#
+#   include:
+#     - path: ${AKKORD_SDK_HOME}/tools/ios/akkord_sdl.yml
+#   targets:
+#     MyGame:
+#       templates: [AkkordSDLApp]
+#       sources: ...  # исходники игры
+#
+# AkkordSDLApp — iOS-исходники SDK (обертка платформы, биллинг, реклама AdMob и Yandex, GDPR, Firebase,
+# SDF через GPU-рендерер), системные фреймворки и настройки сборки. Pod'ы (Podfile) — у приложения.
+# Пути к SDK — из AKKORD_SDK_HOME (XcodeGen подставляет ${...} при генерации), как в project.yml приложений.
+
+aggregateTargets:
+  # SDL3 из исходников SDK: libraries/SDL/ios/build_sdl3.sh (CMake, без OpenGL ES) для платформы текущей сборки,
+  # в build/sdl/<платформа> приложения. Повторная сборка — инкрементальная
+  SDL3:
+    buildScripts:
+      - name: Build SDL3
+        basedOnDependencyAnalysis: false
+        script: |
+          set -e
+          # Xcode запускает скрипт без /usr/local/bin и /opt/homebrew/bin в PATH, а там cmake
+          export PATH="$PATH:/usr/local/bin:/opt/homebrew/bin"
+          # вложенный xcodebuild (генератор Xcode у CMake) не должен видеть настройки сборки приложения
+          # (SDKROOT, ARCHS, CONFIGURATION_BUILD_DIR и т.д.)
+          env -i HOME="$HOME" PATH="$PATH" LANG=en_US.UTF-8 AKKORD_SDK_HOME="$AKKORD_SDK_HOME" \
+              "$AKKORD_SDK_HOME/libraries/SDL/ios/build_sdl3.sh" "$PLATFORM_NAME" "$PROJECT_DIR/build/sdl/$PLATFORM_NAME"
+
+targetTemplates:
+  AkkordSDLApp:
+    type: application
+    platform: iOS
+    sources:
+      - path: ${AKKORD_SDK_HOME}/framework/gdpr/ios/GDPRConsentPolicyManager.mm
+      - path: ${AKKORD_SDK_HOME}/framework/firebase/analytics/ios/iosfirebaseanalytics.mm
+      - path: ${AKKORD_SDK_HOME}/framework/ads/admob/ios/impladmobios.mm
+      - path: ${AKKORD_SDK_HOME}/framework/ads/admob/ios/admobfactory.cpp
+      - path: ${AKKORD_SDK_HOME}/framework/ads/yandex/ios/implyandexadsios.mm
+      - path: ${AKKORD_SDK_HOME}/framework/ads/yandex/ios/yandexadsfactory.cpp
+      - path: ${AKKORD_SDK_HOME}/framework/core/platformwrapper/ios/ios_billing.mm
+      - path: ${AKKORD_SDK_HOME}/framework/core/platformwrapper/ios/ios_wrapper.mm
+      - path: ${AKKORD_SDK_HOME}/framework/core/videoadapter/videoadapter_ios.mm
+      - path: ${AKKORD_SDK_HOME}/framework/basewrapper.cpp
+      - path: ${AKKORD_SDK_HOME}/framework/billing.cpp
+      - path: ${AKKORD_SDK_HOME}/framework/atlasmanager.cpp
+      - path: ${AKKORD_SDK_HOME}/framework/videodriver.cpp
+      - path: ${AKKORD_SDK_HOME}/framework/configmanager.cpp
+      - path: ${AKKORD_SDK_HOME}/framework/adrandomizer.cpp
+    dependencies:
+      - target: SDL3
+      # фреймворки SDL3 (Libs в pkgconfig/sdl3.pc сборки build_sdl3.sh)
+      - sdk: AudioToolbox.framework
+      - sdk: AVFoundation.framework
+      - sdk: CoreAudio.framework
+      - sdk: CoreBluetooth.framework
+      - sdk: CoreGraphics.framework
+      - sdk: CoreHaptics.framework
+        weak: true
+      - sdk: CoreMedia.framework
+      - sdk: CoreMotion.framework
+      - sdk: CoreVideo.framework
+      - sdk: Foundation.framework
+      - sdk: GameController.framework
+      - sdk: Metal.framework
+      - sdk: QuartzCore.framework
+      - sdk: UIKit.framework
+      # SDK: биллинг, запрос App Tracking Transparency перед рекламой
+      - sdk: StoreKit.framework
+      - sdk: AppTrackingTransparency.framework
+    settings:
+      base:
+        AKKORD_SDK_HOME: ${AKKORD_SDK_HOME}
+        HEADER_SEARCH_PATHS: $(AKKORD_SDK_HOME)/framework $(AKKORD_SDK_HOME)/libraries $(AKKORD_SDK_HOME)/libraries/SDL/SDL/include $(inherited)
+        # libSDL3.a для текущей платформы собирает таргет SDL3
+        LIBRARY_SEARCH_PATHS: $(PROJECT_DIR)/build/sdl/$(PLATFORM_NAME)/lib $(inherited)
+        # Swift-рантайм для pod'ов на Swift (swiftCompatibility*): в SDL-приложениях своего Swift может не быть
+        OTHER_LDFLAGS: $(inherited) -ObjC -lSDL3 $(AKKORD_SDL_LDFLAGS) -L$(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/$(PLATFORM_NAME)
+        # в симуляторе SDL3 собрана с OpenGL ES — запасным рендерером (build_sdl3.sh), на устройстве GLES нет
+        AKKORD_SDL_LDFLAGS[sdk=iphonesimulator*]: -framework OpenGLES
+        CLANG_CXX_LANGUAGE_STANDARD: c++17
+        GCC_CHAR_IS_UNSIGNED_CHAR: "YES"
+        # ARC выключен: ios_billing.mm управляет памятью вручную
+        CLANG_ENABLE_OBJC_ARC: "NO"
+        CLANG_ENABLE_MODULES: "YES"
+        ENABLE_BITCODE: "NO"
+        TARGETED_DEVICE_FAMILY: "1,2"

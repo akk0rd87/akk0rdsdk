@@ -88,13 +88,7 @@ jobs:
           xcodebuild build -workspace CiTest.xcworkspace -scheme CiTest -configuration Release \
             -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO > build.log 2>&1 \
             || { grep -E 'error:|Undefined symbols|ld: ' -A 6 build.log | head -n 80; tail -n 20 build.log; exit 1; }
-      # SDL2 и SDL2_image — из исходников SDK, а не предсобранные libSDL2*.a из git
-      - name: Build SDL libraries
-        working-directory: ci/proj.ios
-        run: |
-          export AKKORD_SDK_HOME=${GITHUB_WORKSPACE}
-          ./build_sdl.sh iphonesimulator
-          ./build_sdl.sh iphoneos
+      # SDL3 собирается из исходников SDK таргетом SDL3 проекта (tools/ios/akkord_sdl.yml, CMake)
       - name: Build SDL app for simulator
         working-directory: ci/proj.ios
         run: |
