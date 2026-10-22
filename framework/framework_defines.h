@@ -1,7 +1,8 @@
 #ifndef __AKK0RD_SDK_PUBLIC_DEFINES__
 #define __AKK0RD_SDK_PUBLIC_DEFINES__
 
-#if defined(_WIN32) // SDL_PLATFORM_WINDOWS здесь еще не определен: SDL.h подключается ниже
+// SDL_PLATFORM_WINDOWS здесь еще не определен: SDL.h подключается ниже; приложение может задать макрос само
+#if defined(_WIN32) && !defined(_CRT_SECURE_NO_WARNINGS)
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
