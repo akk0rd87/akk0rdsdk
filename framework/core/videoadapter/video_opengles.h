@@ -405,6 +405,7 @@ gl_FragColor = result_color; \
             static_cast<float>(X0Y1.GetR()) / 255.0F, static_cast<float>(X0Y1.GetG()) / 255.0F, static_cast<float>(X0Y1.GetB()) / 255.0F, static_cast<float>(X0Y1.GetA()) / 255.0F
         };
 
+        PrepareDraw();
         const auto openGLState = BackupOpenGLState();
         {
             // эти два атрибута нужно включить, если они выключены
@@ -432,6 +433,22 @@ gl_FragColor = result_color; \
             if (openGLState.attr_1_enabled == GL_FALSE) { glDisableVertexAttribArray(static_cast<GLuint>(1)); CheckGLESError(); }
 
             if (openGLState.attr_2_enabled != GL_FALSE) { glEnableVertexAttribArray(static_cast<GLuint>(2)); CheckGLESError(); }
+        }
+    }
+
+    // Свои GL-вызовы идут мимо очереди команд SDL: сначала исполняем её (FlushRenderer), иначе накопленное SDL
+    // нарисуется поверх. Вершины SDF и градиента - в нормализованных координатах всего окна, а SDL выставляет
+    // glViewport только перед своими командами рисования (не на SDL_RenderClear): кадр, где до SDF не было ни одного
+    // примитива SDL (первый кадр приложения, первый после смены размера окна), рисовался в старый или нулевой
+    // viewport, и SDF пропадал. SDL свой viewport выставит сам: FlushRenderer сбросил его кэш
+    void PrepareDraw() {
+        BWrapper::FlushRenderer();
+        auto renderer = BWrapper::GetActiveRenderer();
+        if (renderer && !SDL_GetRenderTarget(renderer)) {
+            int w = 0, h = 0;
+            if (SDL_GetCurrentRenderOutputSize(renderer, &w, &h) && w > 0 && h > 0) {
+                glViewport(0, 0, static_cast<GLsizei>(w), static_cast<GLsizei>(h)); CheckGLESError();
+            }
         }
     }
 
@@ -581,7 +598,7 @@ std::unique_ptr<VideoBuffer> VideoAdapter_OPENGLES::CreateVideoBuffer() {
 }
 
 void VideoAdapter_OPENGLES::DrawSDFBuffer(const VideoBuffer_OPENGLES& Buffer, const VideoSDFBufferDrawParams& Params) {
-    BWrapper::FlushRenderer();
+    PrepareDraw();
     GLESSDFProgram* shaderProgram{ nullptr };
     if (Params.Outline) {
         if (!SDFOutlineProgram.programId) {
