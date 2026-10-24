@@ -21,6 +21,20 @@ aggregateTargets:
     # только если задан в окружении самого xcodebuild (в CI на шаге сборки его нет)
     settings:
       AKKORD_SDK_HOME: ${AKKORD_SDK_HOME}
+      # Подсистемы SDL, которые нужны не всем играм (libraries/SDL/ios/build_sdl3.sh): по умолчанию выключены, игра
+      # включает нужные в своем project.yml:
+      #
+      #   aggregateTargets:
+      #     SDL3:
+      #       settings:
+      #         AKKORD_SDL_JOYSTICK: "ON"
+      #
+      # Включенный HIDAPI требует NSBluetoothAlwaysUsageDescription в Info.plist игры, CAMERA — NSCameraUsageDescription.
+      AKKORD_SDL_CAMERA: "OFF"
+      AKKORD_SDL_JOYSTICK: "OFF"
+      AKKORD_SDL_HAPTIC: "OFF"
+      AKKORD_SDL_SENSOR: "OFF"
+      AKKORD_SDL_HIDAPI: "OFF"
     buildScripts:
       - name: Build SDL3
         basedOnDependencyAnalysis: false
@@ -31,6 +45,9 @@ aggregateTargets:
           # вложенный xcodebuild (генератор Xcode у CMake) не должен видеть настройки сборки приложения
           # (SDKROOT, ARCHS, CONFIGURATION_BUILD_DIR и т.д.)
           env -i HOME="$HOME" PATH="$PATH" LANG=en_US.UTF-8 AKKORD_SDK_HOME="$AKKORD_SDK_HOME" \
+              AKKORD_SDL_CAMERA="$AKKORD_SDL_CAMERA" AKKORD_SDL_JOYSTICK="$AKKORD_SDL_JOYSTICK" \
+              AKKORD_SDL_HAPTIC="$AKKORD_SDL_HAPTIC" AKKORD_SDL_SENSOR="$AKKORD_SDL_SENSOR" \
+              AKKORD_SDL_HIDAPI="$AKKORD_SDL_HIDAPI" \
               "$AKKORD_SDK_HOME/libraries/SDL/ios/build_sdl3.sh" "$PLATFORM_NAME" "$PROJECT_DIR/build/sdl/$PLATFORM_NAME"
 
 targetTemplates:
@@ -55,22 +72,8 @@ targetTemplates:
       - path: ${AKKORD_SDK_HOME}/framework/adrandomizer.cpp
     dependencies:
       - target: SDL3
-      # фреймворки SDL3 (Libs в pkgconfig/sdl3.pc сборки build_sdl3.sh)
-      - sdk: AudioToolbox.framework
-      - sdk: AVFoundation.framework
-      - sdk: CoreAudio.framework
-      - sdk: CoreBluetooth.framework
-      - sdk: CoreGraphics.framework
-      - sdk: CoreHaptics.framework
-        weak: true
-      - sdk: CoreMedia.framework
-      - sdk: CoreMotion.framework
-      - sdk: CoreVideo.framework
-      - sdk: Foundation.framework
-      - sdk: GameController.framework
-      - sdk: Metal.framework
-      - sdk: QuartzCore.framework
-      - sdk: UIKit.framework
+      # Фреймворки SDL3 — не здесь: их список зависит от включенных подсистем, build_sdl3.sh пишет его в
+      # sdl3_frameworks.txt (OTHER_LDFLAGS)
       # SDK: биллинг, запрос App Tracking Transparency перед рекламой
       - sdk: StoreKit.framework
       - sdk: AppTrackingTransparency.framework
@@ -80,10 +83,9 @@ targetTemplates:
         HEADER_SEARCH_PATHS: $(AKKORD_SDK_HOME)/framework $(AKKORD_SDK_HOME)/libraries $(AKKORD_SDK_HOME)/libraries/SDL/SDL/include $(inherited)
         # libSDL3.a для текущей платформы собирает таргет SDL3
         LIBRARY_SEARCH_PATHS: $(PROJECT_DIR)/build/sdl/$(PLATFORM_NAME)/lib $(inherited)
-        # Swift-рантайм для pod'ов на Swift (swiftCompatibility*): в SDL-приложениях своего Swift может не быть
-        OTHER_LDFLAGS: $(inherited) -ObjC -lSDL3 $(AKKORD_SDL_LDFLAGS) -L$(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/$(PLATFORM_NAME)
-        # в симуляторе SDL3 собрана с OpenGL ES — запасным рендерером (build_sdl3.sh), на устройстве GLES нет
-        AKKORD_SDL_LDFLAGS[sdk=iphonesimulator*]: -framework OpenGLES
+        # Фреймворки SDL3 — файл ответов компоновщика от build_sdl3.sh (в симуляторе в нем и OpenGLES — запасной
+        # рендерер). Swift-рантайм для пакетов на Swift (swiftCompatibility*): в SDL-приложениях своего Swift может не быть
+        OTHER_LDFLAGS: $(inherited) -ObjC -lSDL3 @$(PROJECT_DIR)/build/sdl/$(PLATFORM_NAME)/sdl3_frameworks.txt -L$(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/$(PLATFORM_NAME)
         CLANG_CXX_LANGUAGE_STANDARD: c++17
         GCC_CHAR_IS_UNSIGNED_CHAR: "YES"
         # ARC выключен: ios_billing.mm управляет памятью вручную
