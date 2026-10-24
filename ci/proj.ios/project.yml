@@ -1,5 +1,5 @@
 # CI-проект: пустые iOS-приложения с теми же зависимостями Akkord SDK, что у iOS-приложений на нём.
-# Проверяет, что код SDK компилируется и линкуется с версиями pod'ов из tools/ios/pods.yml.
+# Проверяет, что код SDK компилируется и линкуется со Swift-пакетами из tools/ios/akkord_packages.yml.
 #
 #   CiTest    — как SwiftUI-приложения (proj.ios_swift в JCross): провайдеры рекламы AdMob и Yandex, GDPR (UMP),
 #               Firebase, libharu. Собирается для симулятора и устройства.
@@ -9,10 +9,11 @@
 #
 #   export AKKORD_SDK_HOME=<корень SDK>
 #   cd ci/proj.ios && ./generate.sh
-#   xcodebuild build -workspace CiTest.xcworkspace -scheme CiTest -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO
-#   xcodebuild build -workspace CiTest.xcworkspace -scheme CiTestSDL -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO
+#   xcodebuild build -project CiTest.xcodeproj -scheme CiTest -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO
+#   xcodebuild build -project CiTest.xcodeproj -scheme CiTestSDL -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO
 include:
   - path: ${AKKORD_SDK_HOME}/tools/ios/akkord_sdl.yml
+  - path: ${AKKORD_SDK_HOME}/tools/ios/akkord_packages.yml
 name: CiTest
 options:
   bundleIdPrefix: org.akkord
@@ -23,6 +24,7 @@ targets:
   CiTest:
     type: application
     platform: iOS
+    templates: [AkkordPackages]
     sources:
       - path: src
       # Тот же набор исходников SDK, что в proj.ios_swift/project.yml JCross
@@ -64,7 +66,7 @@ targets:
         TARGETED_DEVICE_FAMILY: "1,2"
 
   CiTestSDL:
-    templates: [AkkordSDLApp]
+    templates: [AkkordSDLApp, AkkordPackages]
     sources:
       - path: ../proj.android/src/main.cpp
         buildPhase: sources

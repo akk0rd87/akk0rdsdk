@@ -1,6 +1,6 @@
 #!/bin/bash
-# Генерирует CiTest.xcodeproj (XcodeGen) и ставит pod'ы. Минимальная версия iOS — ios_deployment_target из
-# tools/ios/pods.yml, как у Podfile: так проект и pod'ы не расходятся.
+# Генерирует CiTest.xcodeproj (XcodeGen); Swift-пакеты Xcode скачивает при сборке. Минимальная версия iOS —
+# ios_deployment_target из tools/ios/pods.yml, как у приложений на SDK.
 #
 #   AKKORD_SDK_HOME=<корень SDK> ./generate.sh
 set -euo pipefail
@@ -12,4 +12,3 @@ AKKORD_IOS_DEPLOYMENT_TARGET=$(ruby -ryaml -e 'puts YAML.load_file(ARGV[0]).fetc
 export AKKORD_IOS_DEPLOYMENT_TARGET
 echo "iOS deployment target: $AKKORD_IOS_DEPLOYMENT_TARGET"
 xcodegen generate
-pod install

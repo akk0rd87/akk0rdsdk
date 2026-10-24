@@ -1,11 +1,12 @@
-# Версии CocoaPods-зависимостей iOS-проектов на Akkord SDK — единственный источник.
+# Версии CocoaPods-зависимостей iOS-проектов на Akkord SDK, еще не переведенных на Swift-пакеты. Переведенные берут
+# версии из akkord_packages.yml (держать pod'ы в тех же версиях); ios_deployment_target отсюда нужен всем.
 # Рекламные провайдеры SDK (framework/ads/*/ios) написаны под эти версии.
 # Podfile читает файл напрямую (YAML.load_file); setPodsVersions.sh берёт версии отсюда же
 # для проектов, у которых Podfile ещё читает переменные окружения AKKORSDK_POD_*.
 # Версии в кавычках: без них YAML прочитает 13.0 как число.
 
-# Не ниже, чем требует самый требовательный pod: YandexMobileAds 8.6.0 — iOS 15.0. Сборку с этими версиями
-# проверяет CI (ci/proj.ios, задача build-ios).
+# Не ниже, чем требует самый требовательный pod: YandexMobileAds 8.6.0 — iOS 15.0. CI (ci/proj.ios, задача
+# build-ios) собирает SDK со Swift-пакетами из akkord_packages.yml, pod'ы не проверяет.
 ios_deployment_target: "15.0"
 
 pods:

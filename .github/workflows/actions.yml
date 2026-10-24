@@ -53,12 +53,12 @@ jobs:
           ci/proj.android/gradlew --no-daemon app:assembleRuStoreRelease -p ci/proj.android
 
   # Пустые iOS-приложения с зависимостями приложений на SDK (ci/proj.ios): CiTest — как SwiftUI-приложения,
-  # CiTestSDL — как SDL-приложения; код SDK компилируется и линкуется с pod'ами из tools/ios/pods.yml
+  # CiTestSDL — как SDL-приложения; код SDK компилируется и линкуется со Swift-пакетами из tools/ios/akkord_packages.yml
   build-ios:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
-      # Самый новый установленный Xcode: готовые бинарники pod'ов (YandexMobileAds 8.6) собраны Swift из Xcode 26
+      # Самый новый установленный Xcode: готовые бинарники пакетов (YandexMobileAds 8.6) собраны Swift из Xcode 26
       # и не линкуются более старым (в Xcode 16 нет swift_coroFrameAlloc)
       - name: Select Xcode
         run: |
@@ -68,11 +68,11 @@ jobs:
           xcodebuild -version
           case "$(xcodebuild -version | head -n 1)" in
             "Xcode 2"[6-9]*) ;;
-            *) echo "::error::Xcode 26 or newer is required by the pods (installed: $(xcodebuild -version | head -n 1))"; exit 1 ;;
+            *) echo "::error::Xcode 26 or newer is required by the packages (installed: $(xcodebuild -version | head -n 1))"; exit 1 ;;
           esac
       - name: Install XcodeGen
         run: brew install xcodegen
-      - name: Generate project and install pods
+      - name: Generate project
         working-directory: ci/proj.ios
         run: |
           export AKKORD_SDK_HOME=${GITHUB_WORKSPACE}
@@ -80,25 +80,25 @@ jobs:
       - name: Build for simulator
         working-directory: ci/proj.ios
         run: |
-          xcodebuild build -workspace CiTest.xcworkspace -scheme CiTest -configuration Release \
+          xcodebuild build -project CiTest.xcodeproj -scheme CiTest -configuration Release \
             -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO > build.log 2>&1 \
             || { grep -E 'error:|Undefined symbols|ld: |CMake Error|PhaseScriptExecution' -A 6 build.log | head -n 80; tail -n 20 build.log; exit 1; }
       - name: Build for device
         working-directory: ci/proj.ios
         run: |
-          xcodebuild build -workspace CiTest.xcworkspace -scheme CiTest -configuration Release \
+          xcodebuild build -project CiTest.xcodeproj -scheme CiTest -configuration Release \
             -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO > build.log 2>&1 \
             || { grep -E 'error:|Undefined symbols|ld: |CMake Error|PhaseScriptExecution' -A 6 build.log | head -n 80; tail -n 20 build.log; exit 1; }
       # SDL3 собирается из исходников SDK таргетом SDL3 проекта (tools/ios/akkord_sdl.yml, CMake)
       - name: Build SDL app for simulator
         working-directory: ci/proj.ios
         run: |
-          xcodebuild build -workspace CiTest.xcworkspace -scheme CiTestSDL -configuration Release \
+          xcodebuild build -project CiTest.xcodeproj -scheme CiTestSDL -configuration Release \
             -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO > build.log 2>&1 \
             || { grep -E 'error:|Undefined symbols|ld: |CMake Error|PhaseScriptExecution' -A 6 build.log | head -n 80; tail -n 20 build.log; exit 1; }
       - name: Build SDL app for device
         working-directory: ci/proj.ios
         run: |
-          xcodebuild build -workspace CiTest.xcworkspace -scheme CiTestSDL -configuration Release \
+          xcodebuild build -project CiTest.xcodeproj -scheme CiTestSDL -configuration Release \
             -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO > build.log 2>&1 \
             || { grep -E 'error:|Undefined symbols|ld: |CMake Error|PhaseScriptExecution' -A 6 build.log | head -n 80; tail -n 20 build.log; exit 1; }
