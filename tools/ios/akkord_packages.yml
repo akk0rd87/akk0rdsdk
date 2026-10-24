@@ -59,11 +59,13 @@ targetTemplates:
           /usr/libexec/PlistBuddy -c "Delete :SKAdNetworkItems" "$plist" 2>/dev/null || true
           /usr/libexec/PlistBuddy -c "Add :SKAdNetworkItems array" \
               -c "Merge ${AKKORD_SDK_HOME}/tools/ios/SKAdNetworkItems.plist :SKAdNetworkItems" "$plist"
-          # Merge, не вставивший список, ошибкой не заканчивается: без проверки сборка прошла бы без SKAdNetwork
-          expected=$(grep -c "<key>SKAdNetworkIdentifier</key>" "${AKKORD_SDK_HOME}/tools/ios/SKAdNetworkItems.plist")
-          actual=$(plutil -extract SKAdNetworkItems raw "$plist")
+          # Merge, не вставивший список, ошибкой не заканчивается: без проверки сборка прошла бы без SKAdNetwork.
+          # Идентификаторы в Info.plist приложения должны совпасть со списком SDK поэлементно, в том же порядке
+          expected=$(plutil -convert xml1 -o - "${AKKORD_SDK_HOME}/tools/ios/SKAdNetworkItems.plist" | grep -o '<string>[^<]*</string>')
+          actual=$(plutil -extract SKAdNetworkItems xml1 -o - "$plist" | grep -o '<string>[^<]*</string>' || true)
           if [ "$actual" != "$expected" ]; then
-            echo "error: SKAdNetworkItems in $plist: $actual items, expected $expected"
+            echo "error: SKAdNetworkItems in $plist differ from ${AKKORD_SDK_HOME}/tools/ios/SKAdNetworkItems.plist" \
+                "($(printf '%s' "$actual" | grep -c . || true) items, expected $(printf '%s\n' "$expected" | grep -c .))"
             exit 1
           fi
         # Info.plist приложения во входных файлах: без этого Xcode может обработать Info.plist (ProcessInfoPlistFile)
