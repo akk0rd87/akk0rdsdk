@@ -1,0 +1,65 @@
+# XcodeGen: Swift-пакеты (SPM) iOS-приложений на Akkord SDK — реклама AdMob и Yandex, Firebase Analytics
+# и Crashlytics. Единственное место с их версиями. Подключается из project.yml приложения вместе с akkord_sdl.yml:
+#
+#   include:
+#     - path: ${AKKORD_SDK_HOME}/tools/ios/akkord_sdl.yml
+#     - path: ${AKKORD_SDK_HOME}/tools/ios/akkord_packages.yml
+#   targets:
+#     MyGame:
+#       templates: [AkkordSDLApp, AkkordPackages]
+#
+# Версии пакетов, от которых зависят эти (AppMetrica, UMP, GoogleUtilities и т.д.), закреплены в Package.resolved
+# рядом: postGenCommand кладет его в сгенерированный проект, Xcode берет версии оттуда, а не последние
+# из разрешенных диапазонов. Обновить версии: поменять exactVersion здесь, сгенерировать проект,
+# File > Packages > Update to Latest Package Versions в Xcode (или удалить Package.resolved в проекте и собрать),
+# скопировать <Проект>.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved сюда.
+
+packages:
+  GoogleMobileAds:
+    url: https://github.com/googleads/swift-package-manager-google-mobile-ads
+    exactVersion: 13.11.0
+  YandexMobileAds:
+    url: https://github.com/yandexmobile/yandex-ads-sdk-ios
+    exactVersion: 8.6.0
+  Firebase:
+    url: https://github.com/firebase/firebase-ios-sdk
+    exactVersion: 13.1.1
+
+options:
+  postGenCommand: >-
+    for project in *.xcodeproj; do
+    mkdir -p "$project/project.xcworkspace/xcshareddata/swiftpm" &&
+    cp "${AKKORD_SDK_HOME}/tools/ios/Package.resolved" "$project/project.xcworkspace/xcshareddata/swiftpm/Package.resolved";
+    done
+
+targetTemplates:
+  AkkordPackages:
+    dependencies:
+      - package: GoogleMobileAds
+        product: GoogleMobileAds
+      - package: YandexMobileAds
+        product: YandexMobileAds
+      # JSContext в Yandex Mobile Ads: pod подключал фреймворк сам, Swift-пакет — нет
+      - sdk: JavaScriptCore.framework
+      - package: Firebase
+        product: FirebaseCore
+      # Analytics без IDFA (AdSupport), как pod Firebase/AnalyticsWithoutAdIdSupport
+      - package: Firebase
+        product: FirebaseAnalyticsCore
+      - package: Firebase
+        product: FirebaseCrashlytics
+    postBuildScripts:
+      # Выгрузка dSYM в Crashlytics: только при архивации (ACTION=install). Скрипт run — в исходниках пакета
+      # firebase-ios-sdk, их Xcode кладет в SourcePackages рядом с Build в DerivedData. inputFiles нужны Xcode 15+.
+      - name: Upload dSYM to Crashlytics
+        script: |
+          if [ "${ACTION}" = "install" ]; then
+            "${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run"
+          fi
+        inputFiles:
+          - ${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}
+          - ${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${PRODUCT_NAME}
+          - ${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Info.plist
+          - $(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/GoogleService-Info.plist
+          - $(TARGET_BUILD_DIR)/$(EXECUTABLE_PATH)
+        basedOnDependencyAnalysis: false

@@ -9,7 +9,8 @@
 #       sources: ...  # исходники игры
 #
 # AkkordSDLApp — iOS-исходники SDK (обертка платформы, биллинг, реклама AdMob и Yandex, GDPR, Firebase,
-# SDF через GPU-рендерер), системные фреймворки и настройки сборки. Pod'ы (Podfile) — у приложения.
+# SDF через GPU-рендерер), системные фреймворки и настройки сборки. Swift-пакеты (AdMob, Yandex, Firebase) — шаблон
+# AkkordPackages из tools/ios/akkord_packages.yml, приложение подключает его рядом с этим.
 # Пути к SDK — из AKKORD_SDK_HOME (XcodeGen подставляет ${...} при генерации), как в project.yml приложений.
 
 aggregateTargets:

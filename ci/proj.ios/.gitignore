@@ -1,7 +1,4 @@
 CiTest.xcodeproj/
-CiTest.xcworkspace/
-Pods/
-Podfile.lock
 Generated/
 build/
 build.log
