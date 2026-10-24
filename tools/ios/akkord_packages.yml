@@ -49,6 +49,19 @@ targetTemplates:
       - package: Firebase
         product: FirebaseCrashlytics
     postBuildScripts:
+      # SKAdNetworkItems рекламных сетей (AdMob, Yandex и сети медиации) — один список на все приложения,
+      # tools/ios/SKAdNetworkItems.plist; в Info.plist приложения его нет, шаг вставляет список в Info.plist
+      # собранного приложения (до подписи). Обновлять — только список в SDK.
+      - name: SKAdNetworkItems
+        script: |
+          set -e
+          plist="${TARGET_BUILD_DIR}/${INFOPLIST_PATH}"
+          /usr/libexec/PlistBuddy -c "Delete :SKAdNetworkItems" "$plist" 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add :SKAdNetworkItems array" \
+              -c "Merge ${AKKORD_SDK_HOME}/tools/ios/SKAdNetworkItems.plist :SKAdNetworkItems" "$plist"
+        inputFiles:
+          - ${AKKORD_SDK_HOME}/tools/ios/SKAdNetworkItems.plist
+        basedOnDependencyAnalysis: false
       # Выгрузка dSYM в Crashlytics: только при архивации (ACTION=install). Скрипт run — в исходниках пакета
       # firebase-ios-sdk, их Xcode кладет в SourcePackages рядом с Build в DerivedData. inputFiles нужны Xcode 15+.
       - name: Upload dSYM to Crashlytics
