@@ -59,8 +59,18 @@ targetTemplates:
           /usr/libexec/PlistBuddy -c "Delete :SKAdNetworkItems" "$plist" 2>/dev/null || true
           /usr/libexec/PlistBuddy -c "Add :SKAdNetworkItems array" \
               -c "Merge ${AKKORD_SDK_HOME}/tools/ios/SKAdNetworkItems.plist :SKAdNetworkItems" "$plist"
+          # Merge, не вставивший список, ошибкой не заканчивается: без проверки сборка прошла бы без SKAdNetwork
+          expected=$(grep -c "<key>SKAdNetworkIdentifier</key>" "${AKKORD_SDK_HOME}/tools/ios/SKAdNetworkItems.plist")
+          actual=$(plutil -extract SKAdNetworkItems raw "$plist")
+          if [ "$actual" != "$expected" ]; then
+            echo "error: SKAdNetworkItems in $plist: $actual items, expected $expected"
+            exit 1
+          fi
+        # Info.plist приложения во входных файлах: без этого Xcode может обработать Info.plist (ProcessInfoPlistFile)
+        # уже после шага и затереть вставленный список
         inputFiles:
           - ${AKKORD_SDK_HOME}/tools/ios/SKAdNetworkItems.plist
+          - $(TARGET_BUILD_DIR)/$(INFOPLIST_PATH)
         basedOnDependencyAnalysis: false
       # Выгрузка dSYM в Crashlytics: только при архивации (ACTION=install). Скрипт run — в исходниках пакета
       # firebase-ios-sdk, их Xcode кладет в SourcePackages рядом с Build в DerivedData. inputFiles нужны Xcode 15+.
