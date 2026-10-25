@@ -215,6 +215,9 @@ public:
     static bool                IsWindowFullscreen();
     static bool                SetWindowSize(int W, int H);
     static AkkordPoint         GetScreenSize();
+    // Координаты мыши в событии (движение, кнопки, колесо) — из точек окна в пиксели рендерера, в которых GetScreenSize
+    // и рисование: на macOS с Retina точка окна — 2 пикселя. При плотности 1 событие не меняется
+    static void                MouseEventToPixels(SDL_Event& Event);
     static int                 GetScreenWidth() { return GetScreenSize().x; };
     static int                 GetScreenHeight() { return GetScreenSize().y; };
     static AkkordRect          GetWindowSafeArea();
