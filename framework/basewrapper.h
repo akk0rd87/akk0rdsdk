@@ -137,7 +137,7 @@ class BWrapper
 {
 public:
     // scoped enums:
-    enum struct OS : unsigned char { iOS, Windows, AndroidOS, /*Mac,  Linux,*/ Unknown };
+    enum struct OS : unsigned char { iOS, Windows, AndroidOS, MacOS, /*Linux,*/ Unknown };
     enum struct KeyCodes : unsigned {
         Esc, BackSpace, Back, Enter, Tab, Delete, F1, Help, Home, End, Insert, Find, Copy, PageDown, PageUp, Paste, Pause, PrintScreen, Return, Return2, Space, Left, Right, Up, Down, Uknown, Minus, Plus, Equals, LeftBraket, RightBraket, Comma, Period, Quote,
         N0, N1, N2, N3, N4, N5, N6, N7, N8, N9, // main numbers
@@ -316,6 +316,10 @@ public:
     {
 #ifdef SDL_PLATFORM_IOS
         return BWrapper::OS::iOS;
+#endif
+
+#ifdef SDL_PLATFORM_MACOS
+        return BWrapper::OS::MacOS;
 #endif
 
 #ifdef __ANDROID__
