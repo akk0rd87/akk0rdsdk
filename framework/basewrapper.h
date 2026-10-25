@@ -314,7 +314,7 @@ public:
 
     static constexpr BWrapper::OS GetDeviceOS()
     {
-#ifdef SDL_PLATFORM_APPLE
+#ifdef SDL_PLATFORM_IOS
         return BWrapper::OS::iOS;
 #endif
 
