@@ -32,6 +32,14 @@ options:
     cp "${AKKORD_SDK_HOME}/tools/ios/Package.resolved" "$project/project.xcworkspace/xcshareddata/swiftpm/Package.resolved";
     done
 
+# -ObjC: без него линкер выбрасывает ObjC-классы статических библиотек пакетов, которые ищутся по имени, — Yandex
+# Mobile Ads не находит адаптер AppMetrica и роняет приложение при запуске. Pod'ы добавляли флаг сами. Задан на
+# уровне проекта, а не в шаблоне: OTHER_LDFLAGS шаблона AkkordSDLApp наследует его через $(inherited), а этот шаблон,
+# задай он свой OTHER_LDFLAGS, перекрыл бы флаги SDL.
+settings:
+  base:
+    OTHER_LDFLAGS: $(inherited) -ObjC
+
 targetTemplates:
   AkkordPackages:
     dependencies:
