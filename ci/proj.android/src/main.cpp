@@ -31,6 +31,10 @@ bool Init()
         SDL_SetHint(SDL_HINT_RENDER_DRIVER, "gpu,opengles2");
         break;
 
+    case BWrapper::OS::MacOS: // на macOS — GPU-рендерер SDL3 (Metal)
+        SDL_SetHint(SDL_HINT_RENDER_DRIVER, "gpu");
+        break;
+
     default: // на всем остальном работаем на openGLES 2.0
         SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengles2");
         break;

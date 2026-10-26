@@ -69,7 +69,7 @@ extern "C" {
 }
 #endif
 
-#ifdef SDL_PLATFORM_APPLE
+#ifdef SDL_PLATFORM_IOS
 #include "core/platformwrapper/ios/ios_billing.h"
 #endif
 
@@ -86,7 +86,7 @@ bool BillingManager::Init(BillingCallbackObserver* Observer)
     return AndroidBillingManager::Init(getJNIEnv());
 #endif
 
-#ifdef SDL_PLATFORM_APPLE
+#ifdef SDL_PLATFORM_IOS
     return iOSBillingManager::Init(Observer);
 #endif
 
@@ -104,7 +104,7 @@ bool BillingManager::QueryProductDetails(const std::vector<std::string>& ProdLis
     return AndroidBillingManager::QueryProductDetails(getJNIEnv(), ProdList);
 #endif
 
-#ifdef SDL_PLATFORM_APPLE
+#ifdef SDL_PLATFORM_IOS
     return iOSBillingManager::QueryProductDetails(ProdList);
 #endif
     return false;
@@ -116,7 +116,7 @@ bool BillingManager::RestorePurchases()
     return AndroidBillingManager::RestorePurchases(getJNIEnv());
 #endif
 
-#ifdef SDL_PLATFORM_APPLE
+#ifdef SDL_PLATFORM_IOS
     return iOSBillingManager::RestorePurchases();
 #endif
     return false;
@@ -128,7 +128,7 @@ bool BillingManager::PurchaseProdItem(const char* ProductCode)
     return AndroidBillingManager::PurchaseProdItem(getJNIEnv(), ProductCode);
 #endif
 
-#ifdef SDL_PLATFORM_APPLE
+#ifdef SDL_PLATFORM_IOS
     return iOSBillingManager::PurchaseProdItem(ProductCode);
 #endif
 

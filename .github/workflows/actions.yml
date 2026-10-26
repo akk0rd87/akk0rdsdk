@@ -52,6 +52,26 @@ jobs:
           export AKKORD_SDK_HOME=${GITHUB_WORKSPACE}
           ci/proj.android/gradlew --no-daemon app:assembleRuStoreRelease -p ci/proj.android
 
+  # Десктопное CI-приложение (ci/proj.desktop, тот же main.cpp, что у Android): на macOS — GPU-рендерер (Metal)
+  build-macos:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          export AKKORD_SDK_HOME=${GITHUB_WORKSPACE}
+          cmake -S ci/proj.desktop -B build-desktop -DCMAKE_BUILD_TYPE=Release
+          cmake --build build-desktop -j 4
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - shell: bash
+        run: |
+          export AKKORD_SDK_HOME="${GITHUB_WORKSPACE}"
+          cmake -S ci/proj.desktop -B build-desktop
+          cmake --build build-desktop --config Release -j 4
+
   # Пустые iOS-приложения с зависимостями приложений на SDK (ci/proj.ios): CiTest — как SwiftUI-приложения,
   # CiTestSDL — как SDL-приложения; код SDK компилируется и линкуется со Swift-пакетами из tools/ios/akkord_packages.yml
   build-ios:

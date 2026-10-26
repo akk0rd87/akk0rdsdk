@@ -137,7 +137,7 @@ class BWrapper
 {
 public:
     // scoped enums:
-    enum struct OS : unsigned char { iOS, Windows, AndroidOS, /*Mac,  Linux,*/ Unknown };
+    enum struct OS : unsigned char { iOS, Windows, AndroidOS, MacOS, /*Linux,*/ Unknown };
     enum struct KeyCodes : unsigned {
         Esc, BackSpace, Back, Enter, Tab, Delete, F1, Help, Home, End, Insert, Find, Copy, PageDown, PageUp, Paste, Pause, PrintScreen, Return, Return2, Space, Left, Right, Up, Down, Uknown, Minus, Plus, Equals, LeftBraket, RightBraket, Comma, Period, Quote,
         N0, N1, N2, N3, N4, N5, N6, N7, N8, N9, // main numbers
@@ -215,6 +215,9 @@ public:
     static bool                IsWindowFullscreen();
     static bool                SetWindowSize(int W, int H);
     static AkkordPoint         GetScreenSize();
+    // Координаты мыши в событии (движение, кнопки, колесо) — из точек окна в пиксели рендерера, в которых GetScreenSize
+    // и рисование: на macOS с Retina точка окна — 2 пикселя. При плотности 1 событие не меняется
+    static void                MouseEventToPixels(SDL_Event& Event);
     static int                 GetScreenWidth() { return GetScreenSize().x; };
     static int                 GetScreenHeight() { return GetScreenSize().y; };
     static AkkordRect          GetWindowSafeArea();
@@ -314,8 +317,12 @@ public:
 
     static constexpr BWrapper::OS GetDeviceOS()
     {
-#ifdef SDL_PLATFORM_APPLE
+#ifdef SDL_PLATFORM_IOS
         return BWrapper::OS::iOS;
+#endif
+
+#ifdef SDL_PLATFORM_MACOS
+        return BWrapper::OS::MacOS;
 #endif
 
 #ifdef __ANDROID__

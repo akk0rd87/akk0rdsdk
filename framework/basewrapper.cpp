@@ -521,6 +521,34 @@ AkkordPoint BWrapper::GetScreenSize()
     return WSize;
 };
 
+void BWrapper::MouseEventToPixels(SDL_Event& Event)
+{
+    // не SDL_ConvertEventToRenderCoordinates: та учитывает и viewport рендерера, который приложения меняют при рисовании
+    const float density = CurrentContext.CurrentWindow ? SDL_GetWindowPixelDensity(CurrentContext.CurrentWindow) : 0.0F;
+    if (density <= 0.0F || density == 1.0F) {
+        return;
+    }
+    switch (Event.type) {
+    case SDL_EVENT_MOUSE_MOTION:
+        Event.motion.x *= density;
+        Event.motion.y *= density;
+        Event.motion.xrel *= density;
+        Event.motion.yrel *= density;
+        break;
+    case SDL_EVENT_MOUSE_BUTTON_DOWN:
+    case SDL_EVENT_MOUSE_BUTTON_UP:
+        Event.button.x *= density;
+        Event.button.y *= density;
+        break;
+    case SDL_EVENT_MOUSE_WHEEL:
+        Event.wheel.mouse_x *= density;
+        Event.wheel.mouse_y *= density;
+        break;
+    default:
+        break;
+    }
+}
+
 AkkordRect BWrapper::GetWindowSafeArea() {
     return PlatformWrapper::GetInstance().GetWindowSafeArea(CurrentContext.CurrentRenderer, CurrentContext.CurrentWindow);
 }
