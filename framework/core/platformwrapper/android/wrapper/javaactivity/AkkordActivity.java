@@ -65,8 +65,16 @@ public class AkkordActivity extends SDLActivity {
             hideSystemBars();
         }
         org.akkord.lib.Utils.Init(this);
-        org.akkord.lib.Utils.checkUpdate();
+        if (checkUpdateOnStart()) {
+            org.akkord.lib.Utils.checkUpdate();
+        }
         setupSafeAreaTracking();
+    }
+
+    // Спрашивать ли магазин об обновлении при запуске. UI-тесты отвечают «нет»: окно магазина выходит поверх
+    // игры, она уходит в фон и перестаёт рисовать - тест не получает ни одного кадра
+    protected boolean checkUpdateOnStart() {
+        return true;
     }
 
     // Прозрачность панелей задаётся темой приложения (statusBarColor / navigationBarColor).
