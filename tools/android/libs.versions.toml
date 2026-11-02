@@ -22,13 +22,13 @@ play-services-auth                 = "com.google.android.gms:play-services-auth:
 play-appset                        = "com.google.android.gms:play-services-appset:16.1.0"
 
 user_messaging_platform            = "com.google.android.ump:user-messaging-platform:4.0.0"
-yandexadssdk                       = "com.yandex.android:mobileads:8.5.0"
+yandexadssdk                       = "com.yandex.android:mobileads:8.6.0"
+yandex-mediation-mytarget          = "com.yandex.ads.mediation:mobileads-mytarget:5.51.2.2"
+yandex-mediation-vungle            = "com.yandex.ads.mediation:mobileads-vungle:7.7.8.1"
 
 rustore-appreview                  = { module = "ru.rustore.sdk:review" }
 rustore-appupdate                  = { module = "ru.rustore.sdk:appupdate" }
 rustore-billing                    = { module = "ru.rustore.sdk:billingclient" }
-
-mytarget-sdk                       = "com.my.target:mytarget-sdk:5.47.1"
 
 [plugins]
 android-application                = { id = 'com.android.application', version = '9.2.1' }
@@ -40,4 +40,5 @@ triplet-play-publisher             = { id = 'com.github.triplet.play', version =
 
 [bundles]
 yandexads                          = ['yandexadssdk']
+yandexads-bidding                  = ['yandex-mediation-mytarget', 'yandex-mediation-vungle']
 rustore-billing                    = ['rustore-billing']

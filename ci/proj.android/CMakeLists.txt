@@ -23,7 +23,6 @@ set(SOURCES
     $ENV{AKKORD_SDK_HOME}/framework/core/videoadapter/videoadapter_android.cpp
     $ENV{AKKORD_SDK_HOME}/framework/ads/admob/android/admobfactory.cpp
     $ENV{AKKORD_SDK_HOME}/framework/ads/yandex/android/yandexadsfactory.cpp
-    $ENV{AKKORD_SDK_HOME}/framework/ads/vk/android/vkadsfactory.cpp
     $ENV{AKKORD_SDK_HOME}/framework/gdpr/android/gdpr_consentpolicymanager_android.cpp
 )
 
