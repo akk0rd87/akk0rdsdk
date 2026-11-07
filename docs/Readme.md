@@ -19,6 +19,16 @@ These apps does not collect any personal data, except аdvertising ID for Androi
 [AdMob Partners](https://support.google.com/admob/answer/9012903)\
 [Google Privacy Policy](https://policies.google.com/privacy)
 
+###### Liftoff (Vungle):
+[Liftoff Privacy Policy](https://liftoff.ai/privacy-policy)
+
+###### VK Ads (myTarget):
+[VK Ads Privacy Policy](https://help.mail.ru/legal/terms/myTarget/privacy)\
+[VK Ads Privacy Policy (EU)](https://help.mail.ru/legal/terms/adsvk/euprivacy)
+
+###### Yandex Mobile Ads (mediation):
+[Yandex International Ads Privacy Policy](https://yandex.com/legal/international_ads_privacy_policy)
+
 ###### In-App purchases
 From time to time apps may invite you to purchase items. We have no access to sensitive billing information such as credit card or bank account details, even though you're paying for items via the app.\
 [Google Privacy Policy](https://policies.google.com/privacy)\
