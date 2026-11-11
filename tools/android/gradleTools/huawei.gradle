@@ -1,0 +1,181 @@
+
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+import java.security.KeyFactory
+import java.security.PrivateKey
+import java.security.Signature
+import java.security.spec.MGF1ParameterSpec
+import java.security.spec.PKCS8EncodedKeySpec
+import java.security.spec.PSSParameterSpec
+
+// ---------------------------------------------------------------------------
+// Huawei AppGallery Connect Publishing API.
+//
+// Ключ — сервисный аккаунт AGC (Users and permissions → API key → Connect API → Service Account).
+// Передаётся через переменную HUAWEI_API_KEY: содержимое скачанного JSON целиком или он же в base64.
+// Достаточно роли Operations: она может загружать файлы в черновик, но не отправлять на проверку
+// (app-submit для неё возвращает 403).
+//
+//   getHuaweiVersionCode(packageName) — versionCode для сборки (при HUAWEI_UPDATE_VERSION=YES)
+//   uploadHuaweiDraft(packageName, file) — загрузить APK/AAB в черновик, на проверку не отправляется
+// ---------------------------------------------------------------------------
+
+def getHuaweiApiUrl() {
+    return "https://connect-api.cloud.huawei.com/api"
+}
+
+def huaweiReadKey() {
+    def envName = 'HUAWEI_API_KEY'
+    String raw = System.getenv(envName)?.trim()
+    if (raw == null || raw.isEmpty()) {
+        throw new Exception("$envName variable is not set")
+    }
+    if (!raw.startsWith("{")) {
+        raw = new String(Base64.getMimeDecoder().decode(raw), "UTF-8")
+    }
+    def key = new JsonSlurper().parseText(raw)
+    ['key_id', 'private_key', 'sub_account', 'token_uri'].each {
+        if (!key[it]) {
+            throw new Exception("$envName: field '$it' is missing")
+        }
+    }
+    return key
+}
+
+def huaweiB64(byte[] data) {
+    return Base64.getUrlEncoder().withoutPadding().encodeToString(data)
+}
+
+// Сервисный аккаунт: подписанный PS256 JWT сам является Bearer-токеном, обмен на access_token не нужен.
+def getHuaweiToken() {
+    def key = huaweiReadKey()
+    long now = System.currentTimeMillis().intdiv(1000)
+    def header = JsonOutput.toJson([kid: key.key_id, typ: "JWT", alg: "PS256"])
+    def payload = JsonOutput.toJson([aud: key.token_uri, iss: key.sub_account, iat: now, exp: now + 3600])
+    String signingInput = huaweiB64(header.getBytes("UTF-8")) + "." + huaweiB64(payload.getBytes("UTF-8"))
+
+    String pem = key.private_key
+            .replace("-----BEGIN PRIVATE KEY-----", "")
+            .replace("-----END PRIVATE KEY-----", "")
+            .replaceAll("\\s", "")
+    PrivateKey privateKey = KeyFactory.getInstance("RSA")
+            .generatePrivate(new PKCS8EncodedKeySpec(Base64.getDecoder().decode(pem)))
+    Signature signature = Signature.getInstance("RSASSA-PSS")
+    signature.setParameter(new PSSParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA256, 32, 1))
+    signature.initSign(privateKey)
+    signature.update(signingInput.getBytes("UTF-8"))
+    return signingInput + "." + huaweiB64(signature.sign())
+}
+
+def huaweiRequest(String method, String path, String token, Object jsonBody = null) {
+    def conn = (HttpURLConnection) new URL("${getHuaweiApiUrl()}$path").openConnection()
+    conn.setConnectTimeout(30 * 1000)
+    conn.setReadTimeout(2 * 60 * 1000)
+    conn.setRequestMethod(method)
+    conn.setRequestProperty("accept", "application/json")
+    conn.setRequestProperty("Authorization", "Bearer $token")
+    if (jsonBody != null) {
+        conn.setDoOutput(true)
+        conn.setRequestProperty("Content-Type", "application/json")
+        conn.getOutputStream().write(JsonOutput.toJson(jsonBody).getBytes("UTF-8"))
+    }
+    String what = "$method ${path.split('\\?')[0]}"
+    int rc = conn.getResponseCode()
+    def stream = rc < 400 ? conn.getInputStream() : conn.getErrorStream()
+    String text = stream != null ? stream.getText("UTF-8") : ""
+    if (rc < 200 || rc >= 300) {
+        throw new Exception("Huawei $what: HTTP $rc $text")
+    }
+    def json = text ? new JsonSlurper().parseText(text) : [:]
+    // Ошибки AGC приходят с HTTP 200 и ret.code != 0
+    if (json.ret?.code != null && json.ret.code != 0) {
+        throw new Exception("Huawei $what: ${json.ret.code} ${json.ret.msg}")
+    }
+    return json
+}
+
+def huaweiAppId(String packageName, String token) {
+    def json = huaweiRequest("GET", "/publish/v2/appid-list?packageName=$packageName", token)
+    def appId = json.appids?.getAt(0)?.value
+    if (!appId) {
+        throw new Exception("Huawei: appId for $packageName not found")
+    }
+    return appId
+}
+
+def huaweiAppInfo(String packageName, String token) {
+    def appId = huaweiAppId(packageName, token)
+    def info = huaweiRequest("GET", "/publish/v2/app-info?appId=$appId&lang=en-US", token).appInfo
+    return [appId: appId, info: info]
+}
+
+// releaseState 7 — черновик. Его versionCode не учитываем: черновик перезаписывается при следующей
+// загрузке, иначе номер рос бы при каждом перезапуске публикации.
+def requestHuaweiVersionCode = { String packageName ->
+    def token = getHuaweiToken()
+    def info = huaweiAppInfo(packageName, token).info
+    def codes = [info.onShelfVersionCode]
+    if (info.releaseState != 7) {
+        codes << info.versionCode
+    }
+    codes = codes.findAll { it != null }.collect { it.toString().toInteger() }
+    if (codes.isEmpty()) {
+        throw new Exception("Huawei app-info: no versionCode for $packageName")
+    }
+    def lastVersionCode = codes.max()
+    def newVersionCode = lastVersionCode + 1
+    println("huaweiVersionCode: releaseState: ${info.releaseState}, onShelf: ${info.onShelfVersionCode}, " +
+            "latest: ${info.versionCode}, newVersionCode: $newVersionCode")
+    return newVersionCode
+}
+
+ext.getHuaweiVersionCode = { String packageName ->
+    if (System.getenv('HUAWEI_UPDATE_VERSION').equals("YES")) {
+        return requestHuaweiVersionCode(packageName)
+    }
+    return 1
+}
+
+// packageName — applicationId в AppGallery, file — подписанный APK или AAB.
+ext.uploadHuaweiDraft = { String packageName, File file ->
+    if (file == null || !file.isFile()) {
+        throw new Exception("Huawei file not found: $file")
+    }
+    def token = getHuaweiToken()
+    def app = huaweiAppInfo(packageName, token)
+    def appId = app.appId
+    println("Huawei: appId=$appId releaseState=${app.info.releaseState} " +
+            "onShelf=${app.info.onShelfVersionCode} latest=${app.info.versionCode}")
+
+    // AGC принимает fileName длиной 1..64
+    String ext = file.name.contains(".") ? file.name.substring(file.name.lastIndexOf('.')) : ".apk"
+    String fileName = file.name.length() <= 64 ? file.name : packageName.take(64 - ext.length()) + ext
+
+    def up = huaweiRequest("GET", "/publish/v2/upload-url/for-obs?appId=$appId" +
+            "&fileName=${URLEncoder.encode(fileName, 'UTF-8')}&contentLength=${file.length()}", token).urlInfo
+
+    println("Huawei: uploading ${file.name} (${file.length()} bytes) as $fileName")
+    def conn = (HttpURLConnection) new URL(up.url as String).openConnection()
+    conn.setRequestMethod((up.method ?: "PUT") as String)
+    conn.setDoOutput(true)
+    conn.setFixedLengthStreamingMode(file.length())
+    conn.setConnectTimeout(60 * 1000)
+    conn.setReadTimeout(10 * 60 * 1000)
+    (up.headers ?: [:]).each { k, v ->
+        // Host, Content-Length и Connection выставляет сам HttpURLConnection
+        if (!(k.toString().toLowerCase() in ['host', 'content-length', 'connection', 'user-agent'])) {
+            conn.setRequestProperty(k as String, v as String)
+        }
+    }
+    conn.getOutputStream().withCloseable { out -> file.withInputStream { input -> out << input } }
+    int rc = conn.getResponseCode()
+    if (rc < 200 || rc >= 300) {
+        String err = conn.getErrorStream()?.getText("UTF-8") ?: ""
+        throw new Exception("Huawei OBS upload: HTTP $rc $err")
+    }
+
+    // Токен живёт час, но берём свежий: загрузка большого файла может быть долгой
+    def json = huaweiRequest("PUT", "/publish/v2/app-file-info?appId=$appId", getHuaweiToken(),
+            [fileType: 5, files: [[fileName: fileName, fileDestUrl: up.objectId]]])
+    println("Huawei: file attached to draft, pkgVersion=${json.pkgVersion} (not submitted for review)")
+}

@@ -10,6 +10,9 @@ import java.time.format.DateTimeFormatter
 import java.util.Base64
 
 def getRustoreBaseUrl() {
+    // В документации RuStore теперь указан public-api-m.rustore.ru, но его сертификат выпущен
+    // Russian Trusted CA (Минцифры), которого нет в стандартном truststore JDK. Старый хост
+    // с обычным сертификатом пока работает; переходить — после импорта корня Минцифры на агенты.
     return "https://public-api.rustore.ru"
 }
 
@@ -58,7 +61,7 @@ def getRustoreToken() {
 
 def requestLastRustoreVersionCode = { appId ->
     def authToken = getRustoreToken()
-    def url = "${getRustoreBaseUrl()}/public/v1/application/$appId/version?page=0&size=1"
+    def url = "${getRustoreBaseUrl()}/public/v1/application/$appId/version?filterTestingType=ALL&page=0&size=20"
 
     def get = new URL(url).openConnection()
     get.setRequestMethod("GET")
@@ -76,7 +79,15 @@ def requestLastRustoreVersionCode = { appId ->
         throw new Exception("Rustore getVersions ${responseJson.code} is incorrect")
     }
 
-    def lastVersionCode = responseJson.body.content[0].versionCode.toInteger()
+    // Черновики не учитываем: они пересоздаются при каждой публикации, и иначе versionCode
+    // рос бы при каждом перезапуске. У черновика без APK versionCode вообще пустой.
+    def codes = (responseJson.body?.content ?: [])
+            .findAll { it.versionStatus != "DRAFT" && it.versionCode != null }
+            .collect { it.versionCode.toString().toInteger() }
+    if (codes.isEmpty()) {
+        throw new Exception("Rustore getVersions: no published versions with versionCode")
+    }
+    def lastVersionCode = codes.max()
     def newVersionCode = lastVersionCode + 1
 
     println("rustoreVersionCode: lastVersionCode: $lastVersionCode, newVersionCode: $newVersionCode")
@@ -91,4 +102,230 @@ ext.getRuStoreVersionCode = { appId ->
     }
 
     return 1
+}
+// ---------------------------------------------------------------------------
+// Черновик версии в RuStore: удалить старый черновик, создать новый (MANUAL), загрузить APK.
+// На модерацию не отправляется: проверить и отправить версию можно в веб-консоли RuStore.
+// ---------------------------------------------------------------------------
+
+class RustoreHttpException extends Exception {
+    final int code
+    RustoreHttpException(int code, String message) {
+        super(message)
+        this.code = code
+    }
+}
+
+// Повтор при 5xx/сетевых ошибках (RuStore периодически отвечает 504 из nginx).
+// Только для идемпотентных запросов: POST создания черновика не повторяется.
+def rustoreWithRetry(String what, Closure action, Closure shouldStop = null) {
+    def delaysSec = [5, 15, 30, 60]
+    for (int attempt = 0; ; attempt++) {
+        try {
+            return action()
+        } catch (Exception e) {
+            boolean retryable = e instanceof IOException ||
+                    (e instanceof RustoreHttpException && e.code >= 500)
+            if (!retryable || attempt >= delaysSec.size()) {
+                throw e
+            }
+            println("RuStore: $what failed (${e.message?.readLines()?.find()}), retry in ${delaysSec[attempt]}s")
+            Thread.sleep(delaysSec[attempt] * 1000L)
+            if (shouldStop != null && shouldStop()) {
+                println("RuStore: $what already applied on server, continuing")
+                return null
+            }
+        }
+    }
+}
+
+// RuStore иногда отвечает 401 на только что выданный токен (повтор с новым токеном проходит).
+// При 401 запрос не выполнен, поэтому повторить безопасно даже POST.
+def rustoreRequest(String method, String path, String token, String jsonBody = null) {
+    try {
+        return rustoreRequestOnce(method, path, token, jsonBody)
+    } catch (RustoreHttpException e) {
+        if (e.code != 401) {
+            throw e
+        }
+        println("RuStore: $method ${path.split('\\?')[0]} got 401, retrying with a new token")
+        Thread.sleep(3000)
+        return rustoreRequestOnce(method, path, getRustoreToken(), jsonBody)
+    }
+}
+
+def rustoreRequestOnce(String method, String path, String token, String jsonBody) {
+    def conn = new URL("${getRustoreBaseUrl()}$path").openConnection()
+    conn.setConnectTimeout(30 * 1000)
+    conn.setReadTimeout(2 * 60 * 1000)
+    conn.setRequestMethod(method)
+    conn.setRequestProperty("accept", "application/json")
+    conn.setRequestProperty("Public-Token", token)
+    if (jsonBody != null) {
+        conn.setDoOutput(true)
+        conn.setRequestProperty("Content-Type", "application/json")
+        conn.getOutputStream().write(jsonBody.getBytes("UTF-8"))
+    }
+    return rustoreReadResponse(conn, "$method $path")
+}
+
+def rustoreReadResponse(HttpURLConnection conn, String what) {
+    int rc = conn.getResponseCode()
+    def stream = rc < 400 ? conn.getInputStream() : conn.getErrorStream()
+    String text = stream != null ? stream.getText("UTF-8") : ""
+    if (rc < 200 || rc >= 300) {
+        throw new RustoreHttpException(rc, "Rustore $what: HTTP $rc $text")
+    }
+    def json = text ? new JsonSlurper().parseText(text) : [:]
+    if (json.code != null && json.code != "OK") {
+        throw new Exception("Rustore $what: ${json.code} ${json.message}")
+    }
+    return json
+}
+
+def rustoreListDrafts(String packageName, String token) {
+    def path = "/public/v1/application/$packageName/version?filterTestingType=ALL&page=0&size=20"
+    def json = rustoreWithRetry("GET versions") { rustoreRequest("GET", path, token) }
+    // В списке по строке на каждый APK версии: один черновик с двумя APK встречается дважды
+    return (json.body?.content ?: []).findAll { it.versionStatus == "DRAFT" }.unique { it.versionId }
+}
+
+def rustoreDeleteDrafts(String packageName, String token) {
+    rustoreListDrafts(packageName, token).each { draft ->
+        println("RuStore: deleting draft versionId=${draft.versionId} versionCode=${draft.versionCode}")
+        def path = "/public/v1/application/$packageName/version/${draft.versionId}"
+        // 504 не значит, что удаление не прошло: перед повтором проверяем, остался ли черновик.
+        rustoreWithRetry("DELETE draft ${draft.versionId}",
+                { rustoreRequest("DELETE", path, token) },
+                { !rustoreListDrafts(packageName, token).any { it.versionId == draft.versionId } })
+    }
+}
+
+def rustoreCreateDraft(String packageName, String token) {
+    def json = rustoreRequest("POST", "/public/v1/application/$packageName/version", token,
+            groovy.json.JsonOutput.toJson([publishType: "MANUAL"]))
+    // Документация показывает body как число, но в таблице параметров — versionId: принимаем оба вида.
+    def versionId = json.body instanceof Map ? json.body.versionId : json.body
+    if (versionId == null) {
+        throw new Exception("Rustore createDraft: no versionId in response $json")
+    }
+    println("RuStore: created draft versionId=$versionId (publishType MANUAL)")
+    return versionId
+}
+
+def rustoreUploadApk(String packageName, def versionId, File apk, String token) {
+    String boundary = "----akkord" + UUID.randomUUID().toString().replace("-", "")
+    String path = "/public/v1/application/$packageName/version/$versionId/apk?isMainApk=true&servicesType=Unknown"
+    def conn = (HttpURLConnection) new URL("${getRustoreBaseUrl()}$path").openConnection()
+    conn.setRequestMethod("POST")
+    conn.setDoOutput(true)
+    conn.setChunkedStreamingMode(64 * 1024)
+    conn.setConnectTimeout(60 * 1000)
+    conn.setReadTimeout(10 * 60 * 1000)
+    conn.setRequestProperty("accept", "application/json")
+    conn.setRequestProperty("Public-Token", token)
+    conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=$boundary")
+
+    println("RuStore: uploading ${apk.name} (${apk.length()} bytes) to versionId=$versionId")
+    conn.getOutputStream().withCloseable { out ->
+        out.write(("--$boundary\r\n" +
+                "Content-Disposition: form-data; name=\"file\"; filename=\"${apk.name}\"\r\n" +
+                "Content-Type: application/vnd.android.package-archive\r\n\r\n").getBytes("UTF-8"))
+        apk.withInputStream { input -> out << input }
+        out.write("\r\n--$boundary--\r\n".getBytes("UTF-8"))
+    }
+    rustoreReadResponse(conn, "uploadApk")
+    println("RuStore: APK uploaded")
+
+    // В веб-консоли загруженный через API файл не виден до отправки на модерацию (так в документации RuStore),
+    // поэтому проверяем через API: у черновика с APK появляется versionCode (у пустого он -1)
+    def draft = rustoreListDrafts(packageName, token).find { it.versionId == versionId }
+    println("RuStore: draft $versionId versionCode=${draft?.versionCode} versionName=${draft?.versionName}")
+    if (draft == null || draft.versionCode == null || draft.versionCode.toString().toInteger() <= 0) {
+        throw new Exception("RuStore: APK is not attached to draft $versionId: $draft")
+    }
+}
+
+def rustoreDraftHasApk(String packageName, def versionId) {
+    def draft = rustoreListDrafts(packageName, getRustoreToken()).find { it.versionId == versionId }
+    return draft?.versionCode != null && draft.versionCode.toString().toInteger() > 0
+}
+
+// Повтор загрузки при 5xx/сетевых ошибках (бывает 500 от внутреннего s3-manager RuStore).
+// Перед повтором проверяем, не прикрепился ли APK: повторная загрузка добавила бы второй APK.
+def rustoreUploadApkWithRetry(String packageName, def versionId, File apk) {
+    rustoreWithRetry("upload APK to draft $versionId",
+            { rustoreUploadApk(packageName, versionId, apk, getRustoreToken()) },
+            { rustoreDraftHasApk(packageName, versionId) })
+}
+
+// packageName — applicationId в RuStore, apk — файл подписанной RuStore-сборки.
+ext.uploadRuStoreDraft = { String packageName, File apk ->
+    if (apk == null || !apk.isFile()) {
+        throw new Exception("RuStore APK not found: $apk")
+    }
+    def token = getRustoreToken()
+
+    // Пустой черновик (versionCode -1, например после упавшей загрузки) используем повторно.
+    // Черновик с APK пересоздаём: повторная загрузка не заменяет APK, а добавляет второй.
+    def drafts = rustoreListDrafts(packageName, token)
+    def draftHasApk = drafts.size() == 1 && drafts[0].versionCode != null &&
+            drafts[0].versionCode.toString().toInteger() > 0
+    if (draftHasApk) {
+        println("RuStore: existing draft ${drafts[0].versionId} already has APK (versionCode ${drafts[0].versionCode}): recreating draft")
+    } else if (drafts.size() == 1) {
+        def existingId = drafts[0].versionId
+        println("RuStore: trying existing draft versionId=$existingId versionCode=${drafts[0].versionCode}")
+        try {
+            rustoreUploadApkWithRetry(packageName, existingId, apk)
+            println("RuStore: draft $existingId for $packageName is ready (not sent to moderation)")
+            return
+        } catch (RustoreHttpException e) {
+            if (e.code >= 500) {
+                throw e
+            }
+            println("RuStore: upload to existing draft rejected: ${e.message}")
+            println("RuStore: recreating draft")
+        }
+    }
+
+    // Токен RuStore живёт ~15 минут, а загрузка ~90 МБ может занять несколько минут:
+    // берём свежий токен перед каждым длинным шагом.
+    token = getRustoreToken()
+    rustoreDeleteDrafts(packageName, token)
+    def versionId = rustoreCreateDraft(packageName, token)
+    rustoreUploadApkWithRetry(packageName, versionId, apk)
+    println("RuStore: draft $versionId for $packageName is ready (not sent to moderation)")
+}
+
+// Отправляет текущий черновик на модерацию. Черновик создан с publishType MANUAL: после одобрения
+// версия ждёт ручной публикации в консоли RuStore. Загруженный через API APK виден в веб-консоли
+// только после отправки на модерацию, а мастер консоли без файла отправить черновик не даёт.
+ext.submitRuStoreDraft = { String packageName ->
+    def token = getRustoreToken()
+    def drafts = rustoreListDrafts(packageName, token)
+    drafts.each { println("RuStore: draft versionId=${it.versionId} versionCode=${it.versionCode} versionName=${it.versionName}") }
+    // Пустые черновики (versionCode -1) пропускаем: например, созданный мастером веб-консоли
+    def withApk = drafts.findAll { it.versionCode != null && it.versionCode.toString().toInteger() > 0 }
+    if (withApk.size() != 1) {
+        throw new Exception("RuStore: expected one draft with APK for $packageName, got ${withApk.size()} (of ${drafts.size()} drafts)")
+    }
+    def draft = withApk[0]
+    println("RuStore: submitting draft versionId=${draft.versionId} versionCode=${draft.versionCode} for moderation")
+    // POST не повторяем: при 504 черновик мог уже уйти на модерацию
+    rustoreRequest("POST", "/public/v1/application/$packageName/version/${draft.versionId}/commit?priorityUpdate=0", token, "") // пустое тело: Content-Length 0
+    println("RuStore: draft ${draft.versionId} sent to moderation (publish manually after approval)")
+}
+
+// Находит APK варианта по output-metadata.json (имя файла переименовывается в androidComponents).
+ext.findVariantApk = { File apkDir ->
+    def meta = new File(apkDir, "output-metadata.json")
+    if (!meta.isFile()) {
+        throw new Exception("No output-metadata.json in $apkDir: build the APK first")
+    }
+    def elements = new JsonSlurper().parse(meta).elements
+    if (elements == null || elements.size() != 1) {
+        throw new Exception("Expected one APK in $meta, got ${elements?.size()}")
+    }
+    return new File(apkDir, elements[0].outputFile as String)
 }
