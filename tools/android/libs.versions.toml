@@ -30,6 +30,9 @@ rustore-appreview                  = { module = "ru.rustore.sdk:review" }
 rustore-appupdate                  = { module = "ru.rustore.sdk:appupdate" }
 rustore-billing                    = { module = "ru.rustore.sdk:billingclient" }
 
+# Huawei AppGallery: проверка обновления (HMS JOS AppUpdateClient); репозиторий https://developer.huawei.com/repo/
+huawei-appservice                  = "com.huawei.hms:appservice:6.16.2.300"
+
 [plugins]
 android-application                = { id = 'com.android.application', version = '9.2.1' }
 google-services                    = { id = 'com.google.gms.google-services', version = '4.4.4' }

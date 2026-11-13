@@ -52,6 +52,23 @@ jobs:
           export AKKORD_SDK_HOME=${GITHUB_WORKSPACE}
           ci/proj.android/gradlew --no-daemon app:assembleRuStoreRelease -p ci/proj.android
 
+  # Huawei AppGallery: фасад store/facade/huawei и HMS SDK (репозиторий developer.huawei.com/repo)
+  build-huaweiStore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set Up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+      - name: Run gradle build
+        run: |
+          chmod +x ci/proj.android/gradlew
+          export AKKORD_SDK_HOME=${GITHUB_WORKSPACE}
+          ci/proj.android/gradlew --no-daemon app:assembleHuaweiStoreRelease -p ci/proj.android
+
   # Десктопное CI-приложение (ci/proj.desktop, тот же main.cpp, что у Android): на macOS — GPU-рендерер (Metal)
   build-macos:
     runs-on: macos-15

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Видимость AppGallery: окно отзыва и страница приложения открываются в com.huawei.appmarket -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <queries>
+    <package android:name="com.huawei.appmarket" />
+  </queries>
+</manifest>

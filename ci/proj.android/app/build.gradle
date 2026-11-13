@@ -64,6 +64,7 @@ android {
 
     flavorDimensions "Store"
 
+    // Манифест флейвора - app/src/<флейвор>/AndroidManifest.xml (Gradle берёт его сам); MainActivity общая (../java)
     productFlavors {
         googlePlay {
             dimension "Store"
@@ -71,8 +72,6 @@ android {
 
             sourceSets {
                 googlePlay {
-                    manifest.srcFile "../customization/google_play/manifest_permissions.xml"
-                    java.srcDir      "../customization/google_play/src/"
                     kotlin.srcDir    "${akkord_sdk_path}/framework/store/facade/googleplay/"
                     java.srcDir      "${akkord_sdk_path}/framework/billing/googleplay/"
                 }
@@ -83,15 +82,9 @@ android {
             dimension "Store"
             versionCode 1
 
-            externalNativeBuild {
-                cmake {
-                    cppFlags "-D__ALTERNATIVE_STORE__"
-                }
-            }
             sourceSets {
                 samsung {
-                    manifest.srcFile "../customization/samsung/manifest_permissions.xml"
-                    java.srcDir      "../customization/samsung/src/"
+                    kotlin.srcDir    "${akkord_sdk_path}/framework/billing/dummy/"
                     kotlin.srcDir    "${akkord_sdk_path}/framework/store/facade/googleplay/"
                 }
             }
@@ -101,15 +94,10 @@ android {
             dimension "Store"
             versionCode 1
 
-            externalNativeBuild {
-                cmake {
-                    cppFlags "-D__ALTERNATIVE_STORE__"
-                }
-            }
             sourceSets {
                 alternativeStore {
-                    kotlin.srcDir "${akkord_sdk_path}/framework/store/facade/googleplay/"
-                    java.srcDir   "../customization/google_play/src/"
+                    kotlin.srcDir    "${akkord_sdk_path}/framework/billing/dummy/"
+                    kotlin.srcDir    "${akkord_sdk_path}/framework/store/facade/dummy/"
                 }
             }
         }
@@ -121,15 +109,23 @@ android {
 
             sourceSets {
                 ruStore {
-                    manifest.srcFile "../customization/rustore/manifest_permissions.xml"
-                    java.srcDir      "../customization/rustore/src/"
                     kotlin.srcDir    "${akkord_sdk_path}/framework/billing/rustore/"
                     kotlin.srcDir    "${akkord_sdk_path}/framework/store/facade/rustore/"
                 }
             }
-            externalNativeBuild {
-                cmake {
-                    cppFlags "-D__ALTERNATIVE_STORE__ -D__ALTERNATIVE_STORE_RUSTORE__"
+        }
+
+        // Huawei AppGallery: оценка - окно отзыва AppGallery, обновление - HMS (store/facade/huawei).
+        // В приложении HMS берёт app id из src/<флейвор>/assets/agconnect-services.json; CI проверяет только сборку
+        huaweiStore {
+            dimension "Store"
+            versionCode 1
+            proguardFile file(proGuardParamsDir + 'proguard-rules_huawei.pro').absolutePath
+
+            sourceSets {
+                huaweiStore {
+                    kotlin.srcDir    "${akkord_sdk_path}/framework/billing/dummy/"
+                    kotlin.srcDir    "${akkord_sdk_path}/framework/store/facade/huawei/"
                 }
             }
         }
@@ -201,4 +197,6 @@ dependencies {
     ruStoreImplementation   (libs.rustore.appreview)
     ruStoreImplementation   (libs.rustore.appupdate)
     ruStoreImplementation   (libs.bundles.rustore.billing)
+
+    huaweiStoreImplementation(libs.huawei.appservice)
 }
