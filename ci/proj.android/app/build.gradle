@@ -177,7 +177,7 @@ dependencies {
     implementation(libs.firebase.crashlytics.ndk)
 
     implementation(libs.getkeepsafe.relinker)
-    implementation(libs.admobads)
+    implementation(libs.bundles.admob)
     implementation(libs.play.services.games)
     implementation(libs.play.services.auth)
     implementation(libs.play.appset)

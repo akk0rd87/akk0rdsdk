@@ -13,6 +13,10 @@ firebase-crashlytics               = { module = "com.google.firebase:firebase-cr
 firebase-crashlytics-ndk           = { module = "com.google.firebase:firebase-crashlytics-ndk" }
 
 admobads                           = "com.google.android.gms:play-services-ads:25.4.0"
+# Медиация AdMob: Unity Ads (bidding).
+# при обновлении AdMob брать адаптер, собранный под ту же версию. Согласие GDPR из UMP адаптер передаёт сам
+admob-mediation-unity              = "com.google.ads.mediation:unity:4.20.1.0"
+unity-ads                          = "com.unity3d.ads:unity-ads:4.20.1"
 google-play-billing                = "com.android.billingclient:billing:8.3.0"
 google-play-review                 = "com.google.android.play:review:2.0.2"
 google-app-update                  = "com.google.android.play:app-update:2.1.0"
@@ -42,6 +46,7 @@ kotlin-compose                     = { id = 'org.jetbrains.kotlin.plugin.compose
 triplet-play-publisher             = { id = 'com.github.triplet.play', version = '4.0.0' }
 
 [bundles]
+admob                              = ['admobads', 'admob-mediation-unity', 'unity-ads']
 yandexads                          = ['yandexadssdk']
 yandexads-bidding                  = ['yandex-mediation-mytarget', 'yandex-mediation-vungle']
 rustore-billing                    = ['rustore-billing']
