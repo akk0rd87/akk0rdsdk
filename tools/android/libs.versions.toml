@@ -29,6 +29,8 @@ user_messaging_platform            = "com.google.android.ump:user-messaging-plat
 yandexadssdk                       = "com.yandex.android:mobileads:8.6.0"
 yandex-mediation-mytarget          = "com.yandex.ads.mediation:mobileads-mytarget:5.51.2.2"
 yandex-mediation-vungle            = "com.yandex.ads.mediation:mobileads-vungle:7.7.8.1"
+# Mintegral SDK (com.mbridge.msdk.oversea) тянется транзитивно из репозитория Mintegral, см. ci/proj.android/build.gradle
+yandex-mediation-mintegral         = "com.yandex.ads.mediation:mobileads-mintegral:17.1.81.1"
 
 rustore-appreview                  = { module = "ru.rustore.sdk:review" }
 rustore-appupdate                  = { module = "ru.rustore.sdk:appupdate" }
@@ -48,5 +50,5 @@ triplet-play-publisher             = { id = 'com.github.triplet.play', version =
 [bundles]
 admob                              = ['admobads', 'admob-mediation-unity', 'unity-ads']
 yandexads                          = ['yandexadssdk']
-yandexads-bidding                  = ['yandex-mediation-mytarget', 'yandex-mediation-vungle']
+yandexads-bidding                  = ['yandex-mediation-mytarget', 'yandex-mediation-vungle', 'yandex-mediation-mintegral']
 rustore-billing                    = ['rustore-billing']

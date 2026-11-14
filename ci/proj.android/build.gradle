@@ -27,6 +27,11 @@ allprojects {
             url = uri("https://developer.huawei.com/repo/")
             content { includeGroupByRegex("com\\.huawei.*") }
         }
+        // Mintegral SDK (медиация Yandex: mobileads-mintegral); в Maven Central его нет
+        maven {
+            url = uri("https://dl-maven-android.mintegral.com/repository/mbridge_android_sdk_oversea/")
+            content { includeGroupByRegex("com\\.mbridge.*") }
+        }
     }
 }
 
