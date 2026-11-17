@@ -336,6 +336,7 @@ public:
 private:
     struct {
         AAssetManager* AssetMgr{ nullptr };
+        jobject   AssetMgrRef{ nullptr }; // глобальная ссылка на Java-AssetManager, из которого взят AssetMgr
         jclass    UtilsClass{ nullptr };
         jmethodID midDirectoryDelete{ nullptr };
         jmethodID midShowToast{ nullptr };
@@ -397,7 +398,16 @@ private:
             }
 
             jobject jAssetsMgr = (jobject)jniEnv->CallStaticObjectMethod(AndroidWrapperState.UtilsClass, AndroidWrapperState.midGetAssetManager);
-            AndroidWrapperState.AssetMgr = AAssetManager_fromJava(jniEnv, jAssetsMgr);
+            if (!jAssetsMgr) {
+                logError("AndroidWrapper GetAssetManager returned null");
+                return;
+            }
+            // AAssetManager* живёт, пока жив Java-объект AssetManager: держим на него глобальную ссылку весь процесс.
+            // Без неё объект мог быть освобождён (поворот + диплинк в JCross), и openAsset падал на разрушенном
+            // мьютексе: "pthread_mutex_lock called on a destroyed mutex"
+            AndroidWrapperState.AssetMgrRef = jniEnv->NewGlobalRef(jAssetsMgr);
+            jniEnv->DeleteLocalRef(jAssetsMgr);
+            AndroidWrapperState.AssetMgr = AAssetManager_fromJava(jniEnv, AndroidWrapperState.AssetMgrRef);
         }
     }
 

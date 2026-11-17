@@ -134,7 +134,9 @@ public class Utils {
 
     public static void Init(Activity ActivityContext){
         _context = ActivityContext;
-        AssetMgr = _context.getResources().getAssets();
+        // Ассеты приложения, а не активности: натив берёт из них AAssetManager один раз на весь процесс
+        // (AndroidUtilsWrapper::InitAssetsManager), а ресурсы активности могут быть пересозданы
+        AssetMgr = _context.getApplicationContext().getAssets();
     }
 
     public static Activity GetContext()
