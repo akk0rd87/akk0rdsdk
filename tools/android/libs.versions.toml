@@ -27,7 +27,9 @@ play-appset                        = "com.google.android.gms:play-services-appse
 
 user_messaging_platform            = "com.google.android.ump:user-messaging-platform:4.0.0"
 yandexadssdk                       = "com.yandex.android:mobileads:8.6.0"
-yandex-mediation-mytarget          = "com.yandex.ads.mediation:mobileads-mytarget:5.51.2.2"
+# MyTarget (mobileads-mytarget) is out: its mytracker-sdk asks for com.android.billingclient:billing in a range
+# [9.1.0, 10.0.0), so every game got Google's billing library, and its newest release with it (9.2.0 broke the builds:
+# it needs core library desugaring)
 yandex-mediation-vungle            = "com.yandex.ads.mediation:mobileads-vungle:7.7.8.1"
 # Mintegral SDK (com.mbridge.msdk.oversea) тянется транзитивно из репозитория Mintegral, см. ci/proj.android/build.gradle
 yandex-mediation-mintegral         = "com.yandex.ads.mediation:mobileads-mintegral:17.1.81.1"
@@ -50,5 +52,5 @@ triplet-play-publisher             = { id = 'com.github.triplet.play', version =
 [bundles]
 admob                              = ['admobads', 'admob-mediation-unity', 'unity-ads']
 yandexads                          = ['yandexadssdk']
-yandexads-bidding                  = ['yandex-mediation-mytarget', 'yandex-mediation-vungle', 'yandex-mediation-mintegral']
+yandexads-bidding                  = ['yandex-mediation-vungle', 'yandex-mediation-mintegral']
 rustore-billing                    = ['rustore-billing']
