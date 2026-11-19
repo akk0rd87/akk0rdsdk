@@ -1,7 +1,8 @@
 import org.apache.tools.ant.taskdefs.condition.Os
 
 ext.getMinSdkVersion = {
-    def minSdkVersion = 23
+    // play-services-games-v2 22.x (Game Stats) требует minSdk 24
+    def minSdkVersion = 24
     println("minSdkVersion: $minSdkVersion")
     return minSdkVersion
 }
