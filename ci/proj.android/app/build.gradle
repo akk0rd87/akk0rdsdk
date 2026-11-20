@@ -146,6 +146,10 @@ android {
     }
     lint {
         disable 'MobileAdsSdkOutdatedVersion'
+        // Mintegral SDK (медиация Yandex, bundle yandexads-bidding) несёт копию ExoPlayer с NotificationUtil, которая
+        // вызывает NotificationManager.notify. Приложение уведомлений не показывает, и разрешение POST_NOTIFICATIONS
+        // ради мёртвого кода библиотеки не нужно. Если появятся свои уведомления — убрать и добавить разрешение.
+        disable 'NotificationPermission'
     }
 
     configurations { // https://stackoverflow.com/a/59138342/11195868
