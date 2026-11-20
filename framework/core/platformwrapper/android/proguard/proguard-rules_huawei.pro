@@ -6,6 +6,14 @@
 -dontwarn com.huawei.android.content.pm.ApplicationInfoEx
 -dontwarn com.huawei.ohos.localability.**
 -dontwarn com.huawei.system.BuildEx
+-dontwarn com.huawei.android.os.BuildEx$VERSION
+-dontwarn com.huawei.libcore.io.**
+-dontwarn android.telephony.HwTelephonyManager
+
+# Необязательные Kit-ы HMS не из нашей сборки (статистика HiAnalytics, лог AppGallery): HMS проверяет их наличие сам.
+# Ссылки на них появляются, когда consumer-правила рекламных SDK (медиация) держат больше классов com.huawei.hms
+-dontwarn com.huawei.hianalytics.**
+-dontwarn com.huawei.appgallery.log.LogAdaptor
 
 # Правила HMS лежат в consumer-правилах AAR. Широкое -keep class com.huawei.hms.** не ставим: оно держит неиспользуемые
 # части (donation, вход в HUAWEI ID), которые ссылаются на Kit-ы не из нашей сборки, и R8 падает на missing classes.
