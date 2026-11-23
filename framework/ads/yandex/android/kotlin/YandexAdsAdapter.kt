@@ -78,7 +78,8 @@ class YandexAdsAdapter {
         }
 
         override fun onAdShown() {
-            interstitialCallbackLocal(EVENT_INTERSTITIAL_CLOSED)
+            // реклама на экране; Closed - только в onAdDismissed (иначе игра считает её закрытой во время показа)
+            interstitialCallbackLocal(EVENT_INTERSTITIAL_OPENED)
             Log.d(getTag(), "YandexADS: onAdShown")
         }
 
@@ -170,7 +171,8 @@ class YandexAdsAdapter {
         }
 
         override fun onAdShown() {
-            rewardedVideoCallbackLocal(EVENT_REWARDEDVIDEO_CLOSED)
+            // ролик начался; Closed - только в onAdDismissed (иначе игра считает, что игрок отказался от награды)
+            rewardedVideoCallbackLocal(EVENT_REWARDEDVIDEO_STARTED)
             Log.d(getTag(), "YandexADS: onAdShown")
         }
 

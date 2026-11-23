@@ -20,7 +20,9 @@ class AndroidStoreFacade {
 
         private val installStateUpdatedListener = InstallStateUpdatedListener { state: InstallState ->
             when(state.installStatus()) {
-                InstallStatus.DOWNLOADED -> popupSnackbarForCompleteUpdate()
+                // Загружено - не ставим сразу: completeUpdate() перезапускает приложение, а игрок может быть
+                // посреди уровня или сетевого матча. Ставится при следующем запуске (ветка DOWNLOADED в checkAppUpdate).
+                InstallStatus.DOWNLOADED -> Log.i(getTag(), "app update downloaded: installs at the next start")
                 InstallStatus.INSTALLED -> unRegisterUpdateListener()
             }
         }

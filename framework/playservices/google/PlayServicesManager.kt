@@ -34,6 +34,11 @@ class PlayServicesManager(
     private var initialSnapshotLoadStarted = false
     @Volatile
     private var connected = false
+    // Облако, каким этот процесс его последний раз прочитал или записал (null - ещё не читал). Процесс живёт в фоне
+    // днями, а другое устройство за это время пишет своё: перед записью облако сравнивается с этим, и изменённое
+    // где-то ещё не затирается, а отдаётся игре (onSnapshotReceived) - она сольёт и сохранит снова.
+    @Volatile
+    private var lastKnown: ByteArray? = null
 
     private fun onSnapshotLoadFailed() {
         Log.d(Utils.TAG, "loadSnapshot failed, will retry on the next connect")
@@ -80,6 +85,7 @@ class PlayServicesManager(
                                         //readSavedGame(snapshot);
                                         val data = snapshot.snapshotContents.readFully()
                                         Log.i(Utils.TAG, "Snapshot loaded. Size: " + data.size)
+                                        lastKnown = data
                                         onSnapshotReceived(data)
                                     } catch (e: Exception) {
                                         Log.e(Utils.TAG, "Error while reading snapshot contents: " + e.message)
@@ -312,6 +318,20 @@ class PlayServicesManager(
                                     task.getResult() ?: // No snapshot available yet; waiting on the user to choose one.
                                     return
 
+                                val current = try { snapshotToWrite.snapshotContents.readFully() } catch (e: Exception) { null }
+                                val known = lastKnown
+                                if (current != null && known != null && !current.contentEquals(known) && !current.contentEquals(data)) {
+                                    // Другое устройство записало своё после нашего чтения: не затирать, а отдать игре
+                                    // на слияние. Игра, которая облако посреди игры не берёт, при следующей записи
+                                    // запишет как раньше (lastKnown уже равен облаку).
+                                    Log.i(Utils.TAG, "Snapshot changed elsewhere: given to the game to merge, not overwritten")
+                                    lastKnown = current
+                                    SnapshotCoordinator.getInstance().discardAndClose(getSnapshotsClient(), snapshotToWrite)
+                                        .addOnFailureListener { e -> Utils.handleException(e, "saveSnapshot: discardAndClose") }
+                                    onSnapshotReceived(current)
+                                    return
+                                }
+
                                 Log.d(
                                     Utils.TAG,
                                     "Writing data to snapshot: " + snapshotToWrite.metadata.uniqueName
@@ -320,6 +340,7 @@ class PlayServicesManager(
                                     ?.addOnCompleteListener { task ->
                                         try {
                                             if (task.isSuccessful) {
+                                                lastKnown = data
                                                 Log.i(Utils.TAG, "Snapshot saved. Size: " + data.size)
                                             } else {
                                                 Utils.handleException(task.exception, "write_snapshot_error")

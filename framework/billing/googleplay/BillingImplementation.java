@@ -178,6 +178,11 @@ public class BillingImplementation implements PurchaseHistoryResponseListener, P
                             if (BillingResponseCode.OK == billingResult.getResponseCode()) {
                                 Log.v(getTag(), "onAcknowledgePurchaseResponse Result: OK");
                                 PurchaseSKUListQueried(purchase, PURCHASE_BOUGHT);
+                            } else {
+                                // Неподтверждённую покупку Google через 3 дня вернёт: повтор - при следующем
+                                // restorePurchases (старт, «уже куплено»); товар игре отдаётся сразу - деньги списаны.
+                                Log.e(getTag(), "onAcknowledgePurchaseResponse: " + DecodeBillingResponse(billingResult.getResponseCode()));
+                                PurchaseSKUListQueried(purchase, PURCHASE_BOUGHT);
                             }
                         }
                         catch(Exception e) {
@@ -246,6 +251,12 @@ public class BillingImplementation implements PurchaseHistoryResponseListener, P
     @Override
     public void onPurchasesUpdated(@NonNull BillingResult billingResult, final List<Purchase> purchases) {
         try {
+            if (BillingResponseCode.ITEM_ALREADY_OWNED == billingResult.getResponseCode()) {
+                // Куплено раньше (на другом устройстве, или подтверждение не дошло): спросить у магазина, что куплено,
+                // - покупка придёт игре как восстановленная (и неподтверждённая будет подтверждена)
+                restorePurchases();
+                return;
+            }
             checkPurchases(billingResult, purchases);
         }
         catch(Exception e) {

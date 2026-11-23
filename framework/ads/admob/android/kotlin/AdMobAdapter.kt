@@ -76,8 +76,9 @@ class AdMobAdapter {
                 // Make sure to set your reference to null so you don't
                 // show it a second time.
                 mInterstitialAd = null
-                // тут вызываем Closed, так как обнулили ссылку и можно запращивать новую рекламу
-                interstitialCallbackLocal(EVENT_INTERSTITIAL_CLOSED)
+                // Opened, не Closed: реклама на экране, игра должна знать, что её не видно (пауза, звук).
+                // Следующая грузится после onAdDismissedFullScreenContent (Closed).
+                interstitialCallbackLocal(EVENT_INTERSTITIAL_OPENED)
                 Log.d(getTag(), "AdMob: onAdShowedFullScreenContent")
             } catch (e: Exception) {
                 Utils.handleException(e, "MyInterstitialContentCallback.onAdShowedFullScreenContent")

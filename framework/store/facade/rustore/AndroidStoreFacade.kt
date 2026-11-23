@@ -18,8 +18,9 @@ class AndroidStoreFacade {
         private val installUpdateListener : InstallStateUpdateListener by lazy {
             InstallStateUpdateListener { state ->
                 when (state.installStatus) {
+                    // Загружено - не ставим сразу (перезапуск посреди игры); ставится при следующем запуске.
                     InstallStatus.DOWNLOADED -> {
-                        completeDownloading()
+                        Log.i(getTag(), "RuStore: app update downloaded: installs at the next start")
                     }
 
                     InstallStatus.DOWNLOADING -> {
@@ -43,7 +44,9 @@ class AndroidStoreFacade {
         fun checkAppUpdate() {
             appUpdateManager.getAppUpdateInfo()
                 .addOnSuccessListener { appUpdateInfo ->
-                    if (appUpdateInfo.updateAvailability == UpdateAvailability.UPDATE_AVAILABLE) {
+                    if (appUpdateInfo.installStatus == InstallStatus.DOWNLOADED) {
+                        completeDownloading()  // загружено в прошлый раз: ставим на старте, игре терять нечего
+                    } else if (appUpdateInfo.updateAvailability == UpdateAvailability.UPDATE_AVAILABLE) {
                         appUpdateManager.registerListener(installUpdateListener)
                         appUpdateManager.startUpdateFlow(appUpdateInfo, getAppUpdateOptions())
                     }
