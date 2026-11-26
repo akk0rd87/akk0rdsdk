@@ -34,7 +34,8 @@ jobs:
         run: |
           chmod +x ci/proj.android/gradlew
           export AKKORD_SDK_HOME=${GITHUB_WORKSPACE}
-          ci/proj.android/gradlew --no-daemon app:assembleGooglePlayRelease -p ci/proj.android
+          # юнит-тесты логики покупок (framework/billing/googleplay_test) - без нативной части, секунды
+          ci/proj.android/gradlew --no-daemon app:testGooglePlayDebugUnitTest app:assembleGooglePlayRelease -p ci/proj.android
 
   build-ruStore:
     runs-on: ubuntu-latest
@@ -50,7 +51,8 @@ jobs:
         run: |
           chmod +x ci/proj.android/gradlew
           export AKKORD_SDK_HOME=${GITHUB_WORKSPACE}
-          ci/proj.android/gradlew --no-daemon app:assembleRuStoreRelease -p ci/proj.android
+          # юнит-тесты логики покупок (framework/billing/rustore_pay_test) - без нативной части, секунды
+          ci/proj.android/gradlew --no-daemon app:testRuStoreDebugUnitTest app:assembleRuStoreRelease -p ci/proj.android
 
   # Huawei AppGallery: фасад store/facade/huawei и HMS SDK (репозиторий developer.huawei.com/repo)
   build-huaweiStore:
@@ -126,6 +128,16 @@ jobs:
           xcodebuild build -project CiTest.xcodeproj -scheme CiTest -configuration Release \
             -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO > build.log 2>&1 \
             || { grep -E 'error:|Undefined symbols|ld: |CMake Error|PhaseScriptExecution' -A 6 build.log | head -n 80; tail -n 20 build.log; exit 1; }
+      # Тесты биллинга на StoreKit 2 (framework/billing/ios_storekit2_test): тестовый App Store на симуляторе iOS 17+.
+      # ЧЕРНОВИК: ещё не запускался - выбор симулятора и сама схема проверяются первым прогоном на Mac
+      - name: Billing tests (StoreKit 2)
+        working-directory: ci/proj.ios
+        run: |
+          udid=$(xcrun simctl list devices available | grep -E '^\s+iPhone' | head -n 1 | grep -oE '[0-9A-F]{8}(-[0-9A-F]{4}){3}-[0-9A-F]{12}')
+          echo "simulator: $udid"
+          xcodebuild test -project CiTest.xcodeproj -scheme CiBillingTests \
+            -destination "id=$udid" CODE_SIGNING_ALLOWED=NO > test.log 2>&1 \
+            || { grep -E 'error:|failed|XCTAssert' -A 4 test.log | head -n 80; tail -n 30 test.log; exit 1; }
       # SDL3 собирается из исходников SDK таргетом SDL3 проекта (tools/ios/akkord_sdl.yml, CMake)
       - name: Build SDL app for simulator
         working-directory: ci/proj.ios

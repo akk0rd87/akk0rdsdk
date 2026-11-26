@@ -8,6 +8,9 @@ private external fun billingSetupFinished()
 private external fun billingDisconnected()
 private external fun purchaseQueried(purchaseToken: String?, productSKU: String?, type: Int)
 private external fun purchaseConsumed(purchaseToken: String?, productSKU: String?)
+private external fun purchasesQueryFinished(success: Boolean)
+private external fun productDetailsReceived(skus: Array<String>, priceLabels: Array<String>, priceMicros: LongArray,
+                                            currencies: Array<String>, titles: Array<String>)
 
 class BillingManager  {
     companion object BillingObserverImpl : BillingObserver {
@@ -102,6 +105,32 @@ class BillingManager  {
                 Utils.handleException(e, "onPurchaseQueried")
             } catch(e: UnsatisfiedLinkError) {
                 Utils.handleException(e, "onPurchaseQueried")
+            }
+        }
+
+        override fun onPurchasesQueryFinished(success: Boolean) {
+            try {
+                purchasesQueryFinished(success)
+            } catch(e: Exception) {
+                Utils.handleException(e, "onPurchasesQueryFinished")
+            } catch(e: UnsatisfiedLinkError) {
+                Utils.handleException(e, "onPurchasesQueryFinished")
+            }
+        }
+
+        override fun onProductDetails(products: List<ProductInfo>) {
+            try {
+                productDetailsReceived(
+                    products.map { it.productSKU }.toTypedArray(),
+                    products.map { it.priceLabel }.toTypedArray(),
+                    products.map { it.priceMicros }.toLongArray(),
+                    products.map { it.currency }.toTypedArray(),
+                    products.map { it.title }.toTypedArray(),
+                )
+            } catch(e: Exception) {
+                Utils.handleException(e, "onProductDetails")
+            } catch(e: UnsatisfiedLinkError) {
+                Utils.handleException(e, "onProductDetails")
             }
         }
 

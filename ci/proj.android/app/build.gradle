@@ -31,7 +31,17 @@ android {
             path "../CMakeLists.txt"
         }
     }
+    // Юнит-тесты на JVM: gradlew testRuStoreDebugUnitTest testGooglePlayDebugUnitTest. Методы android.* там заглушки (Log.d) - пусть молчат
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
     sourceSets {
+        testRuStore {
+            kotlin.srcDir "${akkord_sdk_path}/framework/billing/rustore_pay_test/"
+        }
+        testGooglePlay {
+            kotlin.srcDir "${akkord_sdk_path}/framework/billing/googleplay_test/"
+        }
         main {
             jniLibs.srcDirs = ['libs']
             manifest.srcFile '../AndroidManifest.xml'
@@ -109,7 +119,7 @@ android {
 
             sourceSets {
                 ruStore {
-                    kotlin.srcDir    "${akkord_sdk_path}/framework/billing/rustore/"
+                    kotlin.srcDir    "${akkord_sdk_path}/framework/billing/rustore_pay/"
                     kotlin.srcDir    "${akkord_sdk_path}/framework/store/facade/rustore/"
                 }
             }
@@ -200,7 +210,8 @@ dependencies {
     ruStoreImplementation   (platform(libs.rustore.bom))
     ruStoreImplementation   (libs.rustore.appreview)
     ruStoreImplementation   (libs.rustore.appupdate)
-    ruStoreImplementation   (libs.bundles.rustore.billing)
+    ruStoreImplementation   (libs.rustore.pay)
+    testImplementation      (libs.junit)
 
     huaweiStoreImplementation(libs.huawei.appservice)
 }

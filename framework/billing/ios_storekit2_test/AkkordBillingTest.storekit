@@ -1,0 +1,46 @@
+{
+  "identifier" : "A5D1C0B7",
+  "nonRenewingSubscriptions" : [],
+  "products" : [
+    {
+      "displayPrice" : "4.99",
+      "familyShareable" : false,
+      "internalID" : "6750000001",
+      "localizations" : [
+        {
+          "description" : "Test non-consumable product",
+          "displayName" : "Test non-consumable",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "akk_test_non_consumable",
+      "referenceName" : "Test non-consumable",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "6750000002",
+      "localizations" : [
+        {
+          "description" : "Test consumable product",
+          "displayName" : "Test consumable",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "akk_test_consumable",
+      "referenceName" : "Test consumable",
+      "type" : "Consumable"
+    }
+  ],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_storeKitErrors" : [],
+    "_storefront" : "USA"
+  },
+  "subscriptionGroups" : [],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}

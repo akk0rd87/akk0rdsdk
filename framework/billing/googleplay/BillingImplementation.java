@@ -1,318 +1,197 @@
 package org.akkord.lib;
 
-import android.app.Activity;
 import android.content.Intent;
-
-import com.android.billingclient.api.BillingClient;
-import com.android.billingclient.api.BillingResult;
-import com.android.billingclient.api.BillingClient.BillingResponseCode;
-import com.android.billingclient.api.BillingClient.ProductType;
-import com.android.billingclient.api.BillingClientStateListener;
-import com.android.billingclient.api.PendingPurchasesParams;
-import com.android.billingclient.api.PurchasesResponseListener;
-import com.android.billingclient.api.ProductDetails;
-import com.android.billingclient.api.BillingFlowParams;
-import com.android.billingclient.api.ConsumeResponseListener;
-import com.android.billingclient.api.Purchase;
-import com.android.billingclient.api.PurchasesUpdatedListener;
-import com.android.billingclient.api.QueryProductDetailsParams;
-import com.android.billingclient.api.QueryPurchasesParams;
-import com.android.billingclient.api.ConsumeParams;
-import com.android.billingclient.api.AcknowledgePurchaseParams;
-import com.android.billingclient.api.PurchaseHistoryRecord;
-import com.android.billingclient.api.PurchaseHistoryResponseListener;
-import java.util.Objects;
 import android.util.Log;
-import androidx.annotation.NonNull;
+
+import com.android.billingclient.api.BillingClient.BillingResponseCode;
+import com.android.billingclient.api.Purchase;
+
+import java.util.ArrayList;
 import java.util.List;
 
-public class BillingImplementation implements PurchaseHistoryResponseListener, PurchasesUpdatedListener, BillingClientStateListener, PurchasesResponseListener {
-    private BillingObserver mBillingObserver = null;
-    private BillingClient mBillingClient = null;
+// Биллинг Google Play. Товары: непотребляемые - restorePurchases сообщает о них при каждом вызове; потребляемые - до
+// consumeProductItem. Новую покупку SDK подтверждает (acknowledge) сам: неподтверждённую Google через 3 дня вернёт.
+// Подписок пока нет. Здесь только решения, вызовы Google Play - в PlayGateway (PlayBillingGateway); тесты -
+// ../googleplay_test/BillingImplementationTest.kt.
+public class BillingImplementation implements PlayGateway.Listener {
+    public static final int PURCHASE_RESTORED = 0;
+    public static final int PURCHASE_BOUGHT   = 1;
 
-    private final int PURCHASE_RESTORED = 0;
-    private final int PURCHASE_BOUGHT   = 1;
+    private final BillingObserver mBillingObserver;
+    private final PlayGateway mPlay;
 
-    public BillingImplementation(BillingObserver observer){
+    public BillingImplementation(BillingObserver observer) {
+        this(observer, new PlayBillingGateway());
+    }
+
+    public BillingImplementation(BillingObserver observer, PlayGateway play) {
         mBillingObserver = observer;
-
-        mBillingClient = BillingClient.newBuilder(getContext())
-                .setListener(this) // PurchasesUpdatedListener
-                .enablePendingPurchases(PendingPurchasesParams.newBuilder().enableOneTimeProducts().enablePrepaidPlans().build())
-                .enableAutoServiceReconnection()
-                .build();
-
-        mBillingClient.startConnection(this);
+        mPlay = play;
+        mPlay.connect(this);
     }
 
     public void onNewIntent(Intent intent) {
 
     }
 
+    // Подключение начинается в конструкторе, о готовности сообщит onSetupFinished
     public void init() {
 
     }
 
-    private static String DecodeBillingResponse(int billingResponseCode)
-    {
-        String StringCode = "UNKNOWN";
-        switch(billingResponseCode)
-        {
-            case BillingResponseCode.BILLING_UNAVAILABLE: StringCode = "BILLING_UNAVAILABLE"; break;
-            case BillingResponseCode.DEVELOPER_ERROR: StringCode = "DEVELOPER_ERROR"; break;
-            case BillingResponseCode.ERROR: StringCode = "ERROR"; break;
-            case BillingResponseCode.FEATURE_NOT_SUPPORTED: StringCode = "FEATURE_NOT_SUPPORTED"; break;
-            case BillingResponseCode.ITEM_ALREADY_OWNED: StringCode = "ITEM_ALREADY_OWNED"; break;
-            case BillingResponseCode.ITEM_NOT_OWNED: StringCode = "ITEM_NOT_OWNED"; break;
-            case BillingResponseCode.ITEM_UNAVAILABLE: StringCode = "ITEM_UNAVAILABLE"; break;
-            case BillingResponseCode.OK: StringCode = "OK"; break;
-            case BillingResponseCode.SERVICE_DISCONNECTED: StringCode = "SERVICE_DISCONNECTED"; break;
-            case BillingResponseCode.SERVICE_UNAVAILABLE: StringCode = "SERVICE_UNAVAILABLE"; break;
-            case BillingResponseCode.USER_CANCELED: StringCode = "USER_CANCELED"; break;
-            case BillingResponseCode.NETWORK_ERROR: StringCode = "NETWORK_ERROR"; break;
+    // Товары с ценами для показа в игре -> onProductDetails (пустой список - Google Play не ответил)
+    public void queryProductDetails(final String[] ProdList) {
+        final List<String> skus = new ArrayList<>();
+        if (ProdList != null) {
+            for (String sku : ProdList) {
+                if (sku != null && !sku.isEmpty()) skus.add(sku);
+            }
         }
-
-        return StringCode;
+        mPlay.queryProducts(skus, (responseCode, products) -> {
+            if (BillingResponseCode.OK != responseCode) {
+                Log.e(getTag(), "queryProductDetails: " + DecodeBillingResponse(responseCode));
+                mBillingObserver.onProductDetails(new ArrayList<>());
+                return;
+            }
+            mBillingObserver.onProductDetails(products);
+        });
     }
 
-    public void queryProductDetails(final String[] ProdList) {
+    // Подписки в Google Play пока не поддерживаются
+    public void querySubscriptionProducts(final String[] ProdList) {
+
+    }
+
+    public void purchaseSubscription(final String ProductSKU) {
 
     }
 
     public void restorePurchases() {
-        try {
-            mBillingClient.queryPurchasesAsync(
-                QueryPurchasesParams.newBuilder().setProductType(ProductType.INAPP).build(),
-                this
-            );
-        }
-        catch(Exception e) {
-            Log.e(getTag(), e.toString());
-        }
+        mPlay.queryPurchases((responseCode, purchases) -> {
+            checkPurchases(responseCode, purchases);
+            // Только здесь, не в onPurchasesUpdated: туда приходит не полный список покупок.
+            // Неподтверждённые покупки дойдут до наблюдателя позже, после acknowledge
+            mBillingObserver.onPurchasesQueryFinished(BillingResponseCode.OK == responseCode);
+        });
     }
 
     public void purchaseProdItem(final String ProductSKU) {
-        try {
-            final List<QueryProductDetailsParams.Product> productList = List.of(QueryProductDetailsParams.Product.newBuilder()
-                                                        .setProductType(ProductType.INAPP)
-                                                        .setProductId(ProductSKU)
-                                                        .build());
-
-            final QueryProductDetailsParams params = QueryProductDetailsParams.newBuilder()
-                .setProductList(productList)
-                .build();
-
-            mBillingClient.queryProductDetailsAsync(params,
-                (billingResult, queryProductDetailsResult) -> {
-                    final List<ProductDetails> productDetailsList = queryProductDetailsResult.getProductDetailsList();
-                    if(BillingResponseCode.OK == billingResult.getResponseCode() && !productDetailsList.isEmpty()) {
-                        final List<BillingFlowParams.ProductDetailsParams> productDetailsParamsList =
-                            List.of(
-                                BillingFlowParams.ProductDetailsParams.newBuilder()
-                                    .setProductDetails(productDetailsList.get(0))
-                                    // to get an offer token, call ProductDetails.getSubscriptionOfferDetails()
-                                    // for a list of offers that are available to the user
-                                    //.setOfferToken(selectedOfferToken)
-                                    .build()
-                            );
-
-                        final BillingFlowParams billingFlowParams = BillingFlowParams.newBuilder()
-                            .setProductDetailsParamsList(productDetailsParamsList)
-                            .build();
-
-                        // Launch the billing flow
-                        final BillingResult billingFlowResult = mBillingClient.launchBillingFlow(getContext(), billingFlowParams);
-                    }
-                }
-            );
-        }
-        catch(Exception e) {
-            Log.e(getTag(), Objects.requireNonNull(e.getMessage()));
-        }
+        mPlay.launchPurchase(ProductSKU, responseCode -> {
+            // Итог оплаты придёт в onPurchasesUpdated; здесь - только почему шторка не открылась
+            if (BillingResponseCode.OK != responseCode) {
+                Log.e(getTag(), "Purchase " + ProductSKU + " did not start: " + DecodeBillingResponse(responseCode));
+            }
+        });
     }
 
     public void consumeProductItem(final String PurchaseToken, final String SKU) {
-        try {
-            Log.v(getTag(), "Consume: " + SKU + " " + PurchaseToken);
-            mBillingClient.consumeAsync(ConsumeParams.newBuilder().setPurchaseToken(PurchaseToken).build(),
-                new ConsumeResponseListener() {
-                    @Override
-                    public void onConsumeResponse(@NonNull BillingResult billingResult, @NonNull final String purchaseToken) {
-                        try {
-                            Log.v(getTag(), "onConsumeResponse Result: " + DecodeBillingResponse(billingResult.getResponseCode()) + " Token:" + purchaseToken + "; " + billingResult.getDebugMessage());
-                            if (BillingResponseCode.OK == billingResult.getResponseCode()) {
-                                mBillingObserver.onPurchaseConsumed(purchaseToken, SKU);
-                            }
-                        }
-                        catch(Exception e) {
-                            Log.e(getTag(), Objects.requireNonNull(e.getMessage()));
-                        }
-                    }
-                }
-            );
-        }
-        catch(Exception e) {
-            Log.e(getTag(), Objects.requireNonNull(e.getMessage()));
-        }
-    }
-
-    private void PurchaseSKUListQueried(final Purchase purchase, int BoughtOrRestored) {
-        if(purchase != null) {
-            final String purchToken = purchase.getPurchaseToken();
-            for(String product : purchase.getProducts()) {
-                if(product != null) {
-                    if(!product.isEmpty()) {
-                        Log.v(getTag(), "sku:" + product);
-                        mBillingObserver.onPurchaseQueried(purchToken, product, BoughtOrRestored);
-                    }
-                }
+        Log.v(getTag(), "Consume: " + SKU + " " + PurchaseToken);
+        mPlay.consume(PurchaseToken, responseCode -> {
+            Log.v(getTag(), "Consume " + SKU + ": " + DecodeBillingResponse(responseCode));
+            if (BillingResponseCode.OK == responseCode) {
+                mBillingObserver.onPurchaseConsumed(PurchaseToken, SKU);
             }
-        }
+        });
     }
 
-    private void AcknowledgePurchase(final Purchase purchase) {
-        try {
-            mBillingClient.acknowledgePurchase(AcknowledgePurchaseParams.newBuilder().setPurchaseToken(purchase.getPurchaseToken()).build(),
-                    billingResult -> {
-                        try {
-                            if (BillingResponseCode.OK == billingResult.getResponseCode()) {
-                                Log.v(getTag(), "onAcknowledgePurchaseResponse Result: OK");
-                                PurchaseSKUListQueried(purchase, PURCHASE_BOUGHT);
-                            } else {
-                                // Неподтверждённую покупку Google через 3 дня вернёт: повтор - при следующем
-                                // restorePurchases (старт, «уже куплено»); товар игре отдаётся сразу - деньги списаны.
-                                Log.e(getTag(), "onAcknowledgePurchaseResponse: " + DecodeBillingResponse(billingResult.getResponseCode()));
-                                PurchaseSKUListQueried(purchase, PURCHASE_BOUGHT);
-                            }
-                        }
-                        catch(Exception e) {
-                            Log.e(getTag(), Objects.requireNonNull(e.getMessage()));
-                        }
-                    }
-            );
-        }
-        catch(Exception e) {
-            Log.e(getTag(), Objects.requireNonNull(e.getMessage()));
-        }
-    }
-
-    private void checkPurchases(BillingResult billingResult, final List<Purchase> purchases) {
-        try {
-            if (BillingResponseCode.OK == billingResult.getResponseCode()) {
-                if (purchases != null)
-                    for (Purchase purchase : purchases) {
-                        if(purchase != null) {
-                            switch(purchase.getPurchaseState()) {
-                                case Purchase.PurchaseState.PURCHASED:
-                                    if(purchase.isAcknowledged()) {
-                                        Log.v(getTag(), "Purchase was Bought: " + purchase.getPurchaseToken()  + " Order:" + purchase.getOrderId());
-                                        PurchaseSKUListQueried(purchase, PURCHASE_RESTORED);
-                                    }
-                                    else { // пробуем вызвать явно
-                                        AcknowledgePurchase(purchase);
-                                    }
-                                    break;
-
-                                case Purchase.PurchaseState.PENDING:
-                                    Log.v(getTag(), "Purchase pending: " + purchase.getPurchaseToken());
-                                    break;
-
-                                case Purchase.PurchaseState.UNSPECIFIED_STATE:
-                                    Log.v(getTag(), "Purchase unspecified_state:" + purchase.getPurchaseToken() + " Order:" + purchase.getOrderId());
-                                    break;
-                            }
-                        }
-                    }
-            } else {
-                Log.v(getTag(), "checkPurchases error, response = " + DecodeBillingResponse(billingResult.getResponseCode()));
-            }
-        }
-        catch(Exception e) {
-            Log.e(getTag(), Objects.requireNonNull(e.getMessage()));
-        }
-    }
-
-    /////////////////////////////////////
-    // PurchasesResponseListener Callbacks
-    /////////////////////////////////////
-    @Override
-    public void onQueryPurchasesResponse(@NonNull BillingResult billingResult, @NonNull List<Purchase> purchases) {
-        try {
-            checkPurchases(billingResult, purchases);
-        }
-        catch(Exception e) {
-            Log.e(getTag(), Objects.requireNonNull(e.getMessage()));
-        }
-    }
-
-    /////////////////////////////////////
-    // PurchasesUpdatedListener Callbacks
-    /////////////////////////////////////
-    @Override
-    public void onPurchasesUpdated(@NonNull BillingResult billingResult, final List<Purchase> purchases) {
-        try {
-            if (BillingResponseCode.ITEM_ALREADY_OWNED == billingResult.getResponseCode()) {
-                // Куплено раньше (на другом устройстве, или подтверждение не дошло): спросить у магазина, что куплено,
-                // - покупка придёт игре как восстановленная (и неподтверждённая будет подтверждена)
-                restorePurchases();
-                return;
-            }
-            checkPurchases(billingResult, purchases);
-        }
-        catch(Exception e) {
-            Log.e(getTag(), Objects.requireNonNull(e.getMessage()));
-        }
-    }
-
-    ////////////////////////////////////
-    // PurchaseHistoryResponseListener Callbacks
-    ////////////////////////////////////
-    @Override
-    public void onPurchaseHistoryResponse(@NonNull BillingResult billingResult, final List<PurchaseHistoryRecord> purchaseHistoryRecordList) {
-        try {
-            Log.v(getTag(), "onPurchaseHistoryResponse Result: " + DecodeBillingResponse(billingResult.getResponseCode()) + "; " + billingResult.getDebugMessage());
-        }
-        catch(Exception e) {
-            Log.v(getTag(), Objects.requireNonNull(e.getMessage()));
-        }
-    }
-
-    ////////////////////////////////////
-    // BillingClientStateListener Callbacks
-    ////////////////////////////////////
-    @Override
-    public void onBillingSetupFinished(@NonNull BillingResult billingResult) {
-        try {
-            final int ResponseCode = billingResult.getResponseCode();
-            Log.v(getTag(), "Setup finished. Response: " + DecodeBillingResponse(ResponseCode));
-            if (BillingResponseCode.OK == ResponseCode) {
-                mBillingObserver.onBillingSetupFinished();
-            }
-            else {
-                mBillingObserver.onBillingDisconnected();
-            }
-        }
-        catch(Exception e) {
-            Log.v(getTag(), Objects.requireNonNull(e.getMessage()));
-        }
-    }
+    // ---- PlayGateway.Listener ----
 
     @Override
-    public void onBillingServiceDisconnected() {
-        try {
-            Log.v(getTag(), "onBillingServiceDisconnected");
+    public void onSetupFinished(int responseCode) {
+        Log.v(getTag(), "Setup finished. Response: " + DecodeBillingResponse(responseCode));
+        if (BillingResponseCode.OK == responseCode) {
+            mBillingObserver.onBillingSetupFinished();
+        } else {
             mBillingObserver.onBillingDisconnected();
         }
-        catch(Exception e) {
-            Log.v(getTag(), Objects.requireNonNull(e.getMessage()));
+    }
+
+    @Override
+    public void onDisconnected() {
+        Log.v(getTag(), "onBillingServiceDisconnected");
+        mBillingObserver.onBillingDisconnected();
+    }
+
+    @Override
+    public void onPurchasesUpdated(int responseCode, List<PlayGateway.PlayPurchase> purchases) {
+        if (BillingResponseCode.ITEM_ALREADY_OWNED == responseCode) {
+            // Куплено раньше (на другом устройстве, или подтверждение не дошло): спросить у магазина, что куплено,
+            // - покупка придёт игре как восстановленная (и неподтверждённая будет подтверждена)
+            restorePurchases();
+            return;
+        }
+        checkPurchases(responseCode, purchases);
+    }
+
+    // ---- решения ----
+
+    private void checkPurchases(int responseCode, List<PlayGateway.PlayPurchase> purchases) {
+        if (BillingResponseCode.OK != responseCode) {
+            Log.v(getTag(), "checkPurchases error, response = " + DecodeBillingResponse(responseCode));
+            return;
+        }
+        for (PlayGateway.PlayPurchase purchase : purchases) {
+            switch (purchase.state) {
+                case Purchase.PurchaseState.PURCHASED:
+                    if (purchase.acknowledged) {
+                        Log.v(getTag(), "Purchase was Bought: " + purchase.purchaseToken + " Order:" + purchase.orderId);
+                        reportProducts(purchase, PURCHASE_RESTORED);
+                    } else {
+                        acknowledge(purchase);
+                    }
+                    break;
+
+                case Purchase.PurchaseState.PENDING:
+                    // Оплата ещё не прошла (наличные, перевод): придёт в onPurchasesUpdated или при следующем restorePurchases
+                    Log.v(getTag(), "Purchase pending: " + purchase.purchaseToken);
+                    break;
+
+                default:
+                    Log.v(getTag(), "Purchase unspecified_state:" + purchase.purchaseToken + " Order:" + purchase.orderId);
+                    break;
+            }
         }
     }
 
-    private String getTag() {
-        return org.akkord.lib.Utils.TAG;
+    private void acknowledge(final PlayGateway.PlayPurchase purchase) {
+        mPlay.acknowledge(purchase.purchaseToken, responseCode -> {
+            if (BillingResponseCode.OK != responseCode) {
+                // Неподтверждённую покупку Google через 3 дня вернёт: повтор - при следующем
+                // restorePurchases (старт, «уже куплено»); товар игре отдаётся сразу - деньги списаны.
+                Log.e(getTag(), "acknowledgePurchase: " + DecodeBillingResponse(responseCode));
+            }
+            reportProducts(purchase, PURCHASE_BOUGHT);
+        });
     }
 
-    private Activity getContext() {
-        return org.akkord.lib.Utils.GetContext();
+    private void reportProducts(final PlayGateway.PlayPurchase purchase, int BoughtOrRestored) {
+        for (String product : purchase.products) {
+            if (product != null && !product.isEmpty()) {
+                Log.v(getTag(), "sku:" + product);
+                mBillingObserver.onPurchaseQueried(purchase.purchaseToken, product, BoughtOrRestored);
+            }
+        }
+    }
+
+    static String DecodeBillingResponse(int billingResponseCode) {
+        switch (billingResponseCode) {
+            case BillingResponseCode.BILLING_UNAVAILABLE: return "BILLING_UNAVAILABLE";
+            case BillingResponseCode.DEVELOPER_ERROR: return "DEVELOPER_ERROR";
+            case BillingResponseCode.ERROR: return "ERROR";
+            case BillingResponseCode.FEATURE_NOT_SUPPORTED: return "FEATURE_NOT_SUPPORTED";
+            case BillingResponseCode.ITEM_ALREADY_OWNED: return "ITEM_ALREADY_OWNED";
+            case BillingResponseCode.ITEM_NOT_OWNED: return "ITEM_NOT_OWNED";
+            case BillingResponseCode.ITEM_UNAVAILABLE: return "ITEM_UNAVAILABLE";
+            case BillingResponseCode.OK: return "OK";
+            case BillingResponseCode.SERVICE_DISCONNECTED: return "SERVICE_DISCONNECTED";
+            case BillingResponseCode.SERVICE_UNAVAILABLE: return "SERVICE_UNAVAILABLE";
+            case BillingResponseCode.USER_CANCELED: return "USER_CANCELED";
+            case BillingResponseCode.NETWORK_ERROR: return "NETWORK_ERROR";
+            default: return "UNKNOWN(" + billingResponseCode + ")";
+        }
+    }
+
+    private static String getTag() {
+        return org.akkord.lib.Utils.TAG;
     }
 }

@@ -5,6 +5,7 @@ rustoreBom                         = "2026.10.01"
 
 [libraries]
 getkeepsafe-relinker               = "com.getkeepsafe.relinker:relinker:1.4.5"
+junit                              = "junit:junit:4.13.2"  # юнит-тесты на JVM (framework/billing/*_test)
 
 firebase-bom                       = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 rustore-bom                        = { module = "ru.rustore.sdk:bom", version.ref = "rustoreBom" }
@@ -17,7 +18,7 @@ admobads                           = "com.google.android.gms:play-services-ads:2
 # при обновлении AdMob брать адаптер, собранный под ту же версию. Согласие GDPR из UMP адаптер передаёт сам
 admob-mediation-unity              = "com.google.ads.mediation:unity:4.20.1.0"
 unity-ads                          = "com.unity3d.ads:unity-ads:4.20.1"
-google-play-billing                = "com.android.billingclient:billing:8.3.0"
+google-play-billing                = "com.android.billingclient:billing:9.1.0"
 google-play-review                 = "com.google.android.play:review:2.0.2"
 google-app-update                  = "com.google.android.play:app-update:2.1.0"
 
@@ -28,8 +29,9 @@ play-appset                        = "com.google.android.gms:play-services-appse
 user_messaging_platform            = "com.google.android.ump:user-messaging-platform:4.0.0"
 yandexadssdk                       = "com.yandex.android:mobileads:8.6.0"
 # MyTarget (mobileads-mytarget) is out: its mytracker-sdk asks for com.android.billingclient:billing in a range
-# [9.1.0, 10.0.0), so every game got Google's billing library, and its newest release with it (9.2.0 broke the builds:
-# it needs core library desugaring)
+# [9.1.0, 10.0.0), so every game got Google's billing library whether it sold anything or not. (This note once said
+# billing 9.2.0 needed core library desugaring: there is no 9.2.0, and billing 9.1.0 builds without desugaring -
+# checked 2026-11-27.)
 yandex-mediation-vungle            = "com.yandex.ads.mediation:mobileads-vungle:7.7.8.1"
 # Mintegral SDK (com.mbridge.msdk.oversea) тянется транзитивно из репозитория Mintegral, см. ci/proj.android/build.gradle
 yandex-mediation-mintegral         = "com.yandex.ads.mediation:mobileads-mintegral:17.1.81.1"
@@ -37,6 +39,7 @@ yandex-mediation-mintegral         = "com.yandex.ads.mediation:mobileads-mintegr
 rustore-appreview                  = { module = "ru.rustore.sdk:review" }
 rustore-appupdate                  = { module = "ru.rustore.sdk:appupdate" }
 rustore-billing                    = { module = "ru.rustore.sdk:billingclient" }
+rustore-pay                        = { module = "ru.rustore.sdk:pay" }
 
 # Huawei AppGallery: проверка обновления (HMS JOS AppUpdateClient); репозиторий https://developer.huawei.com/repo/
 huawei-appservice                  = "com.huawei.hms:appservice:6.16.2.300"

@@ -66,6 +66,49 @@ extern "C" {
 		env->ReleaseStringUTFChars(PurchaseToken, purchToken);
 		env->ReleaseStringUTFChars(ProductSKU   , prodToken );
 	}
+
+	JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManagerKt_purchasesQueryFinished(JNIEnv*, jclass, jboolean Success)
+	{
+		logDebug("purchasesQueryFinished %d", (int)Success);
+		if (BillingContext.callbackObserver) {
+			BillingContext.callbackObserver->PurchasesQueryFinishedCallback(Success == JNI_TRUE);
+		}
+	}
+
+	// Массивы одной длины: товар i - i-е элементы каждого
+	JNIEXPORT void JNICALL Java_org_akkord_lib_BillingManagerKt_productDetailsReceived(JNIEnv* env, jclass,
+		jobjectArray Skus, jobjectArray PriceLabels, jlongArray PriceMicros, jobjectArray Currencies, jobjectArray Titles)
+	{
+		const auto stringAt = [env](jobjectArray Array, jsize Index) {
+			std::string Result;
+			if (auto Value = static_cast<jstring>(env->GetObjectArrayElement(Array, Index))) {
+				if (const char* Chars = env->GetStringUTFChars(Value, nullptr)) {
+					Result = Chars;
+					env->ReleaseStringUTFChars(Value, Chars);
+				}
+				env->DeleteLocalRef(Value);
+			}
+			return Result;
+		};
+
+		const jsize Count = env->GetArrayLength(Skus);
+		std::vector<jlong> Micros(static_cast<size_t>(Count));
+		if (Count > 0) {
+			env->GetLongArrayRegion(PriceMicros, 0, Count, Micros.data());
+		}
+
+		std::vector<BillingProduct> Products;
+		Products.reserve(static_cast<size_t>(Count));
+		for (jsize i = 0; i < Count; ++i) {
+			Products.push_back(BillingProduct{ stringAt(Skus, i), stringAt(PriceLabels, i),
+				static_cast<int64_t>(Micros[static_cast<size_t>(i)]), stringAt(Currencies, i), stringAt(Titles, i) });
+		}
+
+		logDebug("productDetailsReceived %d", (int)Count);
+		if (BillingContext.callbackObserver) {
+			BillingContext.callbackObserver->ProductDetailsCallback(Products);
+		}
+	}
 }
 #endif
 
@@ -147,6 +190,13 @@ bool BillingManager::ConsumeProductItem(const char* PurchaseToken, const char* P
 {
 #ifdef __ANDROID__
     return AndroidBillingManager::ConsumeProductItem(getJNIEnv(), PurchaseToken, ProductCode);
+#endif
+
+#ifdef SDL_PLATFORM_IOS
+    // StoreKit 2 (billing/ios_storekit2) закрывает здесь потребляемую покупку; StoreKit 1 (ios_billing.mm) закрывает
+    // её сразу при покупке, у него это пустой вызов
+    (void)ProductCode;
+    return iOSBillingManager::ConsumeProductItem(PurchaseToken);
 #endif
 
     return false;
