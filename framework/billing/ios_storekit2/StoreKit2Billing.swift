@@ -74,12 +74,16 @@ final class StoreKit2Billing {
     // первой синхронизации может быть пуст. Поэтому success здесь всегда true, и игра, отзывая товар по его
     // отсутствию, должна требовать подтверждения (два успешных запроса подряд); явный отзыв приходит в revoked.
     func reportEntitlements() async {
+        var reported: [String] = []
         for await result in Transaction.currentEntitlements {
             guard case .verified(let transaction) = result, transaction.revocationDate == nil else { continue }
             // Потребляемых здесь нет (StoreKit их не держит); подписки SDK пока не продаёт
             guard transaction.productType == .nonConsumable else { continue }
+            reported.append(transaction.productID)
             events.purchase(String(transaction.id), transaction.productID, Self.restored)
         }
+        // В лог: иначе на устройстве эта дорога молчит, и «покупка не вернулась» не отличить от «запрос не дошёл»
+        NSLog("[Billing] entitlements: \(reported.isEmpty ? "none" : reported.joined(separator: ", "))")
         events.queryFinished(true)
     }
 
@@ -106,6 +110,7 @@ final class StoreKit2Billing {
                     currency: product.priceFormatStyle.currencyCode,
                     title: product.displayName))
             }
+            NSLog("[Billing] products: \(out.isEmpty ? "none" : out.map { "\($0.sku) \($0.priceLabel)" }.joined(separator: ", "))")
             events.products(out)
         } catch {
             NSLog("[Billing] Product.products failed: \(error)")
@@ -173,10 +178,17 @@ final class StoreKit2Billing {
         }
         switch transaction.productType {
         case .consumable:
-            // Закроется в consume, когда игра выдаст товар; пришла повторно (новый запуск) - выдать снова
+            // StoreKit приносит одну и ту же покупку дважды - ответом окна покупки и через Transaction.updates
+            // (проверено на симуляторе 2026-11-27). Потребляемый товар игра выдала бы два раза, поэтому пока
+            // покупка не выдана и не закрыта (лежит здесь), второй раз о ней не говорим. После выдачи токен
+            // уходит, и повторная доставка в НОВОМ запуске (игра упала до выдачи) снова выдаст товар - так и
+            // задумано. Непотребляемый повторяется безвредно: игра просто снова узнаёт, что он куплен.
+            if unfinishedConsumables[token] != nil { return }
+            // Закроется в consume, когда игра выдаст товар
             unfinishedConsumables[token] = transaction
             events.purchase(token, transaction.productID, action)
         case .nonConsumable:
+            NSLog("[Billing] \(transaction.productID): \(action == Self.bought ? "bought" : "restored")")
             events.purchase(token, transaction.productID, action)
             await transaction.finish()
         default:
@@ -189,12 +201,13 @@ final class StoreKit2Billing {
 
 // ---- C-интерфейс для ios_billing_storekit2.cpp (storekit2_bridge.h) ----
 
-typealias AkkSk2PurchaseFn = @convention(c) (UnsafePointer<CChar>, UnsafePointer<CChar>, Int32) -> Void
-typealias AkkSk2ConsumedFn = @convention(c) (UnsafePointer<CChar>, UnsafePointer<CChar>) -> Void
-typealias AkkSk2QueryFinishedFn = @convention(c) (Int32) -> Void
-typealias AkkSk2RevokedFn = @convention(c) (UnsafePointer<CChar>) -> Void
-typealias AkkSk2ProductFn = @convention(c) (UnsafePointer<CChar>, UnsafePointer<CChar>, Int64, UnsafePointer<CChar>, UnsafePointer<CChar>) -> Void
-typealias AkkSk2ProductsDoneFn = @convention(c) () -> Void
+// Публичные: типы параметров публичной функции (@_cdecl ниже) не могут быть внутренними
+public typealias AkkSk2PurchaseFn = @convention(c) (UnsafePointer<CChar>, UnsafePointer<CChar>, Int32) -> Void
+public typealias AkkSk2ConsumedFn = @convention(c) (UnsafePointer<CChar>, UnsafePointer<CChar>) -> Void
+public typealias AkkSk2QueryFinishedFn = @convention(c) (Int32) -> Void
+public typealias AkkSk2RevokedFn = @convention(c) (UnsafePointer<CChar>) -> Void
+public typealias AkkSk2ProductFn = @convention(c) (UnsafePointer<CChar>, UnsafePointer<CChar>, Int64, UnsafePointer<CChar>, UnsafePointer<CChar>) -> Void
+public typealias AkkSk2ProductsDoneFn = @convention(c) () -> Void
 
 @MainActor private var akkSk2Billing: StoreKit2Billing?
 

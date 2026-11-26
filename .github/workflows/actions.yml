@@ -128,16 +128,18 @@ jobs:
           xcodebuild build -project CiTest.xcodeproj -scheme CiTest -configuration Release \
             -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO > build.log 2>&1 \
             || { grep -E 'error:|Undefined symbols|ld: |CMake Error|PhaseScriptExecution' -A 6 build.log | head -n 80; tail -n 20 build.log; exit 1; }
-      # Тесты биллинга на StoreKit 2 (framework/billing/ios_storekit2_test): тестовый App Store на симуляторе iOS 17+.
-      # ЧЕРНОВИК: ещё не запускался - выбор симулятора и сама схема проверяются первым прогоном на Mac
+      # Тесты биллинга на StoreKit 2 (framework/billing/ios_storekit2_test): тестовый App Store (SKTestSession) на
+      # симуляторе. Симулятор выбирает pick_simulator.py — самый новый iPhone с iOS 17 или новее: на более старой
+      # SKTestSession.buyProduct нет, и тесты молча пропускались бы, а шаг зеленел. Нет такого симулятора — шаг
+      # падает с внятной причиной. В этом же бандле собирается мост в C++ (ios_billing_storekit2.cpp): так
+      # проверяется и его компиляция с заголовками SDK, и связь с функциями Swift (@_cdecl).
       - name: Billing tests (StoreKit 2)
         working-directory: ci/proj.ios
         run: |
-          udid=$(xcrun simctl list devices available | grep -E '^\s+iPhone' | head -n 1 | grep -oE '[0-9A-F]{8}(-[0-9A-F]{4}){3}-[0-9A-F]{12}')
-          echo "simulator: $udid"
+          udid=$(python3 pick_simulator.py)
           xcodebuild test -project CiTest.xcodeproj -scheme CiBillingTests \
             -destination "id=$udid" CODE_SIGNING_ALLOWED=NO > test.log 2>&1 \
-            || { grep -E 'error:|failed|XCTAssert' -A 4 test.log | head -n 80; tail -n 30 test.log; exit 1; }
+            || { grep -E 'error:|XCTAssert|Executed [0-9]+ test' -A 4 test.log | head -n 80; tail -n 30 test.log; exit 1; }
       # SDL3 собирается из исходников SDK таргетом SDL3 проекта (tools/ios/akkord_sdl.yml, CMake)
       - name: Build SDL app for simulator
         working-directory: ci/proj.ios

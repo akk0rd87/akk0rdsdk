@@ -96,6 +96,11 @@ targets:
         buildPhase: sources
       - path: ${AKKORD_SDK_HOME}/framework/billing/ios_storekit2_test/AkkordBillingTest.storekit
         buildPhase: resources
+      # Мост в C++ собирается здесь же: так проверяется и компиляция с заголовками SDK, и связь с теми самыми
+      # функциями Swift (@_cdecl) - они в этом же бандле. В CiTestSDL его не подключить: шаблон AkkordSDLApp
+      # всегда включает ios_billing.mm, и iOSBillingManager оказался бы определён дважды
+      - path: ${AKKORD_SDK_HOME}/framework/billing/ios_storekit2/ios_billing_storekit2.cpp
+        buildPhase: sources
     dependencies:
       - target: CiTest
       - sdk: StoreKit.framework
@@ -105,6 +110,11 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: org.akkord.citest.billingtests
         SWIFT_VERSION: "5.0"
         GENERATE_INFOPLIST_FILE: "YES"
+        AKKORD_SDK_HOME: ${AKKORD_SDK_HOME}
+        HEADER_SEARCH_PATHS: $(AKKORD_SDK_HOME)/framework $(AKKORD_SDK_HOME)/libraries $(AKKORD_SDK_HOME)/libraries/SDL/SDL/include $(inherited)
+        CLANG_CXX_LANGUAGE_STANDARD: c++17
+        # SDK требует беззнаковый char, как в приложениях на нём
+        GCC_CHAR_IS_UNSIGNED_CHAR: "YES"
 
 schemes:
   CiBillingTests:
