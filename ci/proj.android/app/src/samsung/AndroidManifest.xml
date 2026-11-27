@@ -1,4 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>  
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">  
-    <uses-permission android:name="com.samsung.android.providers.context.permission.WRITE_USE_APP_FEATURE_SURVEY"/> 
-</manifest> 
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="com.samsung.android.providers.context.permission.WRITE_USE_APP_FEATURE_SURVEY"/>
+    <!-- Покупки Samsung IAP (framework/billing/samsung): разрешения в AAR нет -->
+    <uses-permission android:name="com.samsung.android.iap.permission.BILLING"/>
+    <application>
+        <!-- Режим Samsung IAP: test - ответы-заглушки без оплаты (CI-приложение настоящих товаров не имеет) -->
+        <meta-data android:name="akk0rdsdk.samsung.iap.mode" android:value="test"/>
+    </application>
+</manifest>

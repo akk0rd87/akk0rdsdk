@@ -69,7 +69,26 @@ jobs:
         run: |
           chmod +x ci/proj.android/gradlew
           export AKKORD_SDK_HOME=${GITHUB_WORKSPACE}
-          ci/proj.android/gradlew --no-daemon app:assembleHuaweiStoreRelease -p ci/proj.android
+          # юнит-тесты логики покупок (framework/billing/huawei_test) - без нативной части, секунды
+          ci/proj.android/gradlew --no-daemon app:testHuaweiStoreDebugUnitTest app:assembleHuaweiStoreRelease -p ci/proj.android
+
+  # Samsung Galaxy Store: покупки на Samsung IAP SDK (framework/billing/samsung)
+  build-samsung:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set Up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+      - name: Run gradle build
+        run: |
+          chmod +x ci/proj.android/gradlew
+          export AKKORD_SDK_HOME=${GITHUB_WORKSPACE}
+          # юнит-тесты логики покупок (framework/billing/samsung_test) - без нативной части, секунды
+          ci/proj.android/gradlew --no-daemon app:testSamsungDebugUnitTest app:assembleSamsungRelease -p ci/proj.android
 
   # Десктопное CI-приложение (ci/proj.desktop, тот же main.cpp, что у Android): на macOS — GPU-рендерер (Metal)
   build-macos:

@@ -4,4 +4,11 @@
   <queries>
     <package android:name="com.huawei.appmarket" />
   </queries>
+  <application>
+    <!-- Покупки HMS IAP (framework/billing/huawei): шторка оплаты и вход в аккаунт Huawei отдают результат сюда -->
+    <activity android:name="org.akkord.lib.HuaweiIapActivity"
+              android:exported="false"
+              android:theme="@android:style/Theme.Translucent.NoTitleBar"
+              android:configChanges="orientation|screenSize|keyboardHidden" />
+  </application>
 </manifest>

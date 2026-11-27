@@ -31,7 +31,7 @@ android {
             path "../CMakeLists.txt"
         }
     }
-    // Юнит-тесты на JVM: gradlew testRuStoreDebugUnitTest testGooglePlayDebugUnitTest. Методы android.* там заглушки (Log.d) - пусть молчат
+    // Юнит-тесты на JVM: gradlew testRuStoreDebugUnitTest testGooglePlayDebugUnitTest testHuaweiStoreDebugUnitTest testSamsungDebugUnitTest. Методы android.* там заглушки (Log.d) - пусть молчат
     testOptions {
         unitTests.returnDefaultValues = true
     }
@@ -41,6 +41,12 @@ android {
         }
         testGooglePlay {
             kotlin.srcDir "${akkord_sdk_path}/framework/billing/googleplay_test/"
+        }
+        testHuaweiStore {
+            kotlin.srcDir "${akkord_sdk_path}/framework/billing/huawei_test/"
+        }
+        testSamsung {
+            kotlin.srcDir "${akkord_sdk_path}/framework/billing/samsung_test/"
         }
         main {
             jniLibs.srcDirs = ['libs']
@@ -92,9 +98,11 @@ android {
             dimension "Store"
             versionCode 1
 
+            proguardFile file(proGuardParamsDir + 'proguard-rules_samsung.pro').absolutePath
+
             sourceSets {
                 samsung {
-                    kotlin.srcDir    "${akkord_sdk_path}/framework/billing/dummy/"
+                    kotlin.srcDir    "${akkord_sdk_path}/framework/billing/samsung/"
                     kotlin.srcDir    "${akkord_sdk_path}/framework/store/facade/googleplay/"
                 }
             }
@@ -134,7 +142,7 @@ android {
 
             sourceSets {
                 huaweiStore {
-                    kotlin.srcDir    "${akkord_sdk_path}/framework/billing/dummy/"
+                    kotlin.srcDir    "${akkord_sdk_path}/framework/billing/huawei/"
                     kotlin.srcDir    "${akkord_sdk_path}/framework/store/facade/huawei/"
                 }
             }
@@ -206,6 +214,7 @@ dependencies {
 
     samsungImplementation   (libs.google.play.review)
     samsungImplementation   (libs.google.app.update)
+    samsungImplementation   (libs.samsung.iap)
 
     ruStoreImplementation   (platform(libs.rustore.bom))
     ruStoreImplementation   (libs.rustore.appreview)
@@ -214,4 +223,5 @@ dependencies {
     testImplementation      (libs.junit)
 
     huaweiStoreImplementation(libs.huawei.appservice)
+    huaweiStoreImplementation(libs.huawei.iap)
 }

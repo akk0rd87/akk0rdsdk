@@ -43,6 +43,10 @@ rustore-pay                        = { module = "ru.rustore.sdk:pay" }
 
 # Huawei AppGallery: проверка обновления (HMS JOS AppUpdateClient); репозиторий https://developer.huawei.com/repo/
 huawei-appservice                  = "com.huawei.hms:appservice:6.16.2.300"
+# Покупки в AppGallery: HMS IAP Kit (framework/billing/huawei)
+huawei-iap                         = "com.huawei.hms:iap:6.16.6.305"
+# Покупки в Galaxy Store: Samsung IAP SDK из Maven Central (framework/billing/samsung; раньше - AAR с сайта Samsung)
+samsung-iap                        = "com.samsung.developer:iap:6.5.2"
 
 [plugins]
 android-application                = { id = 'com.android.application', version = '9.2.1' }
